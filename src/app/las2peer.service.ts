@@ -13,6 +13,9 @@ export class Las2peerService {
   SERVICES_PATH = 'las2peer/services/services';
   CONTACT_SERVICE_PATH = 'contactservice';
   CONTACT_GROUPS_PATH = 'groups';
+  SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
+  SUCCESS_MODELING_MODELS_PATH = 'models';
+  SUCCESS_MODELING_MEASURE_PATH = 'measures';
 
   userCredentials;
 
@@ -47,14 +50,34 @@ export class Las2peerService {
   }
 
   async fetchServices() {
-    this.logger.debug('Fetching services');
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SERVICES_PATH);
-    return this.fetchWithCredentials(url).then((response) => response.json().catch((response2) => this.logger.error(response2)));
+    return this.fetchWithCredentials(url)
+      .then((response) => response.json())
+      .catch((response) => this.logger.error(response));
   }
 
   async fetchGroups() {
-    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.CONTACT_SERVICE_PATH, this.CONTACT_GROUPS_PATH);
-    return this.fetchWithCredentials(url).then((response) => response.json().catch((response2) => this.logger.error(response2)));
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH);
+    return this.fetchWithCredentials(url)
+      .then((response) => response.json())
+      .catch((response) => this.logger.error(response));
+  }
+
+  async fetchSuccessModel(groupID: string, service: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
+    return this.fetchWithCredentials(url)
+      .then((response) => response.json().then(json => json.xml))
+      .catch((response) => this.logger.error(response));
+  }
+
+  async fetchMeasureCatalog(groupID: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MEASURE_PATH, groupID);
+    return this.fetchWithCredentials(url)
+      .then((response) => response.json().then(json => json.xml))
+      .catch((response) => this.logger.error(response));
   }
 
   pollServices(successCallback, failureCallback) {

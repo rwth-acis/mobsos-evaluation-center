@@ -24,6 +24,8 @@ import {from, Observable, of} from 'rxjs';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {translations as en} from '../locale/en';
 import {translations as de} from '../locale/de';
+import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {FormsModule} from '@angular/forms';
 
 
 class ImportLoader implements TranslateLoader {
@@ -72,7 +74,9 @@ export function createTranslateLoader() {
     MatSlideToggleModule,
     MatTabsModule,
     MatFormFieldModule,
-    MatSelectModule
+    MatSelectModule,
+    MonacoEditorModule.forRoot(),
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent],

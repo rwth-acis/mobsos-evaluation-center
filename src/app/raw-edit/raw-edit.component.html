@@ -1,6 +1,6 @@
 <mat-form-field class="community-service-selection">
   <mat-label>Community</mat-label>
-  <mat-select>
+  <mat-select (selectionChange)="onGroupSelected($event.value)">
     <mat-option *ngFor="let group of groups" [value]="group">
       {{group}}
     </mat-option>
@@ -8,7 +8,7 @@
 </mat-form-field>
 <mat-form-field class="community-service-selection">
   <mat-label>Application</mat-label>
-  <mat-select>
+  <mat-select (selectionChange)="onServiceSelected($event.value)">
     <mat-option *ngFor="let service of services" [value]="service">
       {{service}}
     </mat-option>
@@ -16,10 +16,12 @@
 </mat-form-field>
 <mat-tab-group>
   <mat-tab label="{{'raw-edit.tabs.measures'|translate}}">
-
+    <ngx-monaco-editor (onInit)="registerMeasureEditor($event)" [options]="editorOptions"
+                       [(ngModel)]="measureCatalogXml"></ngx-monaco-editor>
   </mat-tab>
   <mat-tab label="{{'raw-edit.tabs.success-models'|translate}}">
-
+    <ngx-monaco-editor (onInit)="registerSuccessModelEditor($event)" [options]="editorOptions"
+                       [(ngModel)]="successModelXml"></ngx-monaco-editor>
   </mat-tab>
 </mat-tab-group>
 

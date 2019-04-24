@@ -29,9 +29,11 @@
     "las2peer-frontend-user-widget": "github:rwth-acis/las2peer-frontend-user-widget#auth-fix",
     "lodash-es": "^4.17.11",
     "ngx-logger": "^3.3.12",
+    "ngx-monaco-editor": "^7.0.0",
     "oidc-client": "1.6.1",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
+    "xml-formatter": "^1.1.0",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
