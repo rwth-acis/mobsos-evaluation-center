@@ -1,0 +1,52 @@
+@import '~@angular/material/theming';
+@import '../styles';
+
+$primary: map-get($mobsos-evaluation-center-theme, primary);
+
+mat-sidenav-container {
+  min-height: 100%;
+
+
+  mat-sidenav {
+    width: 250px;
+    background-color: mat-color($primary, darker);
+    color: white;
+    display: flex;
+    flex-direction: column;
+
+    .mat-drawer-inner-container {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    .mat-list-item {
+      color: white;
+    }
+
+    mat-nav-list {
+      flex: 1;
+
+      a {
+        color: white;
+      }
+    }
+
+    footer {
+      mat-slide-toggle {
+        margin-left: 16px;
+      }
+    }
+  }
+
+  mat-sidenav-content {
+    #las2peer-statusbar {
+      --statusbar-background: #{mat-color($primary)};
+      --user-widget-button-background: white;
+      color: white;
+    }
+
+    button[mat-icon-button] {
+      font-size: 45px;
+    }
+  }
+}
