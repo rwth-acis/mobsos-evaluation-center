@@ -84,7 +84,8 @@ export class StoreService {
         services: this.servicesSubject.getValue(), groups: this.groupsSubject.getValue(),
         user: this.userSubject.getValue()
       });
-      this.logger.debug('Save state to local storage: ' + serializedState);
+      this.logger.debug('Save state to local storage:');
+      this.logger.debug(serializedState);
       localStorage.setItem('state', serializedState);
     } catch (err) {
       // ignore write errors

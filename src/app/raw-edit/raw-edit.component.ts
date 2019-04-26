@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {StoreService} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
-import * as format from 'xml-formatter';
+import vkbeautify from 'vkbeautify';
 
 @Component({
   selector: 'app-raw-edit',
@@ -18,7 +18,7 @@ export class RawEditComponent implements OnInit {
   groupMap = {};
   selectedGroup: string;
   selectedService: string;
-  editorOptions = {theme: 'vs', language: 'xml'};
+  editorOptions = {theme: 'vs', language: 'xml', automaticLayout: true};
   measureCatalogXml: string;
   successModelXml: string;
   measureCatalogEditor;
@@ -33,8 +33,7 @@ export class RawEditComponent implements OnInit {
   }
 
   static prettifyXml(xml) {
-    const options = {indentation: '  ', stripComments: true, collapseContent: true};
-    return format(xml, options);
+    return vkbeautify.xml(xml)
   }
 
   ngOnInit() {
@@ -75,7 +74,8 @@ export class RawEditComponent implements OnInit {
     if (this.selectedGroup) {
       const groupID = this.groupMap[this.selectedGroup];
       this.las2peer.fetchMeasureCatalog(groupID).then((xml) => {
-        this.measureCatalogXml = RawEditComponent.prettifyXml(xml);
+        xml = RawEditComponent.prettifyXml(xml);
+        this.measureCatalogXml = xml;
       });
       if (this.selectedService) {
         this.las2peer.fetchSuccessModel(groupID, this.selectedService).then((xml) => {

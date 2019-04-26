@@ -17,7 +17,7 @@
     </mat-nav-list>
     <footer>
       <mat-slide-toggle labelPosition="before" (change)="setExpertMode($event.checked)">
-        {{'shared.pages.raw-edit'|translate}}
+        {{'app.expert-mode.switch-label'|translate}}
       </mat-slide-toggle>
       <mat-action-list>
         <button mat-list-item (click)="useLanguage('en')" [disabled]="languageService.getCurrentLanguage() == 'en'">
@@ -43,6 +43,7 @@
       <button mat-icon-button slot="left" (click)="snav.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
+      <h2 slot="title">{{mobileQuery.matches ? 'MobSOS EC'  : 'MobSOS Evaluation Center'}}</h2>
     </las2peer-frontend-statusbar>
     <main>
       <router-outlet></router-outlet>
