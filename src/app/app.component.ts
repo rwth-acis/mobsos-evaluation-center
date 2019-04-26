@@ -6,6 +6,15 @@ import {environment} from '../environments/environment';
 import {NGXLogger} from 'ngx-logger';
 import {LanguageService} from './language.service';
 import {StoreService} from './store.service';
+import {UserManager} from 'oidc-client';
+
+// workaround for openidconned-signin
+// remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
+// this kind of import does not work with oidc-client@1.6.1 for some strange reason
+declare global {
+  interface Window { UserManager: any; }
+}
+window.UserManager = UserManager;
 
 @Component({
   selector: 'app-root',
