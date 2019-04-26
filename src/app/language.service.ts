@@ -20,16 +20,10 @@ export class LanguageService {
    * Determine initial language with the following precedence:
    *
    * 1. language cookie
-   * 2. browser language
-   * 3. english
+   * 2. english
    */
   getInitialLanguage() {
     let selectedLanguage = 'en';
-    const browserLanguage = navigator.language.split('-')[0];
-    if (browserLanguage && this.SUPPORTED_LANGUAGES.includes(browserLanguage)) {
-      selectedLanguage = browserLanguage;
-      this.logger.debug('Browser language: ' + browserLanguage);
-    }
     const localStorageLang = localStorage.getItem((this.LOCAL_STORAGE_LANGUAGE));
     if (localStorageLang && this.SUPPORTED_LANGUAGES.includes(localStorageLang)) {
       selectedLanguage = localStorageLang;
