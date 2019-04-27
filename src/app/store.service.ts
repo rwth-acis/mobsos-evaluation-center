@@ -80,12 +80,13 @@ export class StoreService {
 
   saveState() {
     try {
-      const serializedState = JSON.stringify({
+      const state = {
         services: this.servicesSubject.getValue(), groups: this.groupsSubject.getValue(),
         user: this.userSubject.getValue()
-      });
+      };
+      const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
-      this.logger.debug(serializedState);
+      this.logger.debug(state);
       localStorage.setItem('state', serializedState);
     } catch (err) {
       // ignore write errors

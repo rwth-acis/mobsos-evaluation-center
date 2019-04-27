@@ -10,11 +10,9 @@ import vkbeautify from 'vkbeautify';
 })
 export class RawEditComponent implements OnInit {
 
-  constructor(private store: StoreService, private las2peer: Las2peerService) {
-  }
-
   groups = [];
   services = [];
+  serviceMap = {};
   groupMap = {};
   selectedGroup: string;
   selectedService: string;
@@ -23,6 +21,9 @@ export class RawEditComponent implements OnInit {
   successModelXml: string;
   measureCatalogEditor;
   successModelEditor;
+
+  constructor(private store: StoreService, private las2peer: Las2peerService) {
+  }
 
   static objectFlip(obj) {
     const ret = {};
@@ -44,10 +45,15 @@ export class RawEditComponent implements OnInit {
     });
     this.store.services.subscribe((services) => {
       const serviceList = [];
+      const serviceMap = {};
       for (const service of services) {
         serviceList.push(service.name);
+        // use most recent release and extract the human readable name
+        const releases = Object.keys(service.releases).sort();
+        serviceMap[service.name] = service.releases[releases.slice(-1)[0]].supplement.name;
       }
       this.services = serviceList;
+      this.serviceMap = serviceMap;
     });
   }
 
@@ -74,11 +80,17 @@ export class RawEditComponent implements OnInit {
     if (this.selectedGroup) {
       const groupID = this.groupMap[this.selectedGroup];
       this.las2peer.fetchMeasureCatalog(groupID).then((xml) => {
+        if (!xml) {
+          xml = '';
+        }
         xml = RawEditComponent.prettifyXml(xml);
         this.measureCatalogXml = xml;
       });
       if (this.selectedService) {
         this.las2peer.fetchSuccessModel(groupID, this.selectedService).then((xml) => {
+          if (!xml) {
+            xml = '';
+          }
           this.successModelXml = RawEditComponent.prettifyXml(xml);
         });
       }

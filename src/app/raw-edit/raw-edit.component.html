@@ -10,7 +10,7 @@
   <mat-label>Application</mat-label>
   <mat-select (selectionChange)="onServiceSelected($event.value)">
     <mat-option *ngFor="let service of services" [value]="service">
-      {{service}}
+      {{serviceMap[service]}}
     </mat-option>
   </mat-select>
 </mat-form-field>
