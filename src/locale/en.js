@@ -10,6 +10,9 @@ export const translations = {
     }
   },
   "app": {
+    "community-selector": {
+      "select-community-hint": "Login to select your community"
+    },
     "language-selector": {
       "select-language": "Select Language"
     },
@@ -18,6 +21,14 @@ export const translations = {
     }
   },
   "raw-edit": {
+    "measures": {
+      "send-button": "Save",
+      "send-button-no-selected-group": "Please pick a community on the side bar",
+    },
+    "success-models":{
+      "send-button": "Save",
+      "send-button-no-selected-group-or-application": "Please pick a community and an application",
+    },
     "tabs": {
       "success-models": "Success Models",
       "measures": "Measures",

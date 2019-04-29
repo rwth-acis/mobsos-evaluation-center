@@ -9,6 +9,7 @@ export interface State {
   services: object[];
   groups: object;
   user: object;
+  selectedGroup: string;
 }
 
 
@@ -23,6 +24,7 @@ export class StoreService {
       this.servicesSubject.next(previousState.services);
       this.groupsSubject.next(previousState.groups);
       this.userSubject.next(previousState.user);
+      this.selectedGroupSubject.next(previousState.selectedGroup);
     }
     const throtteledSaveStateFunc = throttle(() => this.saveState(), 1000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
@@ -46,6 +48,8 @@ export class StoreService {
   public groups = this.groupsSubject.asObservable();
   userSubject = new BehaviorSubject(null);
   public user = this.userSubject.asObservable();
+  selectedGroupSubject = new BehaviorSubject(null);
+  public selectedGroup = this.selectedGroupSubject.asObservable();
 
   static loadState(): State {
     return JSON.parse(localStorage.getItem('state'));
@@ -53,7 +57,7 @@ export class StoreService {
 
   startPolling() {
     if (!this.pollingEnabled) {
-      this.logger.debug('Enabling service discovery and group polling...');
+      this.logger.debug('Enabling service discovery and selectedGroup polling...');
       this.servicePollingHandle = this.las2peer.pollServices(
         (services) => this.servicesSubject.next(services),
         () => {
@@ -82,7 +86,8 @@ export class StoreService {
     try {
       const state = {
         services: this.servicesSubject.getValue(), groups: this.groupsSubject.getValue(),
-        user: this.userSubject.getValue()
+        user: this.userSubject.getValue(),
+        selectedGroup: this.selectedGroupSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -95,5 +100,9 @@ export class StoreService {
 
   setUser(user) {
     this.userSubject.next(user);
+  }
+
+  setGroup(groupID: string) {
+    this.selectedGroupSubject.next(groupID);
   }
 }

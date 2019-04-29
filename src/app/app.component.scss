@@ -19,8 +19,22 @@ mat-sidenav-container {
       flex-direction: column !important;
     }
 
-    .mat-list-item {
-      color: white;
+    mat-form-field {
+      margin-left: 16px;
+      margin-right: 16px;
+
+      ::ng-deep .mat-select-value {
+        color: white;
+      }
+    }
+
+    #community-selection {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .mat-list-item, mat-label, mat-form-field, mat-select, mat-option, mat-hint {
+      color: white !important;
     }
 
     mat-nav-list {
@@ -45,7 +59,7 @@ mat-sidenav-container {
       color: white;
     }
 
-    main{
+    main {
       padding: 10px 10px 10px 10px;
     }
 

@@ -1,33 +1,25 @@
-<mat-form-field class="community-service-selection">
-  <mat-label>Community</mat-label>
-  <mat-select (selectionChange)="onGroupSelected($event.value)">
-    <mat-option *ngFor="let group of groups" [value]="group">
-      {{group}}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
-<mat-form-field class="community-service-selection">
-  <mat-label>Application</mat-label>
-  <mat-select (selectionChange)="onServiceSelected($event.value)">
-    <mat-option *ngFor="let service of services" [value]="service">
-      {{serviceMap[service]}}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
 <mat-tab-group [dynamicHeight]='true'>
   <mat-tab label="{{'raw-edit.tabs.measures'|translate}}">
-    <ngx-monaco-editor (onInit)="registerMeasureEditor($event)" [options]="editorOptions"
+    <ngx-monaco-editor id="measure-editor" (onInit)="registerMeasureEditor($event)" [options]="editorOptions"
                        [(ngModel)]="measureCatalogXml"></ngx-monaco-editor>
-    <button class="send-button" mat-raised-button color="primary" [disabled]="selectedGroup == null">
-      {{selectedGroup == null ? ('raw-edit.measures.send-button-no-group'|translate) : ('raw-edit.measures.send-button'|translate)}}
+    <button id="measure-send-button" class="send-button" mat-raised-button color="primary" [disabled]="groupID == null">
+      {{groupID == null ? ('raw-edit.measures.send-button-no-selected-group'|translate) : ('raw-edit.measures.send-button'|translate)}}
     </button>
   </mat-tab>
   <mat-tab label="{{'raw-edit.tabs.success-models'|translate}}">
-    <ngx-monaco-editor (onInit)="registerSuccessModelEditor($event)" [options]="editorOptions"
+    <mat-form-field class="community-service-selection">
+      <mat-label>Application</mat-label>
+      <mat-select (selectionChange)="onServiceSelected($event.value)">
+        <mat-option *ngFor="let service of services" [value]="service">
+          {{serviceMap[service]}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <ngx-monaco-editor id="model-editor" (onInit)="registerSuccessModelEditor($event)" [options]="editorOptions"
                        [(ngModel)]="successModelXml"></ngx-monaco-editor>
     <button class="send-button" mat-raised-button color="primary"
-            [disabled]="selectedGroup == null || selectedService == null">
-      {{selectedGroup == null || selectedService == null ? ('raw-edit.models.send-button-no-group'|translate) : ('raw-edit.models.send-button'|translate)}}
+            [disabled]="groupID == null || selectedService == null">
+      {{groupID == null || selectedService == null ? ('raw-edit.success-models.send-button-no-selected-group-or-application'|translate) : ('raw-edit.success-models.send-button'|translate)}}
     </button>
   </mat-tab>
 </mat-tab-group>

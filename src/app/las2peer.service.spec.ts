@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 
-import { Las2peerService } from './las2peer.service';
+import {Las2peerService} from './las2peer.service';
 
 describe('Las2peerService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));

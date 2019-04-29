@@ -7,6 +7,7 @@ import {NGXLogger} from 'ngx-logger';
 import {LanguageService} from './language.service';
 import {StoreService} from './store.service';
 import {CordovaPopupNavigator, UserManager} from 'oidc-client';
+import {RawEditComponent} from './raw-edit/raw-edit.component';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -32,12 +33,23 @@ export class AppComponent implements OnInit, OnDestroy {
   environment = environment;
   LOCAL_STORAGE_EXPERT_MODE = 'expert-mode';
   expertMode = false;
+  groups = [];
+  groupMap = {};
+  signedIn = false;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this.mobileQueryListener);
+  }
+
+  static objectFlip(obj) {
+    const ret = {};
+    Object.keys(obj).forEach((key) => {
+      ret[obj[key]] = key;
+    });
+    return ret;
   }
 
   ngOnDestroy(): void {
@@ -56,10 +68,20 @@ export class AppComponent implements OnInit, OnDestroy {
 
   setUser(user) {
     this.store.setUser(user);
+    this.signedIn = !!user;
+  }
+
+  onGroupSelected(group) {
+    this.store.setGroup(group);
   }
 
   ngOnInit(): void {
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
+    this.store.startPolling();
+    this.store.groups.subscribe((groups) => {
+      this.groups = Object.values(groups).sort();
+      this.groupMap = RawEditComponent.objectFlip(groups);
+    });
   }
 
 }

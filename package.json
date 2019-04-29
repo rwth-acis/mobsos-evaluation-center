@@ -28,6 +28,7 @@
     "las2peer-frontend-statusbar": "github:rwth-acis/las2peer-frontend-statusbar",
     "las2peer-frontend-user-widget": "github:rwth-acis/las2peer-frontend-user-widget#auth-fix",
     "lodash-es": "^4.17.11",
+    "material-design-icons": "^3.0.1",
     "ngx-logger": "^3.3.12",
     "ngx-monaco-editor": "^7.0.0",
     "oidc-client": "1.6.1",
@@ -35,7 +36,8 @@
     "tslib": "^1.9.0",
     "vkbeautify": "^0.99.3",
     "xml-formatter": "^1.1.0",
-    "zone.js": "~0.8.26"
+    "zone.js": "~0.8.26",
+    "document-register-element": "^1.7.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.13.0",

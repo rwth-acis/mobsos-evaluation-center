@@ -10,11 +10,9 @@ import vkbeautify from 'vkbeautify';
 })
 export class RawEditComponent implements OnInit {
 
-  groups = [];
+  groupID;
   services = [];
   serviceMap = {};
-  groupMap = {};
-  selectedGroup: string;
   selectedService: string;
   editorOptions = {theme: 'vs', language: 'xml', automaticLayout: true};
   measureCatalogXml: string;
@@ -23,6 +21,10 @@ export class RawEditComponent implements OnInit {
   successModelEditor;
 
   constructor(private store: StoreService, private las2peer: Las2peerService) {
+    this.store.selectedGroup.subscribe((groupID) => {
+      this.groupID = groupID;
+      this.fetchXml();
+    });
   }
 
   static objectFlip(obj) {
@@ -34,15 +36,11 @@ export class RawEditComponent implements OnInit {
   }
 
   static prettifyXml(xml) {
-    return vkbeautify.xml(xml)
+    return vkbeautify.xml(xml);
   }
 
   ngOnInit() {
     this.store.startPolling();
-    this.store.groups.subscribe((groups) => {
-      this.groups = Object.values(groups).sort();
-      this.groupMap = RawEditComponent.objectFlip(groups);
-    });
     this.store.services.subscribe((services) => {
       const serviceList = [];
       const serviceMap = {};
@@ -65,21 +63,14 @@ export class RawEditComponent implements OnInit {
     this.successModelEditor = editor;
   }
 
-
-  onGroupSelected(group) {
-    this.selectedGroup = group;
-    this.fetchXml();
-  }
-
   onServiceSelected(service) {
     this.selectedService = service;
     this.fetchXml();
   }
 
   fetchXml() {
-    if (this.selectedGroup) {
-      const groupID = this.groupMap[this.selectedGroup];
-      this.las2peer.fetchMeasureCatalog(groupID).then((xml) => {
+    if (this.groupID) {
+      this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
         if (!xml) {
           xml = '';
         }
@@ -87,7 +78,7 @@ export class RawEditComponent implements OnInit {
         this.measureCatalogXml = xml;
       });
       if (this.selectedService) {
-        this.las2peer.fetchSuccessModel(groupID, this.selectedService).then((xml) => {
+        this.las2peer.fetchSuccessModel(this.groupID, this.selectedService).then((xml) => {
           if (!xml) {
             xml = '';
           }

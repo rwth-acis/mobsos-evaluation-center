@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { OidcSigninComponent } from './oidc-signin.component';
+import {OidcSigninComponent} from './oidc-signin.component';
 
 describe('OidcSigninComponent', () => {
   let component: OidcSigninComponent;
@@ -8,9 +8,9 @@ describe('OidcSigninComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OidcSigninComponent ]
+      declarations: [OidcSigninComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

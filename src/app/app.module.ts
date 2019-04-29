@@ -8,7 +8,8 @@ import {
   MatButtonModule,
   MatFormFieldModule,
   MatIconModule,
-  MatListModule, MatSelectModule,
+  MatListModule,
+  MatSelectModule,
   MatSidenavModule,
   MatSlideToggleModule,
   MatTabsModule
@@ -20,7 +21,7 @@ import {DashboardComponent} from './dashboard/dashboard.component';
 import {SuccessModelingComponent} from './success-modeling/success-modeling.component';
 import {RawEditComponent} from './raw-edit/raw-edit.component';
 import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
-import {from, Observable, of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {translations as en} from '../locale/en';
 import {translations as de} from '../locale/de';

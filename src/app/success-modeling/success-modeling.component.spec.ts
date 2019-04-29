@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SuccessModelingComponent } from './success-modeling.component';
+import {SuccessModelingComponent} from './success-modeling.component';
 
 describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
@@ -8,9 +8,9 @@ describe('SuccessModelingComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SuccessModelingComponent ]
+      declarations: [SuccessModelingComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

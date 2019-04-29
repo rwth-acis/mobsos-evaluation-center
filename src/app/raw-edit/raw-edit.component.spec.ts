@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { RawEditComponent } from './raw-edit.component';
+import {RawEditComponent} from './raw-edit.component';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -8,9 +8,9 @@ describe('RawEditComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RawEditComponent ]
+      declarations: [RawEditComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

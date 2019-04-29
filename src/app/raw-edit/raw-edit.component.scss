@@ -5,13 +5,17 @@
 }
 
 .community-service-selection {
-  width: 50%;
+  width: 100%;
 }
 
-ngx-monaco-editor{
+#measure-editor {
+  height: calc(100vh - 185px);
+}
+
+#model-editor {
   height: calc(100vh - 250px);
 }
 
-.send-button{
+.send-button {
   width: 100%;
 }
