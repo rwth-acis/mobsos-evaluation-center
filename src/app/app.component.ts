@@ -35,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
   expertMode = false;
   groups = [];
   groupMap = {};
+  user;
   signedIn = false;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
@@ -82,6 +83,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.groups = Object.values(groups).sort();
       this.groupMap = RawEditComponent.objectFlip(groups);
     });
+    this.store.user.subscribe(user => this.user = user);
   }
 
 }
