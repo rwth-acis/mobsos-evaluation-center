@@ -22,12 +22,18 @@ export const translations = {
   },
   "raw-edit": {
     "measures": {
+      "select-application": "Application",
       "send-button": "Save",
       "send-button-no-selected-group": "Please pick a community on the side bar",
+      "snackbar-success": "The measures have been saved successfully.",
+      "snackbar-failure": "The measures could not be saved.",
     },
     "success-models":{
+      "select-application": "Application",
       "send-button": "Save",
       "send-button-no-selected-group-or-application": "Please pick a community and an application",
+      "snackbar-success": "The success model has been saved successfully.",
+      "snackbar-failure": "The success model could not be saved.",
     },
     "tabs": {
       "success-models": "Success Models",

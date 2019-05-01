@@ -2,13 +2,14 @@
   <mat-tab label="{{'raw-edit.tabs.measures'|translate}}">
     <ngx-monaco-editor id="measure-editor" (onInit)="registerMeasureEditor($event)" [options]="editorOptions"
                        [(ngModel)]="measureCatalogXml"></ngx-monaco-editor>
-    <button id="measure-send-button" class="send-button" mat-raised-button color="primary" [disabled]="groupID == null">
+    <button id="measure-send-button" class="send-button" mat-raised-button color="primary"
+            [disabled]="groupID == null || saveInProgress" (click)="_onCatalogSaveClicked()">
       {{groupID == null ? ('raw-edit.measures.send-button-no-selected-group'|translate) : ('raw-edit.measures.send-button'|translate)}}
     </button>
   </mat-tab>
   <mat-tab label="{{'raw-edit.tabs.success-models'|translate}}">
     <mat-form-field class="community-service-selection">
-      <mat-label>Application</mat-label>
+      <mat-label>{{'raw-edit.success-models.select-application'|translate}}</mat-label>
       <mat-select (selectionChange)="onServiceSelected($event.value)">
         <mat-option *ngFor="let service of services" [value]="service">
           {{serviceMap[service]}}
@@ -18,7 +19,7 @@
     <ngx-monaco-editor id="model-editor" (onInit)="registerSuccessModelEditor($event)" [options]="editorOptions"
                        [(ngModel)]="successModelXml"></ngx-monaco-editor>
     <button class="send-button" mat-raised-button color="primary"
-            [disabled]="groupID == null || selectedService == null">
+            [disabled]="groupID == null || selectedService == null || saveInProgress" (click)="_onModelSaveClicked()">
       {{groupID == null || selectedService == null ? ('raw-edit.success-models.send-button-no-selected-group-or-application'|translate) : ('raw-edit.success-models.send-button'|translate)}}
     </button>
   </mat-tab>

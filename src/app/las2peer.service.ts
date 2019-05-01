@@ -7,17 +7,16 @@ import {NGXLogger} from 'ngx-logger';
 })
 export class Las2peerService {
 
-  constructor(private logger: NGXLogger) {
-  }
-
   SERVICES_PATH = 'las2peer/services/services';
   CONTACT_SERVICE_PATH = 'contactservice';
   CONTACT_GROUPS_PATH = 'groups';
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
-
   userCredentials;
+
+  constructor(private logger: NGXLogger) {
+  }
 
   static joinAbsoluteUrlPath(...args) {
     return args.map(pathPart => pathPart.replace(/(^\/|\/$)/g, '')).join('/');
@@ -31,7 +30,7 @@ export class Las2peerService {
     this.userCredentials = null;
   }
 
-  async fetchWithCredentials(url, init = {}) {
+  async makeRequest(url, init = {}) {
     let credentialOptions = {};
     if (this.userCredentials) {
       const username = this.userCredentials.user;
@@ -41,17 +40,26 @@ export class Las2peerService {
         headers: {
           Authorization: 'Basic ' + btoa(username + ':' + password),
           access_token: token,
+          "Content-Type": "application/json",
         }
       };
     }
     const options = Object.assign(credentialOptions, init);
     this.logger.debug('Fetching from ' + url + ' with options ' + JSON.stringify(options));
-    return fetch(url, options);
+    return new Promise<Response>((resolve, reject) => {
+      fetch(url, options).then((response) => {
+        if (response.ok) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      }).catch(reject);
+    });
   }
 
   async fetchServices() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SERVICES_PATH);
-    return this.fetchWithCredentials(url)
+    return this.makeRequest(url)
       .then((response) => response.json())
       .catch((response) => this.logger.error(response));
   }
@@ -59,7 +67,7 @@ export class Las2peerService {
   async fetchGroups() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH);
-    return this.fetchWithCredentials(url)
+    return this.makeRequest(url)
       .then((response) => response.json())
       .catch((response) => this.logger.error(response));
   }
@@ -67,17 +75,63 @@ export class Las2peerService {
   async fetchSuccessModel(groupID: string, service: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
-    return this.fetchWithCredentials(url)
+    return new Promise((resolve, reject) => {
+      this.makeRequest(url)
+        .then((response) => response.json().then(json => resolve(json.xml)))
+        .catch((response) => {
+          this.logger.error(response);
+          reject(response);
+        });
+    });
+  }
+
+  async saveSuccessModel(groupID: string, service: string, xml: string) {
+    let method;
+    try {
+      const reponse = await this.fetchSuccessModel(groupID, service);
+      method = 'PUT';
+    } catch (e) {
+      method = 'POST';
+    }
+
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
+    return this.makeRequest(url, {method: method, body: JSON.stringify({xml: xml})})
       .then((response) => response.json().then(json => json.xml))
-      .catch((response) => this.logger.error(response));
+      .catch((response) => {
+        this.logger.error(response);
+        throw response;
+      });
   }
 
   async fetchMeasureCatalog(groupID: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH, groupID);
-    return this.fetchWithCredentials(url)
+    return this.makeRequest(url)
       .then((response) => response.json().then(json => json.xml))
-      .catch((response) => this.logger.error(response));
+      .catch((response) => {
+        this.logger.error(response);
+        throw response
+      });
+  }
+
+  async saveMeasureCatalog(groupID: string, xml: string) {
+    let method;
+    try {
+      const response = await this.fetchMeasureCatalog(groupID);
+      method = 'PUT';
+    } catch (e) {
+      method = 'POST';
+    }
+
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MEASURE_PATH, groupID);
+    return this.makeRequest(url, {method: method, body: JSON.stringify({xml: xml})})
+      .then((response) => response.json().then(json => json.xml))
+      .catch((response) => {
+        this.logger.error(response);
+        throw response;
+      });
   }
 
   pollServices(successCallback, failureCallback) {

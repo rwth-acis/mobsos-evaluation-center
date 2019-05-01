@@ -12,6 +12,7 @@ import {
   MatSelectModule,
   MatSidenavModule,
   MatSlideToggleModule,
+  MatSnackBarModule,
   MatTabsModule
 } from '@angular/material';
 import {OidcSigninComponent} from './oidc-signin/oidc-signin.component';
@@ -76,6 +77,7 @@ export function createTranslateLoader() {
     MatTabsModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatSnackBarModule,
     MonacoEditorModule.forRoot(),
     FormsModule
   ],

@@ -3,7 +3,7 @@
                [fixedInViewport]="mobileQuery.matches">
     <mat-form-field id="community-selection">
       <mat-label>Community</mat-label>
-      <mat-select (selectionChange)="onGroupSelected($event.value)">
+      <mat-select [(value)]="selectedGroup" (selectionChange)="onGroupSelected($event.value)">
         <mat-option *ngFor="let group of groups" [value]="groupMap[group]">
           {{group}}
         </mat-option>

@@ -35,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
   expertMode = false;
   groups = [];
   groupMap = {};
+  selectedGroup;
   user;
   signedIn = false;
 
@@ -83,6 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.groups = Object.values(groups).sort();
       this.groupMap = RawEditComponent.objectFlip(groups);
     });
+    this.store.selectedGroup.subscribe(selectedGroup => this.selectedGroup = selectedGroup);
     this.store.user.subscribe(user => this.user = user);
   }
 
