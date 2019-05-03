@@ -7,6 +7,7 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class SuccessDimensionComponent implements OnInit {
   @Input() name: string;
+  @Input() description: string;
   @Input() icon: string;
 
   constructor() { }

@@ -9,6 +9,7 @@ mat-sidenav-container {
 
   mat-sidenav {
     width: 250px;
+    height: 100vh;
     background-color: mat-color($primary, darker);
     color: white;
     display: flex;
@@ -53,6 +54,7 @@ mat-sidenav-container {
   }
 
   mat-sidenav-content {
+    height: 100vh;
     #las2peer-statusbar {
       --statusbar-background: #{mat-color($primary)};
       --user-widget-button-background: white;

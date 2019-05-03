@@ -23,11 +23,17 @@ export const translations = {
   "success-modeling": {
     "dimensions": {
       "system-quality": "Systemqualität",
+      "system-quality-description": "Wie gut funktioniert die Technik?",
       "information-quality": "Informationsqualität",
+      "information-quality-description": "Wie zutreffend/vollständig sind die angezeigten Informationen?",
       "use": "Verwendung",
+      "use-description": "Wie oft wird diese Anwendung verwendet?",
       "user-satisfaction": "Benutzerzufriedenheit",
+      "user-satisfaction-description": "Wie gerne wird diese Anwendung verwendet?",
       "individual-impact": "Individuelle Auswirkung",
+      "individual-impact-description": "Wie sehr wirkt sich diese Anwednung auf Individuen aus?",
       "community-impact": "Community-Auswirkung",
+      "community-impact-description": "Wie sehr wirkt sich diese Anwednung auf die ganze Community aus?",
     },
     "message-no-application-selected": "Es ist keine Anwendung ausgewählt. Bitte wähle oben eine aus, um das Erfolgsmodell zu sehen.",
     "message-no-success-model-found": "Es wurd kein Erfolgsmodell gefunden. Du kannst oben den Editiermodus aktivieren um eins zu erstellen.",
