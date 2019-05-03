@@ -6,6 +6,7 @@ import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
+  MatCardModule,
   MatFormFieldModule,
   MatIconModule,
   MatListModule,
@@ -13,7 +14,8 @@ import {
   MatSidenavModule,
   MatSlideToggleModule,
   MatSnackBarModule,
-  MatTabsModule
+  MatTabsModule,
+  MatToolbarModule
 } from '@angular/material';
 import {OidcSigninComponent} from './oidc-signin/oidc-signin.component';
 import {OidcSignoutComponent} from './oidc-signout/oidc-signout.component';
@@ -26,8 +28,10 @@ import {Observable, of} from 'rxjs';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {translations as en} from '../locale/en';
 import {translations as de} from '../locale/de';
-import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {MonacoEditorModule, NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
+import {SuccessDimensionComponent} from './success-dimension/success-dimension.component';
+import {PlatformLocation, Location} from "@angular/common";
 
 
 class ImportLoader implements TranslateLoader {
@@ -52,7 +56,8 @@ export function createTranslateLoader() {
     OidcSilentComponent,
     DashboardComponent,
     SuccessModelingComponent,
-    RawEditComponent
+    RawEditComponent,
+    SuccessDimensionComponent
   ],
   imports: [
     BrowserModule,
@@ -79,13 +84,29 @@ export function createTranslateLoader() {
     MatSelectModule,
     MatSnackBarModule,
     MonacoEditorModule.forRoot(),
-    FormsModule
+    FormsModule,
+    MatToolbarModule,
+    MatCardModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: NGX_MONACO_EDITOR_CONFIG,
+      useFactory: getMonacoConfig,
+      deps: [PlatformLocation]
+    }
+  ],
   bootstrap: [AppComponent],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ]
 })
 export class AppModule {
+}
+
+export function getMonacoConfig(platformLocation: PlatformLocation): NgxMonacoEditorConfig {
+  const baseHref = platformLocation.getBaseHrefFromDOM();
+
+  return {
+    baseUrl: Location.joinWithSlash(baseHref, '/assets')
+  }
 }

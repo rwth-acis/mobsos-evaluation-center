@@ -1,3 +1,44 @@
-<p>
-  success-modeling works!
-</p>
+<mat-card id="header-card">
+  <mat-toolbar-row>
+    <mat-form-field id="community-service-select">
+      <mat-label>{{'raw-edit.success-models.select-application'|translate}}</mat-label>
+      <mat-select (selectionChange)="onServiceSelected($event.value)">
+        <mat-option *ngFor="let service of services" [value]="service">
+          {{serviceMap[service]}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-toolbar-row>
+
+  <mat-toolbar-row>
+    <mat-slide-toggle labelPosition="before">
+      Edit
+    </mat-slide-toggle>
+  </mat-toolbar-row>
+</mat-card>
+
+<mat-card [hidden]="selectedService">{{'success-modeling.message-no-application-selected'|translate}}</mat-card>
+
+<mat-card [hidden]="!selectedService || selectedService && successModelXml">
+  {{'success-modeling.message-no-success-model-found'|translate}}
+</mat-card>
+
+<div [hidden]="!successModelXml">
+  <app-success-dimension name="{{'success-modeling.dimensions.system-quality'|translate}}"
+                         icon="devices"></app-success-dimension>
+
+  <app-success-dimension name="{{'success-modeling.dimensions.information-quality'|translate}}"
+                         icon="info"></app-success-dimension>
+
+  <app-success-dimension name="{{'success-modeling.dimensions.use'|translate}}"
+                         icon="access_time"></app-success-dimension>
+
+  <app-success-dimension name="{{'success-modeling.dimensions.user-satisfaction'|translate}}"
+                         icon="sentiment_satisfied_alt"></app-success-dimension>
+
+  <app-success-dimension name="{{'success-modeling.dimensions.individual-impact'|translate}}"
+                         icon="person"></app-success-dimension>
+
+  <app-success-dimension name="{{'success-modeling.dimensions.community-impact'|translate}}"
+                         icon="group"></app-success-dimension>
+</div>

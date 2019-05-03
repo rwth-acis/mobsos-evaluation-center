@@ -20,6 +20,18 @@ export const translations = {
       "switch-label": "Expert Mode",
     }
   },
+  "success-modeling": {
+    "dimensions": {
+      "system-quality": "System Quality",
+      "information-quality": "Information Quality",
+      "use": "Use",
+      "user-satisfaction": "User Satisfaction",
+      "individual-impact": "Individual Impact",
+      "community-impact": "Community Impact",
+    },
+    "message-no-application-selected": "No application selected. Please select an application above to see its success model.",
+    "message-no-success-model-found": "No success model present. You can enable edit mode above and create one.",
+  },
   "raw-edit": {
     "measures": {
       "select-application": "Application",

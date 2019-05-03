@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --prod",
+    "build:prod:single-bundle": "ng build --prod --single-bundle",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -30,6 +32,7 @@
     "las2peer-frontend-user-widget": "github:rwth-acis/las2peer-frontend-user-widget#auth-fix",
     "lodash-es": "^4.17.11",
     "material-design-icons": "^3.0.1",
+    "ngx-build-plus": "^7.8.3",
     "ngx-logger": "^3.3.12",
     "ngx-monaco-editor": "^7.0.0",
     "oidc-client": "1.6.1",

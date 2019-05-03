@@ -19,14 +19,4 @@ if (environment.production) {
   enableProdMode();
 }
 
-if (window.WebComponents.ready) {
-  // Web Components are ready
-  platformBrowserDynamic().bootstrapModule(AppModule)
-    .catch(err => console.error(err));
-} else {
-  // Wait for polyfills to load
-  window.addEventListener('WebComponentsReady', () => {
-    platformBrowserDynamic().bootstrapModule(AppModule)
-      .catch(err => console.error(err));
-  });
-}
+platformBrowserDynamic().bootstrapModule(AppModule);

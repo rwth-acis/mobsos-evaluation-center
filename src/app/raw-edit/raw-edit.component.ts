@@ -25,10 +25,6 @@ export class RawEditComponent implements OnInit {
 
   constructor(private store: StoreService, private las2peer: Las2peerService, private snackBar: MatSnackBar,
               private translate: TranslateService) {
-    this.store.selectedGroup.subscribe((groupID) => {
-      this.groupID = groupID;
-      this.fetchXml();
-    });
   }
 
   static objectFlip(obj) {
@@ -44,6 +40,10 @@ export class RawEditComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.store.selectedGroup.subscribe((groupID) => {
+      this.groupID = groupID;
+      this.fetchXml();
+    });
     this.store.startPolling();
     this.store.services.subscribe((services) => {
       const serviceList = [];
