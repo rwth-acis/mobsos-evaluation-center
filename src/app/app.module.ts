@@ -32,6 +32,8 @@ import {MonacoEditorModule, NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig} fro
 import {FormsModule} from '@angular/forms';
 import {SuccessDimensionComponent} from './success-dimension/success-dimension.component';
 import {PlatformLocation, Location} from "@angular/common";
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 
 class ImportLoader implements TranslateLoader {
@@ -86,7 +88,8 @@ export function createTranslateLoader() {
     MonacoEditorModule.forRoot(),
     FormsModule,
     MatToolbarModule,
-    MatCardModule
+    MatCardModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
     {
