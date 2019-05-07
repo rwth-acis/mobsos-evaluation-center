@@ -1,6 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {StoreService} from '../store.service';
 import {Las2peerService} from "../las2peer.service";
+import {SuccessModel} from '../../success-model/success-model';
+import {MeasureCatalog} from "../../success-model/measure-catalog";
+import {NGXLogger} from "ngx-logger";
+
 
 @Component({
   selector: 'app-success-modeling',
@@ -12,10 +16,31 @@ export class SuccessModelingComponent implements OnInit {
   services = [];
   serviceMap = {};
   selectedService: string;
-  measureCatalogXml: string;
-  successModelXml: string;
+  measureCatalogXml: Document;
+  measureCatalog: MeasureCatalog;
+  successModelXml: Document;
+  successModel: SuccessModel;
 
-  constructor(private store: StoreService, private las2peer: Las2peerService,) {
+  constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger) {
+  }
+
+  static parseXml(xml) {
+    const parser = new DOMParser();
+    return parser.parseFromString(xml, "text/xml");
+  }
+
+  static parseCatalog(xml: Document): MeasureCatalog {
+    // TODO: implement
+    return null;
+  }
+
+  parseModel(xml: Document) {
+    try{
+      return SuccessModel.fromXml(xml.documentElement);
+    }catch (e) {
+      this.logger.warn(e);
+    }
+    
   }
 
   ngOnInit() {
@@ -49,14 +74,16 @@ export class SuccessModelingComponent implements OnInit {
         if (!xml) {
           xml = '';
         }
-        this.measureCatalogXml = xml;
+        this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
+        this.measureCatalog = SuccessModelingComponent.parseCatalog(this.measureCatalogXml);
       });
       if (this.selectedService) {
         const setServiceXml = (xml) => {
           if (!xml) {
             xml = '';
           }
-          this.successModelXml = xml;
+          this.successModelXml = SuccessModelingComponent.parseXml(xml);
+          this.successModel = this.parseModel(this.successModelXml);
         };
         this.las2peer.fetchSuccessModel(this.groupID, this.selectedService).then(setServiceXml)
           .catch(() => setServiceXml(null));
