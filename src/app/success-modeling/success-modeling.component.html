@@ -1,7 +1,7 @@
 <mat-card id="header-card">
   <mat-toolbar-row>
     <mat-form-field id="community-service-select">
-      <mat-label>{{'raw-edit.success-models.select-application'|translate}}</mat-label>
+      <mat-label>{{'success-modeling.select-application'|translate}}</mat-label>
       <mat-select (selectionChange)="onServiceSelected($event.value)">
         <mat-option *ngFor="let service of services" [value]="service">
           {{serviceMap[service]}}
@@ -12,7 +12,7 @@
 
   <mat-toolbar-row>
     <mat-slide-toggle labelPosition="before">
-      Edit
+      {{'success-modeling.edit-mode-toggle'|translate}}
     </mat-slide-toggle>
   </mat-toolbar-row>
 </mat-card>
@@ -23,28 +23,40 @@
   {{'success-modeling.message-no-success-model-found'|translate}}
 </mat-card>
 
-<div [hidden]="!successModelXml">
-  <app-success-dimension name="{{'success-modeling.dimensions.system-quality'|translate}}"
+<div *ngIf="successModelXml && successModel">
+  <app-success-dimension [factors]="successModel.dimensions['System Quality']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.system-quality'|translate}}"
                          description="{{'success-modeling.dimensions.system-quality-description'|translate}}"
                          icon="devices"></app-success-dimension>
 
-  <app-success-dimension name="{{'success-modeling.dimensions.information-quality'|translate}}"
+  <app-success-dimension [factors]="successModel.dimensions['Information Quality']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.information-quality'|translate}}"
                          description="{{'success-modeling.dimensions.information-quality-description'|translate}}"
                          icon="info"></app-success-dimension>
 
-  <app-success-dimension name="{{'success-modeling.dimensions.use'|translate}}"
+  <app-success-dimension [factors]="successModel.dimensions['Use']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.use'|translate}}"
                          description="{{'success-modeling.dimensions.use-description'|translate}}"
                          icon="access_time"></app-success-dimension>
 
-  <app-success-dimension name="{{'success-modeling.dimensions.user-satisfaction'|translate}}"
+  <app-success-dimension [factors]="successModel.dimensions['User Satisfaction']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.user-satisfaction'|translate}}"
                          description="{{'success-modeling.dimensions.user-satisfaction-description'|translate}}"
                          icon="sentiment_satisfied_alt"></app-success-dimension>
 
-  <app-success-dimension name="{{'success-modeling.dimensions.individual-impact'|translate}}"
+  <app-success-dimension [factors]="successModel.dimensions['Individual Impact']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.individual-impact'|translate}}"
                          description="{{'success-modeling.dimensions.individual-impact-description'|translate}}"
                          icon="person"></app-success-dimension>
 
-  <app-success-dimension name="{{'success-modeling.dimensions.community-impact'|translate}}"
+  <app-success-dimension [factors]="successModel.dimensions['Community Impact']"
+                         [measures]="measureCatalog.measures"
+                         name="{{'success-modeling.dimensions.community-impact'|translate}}"
                          description="{{'success-modeling.dimensions.community-impact-description'|translate}}"
                          icon="group"></app-success-dimension>
 </div>

@@ -78,6 +78,9 @@ export class SuccessModelingComponent implements OnInit {
         }
         this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
         this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
+      }).catch(() => {
+        this.measureCatalogXml = null;
+        this.measureCatalog = null;
       });
       if (this.selectedService) {
         const setServiceXml = (xml) => {
@@ -88,7 +91,10 @@ export class SuccessModelingComponent implements OnInit {
           this.successModel = this.parseModel(this.successModelXml);
         };
         this.las2peer.fetchSuccessModel(this.groupID, this.selectedService).then(setServiceXml)
-          .catch(() => setServiceXml(null));
+          .catch(() => {
+            this.successModelXml = null;
+            this.successModelXml = null;
+          });
       }
     }
   }

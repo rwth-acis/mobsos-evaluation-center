@@ -35,6 +35,11 @@ import {PlatformLocation, Location} from "@angular/common";
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 
+import * as PlotlyJS from 'plotly.js/dist/plotly.js';
+import { PlotlyModule } from 'angular-plotly.js';
+
+PlotlyModule.plotlyjs = PlotlyJS;
+
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -71,7 +76,6 @@ export function createTranslateLoader() {
         useFactory: (createTranslateLoader)
       }
     }),
-
     LoggerModule.forRoot({
       level: NgxLoggerLevel.TRACE,
       serverLogLevel: NgxLoggerLevel.OFF
@@ -89,6 +93,7 @@ export function createTranslateLoader() {
     FormsModule,
     MatToolbarModule,
     MatCardModule,
+    PlotlyModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [

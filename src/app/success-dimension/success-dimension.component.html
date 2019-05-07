@@ -7,8 +7,17 @@
     <mat-card-subtitle>{{description}}</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
-    <mat-icon style="font-size: 120px">timeline</mat-icon>
-    Visualizations coming soon!
+    <div *ngFor="let factor of factors">
+      <h3>{{factor.name}}</h3>
+      <div *ngIf="factor.measures.length > 0">
+        <div *ngFor="let measure of factor.measures">
+          <plotly-plot [data]="[]" [layout]="{title: measures[measure].name}"></plotly-plot>
+        </div>
+      </div>
+      <div *ngIf="factor.measures.length === 0">
+        {{'success-dimension.no-measures-placeholder'|translate}}
+      </div>
+    </div>
   </mat-card-content>
 </mat-card>
 
