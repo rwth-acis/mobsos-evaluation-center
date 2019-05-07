@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {StoreService} from '../store.service';
-import {Las2peerService} from "../las2peer.service";
+import {Las2peerService} from '../las2peer.service';
 import {SuccessModel} from '../../success-model/success-model';
-import {MeasureCatalog} from "../../success-model/measure-catalog";
-import {NGXLogger} from "ngx-logger";
+import {MeasureCatalog} from '../../success-model/measure-catalog';
+import {NGXLogger} from 'ngx-logger';
 
 
 @Component({
@@ -26,21 +26,23 @@ export class SuccessModelingComponent implements OnInit {
 
   static parseXml(xml) {
     const parser = new DOMParser();
-    return parser.parseFromString(xml, "text/xml");
+    return parser.parseFromString(xml, 'text/xml');
   }
 
-  static parseCatalog(xml: Document): MeasureCatalog {
-    // TODO: implement
-    return null;
+  parseCatalog(xml: Document): MeasureCatalog {
+    try {
+      return MeasureCatalog.fromXml(xml.documentElement);
+    } catch (e) {
+      this.logger.warn(e);
+    }
   }
 
   parseModel(xml: Document) {
-    try{
+    try {
       return SuccessModel.fromXml(xml.documentElement);
-    }catch (e) {
+    } catch (e) {
       this.logger.warn(e);
     }
-    
   }
 
   ngOnInit() {
@@ -75,7 +77,7 @@ export class SuccessModelingComponent implements OnInit {
           xml = '';
         }
         this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
-        this.measureCatalog = SuccessModelingComponent.parseCatalog(this.measureCatalogXml);
+        this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
       });
       if (this.selectedService) {
         const setServiceXml = (xml) => {

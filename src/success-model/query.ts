@@ -1,8 +1,6 @@
 export class Query {
-  name;
-  sql;
 
-  constructor(name: string, sql: string) {
+  constructor(public name: string, public sql: string) {
   }
 
   static fromXml(xml: Element): Query {
