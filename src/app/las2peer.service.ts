@@ -13,6 +13,8 @@ export class Las2peerService {
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
+  SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
+  SUCCESS_MODELING_GROUP_PATH = 'groups';
   userCredentials;
 
   constructor(private logger: NGXLogger) {
@@ -57,14 +59,27 @@ export class Las2peerService {
     });
   }
 
-  async fetchServices() {
+  async fetchServicesFromDiscovery() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SERVICES_PATH);
     return this.makeRequest(url)
       .then((response) => response.json())
-      .catch((response) => this.logger.error(response));
+      .catch((response) => this.logger.error('Could not fetch services from service discovery:'
+        + JSON.stringify(response)));
   }
 
-  async fetchGroups() {
+  async fetchServicesFromMobSOS() {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH
+    );
+    return this.makeRequest(url)
+      .then((response) => response.json())
+      .catch((response) => this.logger.error('Could not fetch services from service MobSOS:'
+        + JSON.stringify(response)));
+  }
+
+  async fetchContactServiceGroups() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH);
     return this.makeRequest(url)
@@ -72,9 +87,23 @@ export class Las2peerService {
       .catch((response) => this.logger.error(response));
   }
 
+  async fetchMobSOSGroups() {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH);
+    return this.makeRequest(url)
+      .then((response) => response.json());
+  }
+
+  async fetchMobSOSGroup(groupID: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH, groupID);
+    return this.makeRequest(url)
+      .then((response) => response.json());
+  }
+
   async fetchSuccessModel(groupID: string, service: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
     return new Promise((resolve, reject) => {
       this.makeRequest(url)
         .then((response) => response.json().then(json => resolve(json.xml)))
@@ -83,6 +112,28 @@ export class Las2peerService {
           reject(response);
         });
     });
+  }
+
+  async saveGroupToMobSOS(groupID: string, groupName: string) {
+    let method;
+    let url;
+    try {
+      await this.fetchMobSOSGroup(groupID);
+      method = 'PUT';
+      url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+        this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH, groupID);
+    } catch (e) {
+      method = 'POST';
+      url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+        this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH);
+    }
+
+    return this.makeRequest(url, {method: method, body: JSON.stringify({groupID, name: groupName})})
+      .then((response) => response.json())
+      .catch((response) => {
+        this.logger.error(response);
+        throw response;
+      });
   }
 
   async saveSuccessModel(groupID: string, service: string, xml: string) {
@@ -134,18 +185,36 @@ export class Las2peerService {
       });
   }
 
-  pollServices(successCallback, failureCallback) {
+  pollL2PServiceDiscovery(successCallback, failureCallback) {
     return setInterval(
-      () => this.fetchServices().then((response) => {
+      () => this.fetchServicesFromDiscovery().then((response) => {
         successCallback(response);
       })
         .catch((error) => failureCallback(error)),
       environment.servicePollingInterval * 1000);
   }
 
-  pollGroups(successCallback, failureCallback) {
+  pollMobSOSServiceDiscovery(successCallback, failureCallback) {
     return setInterval(
-      () => this.fetchGroups().then((response) => {
+      () => this.fetchServicesFromMobSOS().then((response) => {
+        successCallback(response);
+      })
+        .catch((error) => failureCallback(error)),
+      environment.servicePollingInterval * 1000);
+  }
+
+  pollContactServiceGroups(successCallback, failureCallback) {
+    return setInterval(
+      () => this.fetchContactServiceGroups().then((response) => {
+        successCallback(response);
+      })
+        .catch((error) => failureCallback(error)),
+      environment.servicePollingInterval * 1000);
+  }
+
+  pollMobSOSGroups(successCallback, failureCallback) {
+    return setInterval(
+      () => this.fetchMobSOSGroups().then((response) => {
         successCallback(response);
       })
         .catch((error) => failureCallback(error)),

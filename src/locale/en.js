@@ -60,7 +60,7 @@ export const translations = {
     },
     "edit-mode-toggle": "Edit",
     "message-no-application-selected": "No application selected. Please select an application above to see its success model.",
-    "message-no-success-model-found": "No success model present. You can enable edit mode above and create one.",
+    "message-no-success-model-found": "No success model present. You can enable the edit mode above and create one.",
     "select-application": "Application",
   }
 };

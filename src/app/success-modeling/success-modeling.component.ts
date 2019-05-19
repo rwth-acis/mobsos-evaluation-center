@@ -52,16 +52,8 @@ export class SuccessModelingComponent implements OnInit {
     });
     this.store.startPolling();
     this.store.services.subscribe((services) => {
-      const serviceList = [];
-      const serviceMap = {};
-      for (const service of services) {
-        serviceList.push(service.name);
-        // use most recent release and extract the human readable name
-        const releases = Object.keys(service.releases).sort();
-        serviceMap[service.name] = service.releases[releases.slice(-1)[0]].supplement.name;
-      }
-      this.services = serviceList;
-      this.serviceMap = serviceMap;
+      this.services = Object.keys(services);
+      this.serviceMap = services;
     });
   }
 
