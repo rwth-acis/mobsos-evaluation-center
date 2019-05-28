@@ -7,10 +7,11 @@ import {distinctUntilChanged} from 'rxjs/operators';
 import {environment} from "../environments/environment";
 
 export interface State {
-  services: object;
+  services: ServiceCollection;
   groups: GroupCollection;
   user: object;
   selectedGroup: string;
+  selectedService: string;
 }
 
 export interface GroupInformation {
@@ -23,6 +24,15 @@ export interface GroupCollection {
   [key: string]: GroupInformation;
 }
 
+
+export interface ServiceInformation {
+  alias: string,
+  mobsosIDs: string[],
+}
+
+export interface ServiceCollection {
+  [key: string]: ServiceInformation;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +50,7 @@ export class StoreService {
   servicesFromMobSOSSubject = new BehaviorSubject({});
 
   // merged subject for service data from all sources
-  servicesSubject = new BehaviorSubject<object>({});
+  servicesSubject = new BehaviorSubject<ServiceCollection>({});
   public services = this.servicesSubject.asObservable();
 
   groupsFromContactServiceSubject = new BehaviorSubject({});
@@ -54,6 +64,8 @@ export class StoreService {
   public user = this.userSubject.asObservable();
   selectedGroupSubject = new BehaviorSubject(null);
   public selectedGroup = this.selectedGroupSubject.asObservable();
+  selectedServiceSubject = new BehaviorSubject(null);
+  public selectedService = this.selectedServiceSubject.asObservable();
 
   constructor(private logger: NGXLogger, private las2peer: Las2peerService) {
     const previousState = StoreService.loadState();
@@ -62,6 +74,7 @@ export class StoreService {
       this.groupsSubject.next(previousState.groups);
       this.userSubject.next(previousState.user);
       this.selectedGroupSubject.next(previousState.selectedGroup);
+      this.selectedServiceSubject.next(previousState.selectedService);
     }
     const throtteledSaveStateFunc = throttle(() => this.saveState(), 10000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
@@ -156,6 +169,7 @@ export class StoreService {
         groups: this.groupsSubject.getValue(),
         user: this.userSubject.getValue(),
         selectedGroup: this.selectedGroupSubject.getValue(),
+        selectedService: this.selectedServiceSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -177,33 +191,33 @@ export class StoreService {
   /**
    * Convert data from both service sources into a common format.
    *
-   * The format is {<service-name>: <service-alias>}.
-   * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService": "mobsos-success-modeling"}
+   * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
+   * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService": {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
    */
   private mergeServiceData() {
     const servicesFromL2P = this.servicesFromDiscoverySubject.getValue();
-    const serviceMap = {};
+    const serviceCollection: ServiceCollection = {};
     for (let service of servicesFromL2P) {
       // use most recent release and extract the human readable name
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier = service.name + '.' + latestRelease.supplement.class;
-      serviceMap[serviceIdentifier] = latestRelease.supplement.name;
+      serviceCollection[serviceIdentifier] = {alias: latestRelease.supplement.name, mobsosIDs: []};
     }
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
     for (let serviceAgentID of Object.keys(servicesFromMobSOS)) {
       const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split('@', 2)[0];
-      const serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
-      // only add mobsos service data if the data from the discovery is missing
-      if (!(serviceName in serviceMap)) {
-        if (serviceAlias && serviceAlias != 'null') {
-          serviceMap[serviceName] = serviceAlias;
-        } else {
-          serviceMap[serviceName] = serviceName;
-        }
+      let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
+      if (serviceAlias == null) {
+        serviceAlias = serviceName;
       }
+      // only add mobsos service data if the data from the discovery is missing
+      if (!(serviceName in serviceCollection)) {
+        serviceCollection[serviceName] = {alias: serviceAlias, mobsosIDs: []}
+      }
+      serviceCollection[serviceName]['mobsosIDs'].push(serviceAgentID);
     }
-    this.servicesSubject.next(serviceMap);
+    this.servicesSubject.next(serviceCollection);
   }
 
   /**

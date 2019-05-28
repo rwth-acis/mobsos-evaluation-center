@@ -36,6 +36,10 @@ export class RawEditComponent implements OnInit {
       this.groupID = groupID;
       this.fetchXml();
     });
+    this.store.selectedService.subscribe((serviceID) => {
+      this.selectedService = serviceID;
+      this.fetchXml();
+    });
     this.store.startPolling();
     this.store.services.subscribe((services) => {
       this.services = Object.keys(services);
@@ -52,8 +56,7 @@ export class RawEditComponent implements OnInit {
   }
 
   onServiceSelected(service) {
-    this.selectedService = service;
-    this.fetchXml();
+    this.store.selectedServiceSubject.next(service);
   }
 
   fetchXml() {

@@ -1,0 +1,18 @@
+:host ::ng-deep .value-visualization {
+  font-size: 4em;
+  font-weight: bold;
+}
+
+.loading-placeholder {
+  mat-icon {
+    height: 112px;
+    width: 112px;
+    font-size: 112px;
+    display: table-cell;
+  }
+
+  button[mat-icon-button] {
+    height: 112px;
+    width: 112px;
+  }
+}

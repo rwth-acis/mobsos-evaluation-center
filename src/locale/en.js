@@ -7,6 +7,8 @@ export const translations = {
     },
     "elements":{
       "community-dropdown-label": "Community",
+      "error-label": "Error",
+      "loading-label": "Loading",
     }
   },
   "app": {

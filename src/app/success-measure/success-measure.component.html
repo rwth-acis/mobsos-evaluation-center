@@ -1,0 +1,11 @@
+<h4>{{measure.name}}</h4>
+<span *ngIf="!visualization && !error" class="loading-placeholder">
+  <mat-spinner></mat-spinner>
+</span>
+<span *ngIf="error" class="loading-placeholder" (click)="openErrorDialog()">
+  <button mat-icon-button>
+    <mat-icon>error_outline</mat-icon>
+  </button>
+</span>
+<span *ngIf="visualization && !error" [innerHTML]="visualization">
+</span>

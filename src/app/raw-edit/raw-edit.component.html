@@ -10,9 +10,9 @@
   <mat-tab label="{{'raw-edit.tabs.success-models'|translate}}">
     <mat-form-field class="community-service-selection">
       <mat-label>{{'raw-edit.success-models.select-application'|translate}}</mat-label>
-      <mat-select (selectionChange)="onServiceSelected($event.value)">
+      <mat-select [(value)]="selectedService" (selectionChange)="onServiceSelected($event.value)">
         <mat-option *ngFor="let service of services" [value]="service">
-          {{serviceMap[service]}}
+          {{serviceMap[service].alias}}
         </mat-option>
       </mat-select>
     </mat-form-field>

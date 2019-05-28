@@ -34,6 +34,7 @@ export class ValueVisualization extends Visualization {
 }
 
 export class ChartVisualization extends Visualization {
+  type = 'Chart';
 
   constructor(public chartType: string, public nodeId: string, public title: string, public height: string,
               public width: string) {
@@ -57,8 +58,31 @@ export class ChartVisualization extends Visualization {
 export class KpiVisualization extends Visualization {
   type = 'KPI';
 
+  operators = {
+    "/": KpiVisualization.divide,
+    "*": KpiVisualization.multiply,
+    "+": KpiVisualization.add,
+    "-": KpiVisualization.subtract,
+  };
+
   constructor(public operationsElements: KpiVisualizationOperand[] | KpiVisualizationOperator[]) {
     super();
+  }
+
+  static divide(left, right) {
+    return left / right;
+  }
+
+  static multiply(left, right) {
+    return left * right;
+  }
+
+  static add(left, right) {
+    return left + right;
+  }
+
+  static subtract(left, right) {
+    return left - right;
   }
 
   static fromXml(xml: Element): KpiVisualization {
@@ -66,10 +90,10 @@ export class KpiVisualization extends Visualization {
     const operatorNodes = Array.from(xml.getElementsByTagName('operator'));
     const elements = [];
     for (let operandNode of operandNodes) {
-      elements.push(KpiVisualizationOperator.fromXml(operandNode));
+      elements.push(KpiVisualizationOperand.fromXml(operandNode));
     }
     for (let operatorNode of operatorNodes) {
-      elements.push(KpiVisualizationOperand.fromXml(operatorNode));
+      elements.push(KpiVisualizationOperator.fromXml(operatorNode));
     }
     elements.sort((a, b) => a.index > b.index ? 1 : -1);
     return new KpiVisualization(elements);
@@ -78,11 +102,34 @@ export class KpiVisualization extends Visualization {
   toXml() {
 
   }
+
+  /**
+   * Each term element is either a number or an operand like "/".
+   * @param term
+   */
+  public evaluateTerm(term: string[]) {
+    const operatorSigns = Object.keys(this.operators);
+    // find first operator
+    let result;
+    term.forEach((termPart, index) => {
+      if (operatorSigns.includes(termPart)) {
+        const operatorFunc: CallableFunction = this.operators[termPart];
+        const leftHandSide = this.evaluateTerm(term.slice(0, index - 1));
+        const rightHandSide = this.evaluateTerm(term.slice(index + 1, -1));
+        result = operatorFunc(leftHandSide, rightHandSide);
+      }
+    });
+    if (!result) {
+      result = parseFloat(term[0]);
+    }
+    return result;
+  }
 }
 
-class KpiVisualizationOperand {
+export class KpiVisualizationOperand {
 
-  constructor(public name: string, public index: Number) { }
+  constructor(public name: string, public index: Number) {
+  }
 
   static fromXml(xml: Element): KpiVisualizationOperand {
     const name = xml.getAttribute('name');
@@ -95,9 +142,10 @@ class KpiVisualizationOperand {
   }
 }
 
-class KpiVisualizationOperator {
+export class KpiVisualizationOperator {
 
-  constructor(public name: string, public index: Number) {}
+  constructor(public name: string, public index: Number) {
+  }
 
   static fromXml(xml: Element): KpiVisualizationOperator {
     const name = xml.getAttribute('name');

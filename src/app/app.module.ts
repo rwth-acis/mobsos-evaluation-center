@@ -6,10 +6,10 @@ import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
-  MatCardModule,
+  MatCardModule, MatDialogModule,
   MatFormFieldModule,
   MatIconModule,
-  MatListModule,
+  MatListModule, MatProgressSpinnerModule,
   MatSelectModule,
   MatSidenavModule,
   MatSlideToggleModule,
@@ -37,6 +37,9 @@ import { environment } from '../environments/environment';
 
 import * as PlotlyJS from 'plotly.js/dist/plotly.js';
 import { PlotlyModule } from 'angular-plotly.js';
+import { SuccessMeasureComponent } from './success-measure/success-measure.component';
+import { SuccessFactorComponent } from './success-factor/success-factor.component';
+import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -64,7 +67,10 @@ export function createTranslateLoader() {
     DashboardComponent,
     SuccessModelingComponent,
     RawEditComponent,
-    SuccessDimensionComponent
+    SuccessDimensionComponent,
+    SuccessMeasureComponent,
+    SuccessFactorComponent,
+    ErrorDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -94,7 +100,9 @@ export function createTranslateLoader() {
     MatToolbarModule,
     MatCardModule,
     PlotlyModule,
-    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
+    ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production}),
+    MatDialogModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     {
@@ -104,6 +112,7 @@ export function createTranslateLoader() {
     }
   ],
   bootstrap: [AppComponent],
+  entryComponents: [ErrorDialogComponent],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ]

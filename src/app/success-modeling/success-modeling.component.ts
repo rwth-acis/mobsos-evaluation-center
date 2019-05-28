@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {StoreService} from '../store.service';
+import {ServiceCollection, StoreService} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
 import {SuccessModel} from '../../success-model/success-model';
 import {MeasureCatalog} from '../../success-model/measure-catalog';
@@ -14,7 +14,7 @@ import {NGXLogger} from 'ngx-logger';
 export class SuccessModelingComponent implements OnInit {
   groupID;
   services = [];
-  serviceMap = {};
+  serviceMap: ServiceCollection = {};
   selectedService: string;
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
@@ -50,6 +50,10 @@ export class SuccessModelingComponent implements OnInit {
       this.groupID = groupID;
       this.fetchXml();
     });
+    this.store.selectedService.subscribe((serviceID) => {
+      this.selectedService = serviceID;
+      this.fetchXml();
+    });
     this.store.startPolling();
     this.store.services.subscribe((services) => {
       this.services = Object.keys(services);
@@ -58,8 +62,7 @@ export class SuccessModelingComponent implements OnInit {
   }
 
   onServiceSelected(service) {
-    this.selectedService = service;
-    this.fetchXml();
+    this.store.selectedServiceSubject.next(service);
   }
 
   fetchXml() {

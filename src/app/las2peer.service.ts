@@ -15,6 +15,8 @@ export class Las2peerService {
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
   SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
   SUCCESS_MODELING_GROUP_PATH = 'groups';
+  QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
+  QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
   userCredentials;
 
   constructor(private logger: NGXLogger) {
@@ -179,6 +181,23 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH, groupID);
     return this.makeRequest(url, {method: method, body: JSON.stringify({xml: xml})})
       .then((response) => response.json().then(json => json.xml))
+      .catch((response) => {
+        this.logger.error(response);
+        throw response;
+      });
+  }
+
+  async visualizeQuery(query: string, queryParams: string[], format: string = 'JSON') {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.QUERY_VISUALIZATION_SERVICE_PATH, this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH, `?format=${format}`);
+    const requestBody = {
+      cache: false, dbkey: '__mobsos', height: '200px', width: '300px', modtypei: null, query,
+      queryparams: queryParams, title: '', save: false
+    };
+    return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)})
+      .then((response) => {
+        return response.body.getReader().read().then(({done, value}) => new TextDecoder("utf-8").decode(value))
+      })
       .catch((response) => {
         this.logger.error(response);
         throw response;
