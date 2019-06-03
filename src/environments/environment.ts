@@ -9,6 +9,7 @@ export const environment = {
   //las2peerWebConnectorUrl: 'http://cloud10.dbis.rwth-aachen.de:8082',
   las2peerWebConnectorUrl: 'http://127.0.0.1:8080',
   servicePollingInterval: 5,
+  visualizationRefreshInterval: 5,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: false,
 };

@@ -6,10 +6,12 @@ import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
-  MatCardModule, MatDialogModule,
+  MatCardModule,
+  MatDialogModule,
   MatFormFieldModule,
   MatIconModule,
-  MatListModule, MatProgressSpinnerModule,
+  MatListModule,
+  MatProgressSpinnerModule,
   MatSelectModule,
   MatSidenavModule,
   MatSlideToggleModule,
@@ -31,15 +33,20 @@ import {translations as de} from '../locale/de';
 import {MonacoEditorModule, NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
 import {SuccessDimensionComponent} from './success-dimension/success-dimension.component';
-import {PlatformLocation, Location} from "@angular/common";
-import { ServiceWorkerModule } from '@angular/service-worker';
-import { environment } from '../environments/environment';
+import {Location, PlatformLocation} from "@angular/common";
+import {ServiceWorkerModule} from '@angular/service-worker';
+import {environment} from '../environments/environment';
 
 import * as PlotlyJS from 'plotly.js/dist/plotly.js';
-import { PlotlyModule } from 'angular-plotly.js';
-import { SuccessMeasureComponent } from './success-measure/success-measure.component';
-import { SuccessFactorComponent } from './success-factor/success-factor.component';
-import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
+import {PlotlyModule} from 'angular-plotly.js';
+import {SuccessMeasureComponent} from './success-measure/success-measure.component';
+import {SuccessFactorComponent} from './success-factor/success-factor.component';
+import {ErrorDialogComponent} from './error-dialog/error-dialog.component';
+import {ValueVisualizationComponent} from './visualizations/value-visualization/value-visualization.component';
+import {VisualizationDirective} from './visualization.directive';
+import {ChartVisualizationComponent} from './visualizations/chart-visualization/chart-visualization.component';
+import {KpiVisualizationComponent} from './visualizations/kpi-visualization/kpi-visualization.component';
+import {BaseVisualizationComponent} from "./visualizations/visualization.component";
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -70,7 +77,12 @@ export function createTranslateLoader() {
     SuccessDimensionComponent,
     SuccessMeasureComponent,
     SuccessFactorComponent,
-    ErrorDialogComponent
+    ErrorDialogComponent,
+    BaseVisualizationComponent,
+    ValueVisualizationComponent,
+    VisualizationDirective,
+    ChartVisualizationComponent,
+    KpiVisualizationComponent
   ],
   imports: [
     BrowserModule,
@@ -112,7 +124,11 @@ export function createTranslateLoader() {
     }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [ErrorDialogComponent],
+  entryComponents: [
+    ErrorDialogComponent,
+    ValueVisualizationComponent,
+    ChartVisualizationComponent,
+    KpiVisualizationComponent],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ]
