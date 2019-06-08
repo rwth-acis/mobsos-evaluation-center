@@ -1,6 +1,19 @@
+![las2peer](https://rwth-acis.github.io/las2peer/logo/vector/las2peer-logo.svg)
+
 # MobsosEvaluationCenter
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.8.
+[![Build Status](https://travis-ci.org/rwth-acis/mobsos-evaluation-center.svg?branch=master)](https://travis-ci.org/rwth-acis/mobsos-evaluation-center)
+
+Web frontend for [MobSOS](https://github.com/rwth-acis/mobsos) a framework for community information systems (CIS) success awareness.
+
+Its features include:
+* Creating success models for each las2peer service used by your community
+* Collaboratively editing success models with other community members
+* Setting up questionnaire evaluation
+
+# Configuration
+
+Edit the variables in `src/environments/environment.ts` to configure your development environment and `src/environments/environment.prod.ts` for the productive build.
 
 ## Development server
 
