@@ -7,7 +7,7 @@ import {NGXLogger} from 'ngx-logger';
 import {LanguageService} from './language.service';
 import {GroupInformation, StoreService} from './store.service';
 import {CordovaPopupNavigator, UserManager} from 'oidc-client';
-import {MatSidenav} from "@angular/material";
+import {MatSidenav} from '@angular/material';
 import * as Hammer from 'hammerjs';
 
 // workaround for openidconned-signin
@@ -49,7 +49,7 @@ export class AppComponent implements OnInit, OnDestroy {
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
-    this.mobileQuery.addListener(this.mobileQueryListener);
+    this.mobileQuery.addEventListener('change', this.mobileQueryListener, false);
   }
 
   static objectFlip(obj) {
@@ -61,7 +61,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.mobileQuery.removeListener(this.mobileQueryListener);
+    this.store.stopPolling();
+    this.mobileQuery.removeEventListener('change', this.mobileQueryListener, false);
   }
 
   useLanguage(language: string) {

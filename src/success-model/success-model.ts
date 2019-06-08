@@ -1,4 +1,4 @@
-import {SuccessFactor} from "./success-factor";
+import {SuccessFactor} from './success-factor';
 import {merge} from 'lodash-es';
 
 export interface DimensionMap {
@@ -7,13 +7,13 @@ export interface DimensionMap {
   'Use': SuccessFactor[];
   'User Satisfaction': SuccessFactor[];
   'Individual Impact': SuccessFactor[];
-  'Community Impact': SuccessFactor[],
+  'Community Impact': SuccessFactor[];
 }
 
 const initialDimensionMap: DimensionMap = {
   'System Quality': [],
   'Information Quality': [],
-  'Use': [],
+  Use: [],
   'User Satisfaction': [],
   'Individual Impact': [],
   'Community Impact': [],
@@ -30,14 +30,14 @@ export class SuccessModel {
       const service = xml.getAttribute('service');
       const dimensionNodes = Array.from(xml.getElementsByTagName('dimension'));
       const dimensions: DimensionMap = merge({}, initialDimensionMap);
-      for (let dimensionNode of dimensionNodes) {
+      for (const dimensionNode of dimensionNodes) {
         const dimensionName = dimensionNode.getAttribute('name');
         const availableDimensions = Object.keys(dimensions);
         if (!availableDimensions.includes(dimensionName)) {
           throw new Error(`${dimensionName} is not a valid dimension. Valid dimensions are ${availableDimensions.join()}`);
         }
         const factorNodes = Array.from(dimensionNode.getElementsByTagName('factor'));
-        for(let factorNode of factorNodes){
+        for (const factorNode of factorNodes) {
           dimensions[dimensionName].push(SuccessFactor.fromXml(factorNode));
         }
       }

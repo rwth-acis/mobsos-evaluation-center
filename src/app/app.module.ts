@@ -33,7 +33,7 @@ import {translations as de} from '../locale/de';
 import {MonacoEditorModule, NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
 import {SuccessDimensionComponent} from './success-dimension/success-dimension.component';
-import {Location, PlatformLocation} from "@angular/common";
+import {Location, PlatformLocation} from '@angular/common';
 import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 
@@ -46,7 +46,7 @@ import {ValueVisualizationComponent} from './visualizations/value-visualization/
 import {VisualizationDirective} from './visualization.directive';
 import {ChartVisualizationComponent} from './visualizations/chart-visualization/chart-visualization.component';
 import {KpiVisualizationComponent} from './visualizations/kpi-visualization/kpi-visualization.component';
-import {BaseVisualizationComponent} from "./visualizations/visualization.component";
+import {BaseVisualizationComponent} from './visualizations/visualization.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -141,5 +141,5 @@ export function getMonacoConfig(platformLocation: PlatformLocation): NgxMonacoEd
 
   return {
     baseUrl: Location.joinWithSlash(baseHref, '/assets')
-  }
+  };
 }

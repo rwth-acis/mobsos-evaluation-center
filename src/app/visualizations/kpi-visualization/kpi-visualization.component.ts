@@ -1,8 +1,8 @@
 import {Component, OnInit, SimpleChanges} from '@angular/core';
-import {BaseVisualizationComponent} from "../visualization.component";
-import {Las2peerService} from "../../las2peer.service";
-import {MatDialog} from "@angular/material";
-import {KpiVisualization, KpiVisualizationOperand} from "../../../success-model/visualization";
+import {BaseVisualizationComponent} from '../visualization.component';
+import {Las2peerService} from '../../las2peer.service';
+import {MatDialog} from '@angular/material';
+import {KpiVisualization, KpiVisualizationOperand} from '../../../success-model/visualization';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -13,7 +13,7 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
   abstractTerm = [];
   term = [];
 
-  constructor(las2peer: Las2peerService, dialog: MatDialog,) {
+  constructor(las2peer: Las2peerService, dialog: MatDialog, ) {
     super(las2peer, dialog);
   }
 
@@ -23,10 +23,10 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
     const abstractTerm = [];
     const term = [];
 
-    for (let operationElement of visualization.operationsElements) {
+    for (const operationElement of visualization.operationsElements) {
       abstractTerm.push(operationElement.name);
       if (operationElement instanceof KpiVisualizationOperand) {
-        const query = queries.find(value => value.name == operationElement.name);
+        const query = queries.find(value => value.name === operationElement.name);
         let sql = query.sql;
         const queryParams = this.getParamsForQuery(sql);
         sql = KpiVisualizationComponent.applyCompatibilityFixForVisualizationService(sql);
@@ -34,7 +34,7 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
         try {
           response = await this.fetchVisualization(sql, queryParams, 'JSON');
           const data = JSON.parse(response);
-          const value = data.slice(-1)[0].length == 0 ? 0 : data.slice(-1)[0][0];
+          const value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
           term.push(value);
         } catch (e) {
           return;

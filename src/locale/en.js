@@ -3,24 +3,24 @@ export const translations = {
     "pages": {
       "dashboard": "Dashboard",
       "success-modeling": "Success Modeling",
-      "raw-edit": "Raw Edit"
+      "raw-edit": "Raw Edit",
     },
-    "elements":{
+    "elements": {
       "community-dropdown-label": "Community",
       "error-label": "Error",
       "loading-label": "Loading",
-    }
+    },
   },
   "app": {
     "community-selector": {
-      "select-community-hint": "Login to select your community"
+      "select-community-hint": "Login to select your community",
     },
     "language-selector": {
-      "select-language": "Select Language"
+      "select-language": "Select Language",
     },
     "expert-mode": {
       "switch-label": "Expert Mode",
-    }
+    },
   },
   "raw-edit": {
     "measures": {
@@ -30,7 +30,7 @@ export const translations = {
       "snackbar-success": "The measures have been saved successfully.",
       "snackbar-failure": "The measures could not be saved.",
     },
-    "success-models":{
+    "success-models": {
       "select-application": "Application",
       "send-button": "Save",
       "send-button-no-selected-group-or-application": "Please pick a community and an application",
@@ -40,7 +40,7 @@ export const translations = {
     "tabs": {
       "success-models": "Success Models",
       "measures": "Measures",
-    }
+    },
   },
   "success-dimension": {
     "no-measures-placeholder": "This dimension has factors with measures attached to it yet. You can enable the edit mode to add measures to it.",
@@ -64,5 +64,5 @@ export const translations = {
     "message-no-application-selected": "No application selected. Please select an application above to see its success model.",
     "message-no-success-model-found": "No success model present. You can enable the edit mode above and create one.",
     "select-application": "Application",
-  }
+  },
 };

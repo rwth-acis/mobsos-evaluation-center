@@ -8,7 +8,7 @@ export class SuccessFactor {
       const factorName = xml.getAttribute('name');
       const measureNodes = Array.from(xml.getElementsByTagName('measure'));
       const measures = [];
-      for (let measureNode of measureNodes) {
+      for (const measureNode of measureNodes) {
         measures.push(measureNode.getAttribute('name'));
       }
       return new SuccessFactor(factorName, measures);

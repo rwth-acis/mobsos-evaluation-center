@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ServiceCollection, StoreService} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
 import {SuccessModel} from '../../success-model/success-model';
@@ -11,7 +11,7 @@ import {NGXLogger} from 'ngx-logger';
   templateUrl: './success-modeling.component.html',
   styleUrls: ['./success-modeling.component.scss']
 })
-export class SuccessModelingComponent implements OnInit {
+export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
   serviceMap: ServiceCollection = {};
@@ -59,6 +59,10 @@ export class SuccessModelingComponent implements OnInit {
       this.services = Object.keys(services);
       this.serviceMap = services;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.store.stopPolling();
   }
 
   onServiceSelected(service) {

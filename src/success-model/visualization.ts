@@ -59,10 +59,10 @@ export class KpiVisualization extends Visualization {
   type = 'KPI';
 
   operators = {
-    "/": KpiVisualization.divide,
-    "*": KpiVisualization.multiply,
-    "+": KpiVisualization.add,
-    "-": KpiVisualization.subtract,
+    '/': KpiVisualization.divide,
+    '*': KpiVisualization.multiply,
+    '+': KpiVisualization.add,
+    '-': KpiVisualization.subtract,
   };
 
   constructor(public operationsElements: KpiVisualizationOperand[] | KpiVisualizationOperator[]) {
@@ -89,10 +89,10 @@ export class KpiVisualization extends Visualization {
     const operandNodes = Array.from(xml.getElementsByTagName('operand'));
     const operatorNodes = Array.from(xml.getElementsByTagName('operator'));
     const elements = [];
-    for (let operandNode of operandNodes) {
+    for (const operandNode of operandNodes) {
       elements.push(KpiVisualizationOperand.fromXml(operandNode));
     }
-    for (let operatorNode of operatorNodes) {
+    for (const operatorNode of operatorNodes) {
       elements.push(KpiVisualizationOperator.fromXml(operatorNode));
     }
     elements.sort((a, b) => a.index > b.index ? 1 : -1);
@@ -105,7 +105,8 @@ export class KpiVisualization extends Visualization {
 
   /**
    * Each term element is either a number or an operand like "/".
-   * @param term
+   *
+   * @param term An array of symbols and operators like ["5", "+", "3"].
    */
   public evaluateTerm(term: string[]) {
     const operatorSigns = Object.keys(this.operators);
@@ -128,12 +129,12 @@ export class KpiVisualization extends Visualization {
 
 export class KpiVisualizationOperand {
 
-  constructor(public name: string, public index: Number) {
+  constructor(public name: string, public index: number) {
   }
 
   static fromXml(xml: Element): KpiVisualizationOperand {
     const name = xml.getAttribute('name');
-    const index = parseInt(xml.getAttribute('index'));
+    const index = parseInt(xml.getAttribute('index'), 10);
     return new KpiVisualizationOperand(name, index);
   }
 
@@ -144,12 +145,12 @@ export class KpiVisualizationOperand {
 
 export class KpiVisualizationOperator {
 
-  constructor(public name: string, public index: Number) {
+  constructor(public name: string, public index: number) {
   }
 
   static fromXml(xml: Element): KpiVisualizationOperator {
     const name = xml.getAttribute('name');
-    const index = parseInt(xml.getAttribute('index'));
+    const index = parseInt(xml.getAttribute('index'), 10);
     return new KpiVisualizationOperator(name, index);
   }
 

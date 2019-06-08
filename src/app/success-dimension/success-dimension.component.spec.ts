@@ -1,6 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SuccessDimensionComponent } from './success-dimension.component';
+import {SuccessDimensionComponent} from './success-dimension.component';
+import {MatCardModule, MatIconModule} from '@angular/material';
+import {SuccessFactorComponent} from '../success-factor/success-factor.component';
+import {SuccessMeasureComponent} from '../success-measure/success-measure.component';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {createTranslateLoader} from '../app.module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 describe('SuccessDimensionComponent', () => {
   let component: SuccessDimensionComponent;
@@ -8,9 +14,20 @@ describe('SuccessDimensionComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SuccessDimensionComponent ]
+      declarations: [SuccessDimensionComponent, SuccessFactorComponent, SuccessMeasureComponent],
+      imports: [
+        MatIconModule,
+        MatCardModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (createTranslateLoader)
+          }
+        }),
+        HttpClientTestingModule,
+      ],
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

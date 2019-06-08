@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {BaseVisualizationComponent} from "../visualization.component";
-import {Las2peerService} from "../../las2peer.service";
-import {MatDialog} from "@angular/material";
+import {BaseVisualizationComponent} from '../visualization.component';
+import {Las2peerService} from '../../las2peer.service';
+import {MatDialog} from '@angular/material';
 import {map} from 'lodash-es';
-import {ChartVisualization} from "../../../success-model/visualization";
+import {ChartVisualization} from '../../../success-model/visualization';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -17,7 +17,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     config: {displayModeBar: false}
   };
 
-  constructor(las2peer: Las2peerService, dialog: MatDialog,) {
+  constructor(las2peer: Las2peerService, dialog: MatDialog, ) {
     super(las2peer, dialog);
   }
 
@@ -30,8 +30,11 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     if (dataTable instanceof Array && dataTable.length >= 2) {
       const typeList = dataTable[1] as Array<string>;
       const data = dataTable.slice(2);
-      if (visualization.chartType == 'LineChart') {
-        return this.renderLineChart(typeList, data);
+      switch (visualization.chartType) {
+        case 'LineChart':
+          return this.renderLineChart(typeList, data);
+        case 'PieChart':
+          return this.renderPieChart(typeList, data);
       }
     }
   }
@@ -44,10 +47,22 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     this.graph.data = [{x, y, type: 'scatter', mode: 'lines+points'}];
   }
 
+  private async renderPieChart(typeList: string[], data: any[]) {
+    let labels = map(data, 0);
+    let values = map(data, 1);
+    labels = this.performTypeCast(typeList[0], labels);
+    values = this.performTypeCast(typeList[1], values);
+    this.graph.data = [{labels, values, type: 'pie'}];
+  }
+
   private performTypeCast(type: string, data: any[]) {
     switch (type) {
       case 'datetime':
-        return data.map((value) => new Date(Number(value)));
+        return data.map((value) => {
+          // correct timestamp because it is in local time and not UTC
+          value = Number(value) + new Date().getTimezoneOffset() * 60000;
+          return new Date(value);
+        });
       case 'number':
         return data.map((value) => Number(value));
       default:

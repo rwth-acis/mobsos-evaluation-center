@@ -1,5 +1,5 @@
-import {Query} from "./query";
-import {Visualization} from "./visualization";
+import {Query} from './query';
+import {Visualization} from './visualization';
 
 export class Measure {
 
@@ -10,7 +10,7 @@ export class Measure {
     const measureName = xml.getAttribute('name');
     const queryNodes = Array.from(xml.getElementsByTagName('query'));
     const queries = [];
-    for (let queryNode of queryNodes) {
+    for (const queryNode of queryNodes) {
       queries.push(Query.fromXml(queryNode));
     }
     const visualizationNode = Array.from(xml.getElementsByTagName('visualization'))[0];

@@ -1,10 +1,10 @@
-import {Measure} from "../../success-model/measure";
-import {ServiceInformation} from "../store.service";
-import {Las2peerService} from "../las2peer.service";
-import {ErrorDialogComponent} from "../error-dialog/error-dialog.component";
-import {MatDialog} from "@angular/material";
-import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
-import {environment} from "../../environments/environment";
+import {Measure} from '../../success-model/measure';
+import {ServiceInformation} from '../store.service';
+import {Las2peerService} from '../las2peer.service';
+import {ErrorDialogComponent} from '../error-dialog/error-dialog.component';
+import {MatDialog} from '@angular/material';
+import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
+import {environment} from '../../environments/environment';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -23,13 +23,13 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
   error: Response;
-  refreshVisualizationHandle: number;
+  refreshVisualizationHandle;
 
   constructor(protected las2peer: Las2peerService, protected dialog: MatDialog) {
   }
 
   static htmlDecode(input) {
-    const doc = new DOMParser().parseFromString(input, "text/html");
+    const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
   }
 
@@ -60,7 +60,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     let errorText;
     if (this.error.body) {
       const {value} = await this.error.body.getReader().read();
-      const responseBody = new TextDecoder("utf-8").decode(value);
+      const responseBody = new TextDecoder('utf-8').decode(value);
       errorText = (this.error.statusText + ': ' + responseBody).trim();
     } else {
       errorText = this.error;
@@ -78,10 +78,10 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
     }
-    let serviceRegex = /\$SERVICE\$/g;
-    let matches = query.match(serviceRegex);
-    let params = [];
-    for (let match of matches) {
+    const serviceRegex = /\$SERVICE\$/g;
+    const matches = query.match(serviceRegex);
+    const params = [];
+    for (const match of matches) {
       // for now we just use the first ID
       // support for multiple IDs is not implemented yet
       params.push(this.service.mobsosIDs[0]);

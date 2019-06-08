@@ -1,0 +1,25 @@
+dist: xenial
+sudo: required
+
+language: node_js
+node_js:
+  - '12'
+
+addons:
+  chrome: stable
+
+cache:
+  directories:
+    - ./node_modules
+
+env:
+  - NG_CLI_ANALYTICS=ci
+
+install:
+  - npm install
+
+script:
+  - npm run lint
+  - npm run test -- --no-progress --watch=false --browsers=ChromeHeadless
+  - npm run e2e -- --protractor-config='e2e/ci.protractor.conf.js'
+

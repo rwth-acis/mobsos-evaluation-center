@@ -4,7 +4,7 @@ import {NGXLogger} from 'ngx-logger';
 import {Las2peerService} from './las2peer.service';
 import {find, throttle} from 'lodash-es';
 import {distinctUntilChanged} from 'rxjs/operators';
-import {environment} from "../environments/environment";
+import {environment} from '../environments/environment';
 
 export interface State {
   services: ServiceCollection;
@@ -15,9 +15,9 @@ export interface State {
 }
 
 export interface GroupInformation {
-  id: string,
-  name: string,
-  member: boolean
+  id: string;
+  name: string;
+  member: boolean;
 }
 
 export interface GroupCollection {
@@ -26,8 +26,8 @@ export interface GroupCollection {
 
 
 export interface ServiceInformation {
-  alias: string,
-  mobsosIDs: string[],
+  alias: string;
+  mobsosIDs: string[];
 }
 
 export interface ServiceCollection {
@@ -94,7 +94,7 @@ export class StoreService {
     this.groupsFromContactServiceSubject.subscribe(() => this.mergeGroupData());
     this.groupsFromMobSOSSubject.subscribe(() => this.mergeGroupData());
     // check if the group data from mobsos is in sync with the group data from the contact service
-    this.groupsFromMobSOSSubject.subscribe(() => this.transferGroupDataToMobSOS())
+    this.groupsFromMobSOSSubject.subscribe(() => this.transferGroupDataToMobSOS());
   }
 
   static loadState(): State {
@@ -103,7 +103,7 @@ export class StoreService {
 
   startPolling() {
     if (!this.pollingEnabled) {
-      this.logger.debug('Enabling service discovery and selectedGroup polling...');
+      this.logger.debug('Enabling service discovery and group polling...');
       if (environment.useLas2peerServiceDiscovery) {
         this.serviceL2PPollingHandle = this.las2peer.pollL2PServiceDiscovery(
           (services) => {
@@ -153,12 +153,15 @@ export class StoreService {
   }
 
   stopPolling() {
+    this.logger.debug('Disabling service discovery and group polling...');
     clearInterval(this.serviceL2PPollingHandle);
     clearInterval(this.serviceMobSOSPollingHandle);
     clearInterval(this.groupContactServicePollingHandle);
     clearInterval(this.groupMobSOSPollingHandle);
     this.serviceL2PPollingHandle = null;
+    this.serviceMobSOSPollingHandle = null;
     this.groupContactServicePollingHandle = null;
+    this.groupMobSOSPollingHandle = null;
     this.pollingEnabled = false;
   }
 
@@ -192,12 +195,13 @@ export class StoreService {
    * Convert data from both service sources into a common format.
    *
    * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
-   * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService": {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
+   * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
+   *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
    */
   private mergeServiceData() {
     const servicesFromL2P = this.servicesFromDiscoverySubject.getValue();
     const serviceCollection: ServiceCollection = {};
-    for (let service of servicesFromL2P) {
+    for (const service of servicesFromL2P) {
       // use most recent release and extract the human readable name
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
@@ -205,7 +209,7 @@ export class StoreService {
       serviceCollection[serviceIdentifier] = {alias: latestRelease.supplement.name, mobsosIDs: []};
     }
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
-    for (let serviceAgentID of Object.keys(servicesFromMobSOS)) {
+    for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
       const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split('@', 2)[0];
       let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
       if (serviceAlias == null) {
@@ -213,9 +217,9 @@ export class StoreService {
       }
       // only add mobsos service data if the data from the discovery is missing
       if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {alias: serviceAlias, mobsosIDs: []}
+        serviceCollection[serviceName] = {alias: serviceAlias, mobsosIDs: []};
       }
-      serviceCollection[serviceName]['mobsosIDs'].push(serviceAgentID);
+      serviceCollection[serviceName].mobsosIDs.push(serviceAgentID);
     }
     this.servicesSubject.next(serviceCollection);
   }
@@ -224,24 +228,25 @@ export class StoreService {
    * Convert data from both group sources into a common format.
    *
    * The format is {<group-ID>: {name: <group-name>, member: (true|false)}}.
-   * Example: {"ba1f0b36c32fc90cc3f47db27282ad3dc8b75812ad2d08cf82805c9077567a72d9e3815fc33d7223338dc4f429f89eb3aac0710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
+   * Example: {"ba1f0b36c32fc90cc3f47db27282ad3dc8b75812ad2d08cf82805c9077567a72d9e3815fc33d7223338dc4f429f89eb3aac0
+   *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
    */
   private mergeGroupData() {
     const groups = {};
     const groupsFromContactService = this.groupsFromContactServiceSubject.getValue();
     // mark all these groups as groups the current user is a member of
-    for (let groupID of Object.keys(groupsFromContactService)) {
+    for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
-      groups[groupID] = {id: groupID, name: groupName, member: true}
+      groups[groupID] = {id: groupID, name: groupName, member: true};
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
-    for (let group of groupsFromMobSOS) {
+    for (const group of groupsFromMobSOS) {
       const groupID = group.groupID;
       const groupName = group.name;
       const member = group.isMember;
       if (!(groupID in groups)) {
-        groups[groupID] = {id: groupID, name: groupName, member: member};
+        groups[groupID] = {id: groupID, name: groupName, member};
       }
     }
     this.groupsSubject.next(groups);
@@ -254,7 +259,7 @@ export class StoreService {
   private transferGroupDataToMobSOS() {
     const groupsFromContactService = this.groupsFromContactServiceSubject.getValue();
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
-    for (let groupID of Object.keys(groupsFromContactService)) {
+    for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       const sameGroupInMobSOS = find(groupsFromMobSOS, ['groupID', groupID]);
       if (sameGroupInMobSOS && sameGroupInMobSOS.name === groupName) {

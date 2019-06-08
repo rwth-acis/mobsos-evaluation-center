@@ -3,24 +3,24 @@ export const translations = {
     "pages": {
       "dashboard": "Dashboard",
       "success-modeling": "Erfolgsmodellierung",
-      "raw-edit": "Direktbearbeitung"
+      "raw-edit": "Direktbearbeitung",
     },
     "elements": {
       "community-dropdown-label": "Community",
       "error-label": "Fehler",
       "loading-label": "Lade",
-    }
+    },
   },
   "app": {
     "community-selector": {
-      "select-community-hint": "Einloggen um eine Community auszuwählen"
+      "select-community-hint": "Einloggen um eine Community auszuwählen",
     },
     "language-selector": {
-      "select-language": "Sprache auswählen"
+      "select-language": "Sprache auswählen",
     },
     "expert-mode": {
       "switch-label": "Expertenmodus",
-    }
+    },
   },
   "raw-edit": {
     "measures": {
@@ -39,7 +39,7 @@ export const translations = {
     "tabs": {
       "success-models": "Erfolgsmodelle",
       "measures": "Messungen",
-    }
+    },
   },
   "success-dimension": {
     "no-measures-placeholder": "Diese Dimension hat noch keinen Faktor mit Messungen. Du kannst den Editiermodus anschalten um Messungen hinzuzufügen.",
@@ -63,5 +63,5 @@ export const translations = {
     "message-no-application-selected": "Es ist keine Anwendung ausgewählt. Bitte wähle oben eine aus, um das Erfolgsmodell zu sehen.",
     "message-no-success-model-found": "Es wurd kein Erfolgsmodell gefunden. Du kannst oben den Editiermodus aktivieren um eins zu erstellen.",
     "select-application": "Anwendung",
-  }
+  },
 };

@@ -1,6 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SuccessFactorComponent } from './success-factor.component';
+import {SuccessMeasureComponent} from '../success-measure/success-measure.component';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {createTranslateLoader} from '../app.module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 describe('SuccessFactorComponent', () => {
   let component: SuccessFactorComponent;
@@ -8,7 +12,16 @@ describe('SuccessFactorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SuccessFactorComponent ]
+      declarations: [ SuccessFactorComponent, SuccessMeasureComponent ],
+      imports: [
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (createTranslateLoader)
+          }
+        }),
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));

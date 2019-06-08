@@ -1,6 +1,16 @@
 import {Injectable} from '@angular/core';
 import {environment} from '../environments/environment';
 import {NGXLogger} from 'ngx-logger';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {merge} from 'lodash';
+
+export interface SuccessModel {
+  xml: string;
+}
+
+export interface MeasureCatalog {
+  xml: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +29,7 @@ export class Las2peerService {
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
   userCredentials;
 
-  constructor(private logger: NGXLogger) {
+  constructor(private http: HttpClient, private logger: NGXLogger) {
   }
 
   static joinAbsoluteUrlPath(...args) {
@@ -34,37 +44,55 @@ export class Las2peerService {
     this.userCredentials = null;
   }
 
-  async makeRequest(url, init = {}) {
-    let credentialOptions = {};
+  async makeRequest<T>(url: string, options: {
+    method?: string; headers?: {
+      [header: string]: string | string[];
+    }; body?: string
+  } = {}) {
+    options = merge({
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'accept-language': 'en-US',
+      }
+    }, options);
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      credentialOptions = {
+      options = merge(options, {
         headers: {
           Authorization: 'Basic ' + btoa(username + ':' + password),
           access_token: token,
-          "Content-Type": "application/json",
         }
-      };
+      });
     }
-    const options = Object.assign(credentialOptions, init);
     this.logger.debug('Fetching from ' + url + ' with options ' + JSON.stringify(options));
-    return new Promise<Response>((resolve, reject) => {
-      fetch(url, options).then((response) => {
-        if (response.ok) {
-          resolve(response);
-        } else {
-          reject(response);
-        }
-      }).catch(reject);
-    });
+    const ngHttpOptions: {
+      body?: any;
+      headers?: HttpHeaders | {
+        [header: string]: string | string[];
+      };
+      observe?: 'body';
+      params?: HttpParams | {
+        [param: string]: string | string[];
+      };
+      responseType?: 'json';
+      reportProgress?: boolean;
+      withCredentials?: boolean;
+    } = {};
+    if (options.headers) {
+      ngHttpOptions.headers = new HttpHeaders(options.headers);
+    }
+    if (options.body) {
+      ngHttpOptions.body = options.body;
+    }
+    return this.http.request<T>(options.method, url, ngHttpOptions).toPromise();
   }
 
   async fetchServicesFromDiscovery() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SERVICES_PATH);
     return this.makeRequest(url)
-      .then((response) => response.json())
       .catch((response) => this.logger.error('Could not fetch services from service discovery:'
         + JSON.stringify(response)));
   }
@@ -76,7 +104,6 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH
     );
     return this.makeRequest(url)
-      .then((response) => response.json())
       .catch((response) => this.logger.error('Could not fetch services from service MobSOS:'
         + JSON.stringify(response)));
   }
@@ -85,30 +112,27 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH);
     return this.makeRequest(url)
-      .then((response) => response.json())
       .catch((response) => this.logger.error(response));
   }
 
   async fetchMobSOSGroups() {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH);
-    return this.makeRequest(url)
-      .then((response) => response.json());
+    return this.makeRequest(url);
   }
 
   async fetchMobSOSGroup(groupID: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH, groupID);
-    return this.makeRequest(url)
-      .then((response) => response.json());
+    return this.makeRequest(url);
   }
 
   async fetchSuccessModel(groupID: string, service: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
     return new Promise((resolve, reject) => {
-      this.makeRequest(url)
-        .then((response) => response.json().then(json => resolve(json.xml)))
+      this.makeRequest<SuccessModel>(url)
+        .then((response) => resolve(response.xml))
         .catch((response) => {
           this.logger.error(response);
           reject(response);
@@ -130,8 +154,8 @@ export class Las2peerService {
         this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH);
     }
 
-    return this.makeRequest(url, {method: method, body: JSON.stringify({groupID, name: groupName})})
-      .then((response) => response.json())
+    return this.makeRequest(url, {method, body: JSON.stringify({groupID, name: groupName})})
+
       .catch((response) => {
         this.logger.error(response);
         throw response;
@@ -141,7 +165,7 @@ export class Las2peerService {
   async saveSuccessModel(groupID: string, service: string, xml: string) {
     let method;
     try {
-      const reponse = await this.fetchSuccessModel(groupID, service);
+      await this.fetchSuccessModel(groupID, service);
       method = 'PUT';
     } catch (e) {
       method = 'POST';
@@ -149,8 +173,8 @@ export class Las2peerService {
 
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH, groupID, service);
-    return this.makeRequest(url, {method: method, body: JSON.stringify({xml: xml})})
-      .then((response) => response.json().then(json => json.xml))
+    return this.makeRequest<SuccessModel>(url, {method, body: JSON.stringify({xml})})
+      .then((response) => response.xml)
       .catch((response) => {
         this.logger.error(response);
         throw response;
@@ -160,18 +184,18 @@ export class Las2peerService {
   async fetchMeasureCatalog(groupID: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH, groupID);
-    return this.makeRequest(url)
-      .then((response) => response.json().then(json => json.xml))
+    return this.makeRequest<MeasureCatalog>(url)
+      .then((response) => response.xml)
       .catch((response) => {
         this.logger.error(response);
-        throw response
+        throw response;
       });
   }
 
   async saveMeasureCatalog(groupID: string, xml: string) {
     let method;
     try {
-      const response = await this.fetchMeasureCatalog(groupID);
+      await this.fetchMeasureCatalog(groupID);
       method = 'PUT';
     } catch (e) {
       method = 'POST';
@@ -179,8 +203,8 @@ export class Las2peerService {
 
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH, groupID);
-    return this.makeRequest(url, {method: method, body: JSON.stringify({xml: xml})})
-      .then((response) => response.json().then(json => json.xml))
+    return this.makeRequest<MeasureCatalog>(url, {method, body: JSON.stringify({xml})})
+      .then((response) => response.xml)
       .catch((response) => {
         this.logger.error(response);
         throw response;
@@ -194,11 +218,7 @@ export class Las2peerService {
       cache: false, dbkey: '__mobsos', height: '200px', width: '300px', modtypei: null, query,
       queryparams: queryParams, title: '', save: false
     };
-    return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)})
-      .then((response) => {
-        return response.body.getReader().read().then(({done, value}) => new TextDecoder("utf-8").decode(value))
-      })
-      .catch((response) => {
+    return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)}).catch((response) => {
         this.logger.error(response);
         throw response;
       });

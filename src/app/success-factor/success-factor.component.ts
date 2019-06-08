@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ServiceInformation} from "../store.service";
-import {MeasureMap} from "../../success-model/measure-catalog";
-import {SuccessFactor} from "../../success-model/success-factor";
+import {ServiceInformation} from '../store.service';
+import {MeasureMap} from '../../success-model/measure-catalog';
+import {SuccessFactor} from '../../success-model/success-factor';
 
 @Component({
   selector: 'app-success-factor',

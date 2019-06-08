@@ -1,9 +1,9 @@
-<h3>{{factor.name}}</h3>
-<div *ngIf="factor.measures.length > 0">
+<h3 *ngIf="factor">{{factor.name}}</h3>
+<div *ngIf="factor && factor.measures.length > 0">
   <div *ngFor="let measure of factor.measures">
     <app-success-measure [measure]="measures[measure]" [service]="service"></app-success-measure>
   </div>
 </div>
-<div *ngIf="factor.measures.length === 0">
+<div *ngIf="factor && factor.measures.length === 0">
   {{'success-dimension.no-measures-placeholder'|translate}}
 </div>

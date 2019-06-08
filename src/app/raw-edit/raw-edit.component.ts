@@ -1,16 +1,16 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {StoreService} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
 import vkbeautify from 'vkbeautify';
-import {MatSnackBar} from "@angular/material";
-import {TranslateService} from "@ngx-translate/core";
+import {MatSnackBar} from '@angular/material';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-raw-edit',
   templateUrl: './raw-edit.component.html',
   styleUrls: ['./raw-edit.component.scss']
 })
-export class RawEditComponent implements OnInit {
+export class RawEditComponent implements OnInit, OnDestroy {
 
   groupID;
   services = [];
@@ -45,6 +45,10 @@ export class RawEditComponent implements OnInit {
       this.services = Object.keys(services);
       this.serviceMap = services;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.store.stopPolling();
   }
 
   registerMeasureEditor(editor) {

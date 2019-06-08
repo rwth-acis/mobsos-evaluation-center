@@ -1,7 +1,7 @@
-import {Measure} from "./measure";
+import {Measure} from './measure';
 
 export interface MeasureMap {
-  [key: string]: Measure
+  [key: string]: Measure;
 }
 
 export class MeasureCatalog {
@@ -12,7 +12,7 @@ export class MeasureCatalog {
   static fromXml(xml: Element): MeasureCatalog {
     const measureNodes = Array.from(xml.getElementsByTagName('measure'));
     const measureMap: MeasureMap = {};
-    for (let measureNode of measureNodes) {
+    for (const measureNode of measureNodes) {
       const measureName = measureNode.getAttribute('name');
       measureMap[measureName] = Measure.fromXml(measureNode);
     }

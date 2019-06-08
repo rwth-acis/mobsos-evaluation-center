@@ -9,23 +9,17 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {Measure} from "../../success-model/measure";
-import {ServiceInformation} from "../store.service";
-import {
-  ChartVisualization,
-  KpiVisualization,
-  KpiVisualizationOperand,
-  ValueVisualization
-} from "../../success-model/visualization";
-import {Las2peerService} from "../las2peer.service";
-import {DomSanitizer} from "@angular/platform-browser";
-import {Query} from "../../success-model/query";
-import {MatDialog} from "@angular/material";
-import {VisualizationDirective} from "../visualization.directive";
-import {ValueVisualizationComponent} from "../visualizations/value-visualization/value-visualization.component";
-import {VisualizationComponent} from "../visualizations/visualization.component";
-import {KpiVisualizationComponent} from "../visualizations/kpi-visualization/kpi-visualization.component";
-import {ChartVisualizationComponent} from "../visualizations/chart-visualization/chart-visualization.component";
+import {Measure} from '../../success-model/measure';
+import {ServiceInformation} from '../store.service';
+import {ChartVisualization, KpiVisualization, ValueVisualization} from '../../success-model/visualization';
+import {Las2peerService} from '../las2peer.service';
+import {DomSanitizer} from '@angular/platform-browser';
+import {MatDialog} from '@angular/material';
+import {VisualizationDirective} from '../visualization.directive';
+import {ValueVisualizationComponent} from '../visualizations/value-visualization/value-visualization.component';
+import {VisualizationComponent} from '../visualizations/visualization.component';
+import {KpiVisualizationComponent} from '../visualizations/kpi-visualization/kpi-visualization.component';
+import {ChartVisualizationComponent} from '../visualizations/chart-visualization/chart-visualization.component';
 
 @Component({
   selector: 'app-success-measure',
@@ -45,7 +39,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   static htmlDecode(input) {
-    const doc = new DOMParser().parseFromString(input, "text/html");
+    const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
   }
 
@@ -61,28 +55,30 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   refreshVisualization() {
-    let componentFactory;
-    if (this.measure.visualization instanceof ValueVisualization) {
-      componentFactory = this.componentFactoryResolver.resolveComponentFactory(ValueVisualizationComponent);
-    } else if (this.measure.visualization instanceof ChartVisualization) {
-      componentFactory = this.componentFactoryResolver.resolveComponentFactory(ChartVisualizationComponent);
-    } else if (this.measure.visualization instanceof KpiVisualization) {
-      componentFactory = this.componentFactoryResolver.resolveComponentFactory(KpiVisualizationComponent);
-    } else {
-      this.visualizationError = `The visualization type ${this.measure.visualization.type} is not supported yet.`;
-      return;
+    if (this.measure) {
+      let componentFactory;
+      if (this.measure.visualization instanceof ValueVisualization) {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ValueVisualizationComponent);
+      } else if (this.measure.visualization instanceof ChartVisualization) {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ChartVisualizationComponent);
+      } else if (this.measure.visualization instanceof KpiVisualization) {
+        componentFactory = this.componentFactoryResolver.resolveComponentFactory(KpiVisualizationComponent);
+      } else {
+        this.visualizationError = `The visualization type ${this.measure.visualization.type} is not supported yet.`;
+        return;
+      }
+      const viewContainerRef = this.visualizationHost.viewContainerRef;
+      viewContainerRef.clear();
+      this.componentRef = viewContainerRef.createComponent(componentFactory);
+      this.relayPropertiesToVisualizationComponent();
+      this.visualizationError = null;
     }
-    let viewContainerRef = this.visualizationHost.viewContainerRef;
-    viewContainerRef.clear();
-    this.componentRef = viewContainerRef.createComponent(componentFactory);
-    this.relayPropertiesToVisualizationComponent();
-    this.visualizationError = null;
   }
 
-  private relayPropertiesToVisualizationComponent(){
+  private relayPropertiesToVisualizationComponent() {
     if (this.componentRef) {
-      (<VisualizationComponent>this.componentRef.instance).service = this.service;
-      (<VisualizationComponent>this.componentRef.instance).measure = this.measure;
+      (this.componentRef.instance as VisualizationComponent).service = this.service;
+      (this.componentRef.instance as VisualizationComponent).measure = this.measure;
     }
   }
 
@@ -105,7 +101,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
         format = 'GOOGLETIMELINECHART';
         break;
       default:
-        return `Chart type ${chartType} is not supported yet.`
+        return `Chart type ${chartType} is not supported yet.`;
     }
     let query = queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
@@ -128,10 +124,10 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
     }
-    let serviceRegex = /\$SERVICE\$/g;
-    let matches = query.match(serviceRegex);
-    let params = [];
-    for (let match of matches) {
+    const serviceRegex = /\$SERVICE\$/g;
+    const matches = query.match(serviceRegex);
+    const params = [];
+    for (const match of matches) {
       // for now we just use the first ID
       // support for multiple IDs is not implemented yet
       params.push(this.service.mobsosIDs[0]);

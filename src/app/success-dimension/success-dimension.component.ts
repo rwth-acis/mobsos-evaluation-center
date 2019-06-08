@@ -1,9 +1,7 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {SuccessFactor} from '../../success-model/success-factor';
 import {MeasureMap} from '../../success-model/measure-catalog';
-import {Las2peerService} from '../las2peer.service';
-import {ValueVisualization} from "../../success-model/visualization";
-import {ServiceInformation} from "../store.service";
+import {ServiceInformation} from '../store.service';
 
 @Component({
   selector: 'app-success-dimension',

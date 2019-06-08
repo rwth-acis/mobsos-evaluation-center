@@ -1,6 +1,10 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ChartVisualizationComponent } from './chart-visualization.component';
+import {ChartVisualizationComponent} from './chart-visualization.component';
+import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular/material';
+import {PlotlyModule} from 'angular-plotly.js';
+import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 describe('ChartVisualizationComponent', () => {
   let component: ChartVisualizationComponent;
@@ -8,9 +12,20 @@ describe('ChartVisualizationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChartVisualizationComponent ]
+      declarations: [ChartVisualizationComponent],
+      imports: [
+        MatProgressSpinnerModule,
+        MatIconModule,
+        PlotlyModule,
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF
+        }),
+        MatDialogModule,
+        HttpClientTestingModule,
+      ],
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
