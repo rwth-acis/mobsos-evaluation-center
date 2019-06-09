@@ -21,7 +21,7 @@ export class ValueVisualizationComponent extends BaseVisualizationComponent
     const queryParams = this.getParamsForQuery(query);
     query = BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(query);
     this.fetchVisualization(query, queryParams, 'JSON').then(result => {
-      const data = JSON.parse(result);
+      const data = result;
       this.value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
       this.visualizationInitialized = true;
     });

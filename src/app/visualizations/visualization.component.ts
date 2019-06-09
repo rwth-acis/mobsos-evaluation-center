@@ -81,10 +81,12 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     const serviceRegex = /\$SERVICE\$/g;
     const matches = query.match(serviceRegex);
     const params = [];
-    for (const match of matches) {
-      // for now we just use the first ID
-      // support for multiple IDs is not implemented yet
-      params.push(this.service.mobsosIDs[0]);
+    if (matches) {
+      for (const match of matches) {
+        // for now we just use the first ID
+        // support for multiple IDs is not implemented yet
+        params.push(this.service.mobsosIDs[0]);
+      }
     }
     return params;
   }

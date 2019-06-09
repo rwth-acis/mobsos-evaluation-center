@@ -24,8 +24,14 @@ export class Visualization {
 export class ValueVisualization extends Visualization {
   type = 'Value';
 
+  constructor(public unit: string) {
+    super();
+  }
+
   static fromXml(xml: Element): ValueVisualization {
-    return new ValueVisualization();
+    const unitArr = Array.from(xml.getElementsByTagName('unit'));
+    const unit = unitArr.length === 0 ? null : unitArr[0].innerHTML;
+    return new ValueVisualization(unit);
   }
 
   toXml() {
@@ -115,8 +121,8 @@ export class KpiVisualization extends Visualization {
     term.forEach((termPart, index) => {
       if (operatorSigns.includes(termPart)) {
         const operatorFunc: CallableFunction = this.operators[termPart];
-        const leftHandSide = this.evaluateTerm(term.slice(0, index - 1));
-        const rightHandSide = this.evaluateTerm(term.slice(index + 1, -1));
+        const leftHandSide = this.evaluateTerm(term.slice(0, index));
+        const rightHandSide = this.evaluateTerm(term.slice(index + 1));
         result = operatorFunc(leftHandSide, rightHandSide);
       }
     });

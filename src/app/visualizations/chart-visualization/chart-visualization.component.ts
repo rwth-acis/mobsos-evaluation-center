@@ -26,7 +26,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     let query = this.measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
     query = ChartVisualizationComponent.applyCompatibilityFixForVisualizationService(query);
-    const dataTable = JSON.parse(await this.fetchVisualization(query, queryParams, 'JSON'));
+    const dataTable = await this.fetchVisualization(query, queryParams, 'JSON');
     if (dataTable instanceof Array && dataTable.length >= 2) {
       const typeList = dataTable[1] as Array<string>;
       const data = dataTable.slice(2);

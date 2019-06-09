@@ -33,7 +33,7 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
         let response;
         try {
           response = await this.fetchVisualization(sql, queryParams, 'JSON');
-          const data = JSON.parse(response);
+          const data = response;
           const value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
           term.push(value);
         } catch (e) {
