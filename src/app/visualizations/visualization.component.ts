@@ -85,7 +85,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs[0]);
+        params.push(this.service.mobsosIDs.slice(-1)[0] );
       }
     }
     return params;

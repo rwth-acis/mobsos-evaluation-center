@@ -4,6 +4,7 @@ import {Las2peerService} from '../../las2peer.service';
 import {MatDialog} from '@angular/material';
 import {map} from 'lodash-es';
 import {ChartVisualization} from '../../../success-model/visualization';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -13,15 +14,25 @@ import {ChartVisualization} from '../../../success-model/visualization';
 export class ChartVisualizationComponent extends BaseVisualizationComponent implements OnInit {
   public graph = {
     data: [],
-    layout: {width: 320, height: 120},
-    config: {displayModeBar: false}
+    layout: {
+      autosize: true,
+      margin: {
+        t: 20, // top margin
+        l: 40, // left margin
+        r: 20, // right margin
+        b: 40, // bottom margin
+        pad: 4
+      }
+    },
+    config: {displayModeBar: false, locale: 'en'}
   };
 
-  constructor(las2peer: Las2peerService, dialog: MatDialog, ) {
+  constructor(las2peer: Las2peerService, dialog: MatDialog, private translate: TranslateService) {
     super(las2peer, dialog);
   }
 
   async renderVisualization() {
+    this.graph.config.locale = this.translate.currentLang;
     const visualization = this.measure.visualization as ChartVisualization;
     let query = this.measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);

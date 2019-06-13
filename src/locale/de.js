@@ -21,6 +21,10 @@ export const translations = {
     "expert-mode": {
       "switch-label": "Expertenmodus",
     },
+    "update": {
+      "message": "Ein neue Version ist verfügbar. Neuladen zum Aktualisieren.",
+      "reload": "Neuladen"
+    }
   },
   "raw-edit": {
     "measures": {

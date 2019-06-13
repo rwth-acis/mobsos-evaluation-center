@@ -5,7 +5,6 @@ import {SuccessModel} from '../../success-model/success-model';
 import {MeasureCatalog} from '../../success-model/measure-catalog';
 import {NGXLogger} from 'ngx-logger';
 
-
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -20,6 +19,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog: MeasureCatalog;
   successModelXml: Document;
   successModel: SuccessModel;
+  editMode = false;
 
   constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger) {
   }
@@ -53,6 +53,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.selectedService.subscribe((serviceID) => {
       this.selectedService = serviceID;
       this.fetchXml();
+    });
+    this.store.editMode.subscribe(editMode => {
+      this.editMode = editMode;
+      if (editMode) {
+        this.store.startSynchronizingWorkspaces();
+      } else {
+        this.store.stopSynchronizingWorkspaces();
+      }
     });
     this.store.startPolling();
     this.store.services.subscribe((services) => {
@@ -98,4 +106,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
   }
 
+  onEditModeChanged() {
+    this.store.setEditMode(!this.editMode);
+  }
 }

@@ -12,4 +12,8 @@
 </span>
 <plotly-plot *ngIf="visualizationInitialized"
              [data]="graph.data"
-             [config]="graph.config"></plotly-plot>
+             [config]="graph.config"
+             [layout]="graph.layout"
+             [useResizeHandler]="true"
+             [style]="{position: 'relative', width: '100%', height: '100%'}"
+></plotly-plot>

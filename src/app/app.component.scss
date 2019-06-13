@@ -59,10 +59,34 @@ mat-sidenav-container {
       --statusbar-background: #{mat-color($primary)};
       --user-widget-button-background: white;
       color: white;
+
+      h2 {
+        margin-top: 25px;
+        display: inline-block;
+      }
+
+      #menu-button {
+        font-size: 30px;
+      }
     }
 
     main {
+      min-height: calc(100vh - 180px);
+    }
+
+    main, footer {
       padding: 10px 10px 10px 10px;
+    }
+
+    footer{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      #las2peer-logo{
+        height: 50px;
+        margin: 5px;
+      }
     }
 
     button[mat-icon-button] {

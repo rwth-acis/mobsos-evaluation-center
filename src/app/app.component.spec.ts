@@ -15,6 +15,7 @@ import {createTranslateLoader} from './app.module';
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {ServiceWorkerModule} from '@angular/service-worker';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -41,6 +42,7 @@ describe('AppComponent', () => {
         MatSelectModule,
         MatSnackBarModule,
         HttpClientTestingModule,
+        ServiceWorkerModule.register('', {enabled: false}),
       ],
       declarations: [
         AppComponent

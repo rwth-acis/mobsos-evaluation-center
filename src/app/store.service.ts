@@ -5,6 +5,9 @@ import {Las2peerService} from './las2peer.service';
 import {find, throttle} from 'lodash-es';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {environment} from '../environments/environment';
+import {SuccessModel} from '../success-model/success-model';
+import {MeasureCatalog} from '../success-model/measure-catalog';
+import {YJsService} from './y-js.service';
 
 export interface State {
   services: ServiceCollection;
@@ -12,6 +15,7 @@ export interface State {
   user: object;
   selectedGroup: string;
   selectedService: string;
+  editMode: boolean;
 }
 
 export interface GroupInformation {
@@ -33,6 +37,23 @@ export interface ServiceInformation {
 export interface ServiceCollection {
   [key: string]: ServiceInformation;
 }
+
+export interface ApplicationWorkspace {
+  createdAT: string;
+  model: SuccessModel;
+  catalog: MeasureCatalog;
+}
+
+export interface UserWorkspace {
+  // service name is key
+  [key: string]: ApplicationWorkspace;
+}
+
+export interface CommunityWorkspace {
+  // user ID is key
+  [key: string]: UserWorkspace;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -62,12 +83,20 @@ export class StoreService {
 
   userSubject = new BehaviorSubject(null);
   public user = this.userSubject.asObservable();
+
   selectedGroupSubject = new BehaviorSubject(null);
   public selectedGroup = this.selectedGroupSubject.asObservable();
+
   selectedServiceSubject = new BehaviorSubject(null);
   public selectedService = this.selectedServiceSubject.asObservable();
 
-  constructor(private logger: NGXLogger, private las2peer: Las2peerService) {
+  editModeSubject = new BehaviorSubject<boolean>(false);
+  public editMode = this.editModeSubject.asObservable();
+
+  communityWorkspaceSubject = new BehaviorSubject<CommunityWorkspace>({});
+  public communityWorkspace = this.communityWorkspaceSubject.asObservable();
+
+  constructor(private logger: NGXLogger, private las2peer: Las2peerService, private yjs: YJsService) {
     const previousState = StoreService.loadState();
     if (previousState !== null) {
       this.servicesSubject.next(previousState.services);
@@ -75,10 +104,12 @@ export class StoreService {
       this.userSubject.next(previousState.user);
       this.selectedGroupSubject.next(previousState.selectedGroup);
       this.selectedServiceSubject.next(previousState.selectedService);
+      this.editModeSubject.next(previousState.editMode);
     }
-    const throtteledSaveStateFunc = throttle(() => this.saveState(), 10000);
+    const throtteledSaveStateFunc = throttle(() => this.saveState(), 5000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.groups.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
+    this.editMode.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.user.pipe(distinctUntilChanged()).subscribe((user) => {
       if (user) {
         this.las2peer.setCredentials(user.profile.preferred_username, user.profile.sub, user.access_token);
@@ -173,6 +204,7 @@ export class StoreService {
         user: this.userSubject.getValue(),
         selectedGroup: this.selectedGroupSubject.getValue(),
         selectedService: this.selectedServiceSubject.getValue(),
+        editMode: this.editModeSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -183,12 +215,30 @@ export class StoreService {
     }
   }
 
+  startSynchronizingWorkspaces() {
+    this.yjs.getSyncedSubject(this.selectedGroupSubject.getValue()).then(workspaceSubject => {
+      console.error(workspaceSubject.getValue());
+    });
+  }
+
+  stopSynchronizingWorkspaces() {
+
+  }
+
   setUser(user) {
     this.userSubject.next(user);
   }
 
   setGroup(groupID: string) {
     this.selectedGroupSubject.next(groupID);
+  }
+
+  setEditMode(editMode: boolean) {
+    this.editModeSubject.next(editMode);
+  }
+
+  createWorkspace() {
+
   }
 
   /**

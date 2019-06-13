@@ -51,11 +51,12 @@
                                  [attr.baseurl]="environment.las2peerWebConnectorUrl"
                                  oidcpopupsigninurl="oidc-signin"
                                  oidcpopupsignouturl="oidc-signout"
-                                 oidcsilentsigninturl="oidc-silent"
+                                 oidcSilentSigninUrl="oidc-silent"
                                  [attr.loggedIn]="user == null ? null : true "
                                  [attr.loginName]="user == null ? '' : user.profile.preferred_username"
                                  [attr.loginOidcToken]="user == null ? '' : user.access_token"
                                  [attr.loginOidcSub]="user == null ? '' : user.profile.sub"
+                                 [attr.useRedirect]="true"
                                  autoAppendWidget=true
                                  (signed-in)="setUser($event.detail)"
                                  (signed-out)="setUser(null)">
@@ -67,5 +68,10 @@
     <main>
       <router-outlet></router-outlet>
     </main>
+    <footer>
+      <a href="https://las2peer.org/" target="_blank">
+        <img id="las2peer-logo" alt="las2peer-logo" src="assets/footer/las2peer.svg">
+      </a>
+    </footer>
   </mat-sidenav-content>
 </mat-sidenav-container>

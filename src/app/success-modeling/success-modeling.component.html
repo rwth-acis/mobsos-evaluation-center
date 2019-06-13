@@ -11,7 +11,7 @@
   </mat-toolbar-row>
 
   <mat-toolbar-row>
-    <mat-slide-toggle labelPosition="before">
+    <mat-slide-toggle labelPosition="before" [checked]="editMode" (toggleChange)="onEditModeChanged()">
       {{'success-modeling.edit-mode-toggle'|translate}}
     </mat-slide-toggle>
   </mat-toolbar-row>

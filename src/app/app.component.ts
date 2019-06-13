@@ -7,8 +7,10 @@ import {NGXLogger} from 'ngx-logger';
 import {LanguageService} from './language.service';
 import {GroupInformation, StoreService} from './store.service';
 import {CordovaPopupNavigator, UserManager} from 'oidc-client';
-import {MatSidenav} from '@angular/material';
+import {MatSidenav, MatSnackBar} from '@angular/material';
 import * as Hammer from 'hammerjs';
+import {SwUpdate} from '@angular/service-worker';
+import {TranslateService} from '@ngx-translate/core';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -46,7 +48,8 @@ export class AppComponent implements OnInit, OnDestroy {
   signedIn = false;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
-              changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef) {
+              changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,
+              private swUpdate: SwUpdate, private snackBar: MatSnackBar, private translate: TranslateService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener('change', this.mobileQueryListener, false);
@@ -102,6 +105,16 @@ export class AppComponent implements OnInit, OnDestroy {
         this.sidenav.close();
       }
     });
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.available.subscribe(async () => {
+        const message = await this.translate.get('app.update.message').toPromise();
+        const reloadAction = await this.translate.get('app.update.reload').toPromise();
+        const snackBarRef = this.snackBar.open(message, reloadAction, null);
+        snackBarRef.onAction().subscribe(() => {
+          window.location.reload();
+        });
+      });
+    }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
     this.store.startPolling();
     this.store.groups.subscribe((groups) => {
