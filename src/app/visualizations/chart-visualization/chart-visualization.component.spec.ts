@@ -5,6 +5,8 @@ import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular
 import {PlotlyModule} from 'angular-plotly.js';
 import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {createTranslateLoader} from '../../app.module';
 
 describe('ChartVisualizationComponent', () => {
   let component: ChartVisualizationComponent;
@@ -17,6 +19,12 @@ describe('ChartVisualizationComponent', () => {
         MatProgressSpinnerModule,
         MatIconModule,
         PlotlyModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (createTranslateLoader)
+          }
+        }),
         LoggerModule.forRoot({
           level: NgxLoggerLevel.TRACE,
           serverLogLevel: NgxLoggerLevel.OFF

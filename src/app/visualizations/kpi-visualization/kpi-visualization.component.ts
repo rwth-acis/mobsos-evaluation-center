@@ -3,6 +3,7 @@ import {BaseVisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
 import {MatDialog} from '@angular/material';
 import {KpiVisualization, KpiVisualizationOperand} from '../../../success-model/visualization';
+import {isNumber} from 'util';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -13,7 +14,7 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
   abstractTerm = [];
   term = [];
 
-  constructor(las2peer: Las2peerService, dialog: MatDialog, ) {
+  constructor(las2peer: Las2peerService, dialog: MatDialog) {
     super(las2peer, dialog);
   }
 
@@ -46,12 +47,14 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
     if (term.length > 1) {
       abstractTerm.push('=');
       abstractTerm.push(this.measure.name);
-      const termResult = visualization.evaluateTerm(term);
+      let termResult = visualization.evaluateTerm(term);
+      if (isNumber(termResult)) {
+        termResult = termResult.toFixed(2);
+      }
       term.push('=');
       term.push(termResult);
     }
     this.abstractTerm = abstractTerm;
     this.term = term;
   }
-
 }
