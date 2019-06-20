@@ -6,6 +6,7 @@ export const translations = {
       "raw-edit": "Raw Edit",
     },
     "elements": {
+      "cancel-label": "Cancel",
       "community-dropdown-label": "Community",
       "error-label": "Error",
       "loading-label": "Loading",
@@ -47,9 +48,21 @@ export const translations = {
     },
   },
   "success-dimension": {
-    "no-measures-placeholder": "This dimension has factors with measures attached to it yet. You can enable the edit mode to add measures to it.",
+    "add-factor-dialog": {
+      "title": "Add Factor",
+      "factor-input-placeholder": "Factor Name",
+    },
+    "add-factor-tooltip": "Add Factor",
+    "remove-factor-prompt": "Are your sure you want to remove this factor?",
+    "remove-factor-tooltip": "Remove factor",
+  },
+  "success-factor": {
+    "add-measure-button": "Add Measure",
+    "no-measures-placeholder": "This factor has no measures attached to it yet.",
+    "remove-measure-tooltip": "Remove Measure",
   },
   "success-modeling": {
+    "copy-workspace-prompt": "Are you sure you want to replace your current model?",
     "dimensions": {
       "system-quality": "System Quality",
       "system-quality-description": "How well does the technology work?",
@@ -64,9 +77,39 @@ export const translations = {
       "community-impact": "Community Impact",
       "community-impact-description": "How much does this application affect the whole community?",
     },
+    "discard-changes-prompt": "Discard changes?",
     "edit-mode-toggle": "Edit",
+    "edit-disabled-tooltip": "You must be a member of the selected community to edit",
+    "edit-tooltip": "Create or edit the success model for this application",
+    "info": {
+      "workspace-ask-owner-to-save": "To save changes for everybody you have to ask the owner of this workspace to hit the save button.",
+      "own-workspace": "This is your own workspace. You can change the success model to your liking and press the save button at the bottom of the page.",
+      "workspace-of": "This is the workspace of ",
+      "workspace-rights-editor": "You can make own changes to the success model.",
+      "workspace-rights-spectator": "You can watch changes made by others, but not make changes yourself.",
+    },
     "message-no-application-selected": "No application selected. Please select an application above to see its success model.",
     "message-no-success-model-found": "No success model present. You can enable the edit mode above and create one.",
+    "pick-measure-dialog": {
+      "title": "Pick a Measure",
+    },
+    "save-model-button": "Save Model",
     "select-application": "Application",
+    "visitors": {
+      "edit-role-description": "Allow editing",
+      "heading": "Visitors",
+      "no-visitors": "No visitors",
+      "spectator-role-description": "Allow viewing only",
+      "tooltip": "Show people watching you modelling",
+    },
+    "workspace-closed-message": "The owner has closed the workspace.",
+    "workspaces": {
+      "copy-workspace": "Copy workspace",
+      "go-to": "Go to Workspace",
+      "heading": "Workspaces",
+      "no-workspaces": "No other workspaces",
+      "tooltip": "See who else is working on a model for this application",
+      "your-workspace": "You",
+    },
   },
 };

@@ -60,7 +60,7 @@
                                  autoAppendWidget=true
                                  (signed-in)="setUser($event.detail)"
                                  (signed-out)="setUser(null)">
-      <button mat-icon-button *ngIf="mobileQuery.matches" slot="left" (click)="snav.toggle()">
+      <button mat-icon-button id="menu-button" *ngIf="mobileQuery.matches" slot="left" (click)="snav.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
       <h2 slot="title">{{mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center'}}</h2>

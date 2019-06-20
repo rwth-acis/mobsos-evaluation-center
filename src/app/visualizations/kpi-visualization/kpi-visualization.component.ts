@@ -1,4 +1,4 @@
-import {Component, OnInit, SimpleChanges} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {BaseVisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
 import {MatDialog} from '@angular/material';
@@ -20,7 +20,10 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
 
   async renderVisualization() {
     const queries = this.measure.queries;
-    const visualization: KpiVisualization = this.measure.visualization as KpiVisualization;
+    let visualization: KpiVisualization = this.measure.visualization as KpiVisualization;
+    if (!(visualization instanceof KpiVisualization)) {
+      visualization = new KpiVisualization((visualization as KpiVisualization).operationsElements);
+    }
     const abstractTerm = [];
     const term = [];
 

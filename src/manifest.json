@@ -1,8 +1,8 @@
 {
-  "name": "mobsos-evaluation-center",
-  "short_name": "mobsos-evaluation-center",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "name": "MobSOS Evaluation Center",
+  "short_name": "MobSOS EC",
+  "theme_color": "#009688",
+  "background_color": "#00796b",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

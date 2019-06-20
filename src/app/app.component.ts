@@ -55,14 +55,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.mobileQuery.addEventListener('change', this.mobileQueryListener, false);
   }
 
-  static objectFlip(obj) {
-    const ret = {};
-    Object.keys(obj).forEach((key) => {
-      ret[obj[key]] = key;
-    });
-    return ret;
-  }
-
   ngOnDestroy(): void {
     this.store.stopPolling();
     this.mobileQuery.removeEventListener('change', this.mobileQueryListener, false);
@@ -95,12 +87,16 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    hammertime.on('panright', (ev) => {
+    hammertime.on('panright', (event) => {
       if (this.mobileQuery.matches) {
-        this.sidenav.open();
+        if (
+          event.center.x >= 1 && event.center.x <= 20
+        ) {
+          this.sidenav.open();
+        }
       }
     });
-    hammertime.on('panleft', (ev) => {
+    hammertime.on('panleft', (event) => {
       if (this.mobileQuery.matches) {
         this.sidenav.close();
       }

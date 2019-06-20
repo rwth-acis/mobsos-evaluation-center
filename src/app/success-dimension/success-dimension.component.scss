@@ -1,7 +1,30 @@
-:host{
+:host {
   display: block;
 }
 
-mat-icon[mat-card-avatar]{
+mat-icon[mat-card-avatar] {
   font-size: 40px;
+}
+
+#push-right {
+  flex-grow: 1;
+}
+
+#add-factor-icon {
+  font-size: 40px;
+  margin-left: -15px;
+  margin-top: -3px;
+}
+
+.factor-row {
+  display: flex;
+
+  button {
+    margin-top: 5px;
+  }
+
+  app-success-factor {
+    width: 100%;
+    flex-grow: 1;
+  }
 }

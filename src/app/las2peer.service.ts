@@ -134,7 +134,6 @@ export class Las2peerService {
       this.makeRequest<SuccessModel>(url)
         .then((response) => resolve(response.xml))
         .catch((response) => {
-          this.logger.error(response);
           reject(response);
         });
     });
@@ -187,7 +186,6 @@ export class Las2peerService {
     return this.makeRequest<MeasureCatalog>(url)
       .then((response) => response.xml)
       .catch((response) => {
-        this.logger.error(response);
         throw response;
       });
   }

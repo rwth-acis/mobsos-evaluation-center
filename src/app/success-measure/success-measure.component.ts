@@ -11,10 +11,8 @@ import {
 } from '@angular/core';
 import {Measure} from '../../success-model/measure';
 import {ServiceInformation} from '../store.service';
-import {ChartVisualization, KpiVisualization, ValueVisualization} from '../../success-model/visualization';
 import {Las2peerService} from '../las2peer.service';
 import {DomSanitizer} from '@angular/platform-browser';
-import {MatDialog} from '@angular/material';
 import {VisualizationDirective} from '../visualization.directive';
 import {ValueVisualizationComponent} from '../visualizations/value-visualization/value-visualization.component';
 import {VisualizationComponent} from '../visualizations/visualization.component';
@@ -34,7 +32,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   public error: Response;
   componentRef: ComponentRef<{}>;
 
-  constructor(private las2peer: Las2peerService, private sanitizer: DomSanitizer, private dialog: MatDialog,
+  constructor(private las2peer: Las2peerService, private sanitizer: DomSanitizer,
               private componentFactoryResolver: ComponentFactoryResolver) {
   }
 
@@ -57,14 +55,15 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   refreshVisualization() {
     if (this.measure) {
       let componentFactory;
-      if (this.measure.visualization instanceof ValueVisualization) {
+      const visualization = this.measure.visualization;
+      if (visualization.type === 'Value') {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(ValueVisualizationComponent);
-      } else if (this.measure.visualization instanceof ChartVisualization) {
+      } else if (visualization.type === 'Chart') {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(ChartVisualizationComponent);
-      } else if (this.measure.visualization instanceof KpiVisualization) {
+      } else if (visualization.type === 'KPI') {
         componentFactory = this.componentFactoryResolver.resolveComponentFactory(KpiVisualizationComponent);
       } else {
-        this.visualizationError = `The visualization type ${this.measure.visualization.type} is not supported yet.`;
+        this.visualizationError = `The visualization type ${visualization.type} is not supported yet.`;
         return;
       }
       const viewContainerRef = this.visualizationHost.viewContainerRef;

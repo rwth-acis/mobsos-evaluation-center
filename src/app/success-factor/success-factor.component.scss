@@ -1,0 +1,22 @@
+h3 {
+  font-weight: 500;
+}
+
+.measure-row {
+  display: flex;
+
+  button {
+    margin-top: 5px;
+  }
+
+  app-success-measure {
+    width: 100%;
+    flex-grow: 1;
+    min-height: 83px;
+    max-height: 500px;
+  }
+}
+
+#add-measure-button {
+  width: 100%;
+}

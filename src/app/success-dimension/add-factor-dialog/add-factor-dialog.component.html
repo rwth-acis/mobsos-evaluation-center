@@ -1,0 +1,11 @@
+<h1 mat-dialog-title>{{'success-dimension.add-factor-dialog.title'|translate}}</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+    <input matInput required placeholder="{{'success-dimension.add-factor-dialog.factor-input-placeholder'|translate}}"
+           [(ngModel)]="factorName">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button cdkFocusInitial [disabled]="!factorName" [mat-dialog-close]="factorName">Ok</button>
+  <button mat-button (click)="onCancelClick()">{{'shared.elements.cancel-label'|translate}}</button>
+</div>

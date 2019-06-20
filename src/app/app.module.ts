@@ -5,19 +5,23 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
+  MatBadgeModule,
   MatButtonModule,
+  MatButtonToggleModule,
   MatCardModule,
   MatDialogModule,
   MatFormFieldModule,
   MatIconModule,
+  MatInputModule,
   MatListModule,
-  MatProgressSpinnerModule,
+  MatProgressSpinnerModule, MatRippleModule,
   MatSelectModule,
   MatSidenavModule,
   MatSlideToggleModule,
   MatSnackBarModule,
   MatTabsModule,
-  MatToolbarModule
+  MatToolbarModule,
+  MatTooltipModule
 } from '@angular/material';
 import {OidcSigninComponent} from './oidc-signin/oidc-signin.component';
 import {OidcSignoutComponent} from './oidc-signout/oidc-signout.component';
@@ -47,6 +51,10 @@ import {VisualizationDirective} from './visualization.directive';
 import {ChartVisualizationComponent} from './visualizations/chart-visualization/chart-visualization.component';
 import {KpiVisualizationComponent} from './visualizations/kpi-visualization/kpi-visualization.component';
 import {BaseVisualizationComponent} from './visualizations/visualization.component';
+import {ConfirmationDialogComponent} from './confirmation-dialog/confirmation-dialog.component';
+import {MdePopoverModule} from "@material-extended/mde";
+import {AddFactorDialogComponent} from './success-dimension/add-factor-dialog/add-factor-dialog.component';
+import { PickMeasureDialogComponent } from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -82,7 +90,10 @@ export function createTranslateLoader() {
     ValueVisualizationComponent,
     VisualizationDirective,
     ChartVisualizationComponent,
-    KpiVisualizationComponent
+    KpiVisualizationComponent,
+    ConfirmationDialogComponent,
+    AddFactorDialogComponent,
+    PickMeasureDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -114,7 +125,13 @@ export function createTranslateLoader() {
     PlotlyModule,
     ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production}),
     MatDialogModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatButtonToggleModule,
+    MatBadgeModule,
+    MdePopoverModule,
+    MatTooltipModule,
+    MatInputModule,
+    MatRippleModule,
   ],
   providers: [
     {
@@ -128,7 +145,11 @@ export function createTranslateLoader() {
     ErrorDialogComponent,
     ValueVisualizationComponent,
     ChartVisualizationComponent,
-    KpiVisualizationComponent],
+    KpiVisualizationComponent,
+    ConfirmationDialogComponent,
+    AddFactorDialogComponent,
+    PickMeasureDialogComponent,
+  ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ]

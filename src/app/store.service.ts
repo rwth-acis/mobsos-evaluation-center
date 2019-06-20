@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
 import {Las2peerService} from './las2peer.service';
-import {find, throttle} from 'lodash-es';
-import {distinctUntilChanged} from 'rxjs/operators';
+import {find, isEmpty, throttle} from 'lodash-es';
+import {distinctUntilChanged, filter, pairwise} from 'rxjs/operators';
 import {environment} from '../environments/environment';
 import {SuccessModel} from '../success-model/success-model';
 import {MeasureCatalog} from '../success-model/measure-catalog';
@@ -38,8 +38,15 @@ export interface ServiceCollection {
   [key: string]: ServiceInformation;
 }
 
+export interface Visitor {
+  username: string;
+  role: string;
+}
+
 export interface ApplicationWorkspace {
-  createdAT: string;
+  createdAt: string;
+  createdBy: string;
+  visitors: Visitor[];
   model: SuccessModel;
   catalog: MeasureCatalog;
 }
@@ -96,7 +103,24 @@ export class StoreService {
   communityWorkspaceSubject = new BehaviorSubject<CommunityWorkspace>({});
   public communityWorkspace = this.communityWorkspaceSubject.asObservable();
 
+  communityWorkspaceInitializedSubject = new BehaviorSubject<boolean>(false);
+  public communityWorkspaceInitialized = this.communityWorkspaceInitializedSubject.asObservable()
+    .pipe(distinctUntilChanged());
+
+  public yjsConnected: Observable<boolean>;
+
   constructor(private logger: NGXLogger, private las2peer: Las2peerService, private yjs: YJsService) {
+    this.yjsConnected = this.yjs.connected;
+    // workspace sync
+    this.selectedGroup.pipe(pairwise()).subscribe((groupData) => {
+      if (groupData[0] !== groupData[1]) {
+        // stop syncing workspace from previous group
+        this.stopSynchronizingWorkspace(groupData[0]);
+        // start syncing workspace from current group
+        this.startSynchronizingWorkspace(groupData[1]);
+        this.editModeSubject.next(false);
+      }
+    });
     const previousState = StoreService.loadState();
     if (previousState !== null) {
       this.servicesSubject.next(previousState.services);
@@ -119,11 +143,17 @@ export class StoreService {
       throtteledSaveStateFunc();
     });
     // merge service discovery data from the different sources
-    this.servicesFromDiscoverySubject.subscribe(() => this.mergeServiceData());
-    this.servicesFromMobSOSSubject.subscribe(() => this.mergeServiceData());
+    this.servicesFromDiscoverySubject
+      .pipe(filter(value => !isEmpty(value)))
+      .subscribe(() => this.mergeServiceData());
+    this.servicesFromMobSOSSubject
+      .pipe(filter(value => !isEmpty(value)))
+      .subscribe(() => this.mergeServiceData());
     // merge group data from the different sources
-    this.groupsFromContactServiceSubject.subscribe(() => this.mergeGroupData());
-    this.groupsFromMobSOSSubject.subscribe(() => this.mergeGroupData());
+    this.groupsFromContactServiceSubject.pipe(filter(value => !isEmpty(value)))
+      .subscribe(() => this.mergeGroupData());
+    this.groupsFromMobSOSSubject.pipe(filter(value => !isEmpty(value)))
+      .subscribe(() => this.mergeGroupData());
     // check if the group data from mobsos is in sync with the group data from the contact service
     this.groupsFromMobSOSSubject.subscribe(() => this.transferGroupDataToMobSOS());
   }
@@ -215,14 +245,20 @@ export class StoreService {
     }
   }
 
-  startSynchronizingWorkspaces() {
-    this.yjs.getSyncedSubject(this.selectedGroupSubject.getValue()).then(workspaceSubject => {
-      console.error(workspaceSubject.getValue());
-    });
+  startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
+    if (name) {
+      this.logger.debug('Synchronizing community workspace via y-js...');
+      this.yjs.syncObject(name, this.communityWorkspaceSubject, this.communityWorkspaceInitializedSubject);
+    }
   }
 
-  stopSynchronizingWorkspaces() {
-
+  stopSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
+    if (name) {
+      this.logger.debug('Stopping community workspace synchronization...');
+      this.yjs.stopSync(name);
+      this.communityWorkspaceInitializedSubject.next(false);
+      this.communityWorkspaceSubject.next({});
+    }
   }
 
   setUser(user) {
@@ -237,8 +273,18 @@ export class StoreService {
     this.editModeSubject.next(editMode);
   }
 
-  createWorkspace() {
+  setCommunityWorkspace(workspace: CommunityWorkspace) {
+    this.communityWorkspaceSubject.next(workspace);
+  }
 
+  async waitUntilWorkspaceIsSynchronized() {
+    return new Promise(resolve => {
+      this.communityWorkspaceInitialized.subscribe(initialized => {
+        if (initialized) {
+          resolve();
+        }
+      });
+    });
   }
 
   /**
@@ -262,7 +308,7 @@ export class StoreService {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
       const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split('@', 2)[0];
       let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
-      if (serviceAlias == null) {
+      if (!serviceAlias) {
         serviceAlias = serviceName;
       }
       // only add mobsos service data if the data from the discovery is missing

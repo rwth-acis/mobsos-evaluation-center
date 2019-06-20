@@ -1,7 +1,11 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {SuccessFactor} from '../../success-model/success-factor';
 import {MeasureMap} from '../../success-model/measure-catalog';
 import {ServiceInformation} from '../store.service';
+import {AddFactorDialogComponent} from './add-factor-dialog/add-factor-dialog.component';
+import {MatDialog} from '@angular/material';
+import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-success-dimension',
@@ -14,8 +18,11 @@ export class SuccessDimensionComponent implements OnInit {
   @Input() name: string;
   @Input() description: string;
   @Input() icon: string;
+  @Input() editMode = false;
 
-  constructor() {
+  @Output() factorsChange = new EventEmitter<SuccessFactor[]>();
+
+  constructor(private dialog: MatDialog, private translate: TranslateService) {
   }
 
   private _factors: SuccessFactor[];
@@ -30,5 +37,37 @@ export class SuccessDimensionComponent implements OnInit {
 
   ngOnInit() {
 
+  }
+
+  openAddFactorDialog() {
+    const dialogRef = this.dialog.open(AddFactorDialogComponent, {
+      width: '250px',
+      data: {factorName: null}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this._factors.push(new SuccessFactor(result, []));
+        this.factorsChange.emit(this._factors);
+      }
+    });
+  }
+
+  async openRemoveFactorDialog(factorIndex: number) {
+    const message = await this.translate.get('success-dimension.remove-factor-prompt').toPromise();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      minWidth: 300,
+      data: message,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.removeFactor(factorIndex);
+      }
+    });
+  }
+
+  private removeFactor(factorIndex: number) {
+    delete this._factors[factorIndex];
+    this.factorsChange.emit(this._factors);
   }
 }

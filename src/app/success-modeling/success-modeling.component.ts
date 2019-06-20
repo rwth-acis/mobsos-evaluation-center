@@ -1,9 +1,21 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ServiceCollection, StoreService} from '../store.service';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+  GroupInformation,
+  ServiceCollection,
+  StoreService,
+  Visitor
+} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
 import {SuccessModel} from '../../success-model/success-model';
 import {MeasureCatalog} from '../../success-model/measure-catalog';
 import {NGXLogger} from 'ngx-logger';
+import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
+import {MatDialog, MatSnackBar} from '@angular/material';
+import {TranslateService} from '@ngx-translate/core';
+import {isArray} from 'util';
+import {cloneDeep} from 'lodash';
 
 @Component({
   selector: 'app-success-modeling',
@@ -20,8 +32,13 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   successModelXml: Document;
   successModel: SuccessModel;
   editMode = false;
+  communityWorkspace: CommunityWorkspace;
+  user;
+  workspaceUser;
+  myGroups: GroupInformation[];
 
-  constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger) {
+  constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger,
+              private dialog: MatDialog, private translate: TranslateService, private snackBar: MatSnackBar) {
   }
 
   static parseXml(xml) {
@@ -46,6 +63,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.store.startPolling();
     this.store.selectedGroup.subscribe((groupID) => {
       this.groupID = groupID;
       this.fetchXml();
@@ -54,18 +72,30 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       this.selectedService = serviceID;
       this.fetchXml();
     });
-    this.store.editMode.subscribe(editMode => {
-      this.editMode = editMode;
-      if (editMode) {
-        this.store.startSynchronizingWorkspaces();
-      } else {
-        this.store.stopSynchronizingWorkspaces();
-      }
-    });
-    this.store.startPolling();
     this.store.services.subscribe((services) => {
       this.services = Object.keys(services);
       this.serviceMap = services;
+    });
+    this.store.user.subscribe(user => this.user = user);
+    this.store.communityWorkspace.subscribe(async (workspace) => {
+      this.communityWorkspace = workspace;
+      if (this.workspaceUser && this.workspaceUser !== this.getMyUsername() && this.getCurrentWorkspace() === null) {
+        this.initWorkspace().then(() => this.switchWorkspace(this.getMyUsername()));
+        const message = await this.translate.get('success-modeling.workspace-closed-message').toPromise();
+        this.snackBar.open('Owner closed workspace', null, {duration: 3000});
+      }
+    });
+    this.store.editMode.subscribe(async editMode => {
+      if (editMode && this.user) {
+        this.initWorkspace().then(() => this.switchWorkspace(this.getMyUsername()));
+      } else if (this.editMode === true) {
+        this.openClearWorkspaceDialog();
+      }
+      this.editMode = editMode;
+    });
+    this.store.groups.subscribe((groups) => {
+      const allGroups = Object.values(groups);
+      this.myGroups = allGroups.filter(group => group.member).sort();
     });
   }
 
@@ -74,10 +104,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onServiceSelected(service) {
+    this.store.setEditMode(false);
+    this.cleanData();
     this.store.selectedServiceSubject.next(service);
   }
 
-  fetchXml() {
+  async fetchXml() {
     if (this.groupID) {
       this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
         if (!xml) {
@@ -108,5 +140,243 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   onEditModeChanged() {
     this.store.setEditMode(!this.editMode);
+  }
+
+  getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
+    const result = [];
+    if (!this.selectedService) {
+      return [];
+    }
+    const userWorkspaces = Object.values(this.communityWorkspace);
+    for (const userWorkspace of userWorkspaces) {
+      if (Object.keys(userWorkspace).includes(this.selectedService)) {
+        result.push(userWorkspace[this.selectedService]);
+      }
+    }
+    return result;
+  }
+
+  getAllWorkspacesForCurrentServiceExceptActive() {
+    return this.getAllWorkspacesForCurrentService()
+      .filter(workspace => workspace.createdBy !== this.workspaceUser);
+  }
+
+  getNumberOfOpenWorkspacesFromOtherUsers(): number {
+    const myUsername = this.getMyUsername();
+    return this.getAllWorkspacesForCurrentService()
+      .filter(workspace => workspace.createdBy !== myUsername)
+      .length;
+  }
+
+  getNumberOfOtherWorkspaceVisitors(): number {
+    const visitors = this.getCurrentVisitorsExceptMe();
+    if (visitors == null) {
+      return 0;
+    }
+    return visitors.length;
+  }
+
+  getCurrentVisitors(): Visitor[] {
+    const workspace = this.getCurrentWorkspace();
+    if (workspace == null || !isArray(workspace.visitors)) {
+      return [];
+    }
+    return workspace.visitors;
+  }
+
+  getCurrentVisitorsExceptMe(): Visitor[] {
+    const visitors = this.getCurrentVisitors();
+    return visitors.filter(visitor => visitor.username !== this.getMyUsername());
+  }
+
+  switchWorkspace(user: string) {
+    this.workspaceUser = user;
+    const visitors = this.getCurrentWorkspace().visitors;
+    const myUsername = this.getMyUsername();
+    const meAsVisitorArr = visitors.filter(visitor => visitor.username === myUsername);
+    if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
+      visitors.push({username: myUsername, role: 'spectator'});
+      visitors.sort((a, b) => a.username > b.username ? 1 : -1);
+      this.persistWorkspaceChanges();
+    }
+  }
+
+  changeVisitorRole(visitorName: string, role: string) {
+    const visitors = this.getCurrentWorkspace().visitors;
+    const visitorSearchResult = visitors.filter(visitor => visitor.username === visitorName);
+    if (visitorSearchResult) {
+      visitorSearchResult[0].role = role;
+      this.persistWorkspaceChanges();
+    }
+  }
+
+  getMyRole(): string {
+    const myUsername = this.getMyUsername();
+    const workspace = this.getCurrentWorkspace();
+    if (!workspace) {
+      return null;
+    }
+    if (workspace.createdBy === myUsername) {
+      return 'owner';
+    }
+    const visitors = workspace.visitors;
+    const visitorSearchResult = visitors.filter(visitor => visitor.username === myUsername);
+    if (visitorSearchResult) {
+      return visitorSearchResult[0].role;
+    }
+    return 'spectator';
+  }
+
+  isMemberOfSelectedGroup(): boolean {
+    const searchResult = this.myGroups.filter(value => value.id === this.groupID);
+    return searchResult.length > 0;
+  }
+
+  canEdit() {
+    const role = this.getMyRole();
+    return role === 'owner' || role === 'editor';
+  }
+
+  getMeasureCatalog(): MeasureCatalog {
+    if (this.editMode) {
+      const workspace = this.getCurrentWorkspace();
+      if (!workspace) {
+        return null;
+      }
+      return workspace.catalog;
+    } else {
+      return this.measureCatalog;
+    }
+  }
+
+  getSuccessModel(): SuccessModel {
+    if (this.editMode) {
+      const workspace = this.getCurrentWorkspace();
+      if (!workspace) {
+        return null;
+      }
+      return workspace.model;
+    } else {
+      return this.successModel;
+    }
+  }
+
+  async openCopyWorkspaceDialog(owner: string) {
+    const message = await this.translate.get('success-modeling.copy-workspace-prompt').toPromise();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      minWidth: 300,
+      data: message,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.copyWorkspace(owner);
+      }
+    });
+  }
+
+  private getWorkspaceByUserAndService(user: string, service: string): ApplicationWorkspace {
+    if (!Object.keys(this.communityWorkspace).includes(user)) {
+      return null;
+    }
+    const userWorkspace = this.communityWorkspace[user];
+    if (!Object.keys(userWorkspace).includes(service)) {
+      return null;
+    }
+    return userWorkspace[service];
+  }
+
+  private getCurrentWorkspace(): ApplicationWorkspace {
+    return this.getWorkspaceByUserAndService(this.workspaceUser, this.selectedService);
+  }
+
+  private getMyUsername() {
+    return this.user.profile.preferred_username;
+  }
+
+  private async initWorkspace() {
+    await this.store.waitUntilWorkspaceIsSynchronized().then(() => {
+      const myUsername = this.getMyUsername();
+      this.workspaceUser = myUsername;
+      if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+        this.communityWorkspace[myUsername] = {};
+      }
+      const userWorkspace = this.communityWorkspace[myUsername];
+      if (!Object.keys(userWorkspace).includes(this.selectedService)) {
+        if (!this.measureCatalog) {
+          this.measureCatalog = new MeasureCatalog({});
+        }
+        if (!this.successModel) {
+          this.successModel = new SuccessModel(this.serviceMap[this.selectedService].alias, this.selectedService, {
+            'System Quality': [],
+            'Information Quality': [],
+            Use: [],
+            'User Satisfaction': [],
+            'Individual Impact': [],
+            'Community Impact': [],
+          });
+        }
+        userWorkspace[this.selectedService] = {
+          createdAt: new Date().toISOString(),
+          createdBy: myUsername,
+          visitors: [],
+          catalog: this.measureCatalog,
+          model: this.successModel,
+        };
+      }
+      this.persistWorkspaceChanges();
+    });
+  }
+
+  private persistWorkspaceChanges() {
+    this.logger.debug('Workspace changed:');
+    this.logger.debug(this.communityWorkspace);
+    this.store.setCommunityWorkspace(this.communityWorkspace);
+  }
+
+  private async openClearWorkspaceDialog() {
+    const message = await this.translate.get('success-modeling.discard-changes-prompt').toPromise();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      minWidth: 300,
+      data: message,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.removeWorkspace();
+      }
+    });
+  }
+
+  private removeWorkspace() {
+    const myUsername = this.user.profile.preferred_username;
+    if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+      return;
+    }
+    const userWorkspace = this.communityWorkspace[myUsername];
+    if (!Object.keys(userWorkspace).includes(this.selectedService)) {
+      return;
+    }
+    delete userWorkspace[this.selectedService];
+    this.persistWorkspaceChanges();
+  }
+
+  private cleanData() {
+    this.successModelXml = null;
+    this.successModel = null;
+    this.workspaceUser = this.getMyUsername();
+  }
+
+  private copyWorkspace(owner: string) {
+    const myUsername = this.getMyUsername();
+    if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+      return;
+    }
+    const myWorkspace = this.getWorkspaceByUserAndService(myUsername, this.selectedService);
+    const ownerWorkspace = this.getWorkspaceByUserAndService(owner, this.selectedService);
+    if (!myWorkspace || !ownerWorkspace) {
+      return;
+    }
+    myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
+    myWorkspace.model = cloneDeep(ownerWorkspace.model);
+    this.persistWorkspaceChanges();
   }
 }

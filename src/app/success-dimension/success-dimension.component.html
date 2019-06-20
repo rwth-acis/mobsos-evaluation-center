@@ -5,10 +5,23 @@
       {{name}}
     </mat-card-title>
     <mat-card-subtitle>{{description}}</mat-card-subtitle>
+    <div id="push-right"></div>
+    <button *ngIf="editMode" mat-icon-button matTooltipShowDelay="0"
+            matTooltip="{{'success-dimension.add-factor-tooltip'|translate}}"
+            (click)="openAddFactorDialog()">
+      <mat-icon color="primary" id="add-factor-icon">add</mat-icon>
+    </button>
   </mat-card-header>
   <mat-card-content>
-    <div *ngFor="let factor of factors">
-      <app-success-factor [factor]="factor" [service]="service" [measures]="measures"></app-success-factor>
+    <div *ngFor="let factor of factors; let i = index" class="factor-row">
+      <button *ngIf="factor && editMode" mat-icon-button matTooltipShowDelay="0"
+              matTooltip="{{'success-dimension.remove-factor-tooltip'|translate}}"
+              (click)="openRemoveFactorDialog(i)">
+        <mat-icon color="warn">remove_circle_outline</mat-icon>
+      </button>
+      <app-success-factor [factor]="factor" [service]="service" [measures]="measures" [editMode]="editMode"
+      (factorChange)="factorsChange.emit(factors)">
+      </app-success-factor>
     </div>
   </mat-card-content>
 </mat-card>
