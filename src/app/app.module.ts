@@ -52,7 +52,7 @@ import {ChartVisualizationComponent} from './visualizations/chart-visualization/
 import {KpiVisualizationComponent} from './visualizations/kpi-visualization/kpi-visualization.component';
 import {BaseVisualizationComponent} from './visualizations/visualization.component';
 import {ConfirmationDialogComponent} from './confirmation-dialog/confirmation-dialog.component';
-import {MdePopoverModule} from "@material-extended/mde";
+import {MdePopoverModule} from '@material-extended/mde';
 import {AddFactorDialogComponent} from './success-dimension/add-factor-dialog/add-factor-dialog.component';
 import { PickMeasureDialogComponent } from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 

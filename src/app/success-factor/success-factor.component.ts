@@ -5,8 +5,8 @@ import {SuccessFactor} from '../../success-model/success-factor';
 import {MatDialog} from '@angular/material';
 import {PickMeasureDialogComponent} from './pick-measure-dialog/pick-measure-dialog.component';
 import {Measure} from '../../success-model/measure';
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {TranslateService} from "@ngx-translate/core";
+import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-success-factor',

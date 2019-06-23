@@ -1,10 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SuccessFactorComponent } from './success-factor.component';
+import {SuccessFactorComponent} from './success-factor.component';
 import {SuccessMeasureComponent} from '../success-measure/success-measure.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {createTranslateLoader} from '../app.module';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {MatDialogModule, MatIconModule, MatTooltipModule} from '@angular/material';
 
 describe('SuccessFactorComponent', () => {
   let component: SuccessFactorComponent;
@@ -12,7 +13,7 @@ describe('SuccessFactorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SuccessFactorComponent, SuccessMeasureComponent ],
+      declarations: [SuccessFactorComponent, SuccessMeasureComponent],
       imports: [
         TranslateModule.forRoot({
           loader: {
@@ -21,9 +22,12 @@ describe('SuccessFactorComponent', () => {
           }
         }),
         HttpClientTestingModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatDialogModule,
       ],
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

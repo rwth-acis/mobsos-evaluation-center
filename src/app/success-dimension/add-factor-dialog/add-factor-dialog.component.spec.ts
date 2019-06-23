@@ -1,6 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { AddFactorDialogComponent } from './add-factor-dialog.component';
+import {AddFactorDialogComponent} from './add-factor-dialog.component';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {createTranslateLoader} from '../../app.module';
+import {FormsModule} from '@angular/forms';
+import {MatDialogModule, MatDialogRef, MatFormFieldModule, MatInputModule} from '@angular/material';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 describe('AddFactorDialogComponent', () => {
   let component: AddFactorDialogComponent;
@@ -8,9 +13,23 @@ describe('AddFactorDialogComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AddFactorDialogComponent ]
+      declarations: [AddFactorDialogComponent],
+      imports: [
+        BrowserAnimationsModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (createTranslateLoader)
+          },
+        }),
+        FormsModule,
+        MatFormFieldModule,
+        MatDialogModule,
+        MatInputModule,
+      ],
+      providers: [{provide: MatDialogRef, useValue: {}}]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

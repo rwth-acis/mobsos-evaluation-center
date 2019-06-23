@@ -1,7 +1,7 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {SuccessDimensionComponent} from './success-dimension.component';
-import {MatCardModule, MatIconModule} from '@angular/material';
+import {MatCardModule, MatDialogModule, MatIconModule, MatTooltipModule} from '@angular/material';
 import {SuccessFactorComponent} from '../success-factor/success-factor.component';
 import {SuccessMeasureComponent} from '../success-measure/success-measure.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -25,6 +25,8 @@ describe('SuccessDimensionComponent', () => {
           }
         }),
         HttpClientTestingModule,
+        MatTooltipModule,
+        MatDialogModule,
       ],
     })
       .compileComponents();
