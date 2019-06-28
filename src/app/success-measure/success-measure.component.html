@@ -1,3 +1,11 @@
-<h4 *ngIf="measure">{{measure.name}}</h4>
+<div id="measure-header">
+  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked()" id="edit-button">
+    <mat-icon>edit</mat-icon>
+  </button>
+  <h4 *ngIf="measure">
+    {{measure.name}}
+  </h4>
+</div>
+
 <span *ngIf="visualizationError">{{visualizationError}}</span>
 <ng-template appVisualization></ng-template>

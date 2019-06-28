@@ -16,3 +16,12 @@
     width: 112px;
   }
 }
+
+#measure-header{
+  display: flex;
+  flex-direction: row;
+  #edit-button{
+    margin-top: 5px;
+  }
+
+}

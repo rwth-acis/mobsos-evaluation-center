@@ -22,7 +22,8 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
         r: 20, // right margin
         b: 40, // bottom margin
         pad: 4
-      }
+      },
+      polar: {}
     },
     config: {displayModeBar: false, locale: 'en'}
   };
@@ -46,6 +47,10 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
           return this.renderLineChart(typeList, data);
         case 'PieChart':
           return this.renderPieChart(typeList, data);
+        case 'BarChart':
+          return this.renderBarChart(typeList, data);
+        case 'RadarChart':
+          return this.renderRadarChart(typeList, data);
       }
     }
   }
@@ -66,6 +71,27 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     this.graph.data = [{labels, values, type: 'pie'}];
   }
 
+  private async renderBarChart(typeList: string[], data: any[]) {
+    let labels = map(data, 0);
+    let values = map(data, 1);
+    labels = this.performTypeCast(typeList[0], labels);
+    values = this.performTypeCast(typeList[1], values);
+    this.graph.data = [{x: labels, y: values, type: 'bar'}];
+  }
+
+  private async renderRadarChart(typeList: string[], data: any[]) {
+    let labels = map(data, 0);
+    let values = map(data, 1);
+    labels = this.performTypeCast(typeList[0], labels);
+    values = this.performTypeCast(typeList[1], values);
+    this.graph.data = [{theta: labels, r: values, fill: 'toself', type: 'scatterpolar'}];
+    this.graph.layout.polar = {
+      radialaxis: {
+        visible: true,
+      }
+    };
+  }
+
   private performTypeCast(type: string, data: any[]) {
     switch (type) {
       case 'datetime':
@@ -80,5 +106,4 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
         return data;
     }
   }
-
 }

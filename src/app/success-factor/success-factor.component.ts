@@ -48,8 +48,8 @@ export class SuccessFactorComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.factor.measures.push((result as Measure).name);
-        this.factorChange.emit(this.factor);
       }
+      this.factorChange.emit(this.factor);
     });
   }
 

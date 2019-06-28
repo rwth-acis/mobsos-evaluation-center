@@ -85,7 +85,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.snackBar.open('Owner closed workspace', null, {duration: 3000});
       }
     });
-    this.store.editMode.subscribe(async editMode => {
+    this.store.editMode.subscribe(editMode => {
       if (editMode && this.user) {
         this.initWorkspace().then(() => this.switchWorkspace(this.getMyUsername()));
       } else if (this.editMode === true) {
@@ -233,8 +233,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   canEdit() {
-    const role = this.getMyRole();
-    return role === 'owner' || role === 'editor';
+    if (this.editMode) {
+      const role = this.getMyRole();
+      return role === 'owner' || role === 'editor';
+    }
+    return false;
   }
 
   getMeasureCatalog(): MeasureCatalog {
@@ -328,8 +331,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private persistWorkspaceChanges() {
-    this.logger.debug('Workspace changed:');
-    this.logger.debug(this.communityWorkspace);
+    this.logger.debug('Workspace changed: ' + JSON.stringify(this.communityWorkspace));
     this.store.setCommunityWorkspace(this.communityWorkspace);
   }
 

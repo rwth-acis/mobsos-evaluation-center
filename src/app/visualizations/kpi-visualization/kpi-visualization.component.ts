@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {BaseVisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
 import {MatDialog} from '@angular/material';
-import {KpiVisualization, KpiVisualizationOperand} from '../../../success-model/visualization';
+import {KpiVisualization} from '../../../success-model/visualization';
 import {isNumber} from 'util';
 
 @Component({
@@ -29,7 +29,8 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
 
     for (const operationElement of visualization.operationsElements) {
       abstractTerm.push(operationElement.name);
-      if (operationElement instanceof KpiVisualizationOperand) {
+      // even index means, that this must be an operand since we only support binary operators
+      if (operationElement.index % 2 === 0) {
         const query = queries.find(value => value.name === operationElement.name);
         let sql = query.sql;
         const queryParams = this.getParamsForQuery(sql);

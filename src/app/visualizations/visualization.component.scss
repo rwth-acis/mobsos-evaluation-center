@@ -1,0 +1,14 @@
+.loading-placeholder {
+  $loading-size: 192px;
+
+  width: $loading-size;
+  height: $loading-size;
+  line-height: $loading-size;
+
+  mat-icon {
+    font-size: $loading-size;
+    width: $loading-size;
+    height: $loading-size;
+    line-height: $loading-size;
+  }
+}

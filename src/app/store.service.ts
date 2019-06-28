@@ -130,13 +130,14 @@ export class StoreService {
       this.selectedServiceSubject.next(previousState.selectedService);
       this.editModeSubject.next(previousState.editMode);
     }
-    const throtteledSaveStateFunc = throttle(() => this.saveState(), 5000);
+    const throtteledSaveStateFunc = throttle(() => this.saveState(), 1000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.groups.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.editMode.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.user.pipe(distinctUntilChanged()).subscribe((user) => {
       if (user) {
-        this.las2peer.setCredentials(user.profile.preferred_username, user.profile.sub, user.access_token);
+        this.las2peer.setCredentials('OIDC_SUB-' + user.profile.sub,
+          user.profile.sub, user.access_token);
       } else {
         this.las2peer.resetCredentials();
       }

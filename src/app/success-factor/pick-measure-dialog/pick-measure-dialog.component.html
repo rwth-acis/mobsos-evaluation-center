@@ -1,7 +1,10 @@
 <h1 mat-dialog-title>{{'success-modeling.pick-measure-dialog.title'|translate}}</h1>
 <div mat-dialog-content>
+  <button mat-raised-button color="primary" (click)="openNewMeasureDialog()" id="create-measure-button">
+    {{'success-modeling.pick-measure-dialog.create-measure-button'|translate}}
+  </button>
   <mat-card *ngFor="let measure of data.measures" matRipple>
-    <app-success-measure [measure]="measure" [service]="data.service"
+    <app-success-measure [measure]="measure" [service]="data.service" [editMode]="true"
                          (click)="onMeasureClicked(measure)"></app-success-measure>
   </mat-card>
 </div>

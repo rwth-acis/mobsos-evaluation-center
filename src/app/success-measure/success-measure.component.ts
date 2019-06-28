@@ -2,10 +2,13 @@ import {
   Component,
   ComponentFactoryResolver,
   ComponentRef,
+  EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   ViewChild
 } from '@angular/core';
@@ -18,27 +21,31 @@ import {ValueVisualizationComponent} from '../visualizations/value-visualization
 import {VisualizationComponent} from '../visualizations/visualization.component';
 import {KpiVisualizationComponent} from '../visualizations/kpi-visualization/kpi-visualization.component';
 import {ChartVisualizationComponent} from '../visualizations/chart-visualization/chart-visualization.component';
+import {EditMeasureDialogComponent} from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
+import {MatDialog} from '@angular/material';
+import {cloneDeep} from 'lodash';
+import {SuccessMeasureInterface} from './success-measure.interface';
 
 @Component({
   selector: 'app-success-measure',
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss']
 })
-export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
+export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit, OnChanges, OnDestroy {
   @ViewChild(VisualizationDirective) visualizationHost: VisualizationDirective;
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
+  @Input() editMode = false;
+
+  @Output() measureChange = new EventEmitter<Measure>();
   public visualizationError: string;
   public error: Response;
   componentRef: ComponentRef<{}>;
+  private visualizationType: string;
 
   constructor(private las2peer: Las2peerService, private sanitizer: DomSanitizer,
-              private componentFactoryResolver: ComponentFactoryResolver) {
-  }
-
-  static htmlDecode(input) {
-    const doc = new DOMParser().parseFromString(input, 'text/html');
-    return doc.documentElement.textContent;
+              private componentFactoryResolver: ComponentFactoryResolver,
+              private dialog: MatDialog) {
   }
 
   ngOnInit() {
@@ -47,13 +54,19 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.relayPropertiesToVisualizationComponent();
+    if (Object.keys(changes).includes('editMode')) {
+      this.onResize();
+    }
   }
 
   ngOnDestroy(): void {
   }
 
-  refreshVisualization() {
-    if (this.measure) {
+  refreshVisualization(force = false) {
+    if (force || (this.measure && this.measure.visualization.type !== this.visualizationType)) {
+      if (this.componentRef) {
+        this.componentRef.destroy();
+      }
       let componentFactory;
       const visualization = this.measure.visualization;
       if (visualization.type === 'Value') {
@@ -71,6 +84,38 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
       this.componentRef = viewContainerRef.createComponent(componentFactory);
       this.relayPropertiesToVisualizationComponent();
       this.visualizationError = null;
+      this.visualizationType = this.measure.visualization.type;
+    }
+  }
+
+  onEditClicked() {
+    const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
+      minWidth: 300,
+      width: '80%',
+      data: {measure: cloneDeep(this.measure), service: this.service, create: false},
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.measure.name = result.name;
+        this.measure.queries = result.queries;
+        this.measure.visualization = result.visualization;
+        this.rerenderVisualizationComponent();
+        this.measureChange.emit(this.measure);
+      }
+    });
+  }
+
+  public rerenderVisualizationComponent() {
+    if (this.componentRef) {
+      (this.componentRef.instance as VisualizationComponent).renderVisualization();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    // chart visualization do not behave correctly when decreasing the available width so we reinitialize it
+    if (this.visualizationType === 'Chart') {
+      this.refreshVisualization(true);
     }
   }
 
@@ -80,66 +125,4 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
       (this.componentRef.instance as VisualizationComponent).measure = this.measure;
     }
   }
-
-  private async visualizeChart(queries, chartType) {
-    let format: string;
-    switch (chartType) {
-      case 'LineChart':
-        format = 'GOOGLELINECHART';
-        break;
-      case 'PieChart':
-        format = 'GOOGLEPIECHART';
-        break;
-      case 'BarChart':
-        format = 'GOOGLEBARCHART';
-        break;
-      case 'RadarChart':
-        format = 'GOOGLERADARCHART';
-        break;
-      case 'TimelineChart':
-        format = 'GOOGLETIMELINECHART';
-        break;
-      default:
-        return `Chart type ${chartType} is not supported yet.`;
-    }
-    let query = queries[0].sql;
-    const queryParams = this.getParamsForQuery(query);
-    query = this.applyCompatibilityFixForVisualizationService(query);
-    const data = await this.fetchVisualization(query, queryParams, format);
-    return data;
-  }
-
-  private fetchVisualization(query, queryParams, format: string) {
-    return this.las2peer.visualizeQuery(query, queryParams, format).then(data => {
-      this.error = null;
-      return data;
-    }).catch(error => this.error = error);
-  }
-
-
-  private getParamsForQuery(query: string) {
-    if (this.service.mobsosIDs.length === 0) {
-      // just for robustness
-      // should not be called when there are no service IDs stored in MobSOS anyway
-      return [];
-    }
-    const serviceRegex = /\$SERVICE\$/g;
-    const matches = query.match(serviceRegex);
-    const params = [];
-    for (const match of matches) {
-      // for now we just use the first ID
-      // support for multiple IDs is not implemented yet
-      params.push(this.service.mobsosIDs[0]);
-    }
-    return params;
-  }
-
-  private applyCompatibilityFixForVisualizationService(query: string) {
-    // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
-    query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
-    query = SuccessMeasureComponent.htmlDecode(query);
-    return query;
-  }
-
-
 }

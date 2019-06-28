@@ -1,7 +1,10 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
 import {Measure} from '../../../success-model/measure';
 import {ServiceInformation} from '../../store.service';
+import {EditMeasureDialogComponent} from '../edit-measure-dialog/edit-measure-dialog.component';
+import {Query} from '../../../success-model/query';
+import {ValueVisualization} from "../../../success-model/visualization";
 
 export interface DialogData {
   measures: Measure[];
@@ -15,7 +18,8 @@ export interface DialogData {
 })
 export class PickMeasureDialogComponent implements OnInit {
 
-  constructor(private dialogRef: MatDialogRef<PickMeasureDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  constructor(private dialogRef: MatDialogRef<PickMeasureDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: DialogData, private dialog: MatDialog) {
   }
 
   ngOnInit() {
@@ -23,5 +27,20 @@ export class PickMeasureDialogComponent implements OnInit {
 
   onMeasureClicked(measure: Measure) {
     this.dialogRef.close(measure);
+  }
+
+  openNewMeasureDialog() {
+    const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
+      minWidth: 300,
+      data: {
+        measure: new Measure('', [new Query('', '')], new ValueVisualization('')),
+        service: this.data.service, create: true
+      },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.data.measures.unshift(result);
+      }
+    });
   }
 }

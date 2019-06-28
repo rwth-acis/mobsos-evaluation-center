@@ -6,7 +6,9 @@
             (click)="openRemoveMeasureDialog(i)">
       <mat-icon color="warn">remove_circle_outline</mat-icon>
     </button>
-    <app-success-measure *ngIf="measure" [measure]="measures[measure]" [service]="service"></app-success-measure>
+    <app-success-measure *ngIf="measure" [measure]="measures[measure]" (measureChange)="this.factorChange.emit(factor)"
+                         [service]="service"
+                         [editMode]="editMode"></app-success-measure>
   </div>
 </div>
 <button id="add-measure-button" mat-raised-button *ngIf="factor && editMode" mat-button color="primary"

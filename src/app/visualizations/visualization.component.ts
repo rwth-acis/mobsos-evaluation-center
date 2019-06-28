@@ -11,6 +11,7 @@ export interface VisualizationComponent {
   measure: Measure;
   visualizationInitialized: boolean;
   error: Response;
+  renderVisualization();
 }
 
 @Component({
@@ -63,7 +64,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       const responseBody = new TextDecoder('utf-8').decode(value);
       errorText = (this.error.statusText + ': ' + responseBody).trim();
     } else {
-      errorText = this.error;
+      errorText = JSON.stringify(this.error);
     }
 
     this.dialog.open(ErrorDialogComponent, {
@@ -115,7 +116,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
 
   }
 
-  protected async renderVisualization() {
+  public async renderVisualization() {
     throw new Error('You have to implement the method renderVisualization!');
   }
 }
