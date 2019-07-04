@@ -42,6 +42,8 @@ export class Las2peerService {
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
+  SURVEYS_SURVEY_PATH = 'surveys';
+  SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
   userCredentials;
 
@@ -170,7 +172,14 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH, this.SURVEYS_QUESTIONNAIRES_PATH);
     return this.makeRequest<{ questionnaires: Questionnaire[]; }>(url)
-      .then(response => this.fetchQuestionnaireForms(response.questionnaires));
+      .then(response => this.fetchQuestionnaireForms(response.questionnaires))
+      .then(response => {
+        for (const questionnaire of response) {
+          questionnaire.name = decodeURIComponent(questionnaire.name);
+          questionnaire.description = decodeURIComponent(questionnaire.description);
+        }
+        return response;
+      });
   }
 
   async fetchQuestionnaireForms(questionnaires: Questionnaire[]) {
@@ -181,6 +190,38 @@ export class Las2peerService {
       questionnaire.formXML = await this.makeRequest<string>(formUrl, {responseType: 'text'});
     }
     return questionnaires;
+  }
+
+  async createSurvey(name: string, description: string, organization: string, logo: string,
+                     start: string, end: string, resource: string, resourceLabel: string, lang: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SURVEYS_SERVICE_PATH, this.SURVEYS_SURVEY_PATH);
+    return this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        name, description, organization, logo, start, end, resource,
+        'resource-label': resourceLabel, lang
+      })
+    });
+  }
+
+  async setQuestionnaireForSurvey(questionnaireId: number, surveyId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SURVEYS_SERVICE_PATH, this.SURVEYS_SURVEY_PATH, surveyId, this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX);
+    return this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify({qid: questionnaireId}),
+      responseType: 'text'
+    });
+  }
+
+  async deleteSurvey(surveyId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SURVEYS_SERVICE_PATH, this.SURVEYS_SURVEY_PATH, surveyId);
+    return this.makeRequest(url, {
+      method: 'DELETE',
+      responseType: 'text'
+    });
   }
 
   async saveGroupToMobSOS(groupID: string, groupName: string) {

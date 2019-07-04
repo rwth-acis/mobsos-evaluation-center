@@ -1,5 +1,6 @@
 import {SuccessFactor} from './success-factor';
 import {merge} from 'lodash-es';
+import {Questionnaire} from './questionnaire';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -21,7 +22,7 @@ const initialDimensionMap: DimensionMap = {
 
 export class SuccessModel {
 
-  constructor(public name: string, public service: string, public dimensions: DimensionMap) {
+  constructor(public name: string, public service: string, public dimensions: DimensionMap, public questionnaires: Questionnaire[]) {
   }
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
@@ -32,7 +33,11 @@ export class SuccessModel {
         dimensions[objDimensionName].push(SuccessFactor.fromPlainObject(objFactor));
       }
     }
-    return new SuccessModel(obj.name, obj.service, dimensions);
+    const questionnaires = [];
+    for (const objQuestionnaire of obj.questionnaires) {
+      questionnaires.push(Questionnaire.fromPlainObject(objQuestionnaire));
+    }
+    return new SuccessModel(obj.name, obj.service, dimensions, questionnaires);
   }
 
   static fromXml(xml: Element) {
@@ -52,7 +57,18 @@ export class SuccessModel {
           dimensions[dimensionName].push(SuccessFactor.fromXml(factorNode));
         }
       }
-      return new SuccessModel(modelName, service, dimensions);
+      const questionnaireCollectionNodes = Array.from(xml.getElementsByTagName('questionnaires'));
+      const questionnaires = [];
+      if (questionnaireCollectionNodes.length > 0) {
+        const questionnaireCollectionNode = questionnaireCollectionNodes[0];
+        const questionnaireNodes = Array.from(
+          questionnaireCollectionNode.getElementsByTagName('questionnaire')
+        );
+        for (const questionnaireNode of questionnaireNodes) {
+          questionnaires.push(Questionnaire.fromXml(questionnaireNode));
+        }
+      }
+      return new SuccessModel(modelName, service, dimensions, questionnaires);
     } catch (e) {
       throw new Error('Parsing model failed: ' + e);
     }
@@ -63,6 +79,11 @@ export class SuccessModel {
     const successModel = doc.createElement('SuccessModel');
     successModel.setAttribute('name', this.name);
     successModel.setAttribute('service', this.service);
+    const questionnaires = doc.createElement('questionnaires');
+    for (const questionnaireObj of this.questionnaires) {
+      questionnaires.appendChild(questionnaireObj.toXml());
+    }
+    successModel.appendChild(questionnaires);
     for (const dimensionName of Object.keys(this.dimensions)) {
       const dimension = doc.createElement('dimension');
       dimension.setAttribute('name', dimensionName);

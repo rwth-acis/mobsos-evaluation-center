@@ -31,6 +31,7 @@ export interface GroupCollection {
 
 
 export interface ServiceInformation {
+  name: string;
   alias: string;
   mobsosIDs: string[];
 }
@@ -235,10 +236,12 @@ export class StoreService {
     clearInterval(this.serviceMobSOSPollingHandle);
     clearInterval(this.groupContactServicePollingHandle);
     clearInterval(this.groupMobSOSPollingHandle);
+    clearInterval(this.questionnairePollingHandle);
     this.serviceL2PPollingHandle = null;
     this.serviceMobSOSPollingHandle = null;
     this.groupContactServicePollingHandle = null;
     this.groupMobSOSPollingHandle = null;
+    this.questionnairePollingHandle = null;
     this.pollingEnabled = false;
   }
 
@@ -296,6 +299,14 @@ export class StoreService {
     this.communityWorkspaceSubject.next(workspace);
   }
 
+  getGroupById(groupId: string): GroupInformation {
+    const groups = this.groupsSubject.getValue();
+    if (Object.keys(groups).includes(groupId)) {
+      return groups[groupId];
+    }
+    return null;
+  }
+
   async waitUntilWorkspaceIsSynchronized() {
     return new Promise(resolve => {
       this.communityWorkspaceInitialized.subscribe(initialized => {
@@ -321,7 +332,11 @@ export class StoreService {
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier = service.name + '.' + latestRelease.supplement.class;
-      serviceCollection[serviceIdentifier] = {alias: latestRelease.supplement.name, mobsosIDs: []};
+      serviceCollection[serviceIdentifier] = {
+        name: serviceIdentifier,
+        alias: latestRelease.supplement.name,
+        mobsosIDs: []
+      };
     }
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
@@ -332,7 +347,7 @@ export class StoreService {
       }
       // only add mobsos service data if the data from the discovery is missing
       if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {alias: serviceAlias, mobsosIDs: []};
+        serviceCollection[serviceName] = {name: serviceName, alias: serviceAlias, mobsosIDs: []};
       }
       serviceCollection[serviceName].mobsosIDs.push(serviceAgentID);
     }

@@ -8,7 +8,7 @@ import {
   MatBadgeModule,
   MatButtonModule,
   MatButtonToggleModule,
-  MatCardModule,
+  MatCardModule, MatCheckboxModule,
   MatDialogModule,
   MatFormFieldModule,
   MatIconModule,
@@ -57,7 +57,9 @@ import {MdePopoverModule} from '@material-extended/mde';
 import {EditFactorDialogComponent} from './success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import {PickMeasureDialogComponent} from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 import {EditMeasureDialogComponent} from './success-factor/edit-measure-dialog/edit-measure-dialog.component';
-import { QuestionnairesComponent } from './success-modeling/questionnaires/questionnaires.component';
+import {QuestionnairesComponent} from './success-modeling/questionnaires/questionnaires.component';
+import {PickQuestionnaireDialogComponent} from './success-modeling/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
+import {DeleteQuestionnaireDialogComponent} from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -98,7 +100,9 @@ export function createTranslateLoader() {
     EditFactorDialogComponent,
     PickMeasureDialogComponent,
     EditMeasureDialogComponent,
-    QuestionnairesComponent
+    QuestionnairesComponent,
+    PickQuestionnaireDialogComponent,
+    DeleteQuestionnaireDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -137,6 +141,7 @@ export function createTranslateLoader() {
     MatTooltipModule,
     MatInputModule,
     MatRippleModule,
+    MatCheckboxModule,
   ],
   providers: [
     {
@@ -155,6 +160,8 @@ export function createTranslateLoader() {
     EditFactorDialogComponent,
     PickMeasureDialogComponent,
     EditMeasureDialogComponent,
+    PickQuestionnaireDialogComponent,
+    DeleteQuestionnaireDialogComponent,
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

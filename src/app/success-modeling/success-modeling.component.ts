@@ -7,7 +7,7 @@ import {
   StoreService,
   Visitor
 } from '../store.service';
-import {Las2peerService} from '../las2peer.service';
+import {Las2peerService, Questionnaire} from '../las2peer.service';
 import {SuccessModel} from '../../success-model/success-model';
 import {MeasureCatalog} from '../../success-model/measure-catalog';
 import {NGXLogger} from 'ngx-logger';
@@ -37,6 +37,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   workspaceUser;
   myGroups: GroupInformation[];
   saveInProgress = false;
+  availableQuestionnaires: Questionnaire[];
 
   constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger,
               private dialog: MatDialog, private translate: TranslateService, private snackBar: MatSnackBar) {
@@ -97,6 +98,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
       this.myGroups = allGroups.filter(group => group.member).sort();
+    });
+    this.store.questionnaires.subscribe(questionnaires => {
+      questionnaires.sort((a, b) => (a.name > b.name) ? 1 : -1);
+      this.availableQuestionnaires = questionnaires;
     });
   }
 
@@ -341,7 +346,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
             'User Satisfaction': [],
             'Individual Impact': [],
             'Community Impact': [],
-          });
+          }, []);
         }
         userWorkspace[this.selectedService] = {
           createdAt: new Date().toISOString(),

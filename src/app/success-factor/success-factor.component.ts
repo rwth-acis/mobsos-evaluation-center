@@ -55,7 +55,7 @@ export class SuccessFactorComponent implements OnInit {
   }
 
   private removeMeasure(measureIndex: number) {
-    delete this.factor.measures[measureIndex];
+    this.factor.measures.splice(measureIndex, 1);
     this.factorChange.emit(this.factor);
   }
 

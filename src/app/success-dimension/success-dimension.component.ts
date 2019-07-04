@@ -67,7 +67,7 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   private removeFactor(factorIndex: number) {
-    delete this._factors[factorIndex];
+    this._factors.splice(factorIndex, 1);
     this.factorsChange.emit(this._factors);
   }
 }

@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>{{'success-modeling.questionnaires.delete-questionnaire-dialog.title'|translate}}</h1>
+<div mat-dialog-content>
+  <p>
+    {{'success-modeling.questionnaires.delete-questionnaire-dialog.text'|translate}}
+  </p>
+  <mat-checkbox
+    [(ngModel)]="deleteSurvey">{{'success-modeling.questionnaires.delete-questionnaire-dialog.delete-survey'|translate}}</mat-checkbox>
+  <br>
+  <mat-checkbox
+    [(ngModel)]="deleteMeasures">{{'success-modeling.questionnaires.delete-questionnaire-dialog.delete-measures'|translate}}</mat-checkbox>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="{deleteSurvey: deleteSurvey, deleteMeasures: deleteMeasures}"
+          cdkFocusInitial>{{'shared.elements.yes-label'|translate}}</button>
+  <button mat-button [mat-dialog-close]="null">{{'shared.elements.no-label'|translate}}</button>
+</div>

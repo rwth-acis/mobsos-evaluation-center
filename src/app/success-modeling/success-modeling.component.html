@@ -128,6 +128,17 @@
 </mat-card>
 
 <div *ngIf="getSuccessModel() && getMeasureCatalog()">
+  <app-questionnaires
+    [availableQuestionnaires]="availableQuestionnaires"
+    [model]="getSuccessModel()"
+    [measures]="getMeasureCatalog().measures"
+    [service]="serviceMap[getSuccessModel().service]"
+    [editMode]="canEdit()"
+    [groupID]="groupID"
+    (modelChange)="persistWorkspaceChanges()"
+    (measuresChange)="persistWorkspaceChanges()"
+  ></app-questionnaires>
+
   <app-success-dimension [factors]="getSuccessModel().dimensions['System Quality']"
                          (factorsChange)="persistWorkspaceChanges()"
                          [measures]="getMeasureCatalog().measures"

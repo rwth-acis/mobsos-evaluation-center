@@ -33,7 +33,7 @@ export class PickMeasureDialogComponent implements OnInit {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       data: {
-        measure: new Measure('', [new Query('', '')], new ValueVisualization('')),
+        measure: new Measure('', [new Query('', '')], new ValueVisualization(''), []),
         service: this.data.service, create: true
       },
     });

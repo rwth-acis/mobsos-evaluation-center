@@ -8,8 +8,7 @@ import {OidcSignoutComponent} from './oidc-signout/oidc-signout.component';
 import {OidcSilentComponent} from './oidc-silent/oidc-silent.component';
 
 const routes: Routes = [
-  {path: '', component: DashboardComponent},
-  {path: 'success-modeling', component: SuccessModelingComponent},
+  {path: '', component: SuccessModelingComponent},
   {path: 'raw-edit', component: RawEditComponent},
   {path: 'oidc-signin', component: OidcSigninComponent},
   {path: 'oidc-signout', component: OidcSignoutComponent},
