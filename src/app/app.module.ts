@@ -54,10 +54,10 @@ import {KpiVisualizationComponent} from './visualizations/kpi-visualization/kpi-
 import {BaseVisualizationComponent} from './visualizations/visualization.component';
 import {ConfirmationDialogComponent} from './confirmation-dialog/confirmation-dialog.component';
 import {MdePopoverModule} from '@material-extended/mde';
-import {AddFactorDialogComponent} from './success-dimension/add-factor-dialog/add-factor-dialog.component';
+import {EditFactorDialogComponent} from './success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import {PickMeasureDialogComponent} from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 import {EditMeasureDialogComponent} from './success-factor/edit-measure-dialog/edit-measure-dialog.component';
-import {AngularResizedEventModule} from "angular-resize-event";
+import { QuestionnairesComponent } from './success-modeling/questionnaires/questionnaires.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -95,9 +95,10 @@ export function createTranslateLoader() {
     ChartVisualizationComponent,
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
-    AddFactorDialogComponent,
+    EditFactorDialogComponent,
     PickMeasureDialogComponent,
-    EditMeasureDialogComponent
+    EditMeasureDialogComponent,
+    QuestionnairesComponent
   ],
   imports: [
     BrowserModule,
@@ -136,7 +137,6 @@ export function createTranslateLoader() {
     MatTooltipModule,
     MatInputModule,
     MatRippleModule,
-    AngularResizedEventModule,
   ],
   providers: [
     {
@@ -152,7 +152,7 @@ export function createTranslateLoader() {
     ChartVisualizationComponent,
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
-    AddFactorDialogComponent,
+    EditFactorDialogComponent,
     PickMeasureDialogComponent,
     EditMeasureDialogComponent,
   ],

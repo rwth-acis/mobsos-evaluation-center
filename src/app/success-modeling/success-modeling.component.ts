@@ -36,6 +36,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   user;
   workspaceUser;
   myGroups: GroupInformation[];
+  saveInProgress = false;
 
   constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger,
               private dialog: MatDialog, private translate: TranslateService, private snackBar: MatSnackBar) {
@@ -275,6 +276,30 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.copyWorkspace(owner);
       }
     });
+  }
+
+  async onSaveClicked() {
+    const workspace = this.getCurrentWorkspace();
+    const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
+    const measureXml = catalog.toXml();
+    const model = SuccessModel.fromPlainObject(workspace.model);
+    const successModelXml = model.toXml();
+    this.saveInProgress = true;
+    try {
+      await this.las2peer.saveMeasureCatalog(this.groupID, measureXml.outerHTML);
+      await this.las2peer.saveSuccessModel(this.groupID, this.selectedService, successModelXml.outerHTML);
+      const message = await this.translate.get('success-modeling.snackbar-save-success').toPromise();
+      this.snackBar.open(message, null, {
+        duration: 2000,
+      });
+    } catch (e) {
+      let message = await this.translate.get('success-modeling.snackbar-save-failure').toPromise();
+      message += e;
+      this.snackBar.open(message, null, {
+        duration: 2000,
+      });
+    }
+    this.saveInProgress = false;
   }
 
   private getWorkspaceByUserAndService(user: string, service: string): ApplicationWorkspace {

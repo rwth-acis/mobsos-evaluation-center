@@ -182,7 +182,8 @@
                          description="{{'success-modeling.dimensions.community-impact-description'|translate}}"
                          icon="group"></app-success-dimension>
 
-  <button id="save-model-button" mat-raised-button *ngIf="editMode" mat-button color="primary" [disabled]="true">
+  <button id="save-model-button" mat-raised-button *ngIf="editMode" color="primary"
+          [disabled]="getMyRole() !== 'owner' || saveInProgress" (click)="onSaveClicked()">
     {{'success-modeling.save-model-button'|translate}}
   </button>
 </div>

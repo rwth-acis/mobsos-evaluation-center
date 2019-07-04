@@ -24,6 +24,17 @@ export class SuccessModel {
   constructor(public name: string, public service: string, public dimensions: DimensionMap) {
   }
 
+  public static fromPlainObject(obj: SuccessModel): SuccessModel {
+    const dimensions: DimensionMap = merge({}, initialDimensionMap);
+    for (const objDimensionName of Object.keys(obj.dimensions)) {
+      dimensions[objDimensionName] = [];
+      for (const objFactor of obj.dimensions[objDimensionName]) {
+        dimensions[objDimensionName].push(SuccessFactor.fromPlainObject(objFactor));
+      }
+    }
+    return new SuccessModel(obj.name, obj.service, dimensions);
+  }
+
   static fromXml(xml: Element) {
     try {
       const modelName = xml.getAttribute('name');
@@ -47,7 +58,19 @@ export class SuccessModel {
     }
   }
 
-  toXml(): Document {
-    return null;
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const successModel = doc.createElement('SuccessModel');
+    successModel.setAttribute('name', this.name);
+    successModel.setAttribute('service', this.service);
+    for (const dimensionName of Object.keys(this.dimensions)) {
+      const dimension = doc.createElement('dimension');
+      dimension.setAttribute('name', dimensionName);
+      for (const factor of this.dimensions[dimensionName]) {
+        dimension.appendChild(factor.toXml());
+      }
+      successModel.appendChild(dimension);
+    }
+    return successModel;
   }
 }

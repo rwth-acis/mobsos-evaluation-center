@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {SuccessFactor} from '../../success-model/success-factor';
 import {MeasureMap} from '../../success-model/measure-catalog';
 import {ServiceInformation} from '../store.service';
-import {AddFactorDialogComponent} from './add-factor-dialog/add-factor-dialog.component';
+import {EditFactorDialogComponent} from './edit-factor-dialog/edit-factor-dialog.component';
 import {MatDialog} from '@angular/material';
 import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
 import {TranslateService} from '@ngx-translate/core';
@@ -40,14 +40,14 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   openAddFactorDialog() {
-    const dialogRef = this.dialog.open(AddFactorDialogComponent, {
+    const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       width: '250px',
-      data: {factorName: null}
+      data: {factor: new SuccessFactor('', [])}
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this._factors.push(new SuccessFactor(result, []));
+        this._factors.push(result);
         this.factorsChange.emit(this._factors);
       }
     });

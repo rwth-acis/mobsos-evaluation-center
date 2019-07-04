@@ -23,4 +23,13 @@ h3 {
 
 #add-measure-button {
   width: 100%;
+  margin-top: 10px;
+}
+
+#factor-header{
+  display: flex;
+  flex-direction: row;
+  #edit-button{
+    margin-top: 5px;
+  }
 }

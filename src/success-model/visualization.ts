@@ -15,8 +15,30 @@ export class Visualization {
     }
   }
 
-  toXml() {
+  public static fromPlainObject(obj: Visualization): Visualization {
+    const visualizationType = obj.type;
+    switch (visualizationType) {
+      case 'KPI':
+        return KpiVisualization.fromPlainObject(obj as KpiVisualization);
+      case 'Chart':
+        return ChartVisualization.fromPlainObject(obj as ChartVisualization);
+      case 'Value':
+        return ValueVisualization.fromPlainObject(obj as ValueVisualization);
+      default:
+        throw Error('Unknown visualization type: ' + visualizationType);
+    }
+  }
 
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const visualization = doc.createElement('visualization');
+    visualization.setAttribute('type', this.type);
+    this._toXml(visualization);
+    return visualization;
+  }
+
+  protected _toXml(visualizationNode: Element) {
+    throw new Error('Override in subclass');
   }
 }
 
@@ -28,14 +50,21 @@ export class ValueVisualization extends Visualization {
     super();
   }
 
+  public static fromPlainObject(obj: ValueVisualization): ValueVisualization {
+    return new ValueVisualization(obj.unit);
+  }
+
   static fromXml(xml: Element): ValueVisualization {
     const unitArr = Array.from(xml.getElementsByTagName('unit'));
     const unit = unitArr.length === 0 ? null : unitArr[0].innerHTML;
     return new ValueVisualization(unit);
   }
 
-  toXml() {
-
+  protected _toXml(visualizationNode: Element) {
+    const doc = document.implementation.createDocument('', '', null);
+    const unit = doc.createElement('unit');
+    unit.innerHTML = this.unit;
+    visualizationNode.appendChild(unit);
   }
 }
 
@@ -47,6 +76,10 @@ export class ChartVisualization extends Visualization {
     super();
   }
 
+  public static fromPlainObject(obj: ChartVisualization): ChartVisualization {
+    return new ChartVisualization(obj.chartType, obj.nodeId, obj.title, obj.height, obj.width);
+  }
+
   static fromXml(xml: Element): ChartVisualization {
     const chartType = Array.from(xml.getElementsByTagName('chartType'))[0].innerHTML;
     const nodeId = Array.from(xml.getElementsByTagName('nodeId'))[0].innerHTML;
@@ -56,8 +89,24 @@ export class ChartVisualization extends Visualization {
     return new ChartVisualization(chartType, nodeId, title, height, width);
   }
 
-  toXml() {
+  protected _toXml(visualizationNode: Element) {
+    const doc = document.implementation.createDocument('', '', null);
+    const chartType = doc.createElement('chartType');
+    chartType.innerHTML = this.chartType;
+    const nodeId = doc.createElement('nodeId');
+    nodeId.innerHTML = this.nodeId;
+    const title = doc.createElement('title');
+    title.innerHTML = this.title;
+    const height = doc.createElement('height');
+    height.innerHTML = this.height;
+    const width = doc.createElement('width');
+    width.innerHTML = this.width;
 
+    visualizationNode.appendChild(chartType);
+    visualizationNode.appendChild(nodeId);
+    visualizationNode.appendChild(title);
+    visualizationNode.appendChild(height);
+    visualizationNode.appendChild(width);
   }
 }
 
@@ -73,6 +122,18 @@ export class KpiVisualization extends Visualization {
 
   constructor(public operationsElements: KpiVisualizationOperand[] | KpiVisualizationOperator[]) {
     super();
+  }
+
+  public static fromPlainObject(obj: KpiVisualization): KpiVisualization {
+    const operationsElements: KpiVisualizationOperand[] | KpiVisualizationOperator[] = [];
+    obj.operationsElements.forEach((value, index) => {
+      if (index % 2 === 0) {
+        operationsElements.push(new KpiVisualizationOperand(value.name, value.index));
+      } else {
+        operationsElements.push(new KpiVisualizationOperator(value.name, value.index));
+      }
+    });
+    return new KpiVisualization(operationsElements);
   }
 
   static divide(left, right) {
@@ -105,10 +166,6 @@ export class KpiVisualization extends Visualization {
     return new KpiVisualization(elements);
   }
 
-  toXml() {
-
-  }
-
   /**
    * Each term element is either a number or an operand like "/".
    *
@@ -131,6 +188,12 @@ export class KpiVisualization extends Visualization {
     }
     return result;
   }
+
+  protected _toXml(visualizationNode: Element) {
+    for (const operationElement of this.operationsElements) {
+      visualizationNode.appendChild(operationElement.toXml());
+    }
+  }
 }
 
 export class KpiVisualizationOperand {
@@ -144,8 +207,12 @@ export class KpiVisualizationOperand {
     return new KpiVisualizationOperand(name, index);
   }
 
-  toXml() {
-
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const operand = doc.createElement('operand');
+    operand.setAttribute('name', this.name);
+    operand.setAttribute('index', String(this.index));
+    return operand;
   }
 }
 
@@ -160,7 +227,11 @@ export class KpiVisualizationOperator {
     return new KpiVisualizationOperator(name, index);
   }
 
-  toXml() {
-
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const operator = doc.createElement('operator');
+    operator.setAttribute('name', this.name);
+    operator.setAttribute('index', String(this.index));
+    return operator;
   }
 }

@@ -3,6 +3,7 @@ import {environment} from '../environments/environment';
 import {NGXLogger} from 'ngx-logger';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {merge} from 'lodash';
+import {isNumber} from "util";
 
 export interface SuccessModel {
   xml: string;
@@ -10,6 +11,18 @@ export interface SuccessModel {
 
 export interface MeasureCatalog {
   xml: string;
+}
+
+export interface Questionnaire {
+  id: number;
+  description: string;
+  lang: string;
+  logo: string;
+  name: string;
+  organization: string;
+  owner: string;
+  url: string;
+  formXML: string;
 }
 
 @Injectable({
@@ -27,13 +40,21 @@ export class Las2peerService {
   SUCCESS_MODELING_GROUP_PATH = 'groups';
   QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
+  SURVEYS_SERVICE_PATH = 'mobsos-surveys';
+  SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
+  SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
   userCredentials;
 
   constructor(private http: HttpClient, private logger: NGXLogger) {
   }
 
   static joinAbsoluteUrlPath(...args) {
-    return args.map(pathPart => pathPart.replace(/(^\/|\/$)/g, '')).join('/');
+    return args.map(pathPart => {
+      if (isNumber(pathPart)) {
+        pathPart = pathPart.toString();
+      }
+      return pathPart.replace(/(^\/|\/$)/g, '');
+    }).join('/');
   }
 
   setCredentials(username, password, accessToken) {
@@ -45,10 +66,13 @@ export class Las2peerService {
   }
 
   async makeRequest<T>(url: string, options: {
-    method?: string; headers?: {
+    method?: string;
+    headers?: {
       [header: string]: string | string[];
-    }; body?: string
-  } = {}) {
+    };
+    body?: string;
+    responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+  } = {}): Promise<T> {
     options = merge({
       method: 'GET',
       headers: {
@@ -77,7 +101,7 @@ export class Las2peerService {
       params?: HttpParams | {
         [param: string]: string | string[];
       };
-      responseType?: 'json';
+      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
       reportProgress?: boolean;
       withCredentials?: boolean;
     } = {};
@@ -87,7 +111,10 @@ export class Las2peerService {
     if (options.body) {
       ngHttpOptions.body = options.body;
     }
-    return this.http.request<T>(options.method, url, ngHttpOptions).toPromise();
+    if (options.responseType) {
+      ngHttpOptions.responseType = options.responseType;
+    }
+    return this.http.request(options.method, url, ngHttpOptions).toPromise();
   }
 
   async fetchServicesFromDiscovery() {
@@ -137,6 +164,23 @@ export class Las2peerService {
           reject(response);
         });
     });
+  }
+
+  async fetchMobSOSQuestionnaires() {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+      this.SURVEYS_SERVICE_PATH, this.SURVEYS_QUESTIONNAIRES_PATH);
+    return this.makeRequest<{ questionnaires: Questionnaire[]; }>(url)
+      .then(response => this.fetchQuestionnaireForms(response.questionnaires));
+  }
+
+  async fetchQuestionnaireForms(questionnaires: Questionnaire[]) {
+    for (const questionnaire of questionnaires) {
+      const formUrl = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
+        this.SURVEYS_SERVICE_PATH, this.SURVEYS_QUESTIONNAIRES_PATH, questionnaire.id,
+        this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX);
+      questionnaire.formXML = await this.makeRequest<string>(formUrl, {responseType: 'text'});
+    }
+    return questionnaires;
   }
 
   async saveGroupToMobSOS(groupID: string, groupName: string) {
@@ -217,44 +261,56 @@ export class Las2peerService {
       queryparams: queryParams, title: '', save: false
     };
     return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)}).catch((response) => {
-        this.logger.error(response);
-        throw response;
-      });
+      this.logger.error(response);
+      throw response;
+    });
   }
 
   pollL2PServiceDiscovery(successCallback, failureCallback) {
+    const pollingFunc = () => this.fetchServicesFromDiscovery().then((response) => {
+      successCallback(response);
+    }).catch((error) => failureCallback(error));
+    pollingFunc();
     return setInterval(
-      () => this.fetchServicesFromDiscovery().then((response) => {
-        successCallback(response);
-      })
-        .catch((error) => failureCallback(error)),
+      pollingFunc,
       environment.servicePollingInterval * 1000);
   }
 
   pollMobSOSServiceDiscovery(successCallback, failureCallback) {
+    const pollingFunc = () => this.fetchServicesFromMobSOS().then((response) => {
+      successCallback(response);
+    }).catch((error) => failureCallback(error));
+    pollingFunc();
     return setInterval(
-      () => this.fetchServicesFromMobSOS().then((response) => {
-        successCallback(response);
-      })
-        .catch((error) => failureCallback(error)),
+      pollingFunc,
       environment.servicePollingInterval * 1000);
   }
 
   pollContactServiceGroups(successCallback, failureCallback) {
+    const pollingFunc = () => this.fetchContactServiceGroups().then((response) => {
+      successCallback(response);
+    }).catch((error) => failureCallback(error));
+    pollingFunc();
     return setInterval(
-      () => this.fetchContactServiceGroups().then((response) => {
-        successCallback(response);
-      })
-        .catch((error) => failureCallback(error)),
+      pollingFunc,
       environment.servicePollingInterval * 1000);
   }
 
   pollMobSOSGroups(successCallback, failureCallback) {
+    const pollingFunc = () => this.fetchMobSOSGroups().then((response) => {
+      successCallback(response);
+    }).catch((error) => failureCallback(error));
+    pollingFunc();
     return setInterval(
-      () => this.fetchMobSOSGroups().then((response) => {
-        successCallback(response);
-      })
-        .catch((error) => failureCallback(error)),
+      pollingFunc,
       environment.servicePollingInterval * 1000);
+  }
+
+  pollMobSOSQuestionnaires(successCallback, failureCallback) {
+    const pollingFunc = () => this.fetchMobSOSQuestionnaires().then((response) => {
+      successCallback(response);
+    }).catch((error) => failureCallback(error));
+    pollingFunc();
+    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
   }
 }

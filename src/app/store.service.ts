@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
-import {Las2peerService} from './las2peer.service';
+import {Las2peerService, Questionnaire} from './las2peer.service';
 import {find, isEmpty, throttle} from 'lodash-es';
 import {distinctUntilChanged, filter, pairwise} from 'rxjs/operators';
 import {environment} from '../environments/environment';
@@ -16,6 +16,7 @@ export interface State {
   selectedGroup: string;
   selectedService: string;
   editMode: boolean;
+  questionnaires: Questionnaire[];
 }
 
 export interface GroupInformation {
@@ -70,9 +71,9 @@ export class StoreService {
   pollingEnabled = false;
   serviceL2PPollingHandle;
   serviceMobSOSPollingHandle;
-
   groupContactServicePollingHandle;
   groupMobSOSPollingHandle;
+  questionnairePollingHandle;
 
   servicesFromDiscoverySubject = new BehaviorSubject([]);
   servicesFromMobSOSSubject = new BehaviorSubject({});
@@ -87,6 +88,9 @@ export class StoreService {
   // merged subject for group data from all sources
   groupsSubject = new BehaviorSubject<GroupCollection>({});
   public groups = this.groupsSubject.asObservable();
+
+  questionnairesSubject = new BehaviorSubject<Questionnaire[]>([]);
+  public questionnaires = this.questionnairesSubject.asObservable();
 
   userSubject = new BehaviorSubject(null);
   public user = this.userSubject.asObservable();
@@ -129,6 +133,7 @@ export class StoreService {
       this.selectedGroupSubject.next(previousState.selectedGroup);
       this.selectedServiceSubject.next(previousState.selectedService);
       this.editModeSubject.next(previousState.editMode);
+      this.questionnairesSubject.next(previousState.questionnaires);
     }
     const throtteledSaveStateFunc = throttle(() => this.saveState(), 1000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
@@ -208,6 +213,16 @@ export class StoreService {
         () => {
         }
       );
+      this.questionnairePollingHandle = this.las2peer.pollMobSOSQuestionnaires(
+        (questionnaires) => {
+          if (questionnaires === undefined) {
+            questionnaires = [];
+          }
+          this.questionnairesSubject.next(questionnaires);
+        },
+        () => {
+        }
+      );
       this.pollingEnabled = true;
     } else {
       this.logger.debug('Polling already enabled...');
@@ -236,6 +251,7 @@ export class StoreService {
         selectedGroup: this.selectedGroupSubject.getValue(),
         selectedService: this.selectedServiceSubject.getValue(),
         editMode: this.editModeSubject.getValue(),
+        questionnaires: this.questionnairesSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -264,6 +280,8 @@ export class StoreService {
 
   setUser(user) {
     this.userSubject.next(user);
+    localStorage.setItem('id_token', user.id_token);
+    localStorage.setItem('access_token', user.access_token);
   }
 
   setGroup(groupID: string) {

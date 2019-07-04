@@ -17,7 +17,19 @@ export class SuccessFactor {
     }
   }
 
-  toXml() {
+  public static fromPlainObject(obj: SuccessFactor): SuccessFactor {
+    return new SuccessFactor(obj.name, obj.measures);
+  }
 
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const factor = doc.createElement('factor');
+    factor.setAttribute('name', this.name);
+    for (const measureName of this.measures) {
+      const measure = doc.createElement('measure');
+      measure.setAttribute('name', measureName);
+      factor.appendChild(measure);
+    }
+    return factor;
   }
 }

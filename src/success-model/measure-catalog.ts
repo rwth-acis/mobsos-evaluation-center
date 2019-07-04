@@ -19,7 +19,20 @@ export class MeasureCatalog {
     return new MeasureCatalog(measureMap);
   }
 
-  toXml() {
+  public static fromPlainObject(obj: MeasureCatalog): MeasureCatalog {
+    const measureMap: MeasureMap = {};
+    for (const measureName of Object.keys(obj.measures)) {
+      measureMap[measureName] = Measure.fromPlainObject(obj.measures[measureName]);
+    }
+    return new MeasureCatalog(measureMap);
+  }
 
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const catalog = doc.createElement('Catalog');
+    for (const measure of Object.values(this.measures)) {
+      catalog.appendChild(measure.toXml());
+    }
+    return catalog;
   }
 }

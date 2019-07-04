@@ -7,6 +7,7 @@ import {PickMeasureDialogComponent} from './pick-measure-dialog/pick-measure-dia
 import {Measure} from '../../success-model/measure';
 import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
 import {TranslateService} from '@ngx-translate/core';
+import {EditFactorDialogComponent} from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 
 @Component({
   selector: 'app-success-factor',
@@ -56,5 +57,19 @@ export class SuccessFactorComponent implements OnInit {
   private removeMeasure(measureIndex: number) {
     delete this.factor.measures[measureIndex];
     this.factorChange.emit(this.factor);
+  }
+
+  onEditClicked() {
+    const dialogRef = this.dialog.open(EditFactorDialogComponent, {
+      width: '250px',
+      data: {factor: this.factor}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.factor = result;
+        this.factorChange.emit(this.factor);
+      }
+    });
   }
 }

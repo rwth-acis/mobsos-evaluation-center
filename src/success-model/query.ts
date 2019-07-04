@@ -9,7 +9,15 @@ export class Query {
     return new Query(queryName, sql);
   }
 
-  toXml() {
+  public static fromPlainObject(obj: Query): Query {
+    return new Query(obj.name, obj.sql);
+  }
 
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const query = doc.createElement('query');
+    query.setAttribute('name', this.name);
+    query.innerHTML = this.sql;
+    return query;
   }
 }

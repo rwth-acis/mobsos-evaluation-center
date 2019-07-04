@@ -2,6 +2,7 @@ export const translations = {
   "shared": {
     "pages": {
       "dashboard": "Dashboard",
+      "manage-questionnaires": "Manage Questionnaires",
       "success-modeling": "Success Modeling",
       "raw-edit": "Raw Edit",
     },

@@ -88,7 +88,7 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
     }
   }
 
-  onEditClicked() {
+  onEditClicked(event: MouseEvent) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -103,6 +103,7 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
         this.measureChange.emit(this.measure);
       }
     });
+    event.stopPropagation();
   }
 
   public rerenderVisualizationComponent() {

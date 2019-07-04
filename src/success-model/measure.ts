@@ -18,7 +18,23 @@ export class Measure {
     return new Measure(measureName, queries, visualization);
   }
 
-  toXml() {
+  public static fromPlainObject(obj: Measure): Measure {
+    const queries: Query[] = [];
+    for (const objQuery of obj.queries) {
+      queries.push(Query.fromPlainObject(objQuery));
+    }
+    const visualization = Visualization.fromPlainObject(obj.visualization);
+    return new Measure(obj.name, queries, visualization);
+  }
 
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const measure = doc.createElement('measure');
+    measure.setAttribute('name', this.name);
+    for (const query of this.queries) {
+      measure.appendChild(query.toXml());
+    }
+    measure.appendChild(this.visualization.toXml());
+    return measure;
   }
 }

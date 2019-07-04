@@ -1,5 +1,5 @@
 <div id="measure-header">
-  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked()" id="edit-button">
+  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked($event)" id="edit-button">
     <mat-icon>edit</mat-icon>
   </button>
   <h4 *ngIf="measure">

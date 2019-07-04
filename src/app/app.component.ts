@@ -46,6 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selectedGroup;
   user;
   signedIn = false;
+  mobsosSurveysUrl = environment.mobsosSurveysUrl;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,

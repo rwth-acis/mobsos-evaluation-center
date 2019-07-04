@@ -1,4 +1,10 @@
-<h3 *ngIf="factor">{{factor.name}}</h3>
+<div id="factor-header">
+  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked()" id="edit-button">
+    <mat-icon>edit</mat-icon>
+  </button>
+  <h3 *ngIf="factor">{{factor.name}}</h3>
+</div>
+
 <div *ngIf="factor && factor.measures.length > 0">
   <div *ngFor="let measure of factor.measures; let i = index" class="measure-row">
     <button *ngIf="measure && editMode" mat-icon-button matTooltipShowDelay="0"
