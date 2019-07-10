@@ -169,6 +169,9 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   private getQuestionnaireByName(name: string): Questionnaire {
+    if(!this.availableQuestionnaires){
+      return null;
+    }
     return this.availableQuestionnaires.find(value => value.name === name);
   }
 

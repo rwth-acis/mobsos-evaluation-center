@@ -34,6 +34,8 @@ export interface ServiceInformation {
   name: string;
   alias: string;
   mobsosIDs: string[];
+  // key is custom message type (such as SERVICE_CUSTOM_MESSAGE_42)
+  serviceMessageDescriptions: { [key: string]: string };
 }
 
 export interface ServiceCollection {
@@ -91,7 +93,7 @@ export class StoreService {
   public groups = this.groupsSubject.asObservable();
 
   questionnairesSubject = new BehaviorSubject<Questionnaire[]>([]);
-  public questionnaires = this.questionnairesSubject.asObservable();
+  public questionnaires = this.questionnairesSubject.asObservable().pipe(distinctUntilChanged(), filter(Boolean));
 
   userSubject = new BehaviorSubject(null);
   public user = this.userSubject.asObservable();
@@ -335,7 +337,8 @@ export class StoreService {
       serviceCollection[serviceIdentifier] = {
         name: serviceIdentifier,
         alias: latestRelease.supplement.name,
-        mobsosIDs: []
+        mobsosIDs: [],
+        serviceMessageDescriptions: {},
       };
     }
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
@@ -345,11 +348,18 @@ export class StoreService {
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
+      const serviceMessageDescriptions = servicesFromMobSOS[serviceAgentID].serviceMessageDescriptions;
       // only add mobsos service data if the data from the discovery is missing
       if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {name: serviceName, alias: serviceAlias, mobsosIDs: []};
+        serviceCollection[serviceName] = {
+          name: serviceName,
+          alias: serviceAlias,
+          mobsosIDs: [],
+          serviceMessageDescriptions: {}
+        };
       }
       serviceCollection[serviceName].mobsosIDs.push(serviceAgentID);
+      serviceCollection[serviceName].serviceMessageDescriptions = serviceMessageDescriptions;
     }
     this.servicesSubject.next(serviceCollection);
   }

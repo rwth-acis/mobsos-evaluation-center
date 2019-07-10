@@ -63,6 +63,7 @@ export const translations = {
   "success-factor": {
     "add-measure-button": "Messung hinzufügen",
     "no-measures-placeholder": "Dieser Faktor hat noch keine Messungen.",
+    "remove-measure-prompt": "Best du sicher, dass dudie Messung entfernen möchtest?",
     "remove-measure-tooltip": "Messung entfernen",
   },
   "success-modeling": {

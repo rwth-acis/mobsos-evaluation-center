@@ -9,7 +9,7 @@ import {
   MatButtonModule,
   MatButtonToggleModule,
   MatCardModule, MatCheckboxModule,
-  MatDialogModule,
+  MatDialogModule, MatExpansionModule,
   MatFormFieldModule,
   MatIconModule,
   MatInputModule,
@@ -60,6 +60,7 @@ import {EditMeasureDialogComponent} from './success-factor/edit-measure-dialog/e
 import {QuestionnairesComponent} from './success-modeling/questionnaires/questionnaires.component';
 import {PickQuestionnaireDialogComponent} from './success-modeling/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import {DeleteQuestionnaireDialogComponent} from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
+import {MarkdownModule} from "ngx-markdown";
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -118,11 +119,12 @@ export function createTranslateLoader() {
       level: NgxLoggerLevel.TRACE,
       serverLogLevel: NgxLoggerLevel.OFF
     }),
+    MarkdownModule.forRoot(),
     MatSidenavModule,
     MatIconModule,
     MatListModule,
-    MatButtonModule,
     MatSlideToggleModule,
+    MatButtonModule,
     MatTabsModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -142,6 +144,7 @@ export function createTranslateLoader() {
     MatInputModule,
     MatRippleModule,
     MatCheckboxModule,
+    MatExpansionModule,
   ],
   providers: [
     {

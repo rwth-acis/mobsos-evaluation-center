@@ -8,6 +8,23 @@
 
   <mat-divider></mat-divider>
 
+  <mat-accordion id="hints-accordion">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Hints</mat-panel-title>
+        <mat-panel-description>
+          See descriptions and examples of the logged data.
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <div *ngFor="let item of data.service.serviceMessageDescriptions | keyvalue">
+        <h3>{{item.key}}</h3>
+        <markdown ngPreserveWhitespaces>
+          {{item.value}}
+        </markdown>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+
   <div *ngFor="let query of data.measure.queries; let i = index">
     <mat-form-field>
       <input matInput

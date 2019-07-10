@@ -6,3 +6,9 @@ mat-divider {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
+#hints-accordion {
+  mat-expansion-panel {
+    margin-bottom: 5px;
+  }
+}
