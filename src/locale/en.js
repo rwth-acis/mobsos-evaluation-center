@@ -117,6 +117,7 @@ export const translations = {
     },
     "message-no-application-selected": "No application selected. Please select an application above to see its success model.",
     "message-no-success-model-found": "No success model present. You can enable the edit mode above and create one.",
+    "message-no-success-model-found-not-member": "No success model present. You must be a member of the selected community to create a new model.",
     "pick-measure-dialog": {
       "create-measure-button": "Create Measure",
       "title": "Pick a Measure",

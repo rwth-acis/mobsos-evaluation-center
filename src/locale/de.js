@@ -116,6 +116,7 @@ export const translations = {
     },
     "message-no-application-selected": "Es ist keine Anwendung ausgewählt. Bitte wähle oben eine aus, um das Erfolgsmodell zu sehen.",
     "message-no-success-model-found": "Es wurd kein Erfolgsmodell gefunden. Du kannst oben den Editiermodus aktivieren um eins zu erstellen.",
+    "message-no-success-model-found-not-member": "Es wurd kein Erfolgsmodell gefunden. Du musst Mitglied der ausgewählten Community sein, um ein Modell erstellen zu können.",
     "pick-measure-dialog": {
       "create-measure-button": "Messung erstellen",
       "title": "Wähle eine Messung aus",

@@ -124,7 +124,7 @@
 <mat-card [hidden]="selectedService">{{'success-modeling.message-no-application-selected'|translate}}</mat-card>
 
 <mat-card [hidden]="!selectedService || selectedService && getSuccessModel()">
-  {{'success-modeling.message-no-success-model-found'|translate}}
+  {{(isMemberOfSelectedGroup() ? 'success-modeling.message-no-success-model-found' : 'success-modeling.message-no-success-model-found-not-member')|translate}}
 </mat-card>
 
 <div *ngIf="getSuccessModel() && getMeasureCatalog()">

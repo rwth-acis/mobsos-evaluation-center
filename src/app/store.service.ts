@@ -149,6 +149,8 @@ export class StoreService {
       } else {
         this.las2peer.resetCredentials();
       }
+      // refresh group membership status
+      this.mergeGroupData();
       throtteledSaveStateFunc();
     });
     // merge service discovery data from the different sources
@@ -284,9 +286,12 @@ export class StoreService {
   }
 
   setUser(user) {
+    if (user) {
+      // the local storage items will be picked up by the survey frontend
+      localStorage.setItem('id_token', user.id_token);
+      localStorage.setItem('access_token', user.access_token);
+    }
     this.userSubject.next(user);
-    localStorage.setItem('id_token', user.id_token);
-    localStorage.setItem('access_token', user.access_token);
   }
 
   setGroup(groupID: string) {

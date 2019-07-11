@@ -68,6 +68,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.startPolling();
     this.store.selectedGroup.subscribe((groupID) => {
       this.groupID = groupID;
+      this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = null;
       this.fetchXml();
     });
     this.store.selectedService.subscribe((serviceID) => {
@@ -323,6 +324,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private getMyUsername() {
+    if (!this.user) {
+      return null;
+    }
     return this.user.profile.preferred_username;
   }
 
