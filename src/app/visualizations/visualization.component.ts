@@ -11,6 +11,7 @@ export interface VisualizationComponent {
   measure: Measure;
   visualizationInitialized: boolean;
   error: Response;
+
   renderVisualization();
 }
 
@@ -64,13 +65,17 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       const responseBody = new TextDecoder('utf-8').decode(value);
       errorText = (this.error.statusText + ': ' + responseBody).trim();
     } else {
-      errorText = JSON.stringify(this.error);
+      errorText = this.error;
     }
 
     this.dialog.open(ErrorDialogComponent, {
       width: '80%',
       data: {error: errorText}
     });
+  }
+
+  public async renderVisualization() {
+    throw new Error('You have to implement the method renderVisualization!');
   }
 
   protected getParamsForQuery(query: string) {
@@ -86,7 +91,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs.slice(-1)[0] );
+        params.push(this.service.mobsosIDs.slice(-1)[0]);
       }
     }
     return params;
@@ -96,7 +101,10 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     return this.las2peer.visualizeQuery(query, queryParams, format).then(data => {
       this.error = null;
       return data;
-    }).catch(error => this.error = error);
+    }).catch(error => {
+      this.error = error.error;
+      throw error;
+    });
   }
 
   protected renderVisualizationReal() {
@@ -114,9 +122,5 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
       this.visualizationInitialized = false;
     }
 
-  }
-
-  public async renderVisualization() {
-    throw new Error('You have to implement the method renderVisualization!');
   }
 }

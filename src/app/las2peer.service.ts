@@ -301,10 +301,7 @@ export class Las2peerService {
       cache: false, dbkey: '__mobsos', height: '200px', width: '300px', modtypei: null, query,
       queryparams: queryParams, title: '', save: false
     };
-    return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)}).catch((response) => {
-      this.logger.error(response);
-      throw response;
-    });
+    return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)});
   }
 
   pollL2PServiceDiscovery(successCallback, failureCallback) {
