@@ -135,7 +135,7 @@ export const translations = {
         "add-measures": "Automatically add measures for questionnaire answers.",
         "assign-measures": "Insert added measures into the success model.",
         "description": "Description",
-        "dimensions": "Dimensionen",
+        "dimensions": "Dimensions",
         "language": "Language",
         "num-questions": "Number of questions",
         "pick-questionnaire-to-see-description": "Pick a questionnaire to see its description. You can not pick questionnaires that are already used.",
