@@ -115,4 +115,8 @@ export class EditMeasureDialogComponent implements OnInit {
     this.data.measure.queries[i].name = value;
     this.previewMeasure.rerenderVisualizationComponent();
   }
+
+  prettifyCustomMessageName(messageName: string) {
+    return messageName.replace(/_/g, ' ');
+  }
 }

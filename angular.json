@@ -39,7 +39,8 @@
             "scripts": [
               "node_modules/marked/lib/marked.js",
               "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-sql.min.js"
+              "node_modules/prismjs/components/prism-sql.min.js",
+              "node_modules/prismjs/components/prism-json.min.js"
             ],
             "es5BrowserSupport": true
           },
@@ -103,7 +104,8 @@
             "scripts": [
               "node_modules/marked/lib/marked.js",
               "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-sql.min.js"
+              "node_modules/prismjs/components/prism-sql.min.js",
+              "node_modules/prismjs/components/prism-json.min.js"
             ],
             "assets": [
               "src/favicon.ico",

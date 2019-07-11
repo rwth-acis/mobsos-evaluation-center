@@ -9,8 +9,8 @@ export const environment = {
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   las2peerWebConnectorUrl: 'http://127.0.0.1:8080',
   mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
-  servicePollingInterval: 10,
-  visualizationRefreshInterval: 20,
+  servicePollingInterval: 60,
+  visualizationRefreshInterval: 60,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: false,
   // yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',

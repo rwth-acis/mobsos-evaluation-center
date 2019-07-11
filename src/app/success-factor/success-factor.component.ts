@@ -44,6 +44,7 @@ export class SuccessFactorComponent implements OnInit {
   openPickMeasureDialog() {
     const dialogRef = this.dialog.open(PickMeasureDialogComponent, {
       minWidth: 300,
+      width: '80%',
       data: {measures: Object.values(this.measures), service: this.service},
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -52,11 +53,6 @@ export class SuccessFactorComponent implements OnInit {
       }
       this.factorChange.emit(this.factor);
     });
-  }
-
-  private removeMeasure(measureIndex: number) {
-    this.factor.measures.splice(measureIndex, 1);
-    this.factorChange.emit(this.factor);
   }
 
   onEditClicked() {
@@ -71,5 +67,10 @@ export class SuccessFactorComponent implements OnInit {
         this.factorChange.emit(this.factor);
       }
     });
+  }
+
+  private removeMeasure(measureIndex: number) {
+    this.factor.measures.splice(measureIndex, 1);
+    this.factorChange.emit(this.factor);
   }
 }

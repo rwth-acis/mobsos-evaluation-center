@@ -61,6 +61,7 @@ import {QuestionnairesComponent} from './success-modeling/questionnaires/questio
 import {PickQuestionnaireDialogComponent} from './success-modeling/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import {DeleteQuestionnaireDialogComponent} from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import {MarkdownModule} from "ngx-markdown";
+import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-table/sql-table.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -103,7 +104,8 @@ export function createTranslateLoader() {
     EditMeasureDialogComponent,
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
-    DeleteQuestionnaireDialogComponent
+    DeleteQuestionnaireDialogComponent,
+    SqlTableComponent
   ],
   imports: [
     BrowserModule,

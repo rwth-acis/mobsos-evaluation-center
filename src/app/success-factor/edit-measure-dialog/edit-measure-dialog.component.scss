@@ -12,3 +12,8 @@ mat-divider {
     margin-bottom: 5px;
   }
 }
+
+app-sql-table{
+  display: block;
+  overflow-y: scroll;
+}
