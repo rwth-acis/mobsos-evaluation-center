@@ -29,6 +29,10 @@
         <mat-icon matListIcon>open_in_browser</mat-icon>
         {{'shared.pages.manage-questionnaires'|translate}}
       </a>
+      <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
+        <mat-icon matListIcon>open_in_browser</mat-icon>
+        {{'shared.pages.manage-requirements'|translate}}
+      </a>
     </mat-nav-list>
     <footer>
       <mat-slide-toggle labelPosition="before" [checked]="expertMode" (change)="setExpertMode($event.checked)">

@@ -10,4 +10,8 @@ export const environment = {
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server
   yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',
+  // URL of the Requirements Bazaar API
+  reqBazUrl: 'https://requirements-bazaar.org/bazaar',
+  // URL of the Requirements Bazaar frontend
+  reqBazFrontendUrl: 'https://requirements-bazaar.org/',
 };

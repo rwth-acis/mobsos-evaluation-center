@@ -1,6 +1,7 @@
 import {SuccessFactor} from './success-factor';
 import {merge} from 'lodash-es';
 import {Questionnaire} from './questionnaire';
+import {ReqbazProject} from "./reqbaz-project";
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -22,7 +23,8 @@ const initialDimensionMap: DimensionMap = {
 
 export class SuccessModel {
 
-  constructor(public name: string, public service: string, public dimensions: DimensionMap, public questionnaires: Questionnaire[]) {
+  constructor(public name: string, public service: string, public dimensions: DimensionMap,
+              public questionnaires: Questionnaire[], public reqBazProject: ReqbazProject) {
   }
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
@@ -37,7 +39,8 @@ export class SuccessModel {
     for (const objQuestionnaire of obj.questionnaires) {
       questionnaires.push(Questionnaire.fromPlainObject(objQuestionnaire));
     }
-    return new SuccessModel(obj.name, obj.service, dimensions, questionnaires);
+    const reqBazProject = ReqbazProject.fromPlainObject(obj.reqBazProject);
+    return new SuccessModel(obj.name, obj.service, dimensions, questionnaires, reqBazProject);
   }
 
   static fromXml(xml: Element) {
@@ -68,7 +71,14 @@ export class SuccessModel {
           questionnaires.push(Questionnaire.fromXml(questionnaireNode));
         }
       }
-      return new SuccessModel(modelName, service, dimensions, questionnaires);
+
+      const reqBazProjectNodes = Array.from(xml.getElementsByTagName('reqbaz-project'));
+      let reqBazProject = null;
+      if (reqBazProjectNodes.length > 0) {
+        reqBazProject = ReqbazProject.fromXml(reqBazProjectNodes[0]);
+      }
+
+      return new SuccessModel(modelName, service, dimensions, questionnaires, reqBazProject);
     } catch (e) {
       throw new Error('Parsing model failed: ' + e);
     }
@@ -84,6 +94,9 @@ export class SuccessModel {
       questionnaires.appendChild(questionnaireObj.toXml());
     }
     successModel.appendChild(questionnaires);
+    if (this.reqBazProject) {
+      successModel.appendChild(this.reqBazProject.toXml());
+    }
     for (const dimensionName of Object.keys(this.dimensions)) {
       const dimension = doc.createElement('dimension');
       dimension.setAttribute('name', dimensionName);

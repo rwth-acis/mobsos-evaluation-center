@@ -3,6 +3,7 @@ export const translations = {
     "pages": {
       "dashboard": "Dashboard",
       "manage-questionnaires": "Manage Questionnaires",
+      "manage-requirements": "Manage Requirements",
       "success-modeling": "Success Modeling",
       "raw-edit": "Raw Edit",
     },
@@ -145,6 +146,24 @@ export const translations = {
       "remove-questionnaire-tooltip": "Remove questionnaire",
       "subtitle": "Get user feedback with questionnaires. The generated data can be used in the success model.",
       "title": "Questionnaires",
+    },
+    "reqbaz": {
+      "tooltip": "Edit requirements from the Requirements Bazaar",
+    },
+    "requirements-list": {
+      "connect-project": "Connect Project",
+      "disconnect-project": "Disconnect Project",
+      "disconnect-project-prompt": "Are you sure that you want to disconnect the project from the model?",
+      "heading": "Requirements",
+      "no-project": "This model is currently not connected to any Requirements Bazaar project. Click the button edit requirements.",
+      "pick-reqbaz-project": {
+        "category-placeholder": "Search a Category of the Project...",
+        "project-placeholder": "Search Project...",
+        "title": "Pick a Project and Category",
+      },
+      "realize-requirement": "Done",
+      "unrealize-requirement": "Reopen",
+      "view-requirement": "View",
     },
     "save-model-button": "Save Model",
     "select-application": "Application",

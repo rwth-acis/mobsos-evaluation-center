@@ -40,6 +40,10 @@ export class Las2peerService {
   SUCCESS_MODELING_GROUP_PATH = 'groups';
   QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
+  REQBAZ_PROJECTS_PATH = 'projects';
+  REQBAZ_CATEGORIES_PATH = 'categories';
+  REQBAZ_REQUIREMENTS_PATH = 'requirements';
+  REQBAZ_REALIZED_PATH = 'realized';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
   SURVEYS_SURVEY_PATH = 'surveys';
@@ -86,12 +90,12 @@ export class Las2peerService {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      options = merge(options, {
+      options = merge({
         headers: {
           Authorization: 'Basic ' + btoa(username + ':' + password),
           access_token: token,
         }
-      });
+      }, options);
     }
     this.logger.debug('Fetching from ' + url + ' with options ' + JSON.stringify(options));
     const ngHttpOptions: {
@@ -302,6 +306,55 @@ export class Las2peerService {
       queryparams: queryParams, title: '', save: false
     };
     return this.makeRequest(url, {method: 'POST', body: JSON.stringify(requestBody)});
+  }
+
+  async searchProjectOnReqBaz(project: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_PROJECTS_PATH + `?search=${project}`);
+    const options: { headers: { [key: string]: string } } = {headers: {}};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async searchCategoryOnReqBaz(projectId: number, category: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_PROJECTS_PATH, projectId,
+      this.REQBAZ_CATEGORIES_PATH + `?search=${category}`);
+    const options: { headers: { [key: string]: string } } = {headers: {}};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async fetchRequirementsOnReqBaz(categoryId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_CATEGORIES_PATH,
+      categoryId, this.REQBAZ_REQUIREMENTS_PATH);
+    const options: { headers: { [key: string]: string } } = {headers: {}};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async realizeRequirementOnReqBaz(requirementId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_REQUIREMENTS_PATH,
+      requirementId, this.REQBAZ_REALIZED_PATH);
+    const options: { headers: { [key: string]: string }, method: string } = {headers: {}, method: 'POST'};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async unrealizeRequirementOnReqBaz(requirementId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_REQUIREMENTS_PATH,
+      requirementId, this.REQBAZ_REALIZED_PATH);
+    const options: { headers: { [key: string]: string }, method: string } = {headers: {}, method: 'DELETE'};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
   }
 
   pollL2PServiceDiscovery(successCallback, failureCallback) {

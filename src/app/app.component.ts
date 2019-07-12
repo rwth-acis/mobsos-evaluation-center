@@ -7,10 +7,11 @@ import {NGXLogger} from 'ngx-logger';
 import {LanguageService} from './language.service';
 import {GroupInformation, StoreService} from './store.service';
 import {CordovaPopupNavigator, UserManager} from 'oidc-client';
-import {MatSidenav, MatSnackBar} from '@angular/material';
+import {MatIconRegistry, MatSidenav, MatSnackBar} from '@angular/material';
 import * as Hammer from 'hammerjs';
 import {SwUpdate} from '@angular/service-worker';
 import {TranslateService} from '@ngx-translate/core';
+import {DomSanitizer} from "@angular/platform-browser";
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -47,10 +48,16 @@ export class AppComponent implements OnInit, OnDestroy {
   user;
   signedIn = false;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,
-              private swUpdate: SwUpdate, private snackBar: MatSnackBar, private translate: TranslateService) {
+              private swUpdate: SwUpdate, private snackBar: MatSnackBar, private translate: TranslateService,
+              private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
+    this.matIconRegistry.addSvgIcon(
+      'reqbaz-logo',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/reqbaz-logo.svg')
+    );
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener('change', this.mobileQueryListener, false);

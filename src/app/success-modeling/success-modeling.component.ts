@@ -38,6 +38,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   myGroups: GroupInformation[];
   saveInProgress = false;
   availableQuestionnaires: Questionnaire[];
+  numberOfRequirements = 0;
 
   constructor(private store: StoreService, private las2peer: Las2peerService, private logger: NGXLogger,
               private dialog: MatDialog, private translate: TranslateService, private snackBar: MatSnackBar) {
@@ -350,7 +351,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
             'User Satisfaction': [],
             'Individual Impact': [],
             'Community Impact': [],
-          }, []);
+          }, [], null);
         }
         userWorkspace[this.selectedService] = {
           createdAt: new Date().toISOString(),

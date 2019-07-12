@@ -5,6 +5,7 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
+  MatAutocompleteModule,
   MatBadgeModule,
   MatButtonModule,
   MatButtonToggleModule,
@@ -36,7 +37,7 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {translations as en} from '../locale/en';
 import {translations as de} from '../locale/de';
 import {MonacoEditorModule, NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig} from 'ngx-monaco-editor';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {SuccessDimensionComponent} from './success-dimension/success-dimension.component';
 import {Location, PlatformLocation} from '@angular/common';
 import {ServiceWorkerModule} from '@angular/service-worker';
@@ -62,6 +63,8 @@ import {PickQuestionnaireDialogComponent} from './success-modeling/questionnaire
 import {DeleteQuestionnaireDialogComponent} from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import {MarkdownModule} from "ngx-markdown";
 import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-table/sql-table.component';
+import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
+import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -105,7 +108,9 @@ export function createTranslateLoader() {
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
-    SqlTableComponent
+    SqlTableComponent,
+    RequirementsListComponent,
+    PickReqbazProjectComponent
   ],
   imports: [
     BrowserModule,
@@ -147,6 +152,8 @@ export function createTranslateLoader() {
     MatRippleModule,
     MatCheckboxModule,
     MatExpansionModule,
+    MatAutocompleteModule,
+    ReactiveFormsModule,
   ],
   providers: [
     {
@@ -167,6 +174,7 @@ export function createTranslateLoader() {
     EditMeasureDialogComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
+    PickReqbazProjectComponent
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

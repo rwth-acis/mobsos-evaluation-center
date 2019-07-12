@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>{{'success-modeling.requirements-list.pick-reqbaz-project.title'|translate}}</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+    <input type="text" matInput [formControl]="selectedProjectControl" [matAutocomplete]="autoProject"
+           placeholder="{{'success-modeling.requirements-list.pick-reqbaz-project.project-placeholder'|translate}}">
+  </mat-form-field>
+
+  <mat-autocomplete #autoProject="matAutocomplete" [displayWith]="projectDisplay"
+                    (optionSelected)="selectedProject = $event.option.value; selectedCategory = null; _filterCategory('')">
+    <mat-option *ngFor="let project of availableProjects | async" [value]="project">{{project.name}}</mat-option>
+  </mat-autocomplete>
+
+  <mat-form-field>
+    <input type="text" matInput [formControl]="selectedCategoryControl" [matAutocomplete]="autoCategory"
+           placeholder="{{'success-modeling.requirements-list.pick-reqbaz-project.category-placeholder'|translate}}">
+  </mat-form-field>
+
+  <mat-autocomplete #autoCategory="matAutocomplete" [displayWith]="categoryDisplay"
+                    (optionSelected)="selectedCategory = $event.option.value">
+    <mat-option *ngFor="let category of availableCategories | async" [value]="category">{{category.name}}</mat-option>
+  </mat-autocomplete>
+
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="{selectedProject: selectedProject, selectedCategory: selectedCategory}"
+          [disabled]="!selectedProject || ! selectedCategory">{{'shared.elements.ok-label'|translate}}</button>
+  <button mat-button [mat-dialog-close]="null">{{'shared.elements.cancel-label'|translate}}</button>
+</div>

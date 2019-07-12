@@ -17,6 +17,23 @@
       {{'success-modeling.edit-mode-toggle'|translate}}
     </mat-slide-toggle>
     <mat-button-toggle-group *ngIf="editMode">
+      <mat-button-toggle aria-label="Requirements Bazaar" [mdePopoverTriggerFor]="reqBazPopover"
+                         mdePopoverTriggerOn="click" #reqBazToggle
+                         matTooltip="{{'success-modeling.reqbaz.tooltip'|translate}}">
+        <mat-icon color="primary" svgIcon="reqbaz-logo"
+                  [matBadge]="numberOfRequirements === 0 ? null : numberOfRequirements.toString()">
+        </mat-icon>
+      </mat-button-toggle>
+      <mde-popover #reqBazPopover="mdePopover" [mdePopoverOverlapTrigger]="false" [mdePopoverCloseOnClick]="false"
+                   (close)="reqBazToggle.checked = false">
+        <mat-card class="popover-content">
+          <mat-card-content>
+            <app-requirements-list [successModel]="getSuccessModel()" (successModelChange)="persistWorkspaceChanges()"
+                                   (numberOfRequirements)="numberOfRequirements = $event.valueOf()">
+            </app-requirements-list>
+          </mat-card-content>
+        </mat-card>
+      </mde-popover>
       <mat-button-toggle aria-label="Spectators" [mdePopoverTriggerFor]="spectatorPopover"
                          mdePopoverTriggerOn="click" #spectatorToggle
                          matTooltip="{{'success-modeling.visitors.tooltip'|translate}}">
@@ -25,7 +42,7 @@
           supervisor_account
         </mat-icon>
       </mat-button-toggle>
-      <mde-popover #spectatorPopover="mdePopover" [mdePopoverOverlapTrigger]="false"
+      <mde-popover #spectatorPopover="mdePopover" [mdePopoverOverlapTrigger]="false" [mdePopoverCloseOnClick]="false"
                    (close)="spectatorToggle.checked = false">
         <mat-card class="popover-content">
           <mat-card-content>
@@ -35,14 +52,14 @@
             </div>
             <div *ngFor="let visitor of getCurrentVisitorsExceptMe()" class="popover-row">
               {{visitor.username}}
-              <button *ngIf="getMyRole() === 'owner' && visitor.role !== 'editor'"
+              <button *ngIf="getMyRole() === 'owner' && visitor && visitor.role !== 'editor'"
                       mat-icon-button
                       matTooltip="{{'success-modeling.visitors.edit-role-description'|translate}}"
                       matTooltipShowDelay="0"
                       (click)="changeVisitorRole(visitor.username, 'editor')">
                 <mat-icon>create</mat-icon>
               </button>
-              <button *ngIf="getMyRole() === 'owner' && visitor.role !== 'spectator'"
+              <button *ngIf="getMyRole() === 'owner' && visitor && visitor.role !== 'spectator'"
                       mat-icon-button
                       matTooltip="{{'success-modeling.visitors.spectator-role-description'|translate}}"
                       matTooltipShowDelay="0"
@@ -61,7 +78,7 @@
           view_carousel
         </mat-icon>
       </mat-button-toggle>
-      <mde-popover #workspacesPopover="mdePopover" [mdePopoverOverlapTrigger]="false"
+      <mde-popover #workspacesPopover="mdePopover" [mdePopoverOverlapTrigger]="false" [mdePopoverCloseOnClick]="false"
                    (close)="workspacesToggle.checked = false">
         <mat-card class="popover-content">
           <mat-card-content>

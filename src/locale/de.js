@@ -3,6 +3,7 @@ export const translations = {
     "pages": {
       "dashboard": "Dashboard",
       "manage-questionnaires": "Fragebögen verwalten",
+      "manage-requirements": "Anforderungen verwalten",
       "success-modeling": "Erfolgsmodellierung",
       "raw-edit": "Direktbearbeitung",
     },
@@ -144,6 +145,24 @@ export const translations = {
       "remove-questionnaire-tooltip": "Fragebogen entfernen",
       "subtitle": "Erhalte Benutzerfeedback durch Fragebögen. Die generierten Daten können im Erfolgsmodell verwendet werden.",
       "title": "Fragebögen",
+    },
+    "reqbaz": {
+      "tooltip": "Bearbeite Anforderungen aus dem Requirements Bazaar",
+    },
+    "requirements-list": {
+      "connect-project": "Projekt verbinden",
+      "disconnect-project": "Projekt trennen",
+      "disconnect-project-prompt": "Bist du sicher, dass du das Project vom Model trennen möchtest?",
+      "heading": "Anforderungen",
+      "no-project": "Dieses Modell ist zur Zeit mit keinem Projekt aus dem Requirements Bazaar verbunden. Klicke den Button um Anforderungen bearbeiten zu können.",
+      "pick-reqbaz-project": {
+        "category-placeholder": "Suche eine Kategorie des Projekts...",
+        "project-placeholder": "Suche Projekt...",
+        "title": "Projekt und Kategorie auswählen",
+      },
+      "realize-requirement": "Fertig",
+      "unrealize-requirement": "Öffnen",
+      "view-requirement": "Ansehen",
     },
     "save-model-button": "Modell speichern",
     "select-application": "Anwendung",
