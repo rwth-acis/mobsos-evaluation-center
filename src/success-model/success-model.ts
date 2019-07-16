@@ -1,7 +1,7 @@
 import {SuccessFactor} from './success-factor';
 import {merge} from 'lodash-es';
 import {Questionnaire} from './questionnaire';
-import {ReqbazProject} from "./reqbaz-project";
+import {ReqbazProject} from './reqbaz-project';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -37,9 +37,17 @@ export class SuccessModel {
     }
     const questionnaires = [];
     for (const objQuestionnaire of obj.questionnaires) {
-      questionnaires.push(Questionnaire.fromPlainObject(objQuestionnaire));
+      if (objQuestionnaire) {
+        questionnaires.push(Questionnaire.fromPlainObject(objQuestionnaire));
+      }
     }
-    const reqBazProject = ReqbazProject.fromPlainObject(obj.reqBazProject);
+    let reqBazProject;
+    if (obj.reqBazProject) {
+      reqBazProject = ReqbazProject.fromPlainObject(obj.reqBazProject);
+    } else {
+      reqBazProject = null;
+    }
+
     return new SuccessModel(obj.name, obj.service, dimensions, questionnaires, reqBazProject);
   }
 
