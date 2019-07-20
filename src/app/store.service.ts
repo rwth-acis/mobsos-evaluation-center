@@ -10,13 +10,23 @@ import {MeasureCatalog} from '../success-model/measure-catalog';
 import {YJsService} from './y-js.service';
 
 export interface State {
+  servicesFromDiscovery: any[];
+  servicesFromMobSOS: any;
   services: ServiceCollection;
+  groupsFromContactService: any;
+  groupsFromMobSOS: any[];
   groups: GroupCollection;
   user: object;
   selectedGroup: string;
   selectedService: string;
   editMode: boolean;
   questionnaires: Questionnaire[];
+  messageDescriptions: object;
+}
+
+export interface User {
+  profile: { sub: string; };
+  access_token: string;
 }
 
 export interface GroupInformation {
@@ -77,35 +87,29 @@ export class StoreService {
   groupContactServicePollingHandle;
   groupMobSOSPollingHandle;
   questionnairePollingHandle;
+  messageDescriptionPollingHandle;
 
-  servicesFromDiscoverySubject = new BehaviorSubject([]);
-  servicesFromMobSOSSubject = new BehaviorSubject({});
-
+  servicesFromDiscoverySubject: BehaviorSubject<any[]>;
+  servicesFromMobSOSSubject: BehaviorSubject<any>;
   // merged subject for service data from all sources
-  servicesSubject = new BehaviorSubject<ServiceCollection>({});
-  public services = this.servicesSubject.asObservable();
-
-  groupsFromContactServiceSubject = new BehaviorSubject({});
-  groupsFromMobSOSSubject = new BehaviorSubject([]);
-
+  servicesSubject: BehaviorSubject<ServiceCollection>;
+  public services: Observable<ServiceCollection>;
+  groupsFromContactServiceSubject: BehaviorSubject<any>;
+  groupsFromMobSOSSubject: BehaviorSubject<any[]>;
   // merged subject for group data from all sources
-  groupsSubject = new BehaviorSubject<GroupCollection>({});
-  public groups = this.groupsSubject.asObservable();
-
-  questionnairesSubject = new BehaviorSubject<Questionnaire[]>([]);
-  public questionnaires = this.questionnairesSubject.asObservable().pipe(distinctUntilChanged(), filter(Boolean));
-
-  userSubject = new BehaviorSubject(null);
-  public user = this.userSubject.asObservable();
-
-  selectedGroupSubject = new BehaviorSubject(null);
-  public selectedGroup = this.selectedGroupSubject.asObservable();
-
-  selectedServiceSubject = new BehaviorSubject(null);
-  public selectedService = this.selectedServiceSubject.asObservable();
-
-  editModeSubject = new BehaviorSubject<boolean>(false);
-  public editMode = this.editModeSubject.asObservable();
+  groupsSubject: BehaviorSubject<GroupCollection>;
+  public groups: Observable<GroupCollection>;
+  questionnairesSubject: BehaviorSubject<Questionnaire[]>;
+  public questionnaires: Observable<Questionnaire[]>;
+  userSubject: BehaviorSubject<User>;
+  public user: Observable<User>;
+  selectedGroupSubject: BehaviorSubject<string>;
+  public selectedGroup: Observable<string>;
+  selectedServiceSubject: BehaviorSubject<string>;
+  public selectedService: Observable<string>;
+  editModeSubject: BehaviorSubject<boolean>;
+  public editMode: Observable<boolean>;
+  private messageDescriptionSubject: BehaviorSubject<{}>;
 
   communityWorkspaceSubject = new BehaviorSubject<CommunityWorkspace>({});
   public communityWorkspace = this.communityWorkspaceSubject.asObservable();
@@ -117,8 +121,13 @@ export class StoreService {
   public yjsConnected: Observable<boolean>;
 
   constructor(private logger: NGXLogger, private las2peer: Las2peerService, private yjs: YJsService) {
-    this.yjsConnected = this.yjs.connected;
+    // init subjects and observables
+    this.initState();
+
     // workspace sync
+    if (this.selectedServiceSubject.getValue()) {
+      this.startSynchronizingWorkspace();
+    }
     this.selectedGroup.pipe(pairwise()).subscribe((groupData) => {
       if (groupData[0] !== groupData[1]) {
         // stop syncing workspace from previous group
@@ -128,16 +137,6 @@ export class StoreService {
         this.editModeSubject.next(false);
       }
     });
-    const previousState = StoreService.loadState();
-    if (previousState !== null) {
-      this.servicesSubject.next(previousState.services);
-      this.groupsSubject.next(previousState.groups);
-      this.userSubject.next(previousState.user);
-      this.selectedGroupSubject.next(previousState.selectedGroup);
-      this.selectedServiceSubject.next(previousState.selectedService);
-      this.editModeSubject.next(previousState.editMode);
-      this.questionnairesSubject.next(previousState.questionnaires);
-    }
     const throtteledSaveStateFunc = throttle(() => this.saveState(), 1000);
     this.services.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
     this.groups.pipe(distinctUntilChanged()).subscribe(() => throtteledSaveStateFunc());
@@ -165,8 +164,14 @@ export class StoreService {
       .subscribe(() => this.mergeGroupData());
     this.groupsFromMobSOSSubject.pipe(filter(value => !isEmpty(value)))
       .subscribe(() => this.mergeGroupData());
+    this.messageDescriptionSubject.pipe(filter(value => !isEmpty(value)))
+      .subscribe(() => this.mergeServiceData());
     // check if the group data from mobsos is in sync with the group data from the contact service
     this.groupsFromMobSOSSubject.subscribe(() => this.transferGroupDataToMobSOS());
+    // update message descriptions when a service is selected
+    this.selectedService.pipe(filter(value => !isEmpty(value))).subscribe(serviceInformation => {
+      this.updateMessageDescriptionsForCurrentService();
+    });
   }
 
   static loadState(): State {
@@ -228,6 +233,8 @@ export class StoreService {
         () => {
         }
       );
+      this.messageDescriptionPollingHandle = setInterval(
+        () => this.updateMessageDescriptionsForCurrentService(), environment.servicePollingInterval * 1000);
       this.pollingEnabled = true;
     } else {
       this.logger.debug('Polling already enabled...');
@@ -241,24 +248,31 @@ export class StoreService {
     clearInterval(this.groupContactServicePollingHandle);
     clearInterval(this.groupMobSOSPollingHandle);
     clearInterval(this.questionnairePollingHandle);
+    clearInterval(this.messageDescriptionPollingHandle);
     this.serviceL2PPollingHandle = null;
     this.serviceMobSOSPollingHandle = null;
     this.groupContactServicePollingHandle = null;
     this.groupMobSOSPollingHandle = null;
     this.questionnairePollingHandle = null;
+    this.messageDescriptionPollingHandle = null;
     this.pollingEnabled = false;
   }
 
   saveState() {
     try {
       const state = {
+        servicesFromDiscovery: this.servicesFromDiscoverySubject.getValue(),
+        servicesFromMobSOS: this.servicesFromMobSOSSubject.getValue(),
         services: this.servicesSubject.getValue(),
+        groupsFromContactService: this.groupsFromContactServiceSubject.getValue(),
+        groupsFromMobSOS: this.groupsFromMobSOSSubject.getValue(),
         groups: this.groupsSubject.getValue(),
         user: this.userSubject.getValue(),
         selectedGroup: this.selectedGroupSubject.getValue(),
         selectedService: this.selectedServiceSubject.getValue(),
         editMode: this.editModeSubject.getValue(),
         questionnaires: this.questionnairesSubject.getValue(),
+        messageDescriptions: this.messageDescriptionSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -267,6 +281,19 @@ export class StoreService {
     } catch (err) {
       // ignore write errors
     }
+  }
+
+  setUser(user) {
+    if (user) {
+      // the local storage items will be picked up by the survey frontend
+      localStorage.setItem('id_token', user.id_token);
+      localStorage.setItem('access_token', user.access_token);
+    }
+    this.userSubject.next(user);
+    // refresh groups from MobSOS to update group membership status
+    this.las2peer.fetchMobSOSGroups().then((groups) => {
+      this.groupsFromMobSOSSubject.next(groups);
+    });
   }
 
   startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
@@ -285,13 +312,16 @@ export class StoreService {
     }
   }
 
-  setUser(user) {
-    if (user) {
-      // the local storage items will be picked up by the survey frontend
-      localStorage.setItem('id_token', user.id_token);
-      localStorage.setItem('access_token', user.access_token);
+  updateMessageDescriptionsForCurrentService() {
+    const serviceInformation = this.selectedServiceSubject.getValue();
+    if (serviceInformation) {
+      this.las2peer.fetchMessageDescriptions(serviceInformation).then(messageDescriptions => {
+          const allMessageDescriptions = this.messageDescriptionSubject.getValue();
+          allMessageDescriptions[serviceInformation] = messageDescriptions;
+          this.messageDescriptionSubject.next(allMessageDescriptions);
+        }
+      );
     }
-    this.userSubject.next(user);
   }
 
   setGroup(groupID: string) {
@@ -324,6 +354,85 @@ export class StoreService {
     });
   }
 
+  private initState() {
+    this.yjsConnected = this.yjs.connected;
+    const previousState = StoreService.loadState();
+
+
+    let initialServicesFromDiscovery = [];
+    let initialServicesFromMobSOS = {};
+    let initialGroupsFromContactService = {};
+    let initialGroupsFromMobSOS = [];
+    let initalServices = {};
+    let initialGroups = {};
+    let initialUser = null;
+    let initalSelectedGroup = null;
+    let initalSelectedService = null;
+    let initialEditMode = false;
+    let initalQuestionnaires = [];
+    let initialMessageDescriptions = {};
+
+    if (previousState !== null) {
+      if (previousState.servicesFromDiscovery) {
+        initialServicesFromDiscovery = previousState.servicesFromDiscovery;
+      }
+      if (previousState.servicesFromMobSOS) {
+        initialServicesFromMobSOS = previousState.servicesFromMobSOS;
+      }
+      if (previousState.groupsFromContactService) {
+        initialGroupsFromContactService = previousState.groupsFromContactService;
+      }
+      if (previousState.groupsFromMobSOS) {
+        initialGroupsFromMobSOS = previousState.groupsFromMobSOS;
+      }
+      if (previousState.services) {
+        initalServices = previousState.services;
+      }
+      if (previousState.groups) {
+        initialGroups = previousState.groups;
+      }
+      if (previousState.user) {
+        initialUser = previousState.user;
+      }
+      if (previousState.selectedGroup) {
+        initalSelectedGroup = previousState.selectedGroup;
+      }
+      if (previousState.selectedService) {
+        initalSelectedService = previousState.selectedService;
+      }
+      if (previousState.editMode) {
+        initialEditMode = previousState.editMode;
+      }
+      if (previousState.questionnaires) {
+        initalQuestionnaires = previousState.questionnaires;
+      }
+      if (previousState.messageDescriptions) {
+        initialMessageDescriptions = previousState.messageDescriptions;
+      }
+    }
+
+    this.servicesFromDiscoverySubject = new BehaviorSubject<any[]>(initialServicesFromDiscovery);
+    this.servicesFromMobSOSSubject = new BehaviorSubject<any>(initialServicesFromMobSOS);
+    this.groupsFromContactServiceSubject = new BehaviorSubject<any>(initialGroupsFromContactService);
+    this.groupsFromMobSOSSubject = new BehaviorSubject<any[]>(initialGroupsFromMobSOS);
+    this.servicesSubject = new BehaviorSubject<ServiceCollection>(initalServices);
+    this.groupsSubject = new BehaviorSubject<GroupCollection>(initialGroups);
+    this.userSubject = new BehaviorSubject<User>(initialUser);
+    this.selectedGroupSubject = new BehaviorSubject<string>(initalSelectedGroup);
+    this.selectedServiceSubject = new BehaviorSubject<string>(initalSelectedService);
+    this.editModeSubject = new BehaviorSubject<boolean>(initialEditMode);
+    this.questionnairesSubject = new BehaviorSubject<Questionnaire[]>(initalQuestionnaires);
+    this.messageDescriptionSubject = new BehaviorSubject<{}>(initialMessageDescriptions);
+
+    this.services = this.servicesSubject.asObservable();
+    this.groups = this.groupsSubject.asObservable();
+    this.user = this.userSubject.asObservable();
+    this.selectedGroup = this.selectedGroupSubject.asObservable();
+    this.selectedService = this.selectedServiceSubject.asObservable();
+    this.editMode = this.editModeSubject.asObservable();
+    this.questionnaires = this.questionnairesSubject.asObservable().pipe(distinctUntilChanged(), filter(Boolean));
+  }
+
   /**
    * Convert data from both service sources into a common format.
    *
@@ -334,16 +443,18 @@ export class StoreService {
   private mergeServiceData() {
     const servicesFromL2P = this.servicesFromDiscoverySubject.getValue();
     const serviceCollection: ServiceCollection = {};
+    const messageDescriptions = this.messageDescriptionSubject.getValue();
     for (const service of servicesFromL2P) {
       // use most recent release and extract the human readable name
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier = service.name + '.' + latestRelease.supplement.class;
+      const serviceMessageDescriptions = messageDescriptions[serviceIdentifier] ? messageDescriptions[serviceIdentifier] : {};
       serviceCollection[serviceIdentifier] = {
         name: serviceIdentifier,
         alias: latestRelease.supplement.name,
         mobsosIDs: [],
-        serviceMessageDescriptions: {},
+        serviceMessageDescriptions,
       };
     }
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
@@ -353,14 +464,15 @@ export class StoreService {
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
-      const serviceMessageDescriptions = servicesFromMobSOS[serviceAgentID].serviceMessageDescriptions;
+      const serviceMessageDescriptions = messageDescriptions[serviceName] ? messageDescriptions[serviceName] : {};
       // only add mobsos service data if the data from the discovery is missing
+
       if (!(serviceName in serviceCollection)) {
         serviceCollection[serviceName] = {
           name: serviceName,
           alias: serviceAlias,
           mobsosIDs: [],
-          serviceMessageDescriptions: {}
+          serviceMessageDescriptions,
         };
       }
       serviceCollection[serviceName].mobsosIDs.push(serviceAgentID);

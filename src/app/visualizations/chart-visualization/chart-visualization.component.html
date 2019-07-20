@@ -10,7 +10,7 @@
   This service has not generated any data yet.
   A visualization should be shown as soon as you interact with it.
 </span>
-<plotly-plot *ngIf="visualizationInitialized"
+<plotly-plot *ngIf="!error && visualizationInitialized"
              [data]="graph.data"
              [config]="graph.config"
              [layout]="graph.layout"

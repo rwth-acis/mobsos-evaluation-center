@@ -21,6 +21,7 @@ export class SuccessDimensionComponent implements OnInit {
   @Input() editMode = false;
 
   @Output() factorsChange = new EventEmitter<SuccessFactor[]>();
+  @Output() measuresChange = new EventEmitter<MeasureMap>();
 
   constructor(private dialog: MatDialog, private translate: TranslateService) {
   }

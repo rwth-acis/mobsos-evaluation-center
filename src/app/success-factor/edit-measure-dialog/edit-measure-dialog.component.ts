@@ -10,7 +10,7 @@ import {
 } from '../../../success-model/visualization';
 import {ServiceInformation} from '../../store.service';
 import {SuccessMeasureInterface} from '../../success-measure/success-measure.interface';
-import {Query} from "../../../success-model/query";
+import {Query} from '../../../success-model/query';
 
 export interface DialogData {
   measure: Measure;

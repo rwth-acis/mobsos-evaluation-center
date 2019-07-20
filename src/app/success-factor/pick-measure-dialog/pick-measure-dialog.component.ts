@@ -1,10 +1,10 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, EventEmitter, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
 import {Measure} from '../../../success-model/measure';
 import {ServiceInformation} from '../../store.service';
 import {EditMeasureDialogComponent} from '../edit-measure-dialog/edit-measure-dialog.component';
 import {Query} from '../../../success-model/query';
-import {ValueVisualization} from "../../../success-model/visualization";
+import {ValueVisualization} from '../../../success-model/visualization';
 
 export interface DialogData {
   measures: Measure[];
@@ -17,6 +17,8 @@ export interface DialogData {
   styleUrls: ['./pick-measure-dialog.component.scss']
 })
 export class PickMeasureDialogComponent implements OnInit {
+
+  measuresChanged = new EventEmitter<Measure[]>();
 
   constructor(private dialogRef: MatDialogRef<PickMeasureDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: DialogData, private dialog: MatDialog) {
@@ -41,6 +43,7 @@ export class PickMeasureDialogComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.data.measures.unshift(result);
+        this.measuresChanged.emit(this.data.measures);
       }
     });
   }

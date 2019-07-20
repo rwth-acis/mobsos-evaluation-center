@@ -21,6 +21,7 @@ export class SuccessFactorComponent implements OnInit {
   @Input() editMode = false;
 
   @Output() factorChange = new EventEmitter<SuccessFactor>();
+  @Output() measureChange = new EventEmitter<MeasureMap>();
 
   constructor(private translate: TranslateService, private dialog: MatDialog) {
   }
@@ -52,6 +53,12 @@ export class SuccessFactorComponent implements OnInit {
         this.factor.measures.push((result as Measure).name);
       }
       this.factorChange.emit(this.factor);
+    });
+    dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
+      for (const measure of measures) {
+        this.measures[measure.name] = measure;
+      }
+      this.measureChange.emit(this.measures);
     });
   }
 

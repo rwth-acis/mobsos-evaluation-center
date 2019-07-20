@@ -3,7 +3,7 @@ import {environment} from '../environments/environment';
 import {NGXLogger} from 'ngx-logger';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {merge} from 'lodash';
-import {isNumber} from "util";
+import {isNumber} from 'util';
 
 export interface SuccessModel {
   xml: string;
@@ -36,6 +36,7 @@ export class Las2peerService {
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
+  SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH = 'messageDescriptions';
   SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
   SUCCESS_MODELING_GROUP_PATH = 'groups';
   QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
@@ -148,7 +149,7 @@ export class Las2peerService {
       .catch((response) => this.logger.error(response));
   }
 
-  async fetchMobSOSGroups() {
+  async fetchMobSOSGroups(): Promise<[]> {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH, this.SUCCESS_MODELING_GROUP_PATH);
     return this.makeRequest(url);
@@ -296,6 +297,12 @@ export class Las2peerService {
         this.logger.error(response);
         throw response;
       });
+  }
+
+  async fetchMessageDescriptions(serviceName: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.las2peerWebConnectorUrl, this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH, serviceName);
+    return this.makeRequest<object>(url);
   }
 
   async visualizeQuery(query: string, queryParams: string[], format: string = 'JSON') {

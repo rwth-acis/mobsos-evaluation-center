@@ -6,6 +6,6 @@
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
-  <button mat-button cdkFocusInitial [disabled]="!data.factor.name" [mat-dialog-close]="data.factor">Ok</button>
+  <button mat-button [disabled]="!data.factor.name" [mat-dialog-close]="data.factor">Ok</button>
   <button mat-button (click)="onCancelClick()">{{'shared.elements.cancel-label'|translate}}</button>
 </div>

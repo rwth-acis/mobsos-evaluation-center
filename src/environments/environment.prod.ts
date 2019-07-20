@@ -4,8 +4,8 @@ export const environment = {
   openIdClientId: 'f8622260-875b-499a-82db-db55f89f9deb',
   las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   mobsosSurveysUrl: 'https://cloud10.dbis.rwth-aachen.de:8084/mobsos-surveys/',
-  servicePollingInterval: 60,
-  visualizationRefreshInterval: 60,
+  servicePollingInterval: 20,
+  visualizationRefreshInterval: 20,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server

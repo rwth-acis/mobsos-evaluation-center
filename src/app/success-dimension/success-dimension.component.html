@@ -20,7 +20,8 @@
         <mat-icon color="warn">remove_circle_outline</mat-icon>
       </button>
       <app-success-factor [factor]="factor" [service]="service" [measures]="measures" [editMode]="editMode"
-      (factorChange)="factorsChange.emit(factors)">
+      (factorChange)="factorsChange.emit(factors)"
+      (measureChange)="measuresChange.emit(measures)">
       </app-success-factor>
     </div>
   </mat-card-content>

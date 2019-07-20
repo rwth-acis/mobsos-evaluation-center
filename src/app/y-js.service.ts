@@ -4,7 +4,6 @@ import {BehaviorSubject} from 'rxjs';
 import {environment} from '../environments/environment';
 import {cloneDeep, isEqual, isPlainObject} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
-import * as Y from 'yjs';
 import {registerStruct} from 'yjs/utils/structReferences';
 import {YMap} from 'yjs/types/YMap';
 import {GC} from 'yjs/structs/GC';
@@ -129,7 +128,9 @@ export class YJsService {
         }
         this._syncObjectToMap(objValue, mapValue);
       } else {
-        map.set(key, objValue);
+        if (objValue !== null) {
+          map.set(key, objValue);
+        }
       }
     }
   }
