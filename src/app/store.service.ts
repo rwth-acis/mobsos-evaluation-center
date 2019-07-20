@@ -43,7 +43,7 @@ export interface GroupCollection {
 export interface ServiceInformation {
   name: string;
   alias: string;
-  mobsosIDs: string[];
+  mobsosIDs: { agentID: string, registrationTime: number }[];
   // key is custom message type (such as SERVICE_CUSTOM_MESSAGE_42)
   serviceMessageDescriptions: { [key: string]: string };
 }
@@ -461,6 +461,7 @@ export class StoreService {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
       const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split('@', 2)[0];
       let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
+      const registrationTime = servicesFromMobSOS[serviceAgentID].registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
@@ -475,7 +476,8 @@ export class StoreService {
           serviceMessageDescriptions,
         };
       }
-      serviceCollection[serviceName].mobsosIDs.push(serviceAgentID);
+      serviceCollection[serviceName].mobsosIDs.push({agentID: serviceAgentID, registrationTime});
+      serviceCollection[serviceName].mobsosIDs.sort((a, b) => a.registrationTime - b.registrationTime);
       serviceCollection[serviceName].serviceMessageDescriptions = serviceMessageDescriptions;
     }
     this.servicesSubject.next(serviceCollection);

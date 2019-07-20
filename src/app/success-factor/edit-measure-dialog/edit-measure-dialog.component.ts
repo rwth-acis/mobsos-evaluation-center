@@ -42,7 +42,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   visualizationBuffer = {
     Value: new ValueVisualization(''),
-    Chart: new ChartVisualization(null, '', '', '', ''),
+    Chart: new ChartVisualization(null, 'chartNode', 'chart title', '300', '300'),
     KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
   };
 

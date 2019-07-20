@@ -55,7 +55,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs.slice(-1)[0]);
+        params.push(this.service.mobsosIDs.slice(-1)[0].agentID);
       }
     }
     return params;
