@@ -25,6 +25,8 @@ import {EditMeasureDialogComponent} from '../success-factor/edit-measure-dialog/
 import {MatDialog} from '@angular/material';
 import {cloneDeep} from 'lodash';
 import {SuccessMeasureInterface} from './success-measure.interface';
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-success-measure',
@@ -36,14 +38,17 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
   @Input() editMode = false;
+  @Input() canDelete = false;
 
   @Output() measureChange = new EventEmitter<Measure>();
+  @Output() measureDelete = new EventEmitter();
+
   public visualizationError: string;
   public error: Response;
   componentRef: ComponentRef<{}>;
   private visualizationType: string;
 
-  constructor(private las2peer: Las2peerService, private sanitizer: DomSanitizer,
+  constructor(private las2peer: Las2peerService, private translate: TranslateService, private sanitizer: DomSanitizer,
               private componentFactoryResolver: ComponentFactoryResolver,
               private dialog: MatDialog) {
   }
@@ -125,5 +130,19 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
       (this.componentRef.instance as VisualizationComponent).service = this.service;
       (this.componentRef.instance as VisualizationComponent).measure = this.measure;
     }
+  }
+
+  async onDeleteClicked($event: MouseEvent) {
+    const message = await this.translate.get('success-factor.remove-measure-prompt').toPromise();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      minWidth: 300,
+      data: message,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.measureDelete.emit();
+      }
+    });
+    event.stopPropagation();
   }
 }

@@ -91,7 +91,7 @@ export class QuestionnairesComponent implements OnInit {
               const questions = this.extractQuestions(questionnaire.formXML);
               for (const question of questions) {
                 const measureName = questionnaire.name + ': ' + question.instructions;
-                const query = 'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m, SERVICE s ' +
+                const query = 'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
                   'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' + SqlString.escape(surveyId) +
                   ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' + question.code + '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
                 const measure = new Measure(

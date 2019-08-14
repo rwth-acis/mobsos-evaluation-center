@@ -1,4 +1,7 @@
 <div id="measure-header">
+  <button mat-icon-button *ngIf="editMode && canDelete" color="warn" (click)="onDeleteClicked($event)" id="delete-button">
+    <mat-icon>remove_circle_outline</mat-icon>
+  </button>
   <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked($event)" id="edit-button">
     <mat-icon>edit</mat-icon>
   </button>

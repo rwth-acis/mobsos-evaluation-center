@@ -34,6 +34,7 @@ export class KpiVisualizationComponent extends BaseVisualizationComponent implem
         const query = queries.find(value => value.name === operationElement.name);
         let sql = query.sql;
         const queryParams = this.getParamsForQuery(sql);
+        sql = this.applyVariableReplacements(sql);
         sql = KpiVisualizationComponent.applyCompatibilityFixForVisualizationService(sql);
         let response;
         try {

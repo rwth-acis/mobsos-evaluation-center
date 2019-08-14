@@ -20,15 +20,15 @@ export interface VisualizationComponent {
   template: ''
 })
 export class BaseVisualizationComponent implements VisualizationComponent, OnInit, OnChanges, OnDestroy {
+
+  constructor(protected las2peer: Las2peerService, protected dialog: MatDialog) {
+  }
   measure: Measure;
   service: ServiceInformation;
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
   error: Response;
   refreshVisualizationHandle;
-
-  constructor(protected las2peer: Las2peerService, protected dialog: MatDialog) {
-  }
 
   static htmlDecode(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
@@ -40,6 +40,16 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = BaseVisualizationComponent.htmlDecode(query);
     return query;
+  }
+
+  protected applyVariableReplacements(query: string) {
+    let servicesString = '(';
+    const services = [];
+    for (const mobsosID of this.service.mobsosIDs) {
+      services.push(`"${mobsosID.agentID}"`);
+    }
+    servicesString += services.join(',') + ')';
+    return query.replace('$SERVICES$', servicesString);
   }
 
   ngOnInit() {

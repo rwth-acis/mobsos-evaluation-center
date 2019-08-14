@@ -47,4 +47,9 @@ export class PickMeasureDialogComponent implements OnInit {
       }
     });
   }
+
+  deleteMeasure(measureIndex: number) {
+    this.data.measures.splice(measureIndex, 1);
+    this.measuresChanged.emit(this.data.measures);
+  }
 }

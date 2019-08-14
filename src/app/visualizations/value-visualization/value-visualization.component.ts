@@ -19,6 +19,7 @@ export class ValueVisualizationComponent extends BaseVisualizationComponent
   async renderVisualization() {
     let query = this.measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
+    query = this.applyVariableReplacements(query);
     query = BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(query);
     this.fetchVisualization(query, queryParams, 'JSON').then(result => {
       const data: any[][] = result as any[][];

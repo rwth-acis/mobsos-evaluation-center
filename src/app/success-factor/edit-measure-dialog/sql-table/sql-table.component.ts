@@ -31,6 +31,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
     console.error(this.query);
     let query = this.query;
     const queryParams = this.getParamsForQuery(query);
+    query = this.applyVariableReplacements(query);
     query = SqlTableComponent.applyCompatibilityFixForVisualizationService(query);
     this.fetchData(query, queryParams, 'JSON')
       .then(results => this.results = results as any[][]);
@@ -59,6 +60,16 @@ export class SqlTableComponent implements OnInit, OnChanges {
       }
     }
     return params;
+  }
+
+  protected applyVariableReplacements(query: string) {
+    let servicesString = '(';
+    const services = [];
+    for (const mobsosID of this.service.mobsosIDs) {
+      services.push(`"${mobsosID.agentID}"`);
+    }
+    servicesString += services.join(',') + ')';
+    return query.replace('$SERVICES$', servicesString);
   }
 
   protected fetchData(query, queryParams, format: string) {

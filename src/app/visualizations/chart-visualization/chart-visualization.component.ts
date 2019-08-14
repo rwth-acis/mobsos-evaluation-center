@@ -5,6 +5,7 @@ import {MatDialog} from '@angular/material';
 import {map} from 'lodash-es';
 import {ChartVisualization} from '../../../success-model/visualization';
 import {TranslateService} from '@ngx-translate/core';
+import {environment} from "../../../environments/environment";
 
 @Component({
   selector: 'app-chart-visualization',
@@ -37,6 +38,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     const visualization = this.measure.visualization as ChartVisualization;
     let query = this.measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
+    query = this.applyVariableReplacements(query);
     query = ChartVisualizationComponent.applyCompatibilityFixForVisualizationService(query);
     const dataTable = await this.fetchVisualization(query, queryParams, 'JSON');
     if (dataTable instanceof Array && dataTable.length >= 2) {
@@ -96,8 +98,11 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     switch (type) {
       case 'datetime':
         return data.map((value) => {
-          // correct timestamp because it is in local time and not UTC
-          value = Number(value) + new Date().getTimezoneOffset() * 60000;
+          value = Number(value)
+          if (environment.correctTimestamps) {
+            // correct timestamp because it is in local time and not UTC
+            value = value + new Date().getTimezoneOffset() * 60000;
+          }
           return new Date(value);
         });
       case 'number':
