@@ -49,6 +49,8 @@ export class AppComponent implements OnInit, OnDestroy {
   signedIn = false;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
+  private userManager = new UserManager({});
+  private silentSigninIntervalHandle: number;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,
@@ -128,9 +130,22 @@ export class AppComponent implements OnInit, OnDestroy {
       this.groupMap = groups;
     });
     this.store.selectedGroup.subscribe(selectedGroup => this.selectedGroup = selectedGroup);
+    const silentLoginFunc = () => {
+      this.userManager.signinSilentCallback().then(() => {
+        this.logger.debug('Silent login succeeded');
+      }).catch(() => {
+        this.setUser(null);
+        this.logger.debug('Silent login failed');
+      });
+    };
+    silentLoginFunc();
     this.store.user.subscribe(user => {
       this.user = user;
       this.signedIn = !!user;
+      clearInterval(this.silentSigninIntervalHandle);
+      if (this.signedIn) {
+        this.silentSigninIntervalHandle = setInterval(silentLoginFunc, environment.openIdSilentLoginInterval * 1000);
+      }
     });
   }
 
