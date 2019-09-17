@@ -132,7 +132,7 @@ export const translations = {
         "text": "Are you sure that you want to remove the questionnaire?",
         "title": "Remove Questionnaire?",
       },
-      "no-questionnaires": "You not picked any questionnaires yet. Activate the edit mode to add one.",
+      "no-questionnaires": "You have not picked any questionnaires yet. Activate the edit mode to add one.",
       "pick-questionnaire-dialog": {
         "add-measures": "Automatically add measures for questionnaire answers.",
         "assign-measures": "Insert added measures into the success model.",
