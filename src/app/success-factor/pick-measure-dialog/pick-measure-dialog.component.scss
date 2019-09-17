@@ -3,6 +3,18 @@ mat-card{
   cursor: pointer;
 }
 
+.no-measure-card{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  mat-icon{
+    margin-right: 10px;
+  }
+  span{
+    flex-grow: 1;
+  }
+}
+
 #create-measure-button{
   margin-bottom: 15px;
   width: 100%;

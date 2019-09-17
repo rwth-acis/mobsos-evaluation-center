@@ -3,6 +3,10 @@
   <button mat-raised-button color="primary" (click)="openNewMeasureDialog()" id="create-measure-button">
     {{'success-modeling.pick-measure-dialog.create-measure-button'|translate}}
   </button>
+  <mat-card *ngIf="!data.measures || data.measures.length == 0" class="no-measure-card">
+    <mat-icon color="primary">info_outline</mat-icon>
+    <span>{{'success-modeling.pick-measure-dialog.no-measures'|translate}}</span>
+  </mat-card>
   <mat-card *ngFor="let measure of data.measures; let i = index" matRipple>
     <app-success-measure [measure]="measure" [service]="data.service" [editMode]="true" [canDelete]="true"
                          (measureDelete)="deleteMeasure(i)" (click)="onMeasureClicked(measure)"></app-success-measure>

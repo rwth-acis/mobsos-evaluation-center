@@ -120,6 +120,7 @@ export const translations = {
     "message-no-success-model-found-not-member": "Es wurd kein Erfolgsmodell gefunden. Du musst Mitglied der ausgewählten Community sein, um ein Modell erstellen zu können.",
     "pick-measure-dialog": {
       "create-measure-button": "Messung erstellen",
+      "no-measures": "Es sind keine Messungen vorhanden. Erstelle eine Messung mit dem obigen Button.",
       "title": "Wähle eine Messung aus",
     },
     "questionnaires": {

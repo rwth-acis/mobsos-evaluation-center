@@ -121,6 +121,7 @@ export const translations = {
     "message-no-success-model-found-not-member": "No success model present. You must be a member of the selected community to create a new model.",
     "pick-measure-dialog": {
       "create-measure-button": "Create Measure",
+      "no-measures": "No measures exist yet. Create one with the button above.",
       "title": "Pick a Measure",
     },
     "questionnaires": {
