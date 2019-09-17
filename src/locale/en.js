@@ -152,6 +152,7 @@ export const translations = {
       "tooltip": "Edit requirements from the Requirements Bazaar",
     },
     "requirements-list": {
+      "become-lead": "Take Lead",
       "connect-project": "Connect Project",
       "disconnect-project": "Disconnect Project",
       "disconnect-project-prompt": "Are you sure that you want to disconnect the project from the model?",
@@ -163,6 +164,7 @@ export const translations = {
         "title": "Pick a Project and Category",
       },
       "realize-requirement": "Done",
+      "stop-lead": "Yield Lead",
       "unrealize-requirement": "Reopen",
       "view-requirement": "View",
     },

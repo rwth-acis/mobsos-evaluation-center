@@ -151,6 +151,7 @@ export const translations = {
       "tooltip": "Bearbeite Anforderungen aus dem Requirements Bazaar",
     },
     "requirements-list": {
+      "become-lead": "Leitung übernehmen",
       "connect-project": "Projekt verbinden",
       "disconnect-project": "Projekt trennen",
       "disconnect-project-prompt": "Bist du sicher, dass du das Project vom Model trennen möchtest?",
@@ -162,6 +163,7 @@ export const translations = {
         "title": "Projekt und Kategorie auswählen",
       },
       "realize-requirement": "Fertig",
+      "stop-lead": "Leitung abgeben",
       "unrealize-requirement": "Öffnen",
       "view-requirement": "Ansehen",
     },

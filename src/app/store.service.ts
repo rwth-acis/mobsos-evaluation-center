@@ -25,7 +25,7 @@ export interface State {
 }
 
 export interface User {
-  profile: { sub: string; };
+  profile: { sub: string; preferred_username: string; };
   access_token: string;
 }
 

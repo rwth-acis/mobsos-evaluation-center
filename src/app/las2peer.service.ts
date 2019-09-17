@@ -45,6 +45,7 @@ export class Las2peerService {
   REQBAZ_CATEGORIES_PATH = 'categories';
   REQBAZ_REQUIREMENTS_PATH = 'requirements';
   REQBAZ_REALIZED_PATH = 'realized';
+  REQBAZ_LEADDEV_PATH = 'leaddevelopers';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
   SURVEYS_SURVEY_PATH = 'surveys';
@@ -348,6 +349,26 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_REQUIREMENTS_PATH,
       requirementId, this.REQBAZ_REALIZED_PATH);
     const options: { headers: { [key: string]: string }, method: string } = {headers: {}, method: 'POST'};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async becomeLeaddeveloperOnReqBaz(requirementId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_REQUIREMENTS_PATH,
+      requirementId, this.REQBAZ_LEADDEV_PATH);
+    const options: { headers: { [key: string]: string }, method: string } = {headers: {}, method: 'POST'};
+    if (this.userCredentials) {
+      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequest(url, options);
+  }
+
+  async stopBeingLeaddeveloperOnReqBaz(requirementId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(environment.reqBazUrl, this.REQBAZ_REQUIREMENTS_PATH,
+      requirementId, this.REQBAZ_LEADDEV_PATH);
+    const options: { headers: { [key: string]: string }, method: string } = {headers: {}, method: 'DELETE'};
     if (this.userCredentials) {
       options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
     }

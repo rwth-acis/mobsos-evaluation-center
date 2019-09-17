@@ -8,6 +8,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {environment} from '../../../environments/environment';
 import {Las2peerService} from '../../las2peer.service';
 import {isNumber} from 'util';
+import {StoreService, User} from '../../store.service';
 
 @Component({
   selector: 'app-requirements-list',
@@ -23,8 +24,11 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
   requirements;
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
+  openedRequirement = null;
+  private user: User;
 
-  constructor(private dialog: MatDialog, private translate: TranslateService, private las2peer: Las2peerService) {
+  constructor(private dialog: MatDialog, private translate: TranslateService, private las2peer: Las2peerService,
+              private store: StoreService) {
   }
 
   static joinAbsoluteUrlPath(...args) {
@@ -42,6 +46,7 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
       () => this.refreshRequirements(),
       environment.servicePollingInterval * 1000
     );
+    this.store.user.subscribe(user => this.user = user);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -99,6 +104,11 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     return Object.keys(requirement).includes('realized');
   }
 
+  isLead(requirement) {
+    return Object.keys(requirement).includes('leadDeveloper')
+      && requirement.leadDeveloper.userName === this.user.profile.preferred_username;
+  }
+
   realizeRequirement(requirement: any) {
     this.las2peer.realizeRequirementOnReqBaz(requirement.id);
     this.refreshRequirements();
@@ -106,6 +116,16 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
 
   unrealizeRequirement(requirement: any) {
     this.las2peer.unrealizeRequirementOnReqBaz(requirement.id);
+    this.refreshRequirements();
+  }
+
+  becomeLeaddevRequirement(requirement: any) {
+    this.las2peer.becomeLeaddeveloperOnReqBaz(requirement.id);
+    this.refreshRequirements();
+  }
+
+  stopBeingLeaddevRequirement(requirement: any) {
+    this.las2peer.stopBeingLeaddeveloperOnReqBaz(requirement.id);
     this.refreshRequirements();
   }
 
