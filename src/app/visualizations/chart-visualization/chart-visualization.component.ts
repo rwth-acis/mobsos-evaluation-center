@@ -24,6 +24,9 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
         b: 40, // bottom margin
         pad: 4
       },
+      xaxis: {
+        type: '-',
+      },
       polar: {}
     },
     config: {displayModeBar: false, locale: 'en'}
@@ -63,6 +66,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     x = this.performTypeCast(typeList[0], x);
     y = this.performTypeCast(typeList[1], y);
     this.graph.data = [{x, y, type: 'scatter', mode: 'lines+points'}];
+    this.graph.layout.xaxis.type = '-';
   }
 
   private async renderPieChart(typeList: string[], data: any[]) {
@@ -71,6 +75,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     labels = this.performTypeCast(typeList[0], labels);
     values = this.performTypeCast(typeList[1], values);
     this.graph.data = [{labels, values, type: 'pie'}];
+    this.graph.layout.xaxis.type = '-';
   }
 
   private async renderBarChart(typeList: string[], data: any[]) {
@@ -79,6 +84,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     labels = this.performTypeCast(typeList[0], labels);
     values = this.performTypeCast(typeList[1], values);
     this.graph.data = [{x: labels, y: values, type: 'bar'}];
+    this.graph.layout.xaxis.type = 'category';
   }
 
   private async renderRadarChart(typeList: string[], data: any[]) {
@@ -92,6 +98,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
         visible: true,
       }
     };
+    this.graph.layout.xaxis.type = '-';
   }
 
   private performTypeCast(type: string, data: any[]) {
