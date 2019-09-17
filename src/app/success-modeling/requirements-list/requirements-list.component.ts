@@ -7,7 +7,7 @@ import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmatio
 import {TranslateService} from '@ngx-translate/core';
 import {environment} from '../../../environments/environment';
 import {Las2peerService} from '../../las2peer.service';
-import {isNumber} from "util";
+import {isNumber} from 'util';
 
 @Component({
   selector: 'app-requirements-list',

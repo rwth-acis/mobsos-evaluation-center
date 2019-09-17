@@ -5,7 +5,7 @@ import {MatDialog} from '@angular/material';
 import {map} from 'lodash-es';
 import {ChartVisualization} from '../../../success-model/visualization';
 import {TranslateService} from '@ngx-translate/core';
-import {environment} from "../../../environments/environment";
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -98,7 +98,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     switch (type) {
       case 'datetime':
         return data.map((value) => {
-          value = Number(value)
+          value = Number(value);
           if (environment.correctTimestamps) {
             // correct timestamp because it is in local time and not UTC
             value = value + new Date().getTimezoneOffset() * 60000;

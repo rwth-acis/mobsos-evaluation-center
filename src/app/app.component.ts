@@ -11,7 +11,7 @@ import {MatIconRegistry, MatSidenav, MatSnackBar} from '@angular/material';
 import * as Hammer from 'hammerjs';
 import {SwUpdate} from '@angular/service-worker';
 import {TranslateService} from '@ngx-translate/core';
-import {DomSanitizer} from "@angular/platform-browser";
+import {DomSanitizer} from '@angular/platform-browser';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"

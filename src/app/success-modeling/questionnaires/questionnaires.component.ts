@@ -12,8 +12,8 @@ import {NGXLogger} from 'ngx-logger';
 import {SuccessFactor} from '../../../success-model/success-factor';
 import {Measure} from '../../../success-model/measure';
 import * as SqlString from 'sqlstring';
-import {ChartVisualization} from "../../../success-model/visualization";
-import {Query} from "../../../success-model/query";
+import {ChartVisualization} from '../../../success-model/visualization';
+import {Query} from '../../../success-model/query';
 
 @Component({
   selector: 'app-questionnaires',
@@ -169,7 +169,7 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   private getQuestionnaireByName(name: string): Questionnaire {
-    if(!this.availableQuestionnaires){
+    if (!this.availableQuestionnaires) {
       return null;
     }
     return this.availableQuestionnaires.find(value => value.name === name);

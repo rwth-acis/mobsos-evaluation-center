@@ -6,6 +6,8 @@ import {createTranslateLoader} from '../../app.module';
 import {FormsModule} from '@angular/forms';
 import {MatDialogModule, MatDialogRef, MatFormFieldModule, MatInputModule} from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {SuccessFactor} from '../../../success-model/success-factor';
 
 describe('EditFactorDialogComponent', () => {
   let component: EditFactorDialogComponent;
@@ -27,7 +29,10 @@ describe('EditFactorDialogComponent', () => {
         MatDialogModule,
         MatInputModule,
       ],
-      providers: [{provide: MatDialogRef, useValue: {}}]
+      providers: [
+        {provide: MatDialogRef, useValue: {}},
+        {provide: MAT_DIALOG_DATA, useValue: {factor: new SuccessFactor('FactorName', [])}}
+      ]
     })
       .compileComponents();
   }));

@@ -25,8 +25,8 @@ import {EditMeasureDialogComponent} from '../success-factor/edit-measure-dialog/
 import {MatDialog} from '@angular/material';
 import {cloneDeep} from 'lodash';
 import {SuccessMeasureInterface} from './success-measure.interface';
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {TranslateService} from "@ngx-translate/core";
+import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-success-measure',

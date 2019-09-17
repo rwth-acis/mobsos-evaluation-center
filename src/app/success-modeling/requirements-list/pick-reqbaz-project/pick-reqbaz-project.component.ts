@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Las2peerService} from '../../../las2peer.service';
 import {FormControl} from '@angular/forms';
 import {BehaviorSubject} from 'rxjs';
-import {startWith} from "rxjs/operators";
+import {startWith} from 'rxjs/operators';
 
 interface Project {
   name: string;

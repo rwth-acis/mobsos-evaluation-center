@@ -1,6 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SqlTableComponent } from './sql-table.component';
+import {SqlTableComponent} from './sql-table.component';
+import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 
 describe('SqlTableComponent', () => {
   let component: SqlTableComponent;
@@ -8,7 +9,13 @@ describe('SqlTableComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SqlTableComponent ]
+      declarations: [SqlTableComponent],
+      imports: [
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF
+        }),
+      ],
     })
     .compileComponents();
   }));
@@ -16,6 +23,13 @@ describe('SqlTableComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SqlTableComponent);
     component = fixture.componentInstance;
+    component.query = 'SELECT * FROM messages';
+    component.service = {
+      name: 'TestName',
+      alias: 'TestAlias',
+      mobsosIDs: [],
+      serviceMessageDescriptions: {}
+    };
     fixture.detectChanges();
   });
 

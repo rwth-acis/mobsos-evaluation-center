@@ -4,6 +4,9 @@ import {SuccessMeasureComponent} from './success-measure.component';
 import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 import {MatDialogModule} from '@angular/material';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {MatIconModule} from '@angular/material/icon';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {createTranslateLoader} from '../app.module';
 
 describe('SuccessMeasureComponent', () => {
   let component: SuccessMeasureComponent;
@@ -17,7 +20,14 @@ describe('SuccessMeasureComponent', () => {
           level: NgxLoggerLevel.TRACE,
           serverLogLevel: NgxLoggerLevel.OFF
         }),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (createTranslateLoader)
+          },
+        }),
         MatDialogModule,
+        MatIconModule,
         HttpClientTestingModule,
       ],
     })

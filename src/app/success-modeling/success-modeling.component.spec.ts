@@ -6,10 +6,12 @@ import {createTranslateLoader} from '../app.module';
 import {
   MatBadgeModule,
   MatButtonToggleModule,
-  MatCardModule, MatDialogModule,
+  MatCardModule,
+  MatDialogModule,
   MatIconModule,
   MatSelectModule,
-  MatSlideToggleModule, MatSnackBarModule,
+  MatSlideToggleModule,
+  MatSnackBarModule,
   MatToolbarModule,
   MatTooltipModule
 } from '@angular/material';
@@ -20,6 +22,9 @@ import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {MdePopoverModule} from '@material-extended/mde';
+import {RequirementsListComponent} from './requirements-list/requirements-list.component';
+import {QuestionnairesComponent} from './questionnaires/questionnaires.component';
+import {MatExpansionModule, MatExpansionPanel} from '@angular/material/expansion';
 
 describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
@@ -28,7 +33,7 @@ describe('SuccessModelingComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [SuccessModelingComponent, SuccessDimensionComponent, SuccessFactorComponent,
-        SuccessMeasureComponent],
+        SuccessMeasureComponent, RequirementsListComponent, QuestionnairesComponent],
       imports: [
         TranslateModule.forRoot({
           loader: {
@@ -54,6 +59,7 @@ describe('SuccessModelingComponent', () => {
         MatButtonToggleModule,
         MatDialogModule,
         MatSnackBarModule,
+        MatExpansionModule,
       ]
     })
       .compileComponents();

@@ -2,7 +2,6 @@ import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core'
 import {MAT_DIALOG_DATA} from '@angular/material';
 import {Questionnaire} from '../../../las2peer.service';
 import {environment} from '../../../../environments/environment';
-import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -75,7 +74,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   }
 
   onAddMeasuresChange(addMeasures) {
-    if(!addMeasures){
+    if (!addMeasures) {
       this.assignMeasures = false;
     }
     this.addMeasures = addMeasures;

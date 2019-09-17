@@ -9,8 +9,10 @@ import {
   MatBadgeModule,
   MatButtonModule,
   MatButtonToggleModule,
-  MatCardModule, MatCheckboxModule,
-  MatDialogModule, MatExpansionModule,
+  MatCardModule,
+  MatCheckboxModule,
+  MatDialogModule,
+  MatExpansionModule,
   MatFormFieldModule,
   MatIconModule,
   MatInputModule,
@@ -59,12 +61,15 @@ import {EditFactorDialogComponent} from './success-dimension/edit-factor-dialog/
 import {PickMeasureDialogComponent} from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 import {EditMeasureDialogComponent} from './success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import {QuestionnairesComponent} from './success-modeling/questionnaires/questionnaires.component';
+// tslint:disable-next-line:max-line-length
 import {PickQuestionnaireDialogComponent} from './success-modeling/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
+// tslint:disable-next-line:max-line-length
 import {DeleteQuestionnaireDialogComponent} from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-import {MarkdownModule} from "ngx-markdown";
-import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-table/sql-table.component';
-import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
-import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
+import {MarkdownModule} from 'ngx-markdown';
+import {SqlTableComponent} from './success-factor/edit-measure-dialog/sql-table/sql-table.component';
+import {RequirementsListComponent} from './success-modeling/requirements-list/requirements-list.component';
+// tslint:disable-next-line:max-line-length
+import {PickReqbazProjectComponent} from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 

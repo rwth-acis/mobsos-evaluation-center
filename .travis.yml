@@ -17,6 +17,8 @@ env:
 
 install:
   - npm install
+  - cd ./node_modules/protractor && npm i webdriver-manager@latest
+  - cd ../..
 
 script:
   - npm run lint
