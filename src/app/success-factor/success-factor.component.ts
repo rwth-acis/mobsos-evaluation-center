@@ -21,7 +21,7 @@ export class SuccessFactorComponent implements OnInit {
   @Input() editMode = false;
 
   @Output() factorChange = new EventEmitter<SuccessFactor>();
-  @Output() measureChange = new EventEmitter<MeasureMap>();
+  @Output() measuresChange = new EventEmitter<MeasureMap>();
 
   constructor(private translate: TranslateService, private dialog: MatDialog) {
   }
@@ -55,10 +55,19 @@ export class SuccessFactorComponent implements OnInit {
       this.factorChange.emit(this.factor);
     });
     dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
+      const existingMeasures = [];
       for (const measure of measures) {
         this.measures[measure.name] = measure;
+        existingMeasures.push(measure.name);
       }
-      this.measureChange.emit(this.measures);
+      // remove measures that have been deleted
+      for (const measureName of Object.keys(this.measures)) {
+        if (!existingMeasures.includes(measureName)) {
+          delete this.measures[measureName];
+        }
+      }
+      console.error(this.measures);
+      this.measuresChange.emit(this.measures);
     });
   }
 

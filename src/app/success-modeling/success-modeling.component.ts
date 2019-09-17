@@ -93,6 +93,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       if (editMode && this.user) {
         this.initWorkspace().then(() => this.switchWorkspace(this.getMyUsername()));
       } else if (this.editMode === true) {
+        this.fetchXml();
         this.openClearWorkspaceDialog();
       }
       this.editMode = editMode;
