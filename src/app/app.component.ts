@@ -12,6 +12,7 @@ import * as Hammer from 'hammerjs';
 import {SwUpdate} from '@angular/service-worker';
 import {TranslateService} from '@ngx-translate/core';
 import {DomSanitizer} from '@angular/platform-browser';
+import Timer = NodeJS.Timer;
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -50,7 +51,7 @@ export class AppComponent implements OnInit, OnDestroy {
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
   private userManager = new UserManager({});
-  private silentSigninIntervalHandle: number;
+  private silentSigninIntervalHandle: Timer;
 
   constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
               changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,
