@@ -80,7 +80,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       this.services = Object.keys(services);
       this.serviceMap = services;
     });
-    this.store.user.subscribe(user => this.user = user);
+    this.store.user.subscribe(user => {
+      this.user = user;
+      if (!this.user && this.editMode) {
+        this.store.setEditMode(false);
+      }
+    });
     this.store.communityWorkspace.subscribe(async (workspace) => {
       this.communityWorkspace = workspace;
       if (this.workspaceUser && this.workspaceUser !== this.getMyUsername() && this.getCurrentWorkspace() === null) {
@@ -372,16 +377,19 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private async openClearWorkspaceDialog() {
-    const message = await this.translate.get('success-modeling.discard-changes-prompt').toPromise();
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      minWidth: 300,
-      data: message,
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.removeWorkspace();
-      }
-    });
+    // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
+    if (this.user) {
+      const message = await this.translate.get('success-modeling.discard-changes-prompt').toPromise();
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        minWidth: 300,
+        data: message,
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.removeWorkspace();
+        }
+      });
+    }
   }
 
   private removeWorkspace() {

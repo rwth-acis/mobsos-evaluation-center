@@ -56,10 +56,6 @@
                                  oidcpopupsigninurl="oidc-signin"
                                  oidcpopupsignouturl="oidc-signout"
                                  oidcSilentSigninUrl="oidc-silent"
-                                 [attr.loggedIn]="user == null ? null : true "
-                                 [attr.loginName]="user == null ? '' : user.profile.preferred_username"
-                                 [attr.loginOidcToken]="user == null ? '' : user.access_token"
-                                 [attr.loginOidcSub]="user == null ? '' : user.profile.sub"
                                  [attr.useRedirect]="true"
                                  autoAppendWidget=true
                                  (signed-in)="setUser($event.detail)"

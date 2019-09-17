@@ -106,6 +106,7 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
 
   isLead(requirement) {
     return Object.keys(requirement).includes('leadDeveloper')
+      && this.user
       && requirement.leadDeveloper.userName === this.user.profile.preferred_username;
   }
 
