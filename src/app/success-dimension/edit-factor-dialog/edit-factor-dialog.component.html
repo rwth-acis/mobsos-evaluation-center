@@ -2,10 +2,10 @@
 <div mat-dialog-content>
   <mat-form-field>
     <input matInput required placeholder="{{'success-dimension.add-factor-dialog.factor-input-placeholder'|translate}}"
-           [(ngModel)]="data.factor.name">
+           [(ngModel)]="data.factor.name" (keyup.enter)="onOkClick()">
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
-  <button mat-button [disabled]="!data.factor.name" [mat-dialog-close]="data.factor">Ok</button>
+  <button mat-button [disabled]="!data.factor.name" (click)="onOkClick()">Ok</button>
   <button mat-button (click)="onCancelClick()">{{'shared.elements.cancel-label'|translate}}</button>
 </div>

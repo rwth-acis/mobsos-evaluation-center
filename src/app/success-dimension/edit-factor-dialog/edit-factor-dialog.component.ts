@@ -24,4 +24,9 @@ export class EditFactorDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  onOkClick() {
+    if (!!this.data.factor.name) {
+      this.dialogRef.close(this.data.factor);
+    }
+  }
 }
