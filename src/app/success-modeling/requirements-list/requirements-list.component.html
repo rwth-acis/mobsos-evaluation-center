@@ -3,7 +3,8 @@
 <div *ngIf="successModel && successModel.reqBazProject">
   <mat-accordion>
     <mat-expansion-panel *ngFor="let requirement of requirements" [expanded]="requirement.id == openedRequirement"
-                         (opened)="openedRequirement = requirement.id">
+                         (opened)="openedRequirement = requirement.id"
+                         (closed)="openedRequirement = openedRequirement == openedRequirement ? openedRequirement : null">
       <mat-expansion-panel-header>
         <mat-panel-title>
           {{requirement.name}}
