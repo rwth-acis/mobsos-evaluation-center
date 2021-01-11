@@ -6,24 +6,24 @@ export const environment = {
   production: false,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
-  openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
-  openIdClientId: 'f8622260-875b-499a-82db-db55f89f9deb',
+  openIdAuthorityUrl: "https://api.learning-layers.eu/o/oauth2",
+  openIdClientId: "f8622260-875b-499a-82db-db55f89f9deb",
   openIdSilentLoginInterval: 60,
-  las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
-  // las2peerWebConnectorUrl: 'http://127.0.0.1:8080',
-  mobsosSurveysUrl: 'https://cloud10.dbis.rwth-aachen.de:8084/mobsos-surveys/',
+  // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
+  las2peerWebConnectorUrl: "http://127.0.0.1:8080",
+  mobsosSurveysUrl: "https://cloud10.dbis.rwth-aachen.de:8084/mobsos-surveys/",
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
   servicePollingInterval: 10,
   visualizationRefreshInterval: 10,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // useLas2peerServiceDiscovery: false,
-  yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',
+  yJsWebsocketUrl: "wss://cloud10.dbis.rwth-aachen.de:8089",
   // yJsWebsocketUrl: 'ws://localhost:1234',
   // URL of the Requirements Bazaar API
-  reqBazUrl: 'https://requirements-bazaar.org/bazaar',
+  reqBazUrl: "https://requirements-bazaar.org/bazaar",
   // URL of the Requirements Bazaar frontend
-  reqBazFrontendUrl: 'https://requirements-bazaar.org/',
+  reqBazFrontendUrl: "https://requirements-bazaar.org/",
 };
 
 /*
@@ -33,4 +33,4 @@ export const environment = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+import "zone.js/dist/zone-error"; // Included with Angular CLI.
