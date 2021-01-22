@@ -6,7 +6,8 @@ export const environment = {
   openIdClientId: 'f8622260-875b-499a-82db-db55f89f9deb',
   openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
-  mobsosSurveysUrl: 'https://cloud10.dbis.rwth-aachen.de:8084/mobsos-surveys/',
+  mobsosSurveysUrl:
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   servicePollingInterval: 10,
   visualizationRefreshInterval: 10,
   // enable to use the blockchain based service discovery of las2peer
