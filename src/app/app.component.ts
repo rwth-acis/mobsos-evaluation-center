@@ -5,20 +5,20 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-} from "@angular/core";
-import "oidc-client";
-import "las2peer-frontend-statusbar/las2peer-frontend-statusbar.js";
-import { MediaMatcher } from "@angular/cdk/layout";
-import { environment } from "../environments/environment";
-import { NGXLogger } from "ngx-logger";
-import { LanguageService } from "./language.service";
-import { GroupInformation, StoreService } from "./store.service";
-import { CordovaPopupNavigator, UserManager } from "oidc-client";
-import { MatIconRegistry, MatSidenav, MatSnackBar } from "@angular/material";
-import * as Hammer from "hammerjs";
-import { SwUpdate } from "@angular/service-worker";
-import { TranslateService } from "@ngx-translate/core";
-import { DomSanitizer } from "@angular/platform-browser";
+} from '@angular/core';
+import 'oidc-client';
+import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
+import { MediaMatcher } from '@angular/cdk/layout';
+import { environment } from '../environments/environment';
+import { NGXLogger } from 'ngx-logger';
+import { LanguageService } from './language.service';
+import { GroupInformation, StoreService } from './store.service';
+import { CordovaPopupNavigator, UserManager } from 'oidc-client';
+import { MatIconRegistry, MatSidenav, MatSnackBar } from '@angular/material';
+import * as Hammer from 'hammerjs';
+import { SwUpdate } from '@angular/service-worker';
+import { TranslateService } from '@ngx-translate/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 
 // workaround for openidconned-signin
@@ -34,19 +34,19 @@ window.UserManager = UserManager;
 window.CordovaPopupNavigator = CordovaPopupNavigator;
 
 @Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.scss"],
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
 
-  title = "MobSOS Evaluation Center";
+  title = 'MobSOS Evaluation Center';
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void;
   environment = environment;
-  LOCAL_STORAGE_EXPERT_MODE = "expert-mode";
+  LOCAL_STORAGE_EXPERT_MODE = 'expert-mode';
   expertMode = false;
   myGroups: GroupInformation[] = [];
   otherGroups: GroupInformation[] = [];
@@ -74,15 +74,15 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer
   ) {
     this.matIconRegistry.addSvgIcon(
-      "reqbaz-logo",
+      'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        "assets/icons/reqbaz-logo.svg"
+        'assets/icons/reqbaz-logo.svg'
       )
     );
-    this.mobileQuery = media.matchMedia("(max-width: 600px)");
+    this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
-      "change",
+      'change',
       this.mobileQueryListener,
       false
     );
@@ -91,7 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.store.stopPolling();
     this.mobileQuery.removeEventListener(
-      "change",
+      'change',
       this.mobileQueryListener,
       false
     );
@@ -124,14 +124,14 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    hammertime.on("panright", (event) => {
+    hammertime.on('panright', (event) => {
       if (this.mobileQuery.matches) {
         if (event.center.x >= 1 && event.center.x <= 20) {
           this.sidenav.open();
         }
       }
     });
-    hammertime.on("panleft", (event) => {
+    hammertime.on('panleft', (event) => {
       if (this.mobileQuery.matches) {
         this.sidenav.close();
       }
@@ -139,10 +139,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.swUpdate.isEnabled) {
       this.swUpdate.available.subscribe(async () => {
         const message = await this.translate
-          .get("app.update.message")
+          .get('app.update.message')
           .toPromise();
         const reloadAction = await this.translate
-          .get("app.update.reload")
+          .get('app.update.reload')
           .toPromise();
         const snackBarRef = this.snackBar.open(message, reloadAction, null);
         snackBarRef.onAction().subscribe(() => {
@@ -165,11 +165,11 @@ export class AppComponent implements OnInit, OnDestroy {
       this.userManager
         .signinSilentCallback()
         .then(() => {
-          this.logger.debug("Silent login succeeded");
+          this.logger.debug('Silent login succeeded');
         })
         .catch(() => {
           this.setUser(null);
-          this.logger.debug("Silent login failed");
+          this.logger.debug('Silent login failed');
         });
     };
     silentLoginFunc();
