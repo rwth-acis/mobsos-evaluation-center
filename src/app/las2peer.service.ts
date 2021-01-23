@@ -98,6 +98,7 @@ export class Las2peerService {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
+      console.log(this.userCredentials);
       options = merge(
         {
           headers: {
@@ -333,8 +334,7 @@ export class Las2peerService {
     return this.makeRequest(url, {
       method,
       body: JSON.stringify({ groupID, name: groupName }),
-    })
-    .catch((response) => {
+    }).catch((response) => {
       this.logger.error(response);
       throw response;
     });
@@ -426,7 +426,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
-      `?format=${format}`
+      `?access_token=${this.userCredentials.token}&format=${format}`
     );
     const requestBody = {
       cache: false,
@@ -439,9 +439,19 @@ export class Las2peerService {
       title: '',
       save: false,
     };
+    console.log(this.userCredentials);
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
+      // headers: {
+      //   Authorization:
+      //     'Basic ' +
+      //     btoa(
+      //       this.userCredentials.preferred_username +
+      //         ':' +
+      //         this.userCredentials.sub
+      //     ),
+      // },
     });
   }
 

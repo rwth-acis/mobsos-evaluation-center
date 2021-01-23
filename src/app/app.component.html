@@ -1,76 +1,123 @@
 <mat-sidenav-container>
-  <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'"
-               [fixedInViewport]="mobileQuery.matches"
-               [opened]="!mobileQuery.matches">
+  <mat-sidenav
+    #snav
+    [mode]="mobileQuery.matches ? 'over' : 'side'"
+    [fixedInViewport]="mobileQuery.matches"
+    [opened]="!mobileQuery.matches"
+  >
     <mat-form-field id="community-selection">
       <mat-label>Community</mat-label>
-      <mat-select [(value)]="selectedGroup" (selectionChange)="onGroupSelected($event.value)">
-        <mat-option class="mat-body-strong" *ngFor="let group of myGroups" [value]="group.id">
-          {{group.name}}
+      <mat-select
+        [(value)]="selectedGroup"
+        (selectionChange)="onGroupSelected($event.value)"
+      >
+        <mat-option
+          class="mat-body-strong"
+          *ngFor="let group of myGroups"
+          [value]="group.id"
+        >
+          {{ group.name }}
         </mat-option>
         <mat-divider></mat-divider>
         <mat-option *ngFor="let group of otherGroups" [value]="group.id">
-          {{group.name}}
+          {{ group.name }}
         </mat-option>
       </mat-select>
     </mat-form-field>
     <mat-divider></mat-divider>
     <mat-nav-list>
-      <a mat-list-item routerLink="/" routerLinkActive="active" (click)="menuItemClicked()">
+      <a
+        mat-list-item
+        routerLink="/"
+        routerLinkActive="active"
+        (click)="menuItemClicked()"
+      >
         <mat-icon matListIcon>trending_up</mat-icon>
-        {{'shared.pages.success-modeling'|translate}}
+        {{ 'shared.pages.success-modeling' | translate }}
       </a>
-      <a mat-list-item routerLink="/raw-edit" routerLinkActive="active" [hidden]="!expertMode"
-         (click)="menuItemClicked()">
+      <a
+        mat-list-item
+        routerLink="/raw-edit"
+        routerLinkActive="active"
+        [hidden]="!expertMode"
+        (click)="menuItemClicked()"
+      >
         <mat-icon matListIcon>code</mat-icon>
-        {{'shared.pages.raw-edit'|translate}}
+        {{ 'shared.pages.raw-edit' | translate }}
       </a>
       <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
         <mat-icon matListIcon>open_in_browser</mat-icon>
-        {{'shared.pages.manage-questionnaires'|translate}}
+        {{ 'shared.pages.manage-questionnaires' | translate }}
       </a>
       <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
         <mat-icon matListIcon>open_in_browser</mat-icon>
-        {{'shared.pages.manage-requirements'|translate}}
+        {{ 'shared.pages.manage-requirements' | translate }}
       </a>
     </mat-nav-list>
     <footer>
-      <mat-slide-toggle labelPosition="before" [checked]="expertMode" (change)="setExpertMode($event.checked)">
-        {{'app.expert-mode.switch-label'|translate}}
+      <mat-slide-toggle
+        labelPosition="before"
+        [checked]="expertMode"
+        (change)="setExpertMode($event.checked)"
+      >
+        {{ 'app.expert-mode.switch-label' | translate }}
       </mat-slide-toggle>
       <mat-action-list>
-        <button mat-list-item (click)="useLanguage('en')" [disabled]="languageService.getCurrentLanguage() == 'en'">
+        <button
+          mat-list-item
+          (click)="useLanguage('en')"
+          [disabled]="languageService.getCurrentLanguage() == 'en'"
+        >
           English
         </button>
-        <button mat-list-item (click)="useLanguage('de')" [disabled]="languageService.getCurrentLanguage() == 'de'">
+        <button
+          mat-list-item
+          (click)="useLanguage('de')"
+          [disabled]="languageService.getCurrentLanguage() == 'de'"
+        >
           Deutsch
         </button>
       </mat-action-list>
     </footer>
   </mat-sidenav>
   <mat-sidenav-content>
-    <las2peer-frontend-statusbar id="las2peer-statusbar" service="{{title}}"
-                                 [attr.oidcAuthority]="environment.openIdAuthorityUrl"
-                                 [attr.oidcclientid]="environment.openIdClientId"
-                                 [attr.baseurl]="environment.las2peerWebConnectorUrl"
-                                 oidcpopupsigninurl="oidc-signin"
-                                 oidcpopupsignouturl="oidc-signout"
-                                 oidcSilentSigninUrl="oidc-silent"
-                                 [attr.useRedirect]="true"
-                                 autoAppendWidget=true
-                                 (signed-in)="setUser($event.detail)"
-                                 (signed-out)="setUser(null)">
-      <button mat-icon-button id="menu-button" *ngIf="mobileQuery.matches" slot="left" (click)="snav.toggle()">
+    <las2peer-frontend-statusbar
+      id="las2peer-statusbar"
+      service="{{ title }}"
+      [attr.oidcAuthority]="environment.openIdAuthorityUrl"
+      [attr.oidcclientid]="environment.openIdClientId"
+      [attr.baseurl]="environment.las2peerWebConnectorUrl"
+      oidcpopupsigninurl="oidc-signin"
+      oidcpopupsignouturl="oidc-signout"
+      oidcSilentSigninUrl="oidc-silent"
+      [attr.useRedirect]="true"
+      autoAppendWidget="true"
+      (signed-in)="setUser($event.detail); log($event)"
+      (signed-out)="setUser(null)"
+    >
+      <button
+        mat-icon-button
+        id="menu-button"
+        *ngIf="mobileQuery.matches"
+        slot="left"
+        (click)="snav.toggle()"
+      >
         <mat-icon>menu</mat-icon>
       </button>
-      <h2 slot="title">{{mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center'}}</h2>
+      <h2 slot="title">
+        {{ mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center' }}
+      </h2>
     </las2peer-frontend-statusbar>
     <main>
       <router-outlet></router-outlet>
     </main>
     <footer>
       <a href="https://las2peer.org/" target="_blank">
-        <img id="las2peer-logo" alt="las2peer-logo" src="assets/footer/las2peer.svg">
+        <img
+          id="las2peer-logo"
+          alt="las2peer-logo"
+          src="assets/footer/las2peer.svg"
+        />
       </a>
     </footer>
   </mat-sidenav-content>
