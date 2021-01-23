@@ -1,13 +1,13 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable } from "rxjs";
-import { NGXLogger } from "ngx-logger";
-import { Las2peerService, Questionnaire } from "./las2peer.service";
-import { find, isEmpty, throttle } from "lodash-es";
-import { distinctUntilChanged, filter, pairwise } from "rxjs/operators";
-import { environment } from "../environments/environment";
-import { SuccessModel } from "../success-model/success-model";
-import { MeasureCatalog } from "../success-model/measure-catalog";
-import { YJsService } from "./y-js.service";
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { NGXLogger } from 'ngx-logger';
+import { Las2peerService, Questionnaire } from './las2peer.service';
+import { find, isEmpty, throttle } from 'lodash-es';
+import { distinctUntilChanged, filter, pairwise } from 'rxjs/operators';
+import { environment } from '../environments/environment';
+import { SuccessModel } from '../success-model/success-model';
+import { MeasureCatalog } from '../success-model/measure-catalog';
+import { YJsService } from './y-js.service';
 
 export interface State {
   servicesFromDiscovery: any[];
@@ -75,7 +75,7 @@ export interface CommunityWorkspace {
 }
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class StoreService {
   pollingEnabled = false;
@@ -152,7 +152,7 @@ export class StoreService {
     this.user.pipe(distinctUntilChanged()).subscribe((user) => {
       if (user) {
         this.las2peer.setCredentials(
-          "OIDC_SUB-" + user.profile.sub,
+          'OIDC_SUB-' + user.profile.sub,
           user.profile.sub,
           user.access_token
         );
@@ -193,12 +193,12 @@ export class StoreService {
   }
 
   static loadState(): State {
-    return JSON.parse(localStorage.getItem("state"));
+    return JSON.parse(localStorage.getItem('state'));
   }
 
   startPolling() {
     if (!this.pollingEnabled) {
-      this.logger.debug("Enabling service discovery and group polling...");
+      this.logger.debug('Enabling service discovery and group polling...');
       if (environment.useLas2peerServiceDiscovery) {
         this.serviceL2PPollingHandle = this.las2peer.pollL2PServiceDiscovery(
           (services) => {
@@ -252,12 +252,12 @@ export class StoreService {
       );
       this.pollingEnabled = true;
     } else {
-      this.logger.debug("Polling already enabled...");
+      this.logger.debug('Polling already enabled...');
     }
   }
 
   stopPolling() {
-    this.logger.debug("Disabling service discovery and group polling...");
+    this.logger.debug('Disabling service discovery and group polling...');
     clearInterval(this.serviceL2PPollingHandle);
     clearInterval(this.serviceMobSOSPollingHandle);
     clearInterval(this.groupContactServicePollingHandle);
@@ -290,19 +290,21 @@ export class StoreService {
         messageDescriptions: this.messageDescriptionSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
-      this.logger.debug("Save state to local storage:");
+      this.logger.debug('Save state to local storage:');
       this.logger.debug(state);
-      localStorage.setItem("state", serializedState);
+      localStorage.setItem('state', serializedState);
     } catch (err) {
       // ignore write errors
     }
   }
 
   setUser(user) {
+    console.log(user);
     if (user) {
       // the local storage items will be picked up by the survey frontend
-      localStorage.setItem("id_token", user.id_token);
-      localStorage.setItem("access_token", user.access_token);
+      localStorage.setItem('id_token', user.id_token);
+      localStorage.setItem('access_token', user.access_token);
+      localStorage.setItem('profile', JSON.stringify(user.profile));
     }
     this.userSubject.next(user);
     // refresh groups from MobSOS to update group membership status
@@ -313,7 +315,7 @@ export class StoreService {
 
   startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
     if (name) {
-      this.logger.debug("Synchronizing community workspace via y-js...");
+      this.logger.debug('Synchronizing community workspace via y-js...');
       this.yjs.syncObject(
         name,
         this.communityWorkspaceSubject,
@@ -324,7 +326,7 @@ export class StoreService {
 
   stopSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
     if (name) {
-      this.logger.debug("Stopping community workspace synchronization...");
+      this.logger.debug('Stopping community workspace synchronization...');
       this.yjs.stopSync(name);
       this.communityWorkspaceInitializedSubject.next(false);
       this.communityWorkspaceSubject.next({});
@@ -489,7 +491,7 @@ export class StoreService {
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier =
-        service.name + "." + latestRelease.supplement.class;
+        service.name + '.' + latestRelease.supplement.class;
       const serviceMessageDescriptions = messageDescriptions[serviceIdentifier]
         ? messageDescriptions[serviceIdentifier]
         : {};
@@ -503,7 +505,7 @@ export class StoreService {
     const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
       const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split(
-        "@",
+        '@',
         2
       )[0];
       let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
@@ -576,7 +578,7 @@ export class StoreService {
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
-      const sameGroupInMobSOS = find(groupsFromMobSOS, ["groupID", groupID]);
+      const sameGroupInMobSOS = find(groupsFromMobSOS, ['groupID', groupID]);
       if (sameGroupInMobSOS && sameGroupInMobSOS.name === groupName) {
         continue;
       }

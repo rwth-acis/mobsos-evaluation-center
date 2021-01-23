@@ -98,7 +98,6 @@ export class Las2peerService {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      console.log(this.userCredentials);
       options = merge(
         {
           headers: {
@@ -439,19 +438,18 @@ export class Las2peerService {
       title: '',
       save: false,
     };
-    console.log(this.userCredentials);
+    let profile = JSON.parse(localStorage.getItem('profile'));
+    let authorHeader = {
+      Authorization:
+        'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
+    };
+    // console.log(profile, authorHeader);
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
-      // headers: {
-      //   Authorization:
-      //     'Basic ' +
-      //     btoa(
-      //       this.userCredentials.preferred_username +
-      //         ':' +
-      //         this.userCredentials.sub
-      //     ),
-      // },
+      headers: {
+        ...authorHeader,
+      },
     });
   }
 

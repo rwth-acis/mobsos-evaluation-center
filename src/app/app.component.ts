@@ -108,14 +108,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setUser(user) {
-    console.log(user);
     this.store.setUser(user);
   }
-  log(e) {
-    window.setInterval(() => {
-      console.log(e);
-    }, 100);
-  }
+
   onGroupSelected(group) {
     this.store.setGroup(group);
   }
