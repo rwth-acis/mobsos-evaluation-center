@@ -1,8 +1,11 @@
-![las2peer](https://rwth-acis.github.io/las2peer/logo/vector/las2peer-logo.svg)
-
-# MobsosEvaluationCenter
-
-[![Build Status](https://travis-ci.org/rwth-acis/mobsos-evaluation-center.svg?branch=master)](https://travis-ci.org/rwth-acis/mobsos-evaluation-center)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rwth-acis/las2peer/master/img/logo/bitmap/las2peer-logo-128x128.png" />
+</p>
+<h1 align="center">Mobsos Evaluation Center</h1>
+<p align="center">
+  <a href="https://travis-ci.org/rwth-acis/mobsos-evaluation-center" alt="Travis Build Status">
+        <img src="https://travis-ci.org/rwth-acis/mobsos-evaluation-center.svg?branch=master" /></a>
+</p>
 
 Web frontend for [MobSOS](https://github.com/rwth-acis/mobsos) a framework for community information systems (CIS) success awareness.
 
