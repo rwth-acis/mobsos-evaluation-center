@@ -5,7 +5,7 @@ export const environment = {
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId: 'f8622260-875b-499a-82db-db55f89f9deb',
   openIdSilentLoginInterval: 60,
-  las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
+  las2peerWebConnectorUrl: 'http://localhost:9011',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   servicePollingInterval: 10,
@@ -13,7 +13,7 @@ export const environment = {
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server
-  yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',
+  yJsWebsocketUrl: 'wss://localhost:8089',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend
