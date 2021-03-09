@@ -8,10 +8,10 @@ RUN apt-get install dos2unix
 # set working directory
 WORKDIR /app
 
+COPY . .
+
 RUN chmod -R a+rwx /app
 RUN chmod +x /app/docker-entrypoint.sh
-
-COPY . .
 
 # add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
