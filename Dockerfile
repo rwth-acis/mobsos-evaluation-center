@@ -9,6 +9,6 @@ COPY . .
 ENV PATH /app/node_modules/.bin:$PATH
 RUN npm install
 RUN npm install -g @angular/cli@7.3.9
-
+RUN dos2unix docker-entrypoint.sh
 EXPOSE 4200
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
