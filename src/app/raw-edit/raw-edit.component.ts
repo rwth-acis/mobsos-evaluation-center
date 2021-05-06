@@ -1,31 +1,33 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {StoreService} from '../store.service';
-import {Las2peerService} from '../las2peer.service';
-import vkbeautify from 'vkbeautify';
-import {MatSnackBar} from '@angular/material';
-import {TranslateService} from '@ngx-translate/core';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { StoreService } from "../store.service";
+import { Las2peerService } from "../las2peer.service";
+import vkbeautify from "vkbeautify";
+import { MatSnackBar } from "@angular/material";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
-  selector: 'app-raw-edit',
-  templateUrl: './raw-edit.component.html',
-  styleUrls: ['./raw-edit.component.scss']
+  selector: "app-raw-edit",
+  templateUrl: "./raw-edit.component.html",
+  styleUrls: ["./raw-edit.component.scss"],
 })
 export class RawEditComponent implements OnInit, OnDestroy {
-
   groupID;
   services = [];
   serviceMap = {};
   selectedService: string;
-  editorOptions = {theme: 'vs', language: 'xml', automaticLayout: true};
+  editorOptions = { theme: "vs", language: "xml", automaticLayout: true };
   measureCatalogXml: string;
   successModelXml: string;
   measureCatalogEditor;
   successModelEditor;
   saveInProgress = false;
 
-  constructor(private store: StoreService, private las2peer: Las2peerService, private snackBar: MatSnackBar,
-              private translate: TranslateService) {
-  }
+  constructor(
+    private store: StoreService,
+    private las2peer: Las2peerService,
+    private snackBar: MatSnackBar,
+    private translate: TranslateService
+  ) {}
 
   static prettifyXml(xml) {
     return vkbeautify.xml(xml);
@@ -40,7 +42,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
       this.selectedService = serviceID;
       this.fetchXml();
     });
-    this.store.startPolling();
+    //  this.store.startPolling();
     this.store.services.subscribe((services) => {
       this.services = Object.keys(services);
       this.serviceMap = services;
@@ -67,7 +69,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     if (this.groupID) {
       this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
         if (!xml) {
-          xml = '';
+          xml = "";
         }
         xml = RawEditComponent.prettifyXml(xml);
         this.measureCatalogXml = xml;
@@ -75,11 +77,13 @@ export class RawEditComponent implements OnInit, OnDestroy {
       if (this.selectedService) {
         const setServiceXml = (xml) => {
           if (!xml) {
-            xml = '';
+            xml = "";
           }
           this.successModelXml = RawEditComponent.prettifyXml(xml);
         };
-        this.las2peer.fetchSuccessModel(this.groupID, this.selectedService).then(setServiceXml)
+        this.las2peer
+          .fetchSuccessModel(this.groupID, this.selectedService)
+          .then(setServiceXml)
           .catch(() => setServiceXml(null));
       }
     }
@@ -87,17 +91,22 @@ export class RawEditComponent implements OnInit, OnDestroy {
 
   _onCatalogSaveClicked() {
     this.saveInProgress = true;
-    this.las2peer.saveMeasureCatalog(this.groupID, this.measureCatalogXml)
+    this.las2peer
+      .saveMeasureCatalog(this.groupID, this.measureCatalogXml)
       .then(async () => {
         this.saveInProgress = false;
-        const message = await this.translate.get('raw-edit.measures.snackbar-success').toPromise();
+        const message = await this.translate
+          .get("raw-edit.measures.snackbar-success")
+          .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
         });
       })
       .catch(async () => {
         this.saveInProgress = false;
-        const message = await this.translate.get('raw-edit.measures.snackbar-failure').toPromise();
+        const message = await this.translate
+          .get("raw-edit.measures.snackbar-failure")
+          .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
         });
@@ -106,17 +115,26 @@ export class RawEditComponent implements OnInit, OnDestroy {
 
   _onModelSaveClicked() {
     this.saveInProgress = true;
-    this.las2peer.saveSuccessModel(this.groupID, this.selectedService, this.successModelXml)
+    this.las2peer
+      .saveSuccessModel(
+        this.groupID,
+        this.selectedService,
+        this.successModelXml
+      )
       .then(async () => {
         this.saveInProgress = false;
-        const message = await this.translate.get('raw-edit.success-models.snackbar-success').toPromise();
+        const message = await this.translate
+          .get("raw-edit.success-models.snackbar-success")
+          .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
         });
       })
       .catch(async () => {
         this.saveInProgress = false;
-        const message = await this.translate.get('raw-edit.success-models.snackbar-failure').toPromise();
+        const message = await this.translate
+          .get("raw-edit.success-models.snackbar-failure")
+          .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
         });
