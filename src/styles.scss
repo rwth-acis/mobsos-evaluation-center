@@ -16,6 +16,10 @@
 $mobsos-evaluation-center-primary: mat-palette($mat-teal);
 $mobsos-evaluation-center-accent: mat-palette($mat-pink, A200, A100, A400);
 
+h2{
+  margin:5px
+}
+
 // The warn palette is optional (defaults to red).
 $mobsos-evaluation-center-warn: mat-palette($mat-red);
 

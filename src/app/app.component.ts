@@ -1,17 +1,24 @@
-import {ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import 'oidc-client';
 import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
-import {MediaMatcher} from '@angular/cdk/layout';
-import {environment} from '../environments/environment';
-import {NGXLogger} from 'ngx-logger';
-import {LanguageService} from './language.service';
-import {GroupInformation, StoreService} from './store.service';
-import {CordovaPopupNavigator, UserManager} from 'oidc-client';
-import {MatIconRegistry, MatSidenav, MatSnackBar} from '@angular/material';
+import { MediaMatcher } from '@angular/cdk/layout';
+import { environment } from '../environments/environment';
+import { NGXLogger } from 'ngx-logger';
+import { LanguageService } from './language.service';
+import { GroupInformation, StoreService } from './store.service';
+import { CordovaPopupNavigator, UserManager } from 'oidc-client';
+import { MatIconRegistry, MatSidenav, MatSnackBar } from '@angular/material';
 import * as Hammer from 'hammerjs';
-import {SwUpdate} from '@angular/service-worker';
-import {TranslateService} from '@ngx-translate/core';
-import {DomSanitizer} from '@angular/platform-browser';
+import { SwUpdate } from '@angular/service-worker';
+import { TranslateService } from '@ngx-translate/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 
 // workaround for openidconned-signin
@@ -29,7 +36,7 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(MatSidenav)
@@ -53,22 +60,41 @@ export class AppComponent implements OnInit, OnDestroy {
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
 
-  constructor(private logger: NGXLogger, public languageService: LanguageService, private store: StoreService,
-              changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private elementRef: ElementRef,
-              private swUpdate: SwUpdate, private snackBar: MatSnackBar, private translate: TranslateService,
-              private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
+  constructor(
+    private logger: NGXLogger,
+    public languageService: LanguageService,
+    private store: StoreService,
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher,
+    private elementRef: ElementRef,
+    private swUpdate: SwUpdate,
+    private snackBar: MatSnackBar,
+    private translate: TranslateService,
+    private matIconRegistry: MatIconRegistry,
+    private domSanitizer: DomSanitizer
+  ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
-      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/reqbaz-logo.svg')
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        'assets/icons/reqbaz-logo.svg'
+      )
     );
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
-    this.mobileQuery.addEventListener('change', this.mobileQueryListener, false);
+    this.mobileQuery.addEventListener(
+      'change',
+      this.mobileQueryListener,
+      false
+    );
   }
 
   ngOnDestroy(): void {
     this.store.stopPolling();
-    this.mobileQuery.removeEventListener('change', this.mobileQueryListener, false);
+    this.mobileQuery.removeEventListener(
+      'change',
+      this.mobileQueryListener,
+      false
+    );
   }
 
   useLanguage(language: string) {
@@ -100,9 +126,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
     hammertime.on('panright', (event) => {
       if (this.mobileQuery.matches) {
-        if (
-          event.center.x >= 1 && event.center.x <= 20
-        ) {
+        if (event.center.x >= 1 && event.center.x <= 20) {
           this.sidenav.open();
         }
       }
@@ -114,8 +138,12 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     if (this.swUpdate.isEnabled) {
       this.swUpdate.available.subscribe(async () => {
-        const message = await this.translate.get('app.update.message').toPromise();
-        const reloadAction = await this.translate.get('app.update.reload').toPromise();
+        const message = await this.translate
+          .get('app.update.message')
+          .toPromise();
+        const reloadAction = await this.translate
+          .get('app.update.reload')
+          .toPromise();
         const snackBarRef = this.snackBar.open(message, reloadAction, null);
         snackBarRef.onAction().subscribe(() => {
           window.location.reload();
@@ -123,31 +151,38 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
-    this.store.startPolling();
+    // this.store.startPolling();
     this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
-      this.myGroups = allGroups.filter(group => group.member).sort();
-      this.otherGroups = allGroups.filter(group => !group.member).sort();
+      this.myGroups = allGroups.filter((group) => group.member).sort();
+      this.otherGroups = allGroups.filter((group) => !group.member).sort();
       this.groupMap = groups;
     });
-    this.store.selectedGroup.subscribe(selectedGroup => this.selectedGroup = selectedGroup);
+    this.store.selectedGroup.subscribe(
+      (selectedGroup) => (this.selectedGroup = selectedGroup)
+    );
     const silentLoginFunc = () => {
-      this.userManager.signinSilentCallback().then(() => {
-        this.logger.debug('Silent login succeeded');
-      }).catch(() => {
-        this.setUser(null);
-        this.logger.debug('Silent login failed');
-      });
+      this.userManager
+        .signinSilentCallback()
+        .then(() => {
+          this.logger.debug('Silent login succeeded');
+        })
+        .catch(() => {
+          this.setUser(null);
+          this.logger.debug('Silent login failed');
+        });
     };
     silentLoginFunc();
-    this.store.user.subscribe(user => {
+    this.store.user.subscribe((user) => {
       this.user = user;
       this.signedIn = !!user;
       clearInterval(this.silentSigninIntervalHandle);
       if (this.signedIn) {
-        this.silentSigninIntervalHandle = setInterval(silentLoginFunc, environment.openIdSilentLoginInterval * 1000);
+        this.silentSigninIntervalHandle = setInterval(
+          silentLoginFunc,
+          environment.openIdSilentLoginInterval * 1000
+        );
       }
     });
   }
-
 }
