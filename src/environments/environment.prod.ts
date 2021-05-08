@@ -10,7 +10,7 @@ declare global {
 }
 
 export const environment = {
-  production: window.env.production || false,
+  production: window.env.production || true,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',

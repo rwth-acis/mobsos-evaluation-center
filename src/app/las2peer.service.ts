@@ -108,7 +108,7 @@ export class Las2peerService {
         options
       );
     }
-    if (environment.production) {
+    if (!environment.production) {
       this.logger.debug(
         'Fetching from ' + url + ' with options ' + JSON.stringify(options)
       );
