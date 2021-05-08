@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -108,9 +108,12 @@ export class Las2peerService {
         options
       );
     }
-    this.logger.debug(
-      'Fetching from ' + url + ' with options ' + JSON.stringify(options)
-    );
+    if (environment.production) {
+      this.logger.debug(
+        'Fetching from ' + url + ' with options ' + JSON.stringify(options)
+      );
+    }
+    
     const ngHttpOptions: {
       body?: any;
       headers?:
