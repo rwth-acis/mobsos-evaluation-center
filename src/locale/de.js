@@ -9,6 +9,7 @@ export const translations = {
     },
     "elements": {
       "cancel-label": "Cancel",
+      "close-label":"Schließen",
       "community-dropdown-label": "Community",
       "error-label": "Fehler",
       "loading-label": "Lade",

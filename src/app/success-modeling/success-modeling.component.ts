@@ -362,7 +362,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         .get('success-modeling.snackbar-save-failure')
         .toPromise();
       message += e;
-      this.snackBar.open(message, null, {
+      this.snackBar.open(message, "Ok", {
         duration: 2000,
       });
     }

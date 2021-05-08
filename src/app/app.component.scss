@@ -6,7 +6,6 @@ $primary: map-get($mobsos-evaluation-center-theme, primary);
 mat-sidenav-container {
   min-height: 100%;
 
-
   mat-sidenav {
     width: 250px;
     height: 100vh;
@@ -34,7 +33,12 @@ mat-sidenav-container {
       margin-bottom: 10px;
     }
 
-    .mat-list-item, mat-label, mat-form-field, mat-select, mat-option, mat-hint {
+    .mat-list-item,
+    mat-label,
+    mat-form-field,
+    mat-select,
+    mat-option,
+    mat-hint {
       color: white !important;
     }
 
@@ -74,16 +78,17 @@ mat-sidenav-container {
       min-height: calc(100vh - 180px);
     }
 
-    main, footer {
+    main {
       padding: 10px 10px 10px 10px;
     }
 
-    footer{
+    footer {
+      margin: 10px;
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: space-between;
-      #las2peer-logo{
+      #las2peer-logo {
         height: 50px;
         margin: 5px;
       }
