@@ -86,6 +86,7 @@ export const translations = {
     "discard-changes-prompt": "Änderungen verwerfen?",
     "edit-mode-toggle": "Bearbeiten",
     "edit-disabled-tooltip": "Zum Bearbeiten musst du ein Mitglied der ausgewählten Community sein",
+    "no-group-selected":"Bitte wähle zuerst eine Community aus",
     "edit-measure-dialog": {
       "add-operation": "Operation hinzufügen",
       "add-query": "Abfrage hinzufügen",

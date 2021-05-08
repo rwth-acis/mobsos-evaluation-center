@@ -17,6 +17,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
 
+
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -73,7 +74,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.store.startPolling();
     this.store.selectedGroup.subscribe((groupID) => {
-      this.groupID = groupID;
+      if (groupID) {
+        this.groupID = groupID;
+      } 
+      
       this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = null;
       this.fetchXml();
     });

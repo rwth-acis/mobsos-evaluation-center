@@ -86,6 +86,7 @@ export const translations = {
     },
     "discard-changes-prompt": "Discard changes?",
     "edit-mode-toggle": "Edit",
+    "no-group-selected":"No community was selected. Please make sure to select a community first",
     "edit-disabled-tooltip": "You must be a member of the selected community to edit",
     "edit-measure-dialog": {
       "add-operation": "Add Operation",
