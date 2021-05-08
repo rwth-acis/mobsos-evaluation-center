@@ -65,7 +65,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   getCurrentGroupName(){
     const currentGroup = this.myGroups.find((group=>group.id==this.groupID))
-   return currentGroup.name || "default";
+    
+   return currentGroup?currentGroup.name : "Default";
   }
 
   parseModel(xml: Document) {
