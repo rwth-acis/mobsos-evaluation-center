@@ -31,7 +31,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   successModelXml: Document;
-  successModel: SuccessModel;
+  successModel: SuccessModel=undefined;
   editMode = false;
   communityWorkspace: CommunityWorkspace;
   user;
@@ -84,7 +84,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.groupID = groupID;
       } 
       
-      this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = null;
+      this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = undefined;
       this.fetchXml();
     });
     this.store.selectedService.subscribe((serviceID) => {
@@ -477,7 +477,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   private cleanData() {
     this.successModelXml = null;
-    this.successModel = null;
+    this.successModel = undefined;
     this.workspaceUser = this.getMyUsername();
   }
 

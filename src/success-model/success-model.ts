@@ -90,6 +90,7 @@ export class SuccessModel {
     } catch (e) {
       throw new Error('Parsing model failed: ' + e);
     }
+    return null
   }
 
   toXml(): Element {

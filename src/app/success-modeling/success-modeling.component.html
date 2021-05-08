@@ -255,9 +255,7 @@
     'success-modeling.message-no-application-selected' | translate
   }}</mat-card>
 
-  <mat-card
-    [hidden]="!selectedService || (selectedService && getSuccessModel())"
-  >
+  <mat-card *ngIf="selectedService && getSuccessModel() !== undefined">
     {{
       (isMemberOfSelectedGroup()
         ? 'success-modeling.message-no-success-model-found'
@@ -265,7 +263,8 @@
       ) | translate
     }}
   </mat-card>
-
+  <mat-spinner *ngIf="getSuccessModel() === undefined" style="margin: auto">
+  </mat-spinner>
   <div *ngIf="getSuccessModel() && getMeasureCatalog()">
     <app-questionnaires
       [availableQuestionnaires]="availableQuestionnaires"
