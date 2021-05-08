@@ -8,12 +8,13 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
+      production:boolean
     };
   }
 }
 
 export const environment = {
-  production: false,
+  production: window.env.production || true,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
@@ -23,7 +24,7 @@ export const environment = {
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   las2peerWebConnectorUrl:
     window.env.las2peerWebConnectorUrl ||
-    'https://git.tech4comp.dbis.rwth-aachen.de',
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',

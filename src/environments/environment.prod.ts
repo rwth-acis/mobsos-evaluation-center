@@ -4,12 +4,13 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
+      production:boolean
     };
   }
 }
 
 export const environment = {
-  production: true,
+  production: window.env.production || false,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
@@ -18,11 +19,11 @@ export const environment = {
   openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl:
     window.env.las2peerWebConnectorUrl ||
-    'https://git.tech4comp.dbis.rwth-aachen.de',
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
-  servicePollingInterval: 10,
-  visualizationRefreshInterval: 10,
+  servicePollingInterval: 60,
+  visualizationRefreshInterval: 60,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server
