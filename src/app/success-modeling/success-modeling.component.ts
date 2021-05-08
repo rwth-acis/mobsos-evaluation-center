@@ -63,6 +63,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
   }
 
+  getCurrentGroupName(){
+    const currentGroup = this.myGroups.find((group=>group.id==this.groupID))
+   return currentGroup.name || "default";
+  }
+
   parseModel(xml: Document) {
     try {
       return SuccessModel.fromXml(xml.documentElement);

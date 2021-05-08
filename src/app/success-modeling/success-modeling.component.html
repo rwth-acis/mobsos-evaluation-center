@@ -1,4 +1,11 @@
+<!-- Only show component if group is selected -->
 <ng-container *ngIf="groupID; else elseBlock">
+  <h3>
+    {{
+      'success-modeling.community-success-model'
+        | translate: { community: getCurrentGroupName() }
+    }}
+  </h3>
   <mat-card id="header-card">
     <mat-toolbar-row>
       <mat-form-field id="community-service-select">
