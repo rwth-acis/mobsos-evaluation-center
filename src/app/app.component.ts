@@ -151,7 +151,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
-    // this.store.startPolling();
+    this.store.startPolling();
     this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
       this.myGroups = allGroups.filter((group) => group.member).sort();
