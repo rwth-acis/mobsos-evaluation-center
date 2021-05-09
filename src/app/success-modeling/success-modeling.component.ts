@@ -311,7 +311,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     if (this.editMode) {
       const workspace = this.getCurrentWorkspace();
       if (!workspace) {
-        return null;
+        return undefined;
       }
       return workspace.model;
     } else {
