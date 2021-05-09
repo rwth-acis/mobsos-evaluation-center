@@ -66,7 +66,7 @@ export class Las2peerService {
   }
 
   setCredentials(username, password, accessToken) {
-    this.userCredentials = { user: username, password, token: accessToken };
+    this.userCredentials = { user: username, password:password, token: accessToken };
   }
 
   resetCredentials() {
@@ -428,7 +428,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
-      `?access_token=${this.userCredentials.token}&format=${format}`
+      // `?access_token=${this.userCredentials.token}&format=${format}`
     );
     const requestBody = {
       cache: false,

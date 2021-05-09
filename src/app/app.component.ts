@@ -52,7 +52,7 @@ export class AppComponent implements OnInit, OnDestroy {
   otherGroups: GroupInformation[] = [];
   groups = [];
   groupMap = {};
-  selectedGroup;
+  selectedGroup="MobSOSDemo";
   user;
   signedIn = false;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
@@ -122,6 +122,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this.selectedGroup) {
+      this.store.setGroup(this.selectedGroup)
+    }
+    
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
     hammertime.on('panright', (event) => {

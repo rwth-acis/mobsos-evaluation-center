@@ -22,7 +22,7 @@ export const environment = {
     'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
-  servicePollingInterval: 60,
+  servicePollingInterval: 10,
   visualizationRefreshInterval: 60,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
