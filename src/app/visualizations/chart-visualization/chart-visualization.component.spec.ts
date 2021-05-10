@@ -1,7 +1,9 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {ChartVisualizationComponent} from './chart-visualization.component';
-import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular/material';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {PlotlyModule} from 'angular-plotly.js';
 import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -12,7 +14,7 @@ describe('ChartVisualizationComponent', () => {
   let component: ChartVisualizationComponent;
   let fixture: ComponentFixture<ChartVisualizationComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ChartVisualizationComponent],
       imports: [

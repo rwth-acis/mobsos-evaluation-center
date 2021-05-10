@@ -1,7 +1,10 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {SuccessDimensionComponent} from './success-dimension.component';
-import {MatCardModule, MatDialogModule, MatIconModule, MatTooltipModule} from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {SuccessFactorComponent} from '../success-factor/success-factor.component';
 import {SuccessMeasureComponent} from '../success-measure/success-measure.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -12,7 +15,7 @@ describe('SuccessDimensionComponent', () => {
   let component: SuccessDimensionComponent;
   let fixture: ComponentFixture<SuccessDimensionComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [SuccessDimensionComponent, SuccessFactorComponent, SuccessMeasureComponent],
       imports: [

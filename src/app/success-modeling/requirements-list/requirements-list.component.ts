@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
 import {SuccessModel} from '../../../success-model/success-model';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {PickReqbazProjectComponent} from './pick-reqbaz-project/pick-reqbaz-project.component';
 import {ReqbazProject} from '../../../success-model/reqbaz-project';
 import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmation-dialog.component';

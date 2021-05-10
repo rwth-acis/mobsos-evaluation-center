@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {BaseVisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {map} from 'lodash-es';
 import {ChartVisualization} from '../../../success-model/visualization';
 import {TranslateService} from '@ngx-translate/core';

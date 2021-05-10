@@ -3,7 +3,7 @@ import {SuccessFactor} from '../../success-model/success-factor';
 import {MeasureMap} from '../../success-model/measure-catalog';
 import {ServiceInformation} from '../store.service';
 import {EditFactorDialogComponent} from './edit-factor-dialog/edit-factor-dialog.component';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
 import {TranslateService} from '@ngx-translate/core';
 

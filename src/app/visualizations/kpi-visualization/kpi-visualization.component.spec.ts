@@ -1,7 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KpiVisualizationComponent } from './kpi-visualization.component';
-import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular/material';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {PlotlyModule} from 'angular-plotly.js';
 import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -10,7 +12,7 @@ describe('KpiVisualizationComponent', () => {
   let component: KpiVisualizationComponent;
   let fixture: ComponentFixture<KpiVisualizationComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ KpiVisualizationComponent ],
       imports: [

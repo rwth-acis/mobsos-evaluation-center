@@ -3,7 +3,7 @@ import {MeasureMap} from '../../../success-model/measure-catalog';
 import {ServiceInformation, StoreService} from '../../store.service';
 import {SuccessModel} from '../../../success-model/success-model';
 import {Las2peerService, Questionnaire} from '../../las2peer.service';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {PickQuestionnaireDialogComponent} from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import {Questionnaire as QuestionnairModel} from '../../../success-model/questionnaire';
 import {environment} from '../../../environments/environment';

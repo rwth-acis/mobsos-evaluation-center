@@ -1,10 +1,12 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {EditFactorDialogComponent} from './edit-factor-dialog.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {createTranslateLoader} from '../../app.module';
 import {FormsModule} from '@angular/forms';
-import {MatDialogModule, MatDialogRef, MatFormFieldModule, MatInputModule} from '@angular/material';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {SuccessFactor} from '../../../success-model/success-factor';
@@ -13,7 +15,7 @@ describe('EditFactorDialogComponent', () => {
   let component: EditFactorDialogComponent;
   let fixture: ComponentFixture<EditFactorDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [EditFactorDialogComponent],
       imports: [

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RequirementsListComponent } from './requirements-list.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -14,7 +14,7 @@ describe('RequirementsListComponent', () => {
   let component: RequirementsListComponent;
   let fixture: ComponentFixture<RequirementsListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ RequirementsListComponent ],
       imports: [

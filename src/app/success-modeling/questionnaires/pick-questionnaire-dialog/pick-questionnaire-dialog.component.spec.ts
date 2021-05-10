@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {PickQuestionnaireDialogComponent} from './pick-questionnaire-dialog.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -16,7 +16,7 @@ describe('PickQuestionnaireDialogComponent', () => {
   let component: PickQuestionnaireDialogComponent;
   let fixture: ComponentFixture<PickQuestionnaireDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [PickQuestionnaireDialogComponent],
       imports: [

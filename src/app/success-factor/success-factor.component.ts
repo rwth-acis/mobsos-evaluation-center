@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ServiceInformation} from '../store.service';
 import {MeasureMap} from '../../success-model/measure-catalog';
 import {SuccessFactor} from '../../success-model/success-factor';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {PickMeasureDialogComponent} from './pick-measure-dialog/pick-measure-dialog.component';
 import {Measure} from '../../success-model/measure';
 import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';

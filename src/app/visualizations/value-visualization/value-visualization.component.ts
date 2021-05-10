@@ -1,7 +1,7 @@
 import {Component, OnChanges, OnDestroy, OnInit} from '@angular/core';
 import {BaseVisualizationComponent, VisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
-import {MatDialog} from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-value-visualization',

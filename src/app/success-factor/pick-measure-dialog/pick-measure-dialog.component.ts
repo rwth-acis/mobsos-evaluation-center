@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import {Measure} from '../../../success-model/measure';
 import {ServiceInformation} from '../../store.service';
 import {EditMeasureDialogComponent} from '../edit-measure-dialog/edit-measure-dialog.component';
