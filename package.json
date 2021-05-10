@@ -37,7 +37,6 @@
     "ngx-logger": "^3.3.13",
     "ngx-markdown": "^8.1.0",
     "ngx-monaco-editor": "^7.0.0",
-    "node-sass": "^4.14.1",
     "oidc-client": "^1.11.5",
     "plotly.js": "^1.58.4",
     "rxjs": "~6.6.7",
