@@ -1,8 +1,5 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "cli": {
-    "analytics": false
-  },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -45,7 +42,7 @@
               "node_modules/prismjs/components/prism-sql.min.js",
               "node_modules/prismjs/components/prism-json.min.js"
             ],
-            "aot": true
+            "es5BrowserSupport": true
           },
           "configurations": {
             "production": {
@@ -58,7 +55,9 @@
               "optimization": true,
               "outputHashing": "none",
               "sourceMap": false,
+              "extractCss": true,
               "namedChunks": false,
+              "aot": true,
               "extractLicenses": true,
               "vendorChunk": true,
               "buildOptimizer": true,
@@ -67,10 +66,6 @@
                   "type": "initial",
                   "maximumWarning": "2mb",
                   "maximumError": "7mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
                 }
               ],
               "serviceWorker": true,

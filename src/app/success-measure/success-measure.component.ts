@@ -22,7 +22,7 @@ import {VisualizationComponent} from '../visualizations/visualization.component'
 import {KpiVisualizationComponent} from '../visualizations/kpi-visualization/kpi-visualization.component';
 import {ChartVisualizationComponent} from '../visualizations/chart-visualization/chart-visualization.component';
 import {EditMeasureDialogComponent} from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import {MatDialog} from '@angular/material';
 import {cloneDeep} from 'lodash';
 import {SuccessMeasureInterface} from './success-measure.interface';
 import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';

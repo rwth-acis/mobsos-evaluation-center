@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {EditMeasureDialogComponent} from './edit-measure-dialog.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -30,7 +30,7 @@ describe('EditMeasureDialogComponent', () => {
   let component: EditMeasureDialogComponent;
   let fixture: ComponentFixture<EditMeasureDialogComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
         EditMeasureDialogComponent,

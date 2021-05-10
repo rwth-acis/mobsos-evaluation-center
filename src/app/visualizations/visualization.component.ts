@@ -2,7 +2,7 @@ import {Measure} from '../../success-model/measure';
 import {ServiceInformation} from '../store.service';
 import {Las2peerService} from '../las2peer.service';
 import {ErrorDialogComponent} from '../error-dialog/error-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import {MatDialog} from '@angular/material';
 import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
 import {environment} from '../../environments/environment';
 

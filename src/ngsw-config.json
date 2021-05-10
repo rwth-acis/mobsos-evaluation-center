@@ -9,8 +9,7 @@
           "/favicon.ico",
           "/index.html",
           "/*.css",
-          "/*.js",
-          "/manifest.webmanifest"
+          "/*.js"
         ]
       }
     }, {

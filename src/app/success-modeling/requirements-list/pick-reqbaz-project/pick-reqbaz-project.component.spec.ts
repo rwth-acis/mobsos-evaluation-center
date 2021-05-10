@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {PickReqbazProjectComponent} from './pick-reqbaz-project.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
@@ -16,7 +16,7 @@ describe('PickReqbazProjectComponent', () => {
   let component: PickReqbazProjectComponent;
   let fixture: ComponentFixture<PickReqbazProjectComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [PickReqbazProjectComponent],
       imports: [

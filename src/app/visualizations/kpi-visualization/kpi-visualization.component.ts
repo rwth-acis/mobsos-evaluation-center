@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {BaseVisualizationComponent} from '../visualization.component';
 import {Las2peerService} from '../../las2peer.service';
-import { MatDialog } from '@angular/material/dialog';
+import {MatDialog} from '@angular/material';
 import {KpiVisualization} from '../../../success-model/visualization';
 import {isNumber} from 'util';
 

@@ -1,11 +1,10 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {PickMeasureDialogComponent} from './pick-measure-dialog.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {createTranslateLoader} from '../../app.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import { MatCardModule } from '@angular/material/card';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatCardModule, MatDialogModule, MatDialogRef} from '@angular/material';
 import {SuccessMeasureComponent} from '../../success-measure/success-measure.component';
 import {MatIconModule} from '@angular/material/icon';
 
@@ -13,7 +12,7 @@ describe('PickMeasureDialogComponent', () => {
   let component: PickMeasureDialogComponent;
   let fixture: ComponentFixture<PickMeasureDialogComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [PickMeasureDialogComponent, SuccessMeasureComponent],
       imports: [

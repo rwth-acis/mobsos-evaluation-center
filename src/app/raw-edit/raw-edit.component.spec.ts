@@ -1,9 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {RawEditComponent} from './raw-edit.component';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTabsModule } from '@angular/material/tabs';
+import {MatSelectModule, MatSnackBarModule, MatTabsModule} from '@angular/material';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {createTranslateLoader} from '../app.module';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
@@ -16,7 +14,7 @@ describe('RawEditComponent', () => {
   let component: RawEditComponent;
   let fixture: ComponentFixture<RawEditComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [RawEditComponent],
       imports: [
