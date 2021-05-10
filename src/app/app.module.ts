@@ -68,6 +68,7 @@ import {SqlTableComponent} from './success-factor/edit-measure-dialog/sql-table/
 import {RequirementsListComponent} from './success-modeling/requirements-list/requirements-list.component';
 // tslint:disable-next-line:max-line-length
 import {PickReqbazProjectComponent} from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
+import { HttpClientModule } from '@angular/common/http';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -118,6 +119,7 @@ export function createTranslateLoader() {
   imports: [
     BrowserModule,
     AppRoutingModule,
+    HttpClientModule,
     BrowserAnimationsModule,
     TranslateModule.forRoot({
       loader: {

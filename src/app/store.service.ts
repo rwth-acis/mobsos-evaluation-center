@@ -368,11 +368,7 @@ export class StoreService {
 
   async waitUntilWorkspaceIsSynchronized() {
     return new Promise((resolve) => {
-      this.communityWorkspaceInitialized.subscribe((initialized) => {
-        if (initialized) {
-          resolve();
-        }
-      });
+      this.communityWorkspaceInitialized.toPromise();
     });
   }
 
@@ -470,9 +466,7 @@ export class StoreService {
     this.selectedGroup = this.selectedGroupSubject.asObservable();
     this.selectedService = this.selectedServiceSubject.asObservable();
     this.editMode = this.editModeSubject.asObservable();
-    this.questionnaires = this.questionnairesSubject
-      .asObservable()
-      .pipe(distinctUntilChanged(), filter(Boolean));
+    this.questionnaires = this.questionnairesSubject.asObservable().pipe(distinctUntilChanged());
   }
 
   /**
@@ -491,13 +485,13 @@ export class StoreService {
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier =
-        service.name + '.' + latestRelease.supplement.class;
+        service.name + '.' + latestRelease?.supplement?.class;
       const serviceMessageDescriptions = messageDescriptions[serviceIdentifier]
         ? messageDescriptions[serviceIdentifier]
         : {};
       serviceCollection[serviceIdentifier] = {
         name: serviceIdentifier,
-        alias: latestRelease.supplement.name,
+        alias: latestRelease?.supplement?.name,
         mobsosIDs: [],
         serviceMessageDescriptions,
       };
