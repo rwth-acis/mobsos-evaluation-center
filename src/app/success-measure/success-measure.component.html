@@ -1,14 +1,46 @@
 <div id="measure-header">
-  <button mat-icon-button *ngIf="editMode && canDelete" color="warn" (click)="onDeleteClicked($event)" id="delete-button">
+  <button
+    mat-icon-button
+    *ngIf="editMode && canDelete"
+    color="warn"
+    (click)="onDeleteClicked($event)"
+    id="delete-button"
+  >
     <mat-icon>remove_circle_outline</mat-icon>
   </button>
-  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked($event)" id="edit-button">
+  <button
+    mat-icon-button
+    *ngIf="editMode"
+    color="primary"
+    (click)="onEditClicked($event)"
+    id="edit-button"
+  >
     <mat-icon>edit</mat-icon>
   </button>
   <h4 *ngIf="measure">
-    {{measure.name}}
+    {{ measure.name }}
   </h4>
 </div>
 
-<span *ngIf="visualizationError">{{visualizationError}}</span>
-<ng-template appVisualization></ng-template>
+<span *ngIf="visualizationError">{{ visualizationError }}</span>
+<container-element [ngSwitch]="measure.visualization.type">
+  <app-chart-visualization
+    [measure]="measure"
+    [service]="service"
+    *ngSwitchCase="'Chart'"
+  ></app-chart-visualization>
+  <app-kpi-visualization
+    [measure]="measure"
+    [service]="service"
+    *ngSwitchCase="'KPI'"
+  ></app-kpi-visualization>
+  <app-value-visualization
+    [measure]="measure"
+    [service]="service"
+    *ngSwitchCase="'Value'"
+  ></app-value-visualization>
+  <div *ngSwitchDefault>
+    Unknown chartType: {{ measure.visualization.type }}
+  </div>
+</container-element>
+<!-- <ng-template appVisualization></ng-template> -->

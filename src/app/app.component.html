@@ -8,7 +8,7 @@
     <mat-form-field id="community-selection">
       <mat-label>Community</mat-label>
       <mat-select
-        [(value)]="selectedGroup"
+        [formControl]="selectedGroupForm"
         (selectionChange)="onGroupSelected($event.value)"
       >
         <mat-option

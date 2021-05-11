@@ -1,10 +1,16 @@
-import {Measure} from '../../success-model/measure';
-import {ServiceInformation} from '../store.service';
-import {Las2peerService} from '../las2peer.service';
-import {ErrorDialogComponent} from '../error-dialog/error-dialog.component';
+import { Measure } from '../../success-model/measure';
+import { ServiceInformation } from '../store.service';
+import { Las2peerService } from '../las2peer.service';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
-import {environment} from '../../environments/environment';
+import {
+  Component,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { environment } from '../../environments/environment';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -17,12 +23,15 @@ export interface VisualizationComponent {
 
 @Component({
   selector: 'app-base-visualization',
-  template: ''
+  template: '',
 })
-export class BaseVisualizationComponent implements VisualizationComponent, OnInit, OnChanges, OnDestroy {
-
-  constructor(protected las2peer: Las2peerService, protected dialog: MatDialog) {
-  }
+export class BaseVisualizationComponent
+  implements VisualizationComponent, OnInit, OnChanges, OnDestroy
+{
+  constructor(
+    protected las2peer: Las2peerService,
+    protected dialog: MatDialog
+  ) {}
   measure: Measure;
   service: ServiceInformation;
   visualizationInitialized = false;
@@ -42,9 +51,15 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     return query;
   }
 
-  protected applyVariableReplacements(query: string) {
+  protected applyVariableReplacements(
+    query: string,
+    service: ServiceInformation
+  ) {
     let servicesString = '(';
     const services = [];
+    if (!this.service) {
+      this.service = service;
+    }
     for (const mobsosID of this.service.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
@@ -71,7 +86,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
   async openErrorDialog() {
     let errorText;
     if (this.error.body) {
-      const {value} = await this.error.body.getReader().read();
+      const { value } = await this.error.body.getReader().read();
       const responseBody = new TextDecoder('utf-8').decode(value);
       errorText = (this.error.statusText + ': ' + responseBody).trim();
     } else {
@@ -80,7 +95,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
 
     this.dialog.open(ErrorDialogComponent, {
       width: '80%',
-      data: {error: errorText}
+      data: { error: errorText },
     });
   }
 
@@ -89,7 +104,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
   }
 
   protected getParamsForQuery(query: string) {
-    if (this.service.mobsosIDs.length === 0) {
+    if (!this.service || this.service.mobsosIDs.length === 0) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
@@ -108,13 +123,16 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
   }
 
   protected fetchVisualization(query, queryParams, format: string) {
-    return this.las2peer.visualizeQuery(query, queryParams, format).then(data => {
-      this.error = null;
-      return data;
-    }).catch(error => {
-      this.error = error.error;
-      throw error;
-    });
+    return this.las2peer
+      .visualizeQuery(query, queryParams, format)
+      .then((data) => {
+        this.error = null;
+        return data;
+      })
+      .catch((error) => {
+        this.error = error.error;
+        throw error;
+      });
   }
 
   protected renderVisualizationReal() {
@@ -131,6 +149,5 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     } else {
       this.visualizationInitialized = false;
     }
-
   }
 }

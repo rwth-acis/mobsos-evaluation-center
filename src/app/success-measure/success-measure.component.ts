@@ -10,30 +10,33 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
-import {Measure} from '../../success-model/measure';
-import {ServiceInformation} from '../store.service';
-import {Las2peerService} from '../las2peer.service';
-import {DomSanitizer} from '@angular/platform-browser';
-import {VisualizationDirective} from '../visualization.directive';
-import {ValueVisualizationComponent} from '../visualizations/value-visualization/value-visualization.component';
-import {VisualizationComponent} from '../visualizations/visualization.component';
-import {KpiVisualizationComponent} from '../visualizations/kpi-visualization/kpi-visualization.component';
-import {ChartVisualizationComponent} from '../visualizations/chart-visualization/chart-visualization.component';
-import {EditMeasureDialogComponent} from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
+import { Measure } from '../../success-model/measure';
+import { ServiceInformation } from '../store.service';
+import { Las2peerService } from '../las2peer.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { VisualizationDirective } from '../visualization.directive';
+import { ValueVisualizationComponent } from '../visualizations/value-visualization/value-visualization.component';
+import { VisualizationComponent } from '../visualizations/visualization.component';
+import { KpiVisualizationComponent } from '../visualizations/kpi-visualization/kpi-visualization.component';
+import { ChartVisualizationComponent } from '../visualizations/chart-visualization/chart-visualization.component';
+import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import {cloneDeep} from 'lodash';
-import {SuccessMeasureInterface} from './success-measure.interface';
-import {ConfirmationDialogComponent} from '../confirmation-dialog/confirmation-dialog.component';
-import {TranslateService} from '@ngx-translate/core';
+import { cloneDeep } from 'lodash';
+import { SuccessMeasureInterface } from './success-measure.interface';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { TranslateService } from '@ngx-translate/core';
+import { retagTsFile } from '@angular/compiler-cli/src/ngtsc/shims';
 
 @Component({
   selector: 'app-success-measure',
   templateUrl: './success-measure.component.html',
-  styleUrls: ['./success-measure.component.scss']
+  styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit, OnChanges, OnDestroy {
+export class SuccessMeasureComponent
+  implements SuccessMeasureInterface, OnInit, OnChanges, OnDestroy
+{
   @ViewChild(VisualizationDirective) visualizationHost: VisualizationDirective;
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
@@ -48,10 +51,13 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
   componentRef: ComponentRef<{}>;
   private visualizationType: string;
 
-  constructor(private las2peer: Las2peerService, private translate: TranslateService, private sanitizer: DomSanitizer,
-              private componentFactoryResolver: ComponentFactoryResolver,
-              private dialog: MatDialog) {
-  }
+  constructor(
+    private las2peer: Las2peerService,
+    private translate: TranslateService,
+    private sanitizer: DomSanitizer,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.refreshVisualization();
@@ -64,29 +70,42 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
     }
   }
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 
   refreshVisualization(force = false) {
-    if (force || (this.measure && this.measure.visualization.type !== this.visualizationType)) {
+    if (
+      force ||
+      (this.measure &&
+        this.measure.visualization.type !== this.visualizationType)
+    ) {
       if (this.componentRef) {
         this.componentRef.destroy();
       }
       let componentFactory;
       const visualization = this.measure.visualization;
       if (visualization.type === 'Value') {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ValueVisualizationComponent);
+        componentFactory =
+          this.componentFactoryResolver.resolveComponentFactory(
+            ValueVisualizationComponent
+          );
       } else if (visualization.type === 'Chart') {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(ChartVisualizationComponent);
+        componentFactory =
+          this.componentFactoryResolver.resolveComponentFactory(
+            ChartVisualizationComponent
+          );
       } else if (visualization.type === 'KPI') {
-        componentFactory = this.componentFactoryResolver.resolveComponentFactory(KpiVisualizationComponent);
+        componentFactory =
+          this.componentFactoryResolver.resolveComponentFactory(
+            KpiVisualizationComponent
+          );
       } else {
         this.visualizationError = `The visualization type ${visualization.type} is not supported yet.`;
         return;
       }
+      return;
       const viewContainerRef = this.visualizationHost?.viewContainerRef;
       if (!viewContainerRef) {
-        this.relayPropertiesToVisualizationComponent();
+        return this.relayPropertiesToVisualizationComponent();
       }
       viewContainerRef.clear();
       this.componentRef = viewContainerRef.createComponent(componentFactory);
@@ -100,9 +119,13 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
-      data: {measure: cloneDeep(this.measure), service: this.service, create: false},
+      data: {
+        measure: cloneDeep(this.measure),
+        service: this.service,
+        create: false,
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.measure.name = result.name;
         this.measure.queries = result.queries;
@@ -116,7 +139,9 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
 
   public rerenderVisualizationComponent() {
     if (this.componentRef) {
-      (this.componentRef.instance as VisualizationComponent).renderVisualization();
+      (
+        this.componentRef.instance as VisualizationComponent
+      ).renderVisualization();
     }
   }
 
@@ -130,18 +155,22 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
 
   private relayPropertiesToVisualizationComponent() {
     if (this.componentRef) {
-      (this.componentRef.instance as VisualizationComponent).service = this.service;
-      (this.componentRef.instance as VisualizationComponent).measure = this.measure;
+      (this.componentRef.instance as VisualizationComponent).service =
+        this.service;
+      (this.componentRef.instance as VisualizationComponent).measure =
+        this.measure;
     }
   }
 
   async onDeleteClicked($event: MouseEvent) {
-    const message = await this.translate.get('success-factor.remove-measure-prompt').toPromise();
+    const message = await this.translate
+      .get('success-factor.remove-measure-prompt')
+      .toPromise();
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.measureDelete.emit();
       }

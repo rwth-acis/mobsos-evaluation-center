@@ -231,7 +231,7 @@ export class StoreService {
       this.groupMobSOSPollingHandle = this.las2peer.pollMobSOSGroups(
         (groups) => {
           if (groups === undefined) {
-            groups = [];
+            return
           }
           this.groupsFromMobSOSSubject.next(groups);
         },

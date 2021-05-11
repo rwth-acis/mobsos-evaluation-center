@@ -22,6 +22,7 @@ import { SwUpdate } from '@angular/service-worker';
 import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
+import { FormControl } from '@angular/forms';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -54,7 +55,8 @@ export class AppComponent implements OnInit, OnDestroy {
   otherGroups: GroupInformation[] = [];
   groups = [];
   groupMap = {};
-  selectedGroup="MobSOSDemo";
+  selectedGroup;
+  selectedGroupForm = new FormControl('');
   user;
   signedIn = false;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
@@ -124,10 +126,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.selectedGroup) {
-      this.store.setGroup(this.selectedGroup)
+    const group = JSON.parse(localStorage.getItem('state'))?.selectedGroup;
+    this.store.startPolling();
+    if (group) {
+      this.store.setGroup(this.selectedGroup);
     }
-    
+
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
     hammertime.on('panright', (event) => {
@@ -157,16 +161,19 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
-    this.store.startPolling();
+
     this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
       this.myGroups = allGroups.filter((group) => group.member).sort();
       this.otherGroups = allGroups.filter((group) => !group.member).sort();
       this.groupMap = groups;
     });
-    this.store.selectedGroup.subscribe(
-      (selectedGroup) => (this.selectedGroup = selectedGroup)
-    );
+    this.store.selectedGroup.subscribe((selectedGroup) => {
+      this.selectedGroup = selectedGroup;
+      if (selectedGroup) {
+        this.selectedGroupForm.setValue(selectedGroup);
+      }
+    });
     const silentLoginFunc = () => {
       this.userManager
         .signinSilentCallback()

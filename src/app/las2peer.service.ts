@@ -66,7 +66,11 @@ export class Las2peerService {
   }
 
   setCredentials(username, password, accessToken) {
-    this.userCredentials = { user: username, password:password, token: accessToken };
+    this.userCredentials = {
+      user: username,
+      password: password,
+      token: accessToken,
+    };
   }
 
   resetCredentials() {
@@ -110,10 +114,10 @@ export class Las2peerService {
     }
     if (!environment.production) {
       this.logger.debug(
-        'Fetching from ' + url + ' with options ' + JSON.stringify(options)
+        'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
       );
     }
-    
+
     const ngHttpOptions: {
       body?: any;
       headers?:
@@ -427,7 +431,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
-      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
+      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH
       // `?access_token=${this.userCredentials.token}&format=${format}`
     );
     const requestBody = {
@@ -442,10 +446,13 @@ export class Las2peerService {
       save: false,
     };
     let profile = JSON.parse(localStorage.getItem('profile'));
-    let authorHeader = {
-      Authorization:
-        'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
-    };
+    let authorHeader;
+    if (profile) {
+      authorHeader = {
+        Authorization:
+          'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
+      };
+    }
     // console.log(profile, authorHeader);
     return this.makeRequest(url, {
       method: 'POST',

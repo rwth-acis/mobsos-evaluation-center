@@ -6,16 +6,18 @@
     <mat-icon>error_outline</mat-icon>
   </button>
 </span>
-<span *ngIf="serviceNotFoundInMobSOS">
+<span *ngIf="serviceNotFoundInMobSOS; else elseBlock">
   This service has not generated any data yet. A visualization should be shown
   as soon as you interact with it.
 </span>
-<google-chart
-  *ngIf="!error && visualizationInitialized"
-  [data]="graph.data"
-  [type]="visualization.chartType"
-  [options]="graph.config"
-  [layout]="graph.layout"
-  [useResizeHandler]="true"
-  [style]="{ position: 'relative', width: '100%', height: '100%' }"
-></google-chart>
+<ng-template #elseBlock>
+  <google-chart
+    *ngIf="!error && visualizationInitialized && chart"
+    [title]="this.chart.title"
+    [type]="this.chart.chartType"
+    [data]="this.chart.data"
+    style="width: 100%; height: 100%"
+    [columns]="columnNames"
+    [dynamicResize]="true"
+  ></google-chart>
+</ng-template>
