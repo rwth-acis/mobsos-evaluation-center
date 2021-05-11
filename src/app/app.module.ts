@@ -43,8 +43,8 @@ import {Location, PlatformLocation} from '@angular/common';
 import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 
-import * as PlotlyJS from 'plotly.js/dist/plotly.js';
-import {PlotlyModule} from 'angular-plotly.js';
+// import * as PlotlyJS from 'plotly.js/dist/plotly.js';
+// import {PlotlyModule} from 'angular-plotly.js';
 import {SuccessMeasureComponent} from './success-measure/success-measure.component';
 import {SuccessFactorComponent} from './success-factor/success-factor.component';
 import {ErrorDialogComponent} from './error-dialog/error-dialog.component';
@@ -70,7 +70,7 @@ import {RequirementsListComponent} from './success-modeling/requirements-list/re
 import {PickReqbazProjectComponent} from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
 import { HttpClientModule } from '@angular/common/http';
 
-PlotlyModule.plotlyjs = PlotlyJS;
+// PlotlyModule.plotlyjs = PlotlyJS;
 
 
 class ImportLoader implements TranslateLoader {
@@ -145,7 +145,7 @@ export function createTranslateLoader() {
     FormsModule,
     MatToolbarModule,
     MatCardModule,
-    PlotlyModule,
+    // PlotlyModule,
     ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production}),
     MatDialogModule,
     MatProgressSpinnerModule,

@@ -84,7 +84,10 @@ export class SuccessMeasureComponent implements SuccessMeasureInterface, OnInit,
         this.visualizationError = `The visualization type ${visualization.type} is not supported yet.`;
         return;
       }
-      const viewContainerRef = this.visualizationHost.viewContainerRef;
+      const viewContainerRef = this.visualizationHost?.viewContainerRef;
+      if (!viewContainerRef) {
+        this.relayPropertiesToVisualizationComponent();
+      }
       viewContainerRef.clear();
       this.componentRef = viewContainerRef.createComponent(componentFactory);
       this.relayPropertiesToVisualizationComponent();

@@ -1,7 +1,7 @@
 import {Directive, ViewContainerRef} from '@angular/core';
 
 @Directive({
-  selector: '[appVisualization]'
+  selector: '[appVisualization]', exportAs:'visualizationHost'
 })
 export class VisualizationDirective {
 

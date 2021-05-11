@@ -7,13 +7,15 @@
   </button>
 </span>
 <span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet.
-  A visualization should be shown as soon as you interact with it.
+  This service has not generated any data yet. A visualization should be shown
+  as soon as you interact with it.
 </span>
-<plotly-plot *ngIf="!error && visualizationInitialized"
-             [data]="graph.data"
-             [config]="graph.config"
-             [layout]="graph.layout"
-             [useResizeHandler]="true"
-             [style]="{position: 'relative', width: '100%', height: '100%'}"
-></plotly-plot>
+<google-chart
+  *ngIf="!error && visualizationInitialized"
+  [data]="graph.data"
+  [type]="visualization.chartType"
+  [options]="graph.config"
+  [layout]="graph.layout"
+  [useResizeHandler]="true"
+  [style]="{ position: 'relative', width: '100%', height: '100%' }"
+></google-chart>

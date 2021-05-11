@@ -45,6 +45,7 @@ export class ChartVisualizationComponent extends BaseVisualizationComponent impl
     query = ChartVisualizationComponent.applyCompatibilityFixForVisualizationService(query);
     const dataTable = await this.fetchVisualization(query, queryParams, 'JSON');
     if (dataTable instanceof Array && dataTable.length >= 2) {
+      console.log(dataTable);
       const typeList = dataTable[1] as Array<string>;
       const data = dataTable.slice(2);
       switch (visualization.chartType) {

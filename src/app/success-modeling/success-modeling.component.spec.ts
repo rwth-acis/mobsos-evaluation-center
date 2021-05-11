@@ -52,7 +52,6 @@ describe('SuccessModelingComponent', () => {
         HttpClientTestingModule,
         MatSlideToggleModule,
         MatTooltipModule,
-        MdePopoverModule,
         MatBadgeModule,
         MatButtonToggleModule,
         MatDialogModule,
