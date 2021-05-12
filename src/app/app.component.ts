@@ -23,6 +23,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { fetchServices } from './services/store.actions';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -75,7 +77,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private ngrxStore: Store
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -126,11 +129,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const group = JSON.parse(localStorage.getItem('state'))?.selectedGroup;
     this.store.startPolling();
-    if (group) {
-      this.store.setGroup(this.selectedGroup);
-    }
+    this.ngrxStore.dispatch(fetchServices());
+    this.ngrxStore.subscribe((state) => {
+      console.log(state);
+    });
 
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});

@@ -4,6 +4,7 @@ import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { merge } from 'lodash';
 import { isNumber } from 'util';
+import { Observable } from 'rxjs';
 
 export interface SuccessModel {
   xml: string;
@@ -147,6 +148,76 @@ export class Las2peerService {
     return this.http.request(options.method, url, ngHttpOptions).toPromise();
   }
 
+  makeRequestAndObserve<T>(
+    url: string,
+    options: {
+      method?: string;
+      headers?: {
+        [header: string]: string | string[];
+      };
+      body?: string;
+      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+    } = {}
+  ) {
+    options = merge(
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept-language': 'en-US',
+        },
+      },
+      options
+    );
+    if (this.userCredentials) {
+      const username = this.userCredentials.user;
+      const password = this.userCredentials.password;
+      const token = this.userCredentials.token;
+      options = merge(
+        {
+          headers: {
+            Authorization: 'Basic ' + btoa(username + ':' + password),
+            access_token: token,
+          },
+        },
+        options
+      );
+    }
+    if (!environment.production) {
+      this.logger.debug(
+        'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
+      );
+    }
+
+    const ngHttpOptions: {
+      body?: any;
+      headers?:
+        | HttpHeaders
+        | {
+            [header: string]: string | string[];
+          };
+      observe?: 'body';
+      params?:
+        | HttpParams
+        | {
+            [param: string]: string | string[];
+          };
+      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+      reportProgress?: boolean;
+      withCredentials?: boolean;
+    } = {};
+    if (options.headers) {
+      ngHttpOptions.headers = new HttpHeaders(options.headers);
+    }
+    if (options.body) {
+      ngHttpOptions.body = options.body;
+    }
+    if (options.responseType) {
+      ngHttpOptions.responseType = options.responseType;
+    }
+    return this.http.request(options.method, url, ngHttpOptions);
+  }
+
   async fetchServicesFromDiscovery() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -172,6 +243,23 @@ export class Las2peerService {
           JSON.stringify(response)
       )
     );
+  }
+
+  fetchServicesFromDiscoveryAndObserve() {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SERVICES_PATH
+    );
+    return this.makeRequestAndObserve(url);
+  }
+
+  fetchServicesFromMobSOSAndObserve() {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH
+    );
+    return this.makeRequestAndObserve(url);
   }
 
   async fetchContactServiceGroups() {
@@ -421,6 +509,16 @@ export class Las2peerService {
       serviceName
     );
     return this.makeRequest<object>(url);
+  }
+
+  fetchMessageDescriptionsAndObserve(serviceName: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH,
+      serviceName
+    );
+    return this.makeRequestAndObserve<object>(url);
   }
 
   async visualizeQuery(

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-
+import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -75,6 +75,10 @@ import { PickReqbazProjectComponent } from './success-modeling/requirements-list
 import { HttpClientModule } from '@angular/common/http';
 import { GoogleChartsModule } from 'angular-google-charts';
 
+import { Reducer } from 'src/app/services/store.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { StateEffects } from './services/store.effects';
+
 // PlotlyModule.plotlyjs = PlotlyJS;
 
 class ImportLoader implements TranslateLoader {
@@ -138,6 +142,8 @@ export function createTranslateLoader() {
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
     MarkdownModule.forRoot(),
+    StoreModule.forRoot(Reducer),
+    EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatIconModule,
     MatListModule,
