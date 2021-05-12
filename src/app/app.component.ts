@@ -24,7 +24,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { fetchServices } from './services/store.actions';
+import { fetchGroups, fetchServices, setGroup } from './services/store.actions';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -118,8 +118,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.store.setUser(user);
   }
 
-  onGroupSelected(group) {
-    this.store.setGroup(group);
+  onGroupSelected(groupId: string) {
+    this.store.setGroup(groupId);
+    this.ngrxStore.dispatch(setGroup({ groupId }));
   }
 
   menuItemClicked() {
@@ -131,6 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.store.startPolling();
     this.ngrxStore.dispatch(fetchServices());
+    this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.subscribe((state) => {
       console.log(state);
     });

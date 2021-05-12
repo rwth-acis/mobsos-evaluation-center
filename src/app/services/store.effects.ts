@@ -13,6 +13,7 @@ export class StateEffects {
     private l2p: Las2peerService,
     private logger: NGXLogger
   ) {}
+
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchServices),
@@ -38,11 +39,45 @@ export class StateEffects {
             })
           ),
         ]).pipe(
-          tap((s) => this.logger.debug(s)),
           map(([servicesFromL2P, servicesFromMobSOS]) =>
             Action.storeServices({
               servicesFromL2P,
               servicesFromMobSOS,
+            })
+          )
+        )
+      )
+    )
+  );
+
+  fetchGroups$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchGroups),
+      mergeMap(() =>
+        forkJoin([
+          this.l2p.fetchContactServiceGroupsAndObserve().pipe(
+            catchError((err) => {
+              this.logger.error(
+                'Could not groups services from Contact service:' +
+                  JSON.stringify(err)
+              );
+              return of(undefined);
+            })
+          ),
+          this.l2p.fetchMobSOSGroupsAndObserve().pipe(
+            catchError((err) => {
+              this.logger.error(
+                'Could not fetch groups from service MobSOS:' +
+                  JSON.stringify(err)
+              );
+              return of(undefined);
+            })
+          ),
+        ]).pipe(
+          map(([groupsFromContactService, groupsFromMobSOS]) =>
+            Action.storeGroups({
+              groupsFromContactService,
+              groupsFromMobSOS,
             })
           )
         )

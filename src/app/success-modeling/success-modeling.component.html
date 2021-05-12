@@ -1,5 +1,5 @@
 <!-- Only show component if group is selected -->
-<ng-container *ngIf="groupID; else elseBlock">
+<ng-container *ngIf="groupID; else noGroupSelect">
   <h3>
     {{
       'success-modeling.community-success-model'
@@ -375,7 +375,7 @@
   </div>
 </ng-container>
 
-<ng-template #elseBlock>
+<ng-template #noGroupSelect>
   <mat-card>
     {{ 'success-modeling.no-group-selected' | translate }}
   </mat-card>

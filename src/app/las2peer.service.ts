@@ -263,14 +263,24 @@ export class Las2peerService {
   }
 
   async fetchContactServiceGroups() {
+    return this.fetchMobSOSGroupsAndObserve()
+      .toPromise()
+      .catch((response) => this.logger.error(response));
+  }
+
+  fetchMobSOSGroupsAndObserve() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
-      this.CONTACT_SERVICE_PATH,
-      this.CONTACT_GROUPS_PATH
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_GROUP_PATH
     );
-    return this.makeRequest(url).catch((response) =>
-      this.logger.error(response)
-    );
+    return this.makeRequestAndObserve(url);
+  }
+
+  fetchContactServiceGroupsAndObserve() {
+    return this.fetchContactServiceGroupsAndObserve()
+      .toPromise()
+      .catch((response) => this.logger.error(response));
   }
 
   async fetchMobSOSGroups(): Promise<[]> {
@@ -502,13 +512,7 @@ export class Las2peerService {
   }
 
   async fetchMessageDescriptions(serviceName: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH,
-      serviceName
-    );
-    return this.makeRequest<object>(url);
+    return this.fetchMessageDescriptionsAndObserve(serviceName).toPromise();
   }
 
   fetchMessageDescriptionsAndObserve(serviceName: string) {

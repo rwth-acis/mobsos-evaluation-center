@@ -5,14 +5,15 @@ import { find, isEmpty, throttle } from 'lodash-es';
 import * as Actions from './store.actions';
 
 export const initialState: AppState = {
-  services: undefined,
-  groups: undefined,
+  services: {},
+  groups: {},
   user: undefined,
   selectedGroup: undefined,
   selectedService: undefined,
   editMode: false,
-  questionnaires: undefined,
+  questionnaires: [],
   messageDescriptions: undefined,
+  visualizations: {},
 };
 
 const _Reducer = createReducer(
@@ -27,7 +28,18 @@ const _Reducer = createReducer(
         servicesFromMobSOS
       ),
     })
-  )
+  ),
+  on(
+    Actions.storeGroups,
+    (state, { groupsFromContactService, groupsFromMobSOS }) => ({
+      ...state,
+      groups: mergeGroupData(groupsFromContactService, groupsFromMobSOS),
+    })
+  ),
+  on(Actions.setGroup, (state, { groupId }) => ({
+    ...state,
+    selectedGroup: state.groups[groupId],
+  }))
 );
 
 export function Reducer(state, action) {
@@ -118,4 +130,32 @@ function getMessageDescriptionForService(
       ? messageDescriptions[serviceIdentifier]
       : {};
   return serviceMessageDescriptions;
+}
+
+/**
+ * Convert data from both group sources into a common format.
+ *
+ * The format is {<group-ID>: {name: <group-name>, member: (true|false)}}.
+ * Example: {"ba1f0b36c32fc90cc3f47db27282ad3dc8b75812ad2d08cf82805c9077567a72d9e3815fc33d7223338dc4f429f89eb3aac0
+ *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
+ */
+function mergeGroupData(groupsFromContactService, groupsFromMobSOS) {
+  const groups = {};
+
+  // mark all these groups as groups the current user is a member of
+  for (const groupID of Object.keys(groupsFromContactService)) {
+    const groupName = groupsFromContactService[groupID];
+    groups[groupID] = { id: groupID, name: groupName, member: true };
+  }
+  // we are going to merge the groups obtained from MobSOS into the previously acquired object
+
+  for (const group of groupsFromMobSOS) {
+    const groupID = group.groupID;
+    const groupName = group.name;
+    const member = group.isMember;
+    if (!(groupID in groups)) {
+      groups[groupID] = { id: groupID, name: groupName, member };
+    }
+  }
+  return groups;
 }
