@@ -263,7 +263,7 @@ export class Las2peerService {
   }
 
   async fetchContactServiceGroups() {
-    return this.fetchMobSOSGroupsAndObserve()
+    return this.fetchContactServiceGroupsAndObserve()
       .toPromise()
       .catch((response) => this.logger.error(response));
   }
@@ -278,9 +278,12 @@ export class Las2peerService {
   }
 
   fetchContactServiceGroupsAndObserve() {
-    return this.fetchContactServiceGroupsAndObserve()
-      .toPromise()
-      .catch((response) => this.logger.error(response));
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH
+    );
+    return this.makeRequestAndObserve(url);
   }
 
   async fetchMobSOSGroups(): Promise<[]> {

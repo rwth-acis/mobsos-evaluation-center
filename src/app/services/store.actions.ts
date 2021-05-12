@@ -8,6 +8,7 @@ enum ActionType {
   STORE_SERVICES = 'store services',
   STORE_GROUPS = 'store groups',
   SET_GROUP = 'set current group',
+  TOGGLE_EDIT = 'toggle edit mode for success model',
 }
 
 export const fetchServices = createAction(ActionType.FETCH_SERVICES);
@@ -26,3 +27,5 @@ export const setGroup = createAction(
   ActionType.STORE_SERVICES,
   props<{ groupId: string }>()
 );
+
+export const toggleEdit = createAction(ActionType.TOGGLE_EDIT);

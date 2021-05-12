@@ -39,6 +39,10 @@ const _Reducer = createReducer(
   on(Actions.setGroup, (state, { groupId }) => ({
     ...state,
     selectedGroup: state.groups[groupId],
+  })),
+  on(Actions.toggleEdit, (state) => ({
+    ...state,
+    editMode: !state.editMode,
   }))
 );
 
@@ -143,19 +147,23 @@ function mergeGroupData(groupsFromContactService, groupsFromMobSOS) {
   const groups = {};
 
   // mark all these groups as groups the current user is a member of
-  for (const groupID of Object.keys(groupsFromContactService)) {
-    const groupName = groupsFromContactService[groupID];
-    groups[groupID] = { id: groupID, name: groupName, member: true };
+  if (groupsFromContactService) {
+    for (const groupID of Object.keys(groupsFromContactService)) {
+      const groupName = groupsFromContactService[groupID];
+      groups[groupID] = { id: groupID, name: groupName, member: true };
+    }
+    // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
-  // we are going to merge the groups obtained from MobSOS into the previously acquired object
-
-  for (const group of groupsFromMobSOS) {
-    const groupID = group.groupID;
-    const groupName = group.name;
-    const member = group.isMember;
-    if (!(groupID in groups)) {
-      groups[groupID] = { id: groupID, name: groupName, member };
+  if (groupsFromMobSOS) {
+    for (const group of groupsFromMobSOS) {
+      const groupID = group.groupID;
+      const groupName = group.name;
+      const member = group.isMember;
+      if (!(groupID in groups)) {
+        groups[groupID] = { id: groupID, name: groupName, member };
+      }
     }
   }
+
   return groups;
 }

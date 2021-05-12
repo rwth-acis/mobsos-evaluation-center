@@ -17,7 +17,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
-
+import { Store } from '@ngrx/store';
+import { toggleEdit } from '../services/store.actions';
 
 @Component({
   selector: 'app-success-modeling',
@@ -32,7 +33,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   successModelXml: Document;
-  successModel: SuccessModel=undefined;
+  successModel: SuccessModel = undefined;
   editMode = false;
   communityWorkspace: CommunityWorkspace;
   user;
@@ -48,7 +49,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
     private dialog: MatDialog,
     private translate: TranslateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private ngrxStore: Store
   ) {}
 
   static parseXml(xml) {
@@ -64,10 +66,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
   }
 
-  getCurrentGroupName(){
-    const currentGroup = this.myGroups.find((group=>group.id==this.groupID))
-    
-   return currentGroup?currentGroup.name : "Default";
+  getCurrentGroupName() {
+    const currentGroup = this.myGroups.find(
+      (group) => group.id == this.groupID
+    );
+
+    return currentGroup ? currentGroup.name : 'Default';
   }
 
   parseModel(xml: Document) {
@@ -83,9 +87,13 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.selectedGroup.subscribe((groupID) => {
       if (groupID) {
         this.groupID = groupID;
-      } 
-      
-      this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = undefined;
+      }
+
+      this.successModel =
+        this.successModelXml =
+        this.measureCatalog =
+        this.measureCatalogXml =
+          undefined;
       this.fetchXml();
     });
     this.store.selectedService.subscribe((serviceID) => {
@@ -184,6 +192,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onEditModeChanged() {
+    this.ngrxStore.dispatch(toggleEdit());
     this.store.setEditMode(!this.editMode);
   }
 
@@ -363,7 +372,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         .get('success-modeling.snackbar-save-failure')
         .toPromise();
       message += e;
-      this.snackBar.open(message, "Ok", {
+      this.snackBar.open(message, 'Ok', {
         duration: 2000,
       });
     }

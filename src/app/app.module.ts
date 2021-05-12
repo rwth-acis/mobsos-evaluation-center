@@ -142,7 +142,7 @@ export function createTranslateLoader() {
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
     MarkdownModule.forRoot(),
-    StoreModule.forRoot(Reducer),
+    StoreModule.forRoot({ Reducer }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatIconModule,
