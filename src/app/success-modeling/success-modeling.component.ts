@@ -18,7 +18,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
-import { toggleEdit } from '../services/store.actions';
+import { setService, toggleEdit } from '../services/store.actions';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-success-modeling',
@@ -34,6 +35,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog: MeasureCatalog;
   successModelXml: Document;
   successModel: SuccessModel = undefined;
+  selectedServiceForm = new FormControl('');
   editMode = false;
   communityWorkspace: CommunityWorkspace;
   user;
@@ -152,7 +154,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onServiceSelected(service) {
+    console.log(service);
     this.store.setEditMode(false);
+    this.ngrxStore.dispatch(setService({ serviceName: service }));
     this.cleanData();
     this.store.selectedServiceSubject.next(service);
   }

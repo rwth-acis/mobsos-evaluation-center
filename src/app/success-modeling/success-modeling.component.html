@@ -14,7 +14,7 @@
         }}</mat-label>
         <mat-select
           (selectionChange)="onServiceSelected($event.value)"
-          [(value)]="selectedService"
+          [formControl]="selectedServiceForm"
         >
           <mat-option *ngFor="let service of services" [value]="service">
             {{ serviceMap[service].alias }}

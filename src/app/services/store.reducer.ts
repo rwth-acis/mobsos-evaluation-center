@@ -43,6 +43,10 @@ const _Reducer = createReducer(
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,
+  })),
+  on(Actions.storeUser, (state, user) => ({
+    ...state,
+    user: user,
   }))
 );
 
@@ -63,36 +67,43 @@ function mergeServiceData(
   servicesFromMobSOS
 ) {
   const serviceCollection: ServiceCollection = {};
+  if (servicesFromL2P) {
+    for (const service of servicesFromL2P) {
+      if (service) {
+        // use most recent release and extract the human readable name
+        let releases;
+        let latestRelease;
+        if (service.releases?.length > 0) {
+          releases = Object.keys(service.releases).sort();
+          latestRelease = service.releases[releases.slice(-1)[0]];
+        }
 
-  for (const service of servicesFromL2P) {
-    if (!isEmpty(service)) {
-      // use most recent release and extract the human readable name
-      const releases = Object.keys(service.releases).sort();
-      const latestRelease = service.releases[releases.slice(-1)[0]];
-      const serviceIdentifier =
-        service.name + '.' + latestRelease?.supplement?.class;
+        let serviceIdentifier = service?.name + '.';
+        if (!serviceIdentifier) continue;
+        if (!latestRelease?.supplement?.class) continue;
+        serviceIdentifier += latestRelease?.supplement?.class;
 
-      serviceCollection[serviceIdentifier] = {
-        name: serviceIdentifier,
-        alias: latestRelease?.supplement?.name,
-        mobsosIDs: [],
-        serviceMessageDescriptions: getMessageDescriptionForService(
-          messageDescriptions,
-          serviceIdentifier
-        ),
-      };
+        serviceCollection[serviceIdentifier] = {
+          name: serviceIdentifier,
+          alias: latestRelease?.supplement?.name,
+          mobsosIDs: [],
+          serviceMessageDescriptions: getMessageDescriptionForService(
+            messageDescriptions,
+            serviceIdentifier
+          ),
+        };
+      }
     }
   }
 
-  for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
-    if (!isEmpty(serviceAgentID)) {
-      const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split(
-        '@',
-        2
-      )[0];
-      let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
+  if (servicesFromMobSOS) {
+    for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
+      let tmp = servicesFromMobSOS[serviceAgentID]?.serviceName?.split('@', 2);
+      if (!(tmp?.length > 0)) continue;
+      const serviceName = tmp[0];
+      let serviceAlias = servicesFromMobSOS[serviceAgentID]?.serviceAlias;
       const registrationTime =
-        servicesFromMobSOS[serviceAgentID].registrationTime;
+        servicesFromMobSOS[serviceAgentID]?.registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
@@ -110,11 +121,13 @@ function mergeServiceData(
           serviceMessageDescriptions,
         };
       }
-      serviceCollection[serviceName].mobsosIDs.push({
+      if (!serviceCollection[serviceName]) continue;
+
+      serviceCollection[serviceName].mobsosIDs?.push({
         agentID: serviceAgentID,
         registrationTime,
       });
-      serviceCollection[serviceName].mobsosIDs.sort(
+      serviceCollection[serviceName].mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime
       );
       serviceCollection[serviceName].serviceMessageDescriptions =

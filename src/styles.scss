@@ -16,15 +16,22 @@
 $mobsos-evaluation-center-primary: mat-palette($mat-teal);
 $mobsos-evaluation-center-accent: mat-palette($mat-pink, A200, A100, A400);
 
-h2{
-  margin:5px
+h2 {
+  margin: 5px;
 }
 
+svg > g > g:last-child {
+  pointer-events: none;
+} //prevent google charts label flickering
 // The warn palette is optional (defaults to red).
 $mobsos-evaluation-center-warn: mat-palette($mat-red);
 
 // Create the theme object (a Sass map containing all of the palettes).
-$mobsos-evaluation-center-theme: mat-light-theme($mobsos-evaluation-center-primary, $mobsos-evaluation-center-accent, $mobsos-evaluation-center-warn);
+$mobsos-evaluation-center-theme: mat-light-theme(
+  $mobsos-evaluation-center-primary,
+  $mobsos-evaluation-center-accent,
+  $mobsos-evaluation-center-warn
+);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
@@ -33,8 +40,14 @@ $mobsos-evaluation-center-theme: mat-light-theme($mobsos-evaluation-center-prima
 
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
 
 .mat-drawer-inner-container {
   display: flex !important;

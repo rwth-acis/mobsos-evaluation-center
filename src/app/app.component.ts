@@ -24,7 +24,12 @@ import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { fetchGroups, fetchServices, setGroup } from './services/store.actions';
+import {
+  fetchGroups,
+  fetchServices,
+  setGroup,
+  storeUser,
+} from './services/store.actions';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -115,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setUser(user) {
+    this.ngrxStore.dispatch(storeUser(user));
     this.store.setUser(user);
   }
 

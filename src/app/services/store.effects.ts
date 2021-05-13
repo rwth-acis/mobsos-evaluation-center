@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { NGXLogger } from 'ngx-logger';
 import { EMPTY, forkJoin, of } from 'rxjs';
-import { map, mergeMap, catchError, tap } from 'rxjs/operators';
+import { map, mergeMap, catchError, tap, switchMap } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
 
@@ -53,7 +53,7 @@ export class StateEffects {
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
-      mergeMap(() =>
+      switchMap(() =>
         forkJoin([
           this.l2p.fetchContactServiceGroupsAndObserve().pipe(
             catchError((err) => {
