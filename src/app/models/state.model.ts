@@ -12,9 +12,13 @@ export interface AppState {
   groups: GroupCollection;
   user: object;
   selectedGroup: GroupInformation;
+  selectedGroupId: string;
+  selectedServiceName: string;
   selectedService: ServiceInformation;
   editMode: boolean;
   questionnaires: Questionnaire[];
   messageDescriptions: object;
   visualizations: VisualizationCollection;
+  successModelXML: string;
+  measureCatalogXML: string;
 }

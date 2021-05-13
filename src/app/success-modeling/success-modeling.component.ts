@@ -87,9 +87,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.store.startPolling();
     this.store.selectedGroup.subscribe((groupID) => {
-      if (groupID) {
-        this.groupID = groupID;
-      }
+      this.groupID = groupID;
 
       this.successModel =
         this.successModelXml =

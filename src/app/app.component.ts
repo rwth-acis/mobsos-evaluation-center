@@ -26,6 +26,7 @@ import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroups,
+  fetchMeasureCatalog,
   fetchServices,
   setGroup,
   storeUser,
@@ -120,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setUser(user) {
-    this.ngrxStore.dispatch(storeUser(user));
+    this.ngrxStore.dispatch(storeUser({ user }));
     this.store.setUser(user);
   }
 

@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { merge } from 'lodash';
 import { isNumber } from 'util';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface SuccessModel {
   xml: string;
@@ -322,6 +323,19 @@ export class Las2peerService {
     });
   }
 
+  fetchSuccessModelAsObservable(groupID: string, service: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MODELS_PATH,
+      groupID,
+      service
+    );
+    return this.makeRequestAndObserve<SuccessModel>(url).pipe(
+      map((response) => response.xml)
+    );
+  }
+
   async fetchMobSOSQuestionnaires() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -486,6 +500,18 @@ export class Las2peerService {
       .catch((response) => {
         throw response;
       });
+  }
+
+  fetchMeasureCatalogAsObservable(groupID: string): Observable<string> {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MEASURE_PATH,
+      groupID
+    );
+    return this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
+      map((response) => response.xml)
+    );
   }
 
   async saveMeasureCatalog(groupID: string, xml: string) {

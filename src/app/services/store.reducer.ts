@@ -3,17 +3,23 @@ import { AppState } from '../models/state.model';
 import { ServiceCollection } from '../store.service';
 import { find, isEmpty, throttle } from 'lodash-es';
 import * as Actions from './store.actions';
+import { MeasureCatalog } from '../models/measure.model';
+import { SuccessModel } from '../models/success.model';
 
 export const initialState: AppState = {
   services: {},
   groups: {},
   user: undefined,
   selectedGroup: undefined,
+  selectedGroupId: undefined,
   selectedService: undefined,
+  selectedServiceName: undefined,
   editMode: false,
   questionnaires: [],
   messageDescriptions: undefined,
   visualizations: {},
+  measureCatalogXML: undefined,
+  successModelXML: undefined,
 };
 
 const _Reducer = createReducer(
@@ -39,14 +45,28 @@ const _Reducer = createReducer(
   on(Actions.setGroup, (state, { groupId }) => ({
     ...state,
     selectedGroup: state.groups[groupId],
+    selectedGroupId: groupId,
+  })),
+  on(Actions.setService, (state, { serviceName }) => ({
+    ...state,
+    selectedService: state.services[serviceName],
+    selectedServiceName: serviceName,
   })),
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,
   })),
-  on(Actions.storeUser, (state, user) => ({
+  on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: user,
+  })),
+  on(Actions.storeCatalogXML, (state, { xml }) => ({
+    ...state,
+    measureCatalogXML: xml,
+  })),
+  on(Actions.storeSuccessModelXML, (state, { xml }) => ({
+    ...state,
+    successModelXML: xml,
   }))
 );
 
