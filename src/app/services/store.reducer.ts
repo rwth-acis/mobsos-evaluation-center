@@ -3,7 +3,7 @@ import { AppState } from '../models/state.model';
 import { ServiceCollection } from '../store.service';
 import { find, isEmpty, throttle } from 'lodash-es';
 import * as Actions from './store.actions';
-import { MeasureCatalog } from '../models/measure.model';
+import { MeasureCatalog } from '../models/measure.catalog';
 import { SuccessModel } from '../models/success.model';
 
 export const initialState: AppState = {
@@ -29,6 +29,7 @@ const _Reducer = createReducer(
     (state, { servicesFromL2P, servicesFromMobSOS }) => ({
       ...state,
       services: mergeServiceData(
+        state.services,
         servicesFromL2P,
         state.messageDescriptions,
         servicesFromMobSOS
@@ -39,7 +40,11 @@ const _Reducer = createReducer(
     Actions.storeGroups,
     (state, { groupsFromContactService, groupsFromMobSOS }) => ({
       ...state,
-      groups: mergeGroupData(groupsFromContactService, groupsFromMobSOS),
+      groups: mergeGroupData(
+        state.groups,
+        groupsFromContactService,
+        groupsFromMobSOS
+      ),
     })
   ),
   on(Actions.setGroup, (state, { groupId }) => ({
@@ -82,11 +87,11 @@ export function Reducer(state, action) {
  *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
  */
 function mergeServiceData(
+  serviceCollection,
   servicesFromL2P,
   messageDescriptions,
   servicesFromMobSOS
 ) {
-  const serviceCollection: ServiceCollection = {};
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
       if (service) {
@@ -176,9 +181,7 @@ function getMessageDescriptionForService(
  * Example: {"ba1f0b36c32fc90cc3f47db27282ad3dc8b75812ad2d08cf82805c9077567a72d9e3815fc33d7223338dc4f429f89eb3aac0
  *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
  */
-function mergeGroupData(groupsFromContactService, groupsFromMobSOS) {
-  const groups = {};
-
+function mergeGroupData(groups, groupsFromContactService, groupsFromMobSOS) {
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
     for (const groupID of Object.keys(groupsFromContactService)) {

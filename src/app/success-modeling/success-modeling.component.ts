@@ -20,7 +20,14 @@ import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
 import { setService, toggleEdit } from '../services/store.actions';
 import { FormControl } from '@angular/forms';
-
+import {
+  MEASURE_CATALOG,
+  SELECTED_GROUP_ID,
+  SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
+} from '../services/store.selectors';
+import { MeasureCatalog as Catalog } from '../models/measure.catalog';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -31,8 +38,15 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   services = [];
   serviceMap: ServiceCollection = {};
   selectedService: string;
+  selectedServiceName$: Observable<string> = this.ngrxStore.select(
+    SELECTED_SERVICE_NAME
+  );
+  selectedGroupId$: Observable<string> =
+    this.ngrxStore.select(SELECTED_GROUP_ID);
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
+  catalog: Catalog;
+
   successModelXml: Document;
   successModel: SuccessModel = undefined;
   selectedServiceForm = new FormControl('');
@@ -85,7 +99,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.store.startPolling();
+    // this.store.startPolling();
+    this.ngrxStore
+      .select(SUCCESS_MODEL)
+      .subscribe((model) => (this.successModel = model));
+
+    this.ngrxStore
+      .select(MEASURE_CATALOG)
+      .subscribe((catalog) => (this.catalog = catalog));
     this.store.selectedGroup.subscribe((groupID) => {
       this.groupID = groupID;
 

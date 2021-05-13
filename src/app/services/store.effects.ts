@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { EMPTY, forkJoin, of, combineLatest } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -10,6 +10,8 @@ import {
   tap,
   switchMap,
   withLatestFrom,
+  share,
+  throttleTime,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
@@ -98,8 +100,17 @@ export class StateEffects {
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
-      tap(({ groupId }) =>
-        this.ngrxStore.dispatch(Action.fetchMeasureCatalog({ groupId }))
+
+      map(({ groupId }) => Action.fetchMeasureCatalog({ groupId }))
+    )
+  );
+
+  setService$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.setService),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      map(([{ serviceName }, groupId]) =>
+        Action.fetchSuccessModel({ groupId, serviceName })
       )
     )
   );
@@ -107,6 +118,7 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
+
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
           map((MeasureCatalogXML) =>
@@ -122,13 +134,7 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      withLatestFrom(
-        combineLatest([
-          this.ngrxStore.select(SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ])
-      ),
-      switchMap(([action, [groupId, serviceName]]) =>
+      switchMap(({ groupId, serviceName }) =>
         this.l2p.fetchSuccessModelAsObservable(groupId, serviceName).pipe(
           map((SuccessModelXML) =>
             Action.storeCatalogXML({

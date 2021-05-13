@@ -1,5 +1,5 @@
 import { createSelector } from '@ngrx/store';
-import { MeasureCatalog } from '../models/measure.model';
+import { MeasureCatalog } from '../models/measure.catalog';
 import { AppState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 
@@ -29,7 +29,7 @@ function parseCatalog(xml: string): MeasureCatalog {
   }
 }
 
-function parseModel(xml: string) {
+function parseModel(xml: string): SuccessModel {
   let doc = parseXml(xml);
   try {
     return SuccessModel.fromXml(doc.documentElement);

@@ -32,7 +32,8 @@ export const fetchMeasureCatalog = createAction(
 );
 
 export const fetchSuccessModel = createAction(
-  FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE
+  FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
+  props<{ groupId; serviceName }>()
 );
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
