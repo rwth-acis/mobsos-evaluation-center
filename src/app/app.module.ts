@@ -72,12 +72,13 @@ import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-tabl
 import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
 // tslint:disable-next-line:max-line-length
 import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { GoogleChartsModule } from 'angular-google-charts';
 
 import { Reducer } from 'src/app/services/store.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { StateEffects } from './services/store.effects';
+import { Interceptor } from './services/interceptor.service';
 
 // PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -180,6 +181,7 @@ export function createTranslateLoader() {
       useFactory: getMonacoConfig,
       deps: [PlatformLocation],
     },
+    { provide: HTTP_INTERCEPTORS, useClass: Interceptor, multi: true },
   ],
   bootstrap: [AppComponent],
   entryComponents: [
