@@ -26,6 +26,7 @@ import {
 } from '../services/store.actions';
 import { FormControl } from '@angular/forms';
 import {
+  EDIT_MODE,
   MEASURE_CATALOG,
   SELECTED_GROUP,
   SELECTED_SERVICE,
@@ -34,7 +35,7 @@ import {
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
 import { Observable } from 'rxjs';
-import { first } from 'rxjs/operators';
+import { filter, first } from 'rxjs/operators';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -43,17 +44,27 @@ import { first } from 'rxjs/operators';
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
   services$ = this.ngrxStore.select(SERVICES);
+  successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+  measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
+  selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
+  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   serviceMap: ServiceCollection = {};
   selectedService: string;
-  selectedService$: Observable<ServiceInformation> =
-    this.ngrxStore.select(SELECTED_SERVICE);
-  selectedGroup$: Observable<GroupInformation> =
-    this.ngrxStore.select(SELECTED_GROUP);
+
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   catalog: Catalog;
 
+  readonly successDimensions = [
+    'System Quality',
+    'Information Quality',
+    'Use',
+    'User Satisfaction',
+    'Individual Impact',
+    'Community Impact',
+  ];
   successModelXml: Document;
   successModel: SuccessModel = undefined;
   selectedServiceForm = new FormControl('');
@@ -107,19 +118,19 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.selectedService$
-      .pipe(first())
+      .pipe(
+        filter((service) => service !== undefined),
+        first()
+      )
       .subscribe(
         (service) =>
           (this.selectedService = service.alias ? service.alias : service.name)
       );
     // this.store.startPolling();
-    this.ngrxStore
-      .select(SUCCESS_MODEL)
-      .subscribe((model) => (this.successModel = model));
 
-    this.ngrxStore
-      .select(MEASURE_CATALOG)
-      .subscribe((catalog) => (this.catalog = catalog));
+    this.successModel$.subscribe((model) => (this.successModel = model));
+
+    this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
     this.store.selectedGroup.subscribe((groupID) => {
       this.groupID = groupID;
 

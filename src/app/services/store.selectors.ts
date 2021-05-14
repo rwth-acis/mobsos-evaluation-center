@@ -16,6 +16,8 @@ export const SELECTED_SERVICE = (state: StoreState) =>
 export const SELECTED_GROUP = (state: StoreState) =>
   state.Reducer.selectedGroup;
 
+export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
+
 export const USER_GROUPS = (state: StoreState) =>
   _filterGroups(state.Reducer.groups);
 

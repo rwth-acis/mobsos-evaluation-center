@@ -32,7 +32,7 @@ export class StateEffects {
           this.l2p.fetchServicesFromDiscoveryAndObserve().pipe(
             catchError((err) => {
               this.logger.error(
-                'Could not fetch services from service MobSOS:' +
+                'Could not fetch services from service discovery:' +
                   JSON.stringify(err)
               );
               return of(undefined);

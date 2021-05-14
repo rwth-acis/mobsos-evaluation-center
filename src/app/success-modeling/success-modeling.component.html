@@ -1,11 +1,12 @@
 <!-- Only show component if group is selected -->
-<div *ngIf="groupID; else noGroupSelect">
-  <h3 *ngIf="selectedGroup$ | async as group">
+<div *ngIf="selectedGroup$ | async as group; else noGroupSelect">
+  <h3 *ngIf="group.name">
     {{
       'success-modeling.community-success-model'
         | translate: { community: group.name ? group.name : '' }
     }}
   </h3>
+  <!-- service selection -->
   <mat-card id="header-card">
     <mat-toolbar-row>
       <mat-form-field id="community-service-select">
@@ -231,7 +232,8 @@
     </mat-toolbar-row>
   </mat-card>
 
-  <mat-card *ngIf="editMode" id="workspace-info">
+  <!-- workspace info -->
+  <mat-card *ngIf="editMode$ | async" id="workspace-info">
     <div id="info-content">
       <mat-icon color="primary">info_outline</mat-icon>
       <span id="info-text">
@@ -254,11 +256,152 @@
     </div>
   </mat-card>
 
-  <mat-card [hidden]="selectedService">{{
+  <mat-card *ngIf="!(selectedService$ | async)">{{
     'success-modeling.message-no-application-selected' | translate
   }}</mat-card>
 
-  <mat-card *ngIf="selectedService && getSuccessModel() === null">
+  <ng-container
+    *ngIf="successModel$ | async as successModel; else noSuccessModel"
+  >
+    <div *ngIf="measureCatalog$ | async as measureCatalog">
+      <app-questionnaires
+        [availableQuestionnaires]="availableQuestionnaires"
+        [model]="successModel"
+        [measures]="measureCatalog.measures"
+        [service]="selectedService$ | async"
+        [editMode]="canEdit()"
+        [groupID]="(selectedGroup$ | async).id"
+        (modelChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+      ></app-questionnaires>
+
+      <app-success-dimension
+        *ngFor="let dimension of successDimensions"
+        [factors]="successModel.dimensions[dimension]"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="measureCatalog.measures"
+        [service]="selectedService$ | async"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.system-quality' | translate }}"
+        description="{{
+          'success-modeling.dimensions.system-quality-description' | translate
+        }}"
+        icon="devices"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="successModel.dimensions['System Quality']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="measureCatalog.measures"
+        [service]="selectedService$ | async"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.system-quality' | translate }}"
+        description="{{
+          'success-modeling.dimensions.system-quality-description' | translate
+        }}"
+        icon="devices"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="successModel.dimensions['Information Quality']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="measureCatalog.measures"
+        [service]="selectedService$ | async"
+        [editMode]="canEdit()"
+        name="{{
+          'success-modeling.dimensions.information-quality' | translate
+        }}"
+        description="{{
+          'success-modeling.dimensions.information-quality-description'
+            | translate
+        }}"
+        icon="info_outline"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="getSuccessModel().dimensions['Use']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="getMeasureCatalog().measures"
+        [service]="serviceMap[getSuccessModel().service]"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.use' | translate }}"
+        description="{{
+          'success-modeling.dimensions.use-description' | translate
+        }}"
+        icon="access_time"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="getSuccessModel().dimensions['User Satisfaction']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="getMeasureCatalog().measures"
+        [service]="serviceMap[getSuccessModel().service]"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.user-satisfaction' | translate }}"
+        description="{{
+          'success-modeling.dimensions.user-satisfaction-description'
+            | translate
+        }}"
+        icon="sentiment_satisfied_alt"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="getSuccessModel().dimensions['Individual Impact']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="getMeasureCatalog().measures"
+        [service]="serviceMap[getSuccessModel().service]"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.individual-impact' | translate }}"
+        description="{{
+          'success-modeling.dimensions.individual-impact-description'
+            | translate
+        }}"
+        icon="person"
+      ></app-success-dimension>
+
+      <app-success-dimension
+        [factors]="getSuccessModel().dimensions['Community Impact']"
+        (factorsChange)="persistWorkspaceChanges()"
+        (measuresChange)="persistWorkspaceChanges()"
+        [measures]="getMeasureCatalog().measures"
+        [service]="serviceMap[getSuccessModel().service]"
+        [editMode]="canEdit()"
+        name="{{ 'success-modeling.dimensions.community-impact' | translate }}"
+        description="{{
+          'success-modeling.dimensions.community-impact-description' | translate
+        }}"
+        icon="group"
+      ></app-success-dimension>
+
+      <button
+        id="save-model-button"
+        mat-raised-button
+        *ngIf="editMode"
+        color="primary"
+        [disabled]="getMyRole() !== 'owner' || saveInProgress"
+        (click)="onSaveClicked()"
+      >
+        {{ 'success-modeling.save-model-button' | translate }}
+      </button>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #noGroupSelect>
+  <mat-card>
+    {{ 'success-modeling.no-group-selected' | translate }}
+  </mat-card>
+</ng-template>
+
+<ng-template #noSuccessModel>
+  <!-- success model non existant -->
+  <mat-card *ngIf="(successModel$ | async) === null">
     {{
       (isMemberOfSelectedGroup()
         ? 'success-modeling.message-no-success-model-found'
@@ -266,120 +409,10 @@
       ) | translate
     }}
   </mat-card>
-  <mat-spinner *ngIf="getSuccessModel() === undefined" style="margin: auto">
+  <!-- success model still loading -->
+  <mat-spinner
+    *ngIf="(successModel$ | async) === undefined"
+    style="margin: auto"
+  >
   </mat-spinner>
-  <div *ngIf="getSuccessModel() && getMeasureCatalog()">
-    <app-questionnaires
-      [availableQuestionnaires]="availableQuestionnaires"
-      [model]="getSuccessModel()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      [groupID]="groupID"
-      (modelChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-    ></app-questionnaires>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['System Quality']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.system-quality' | translate }}"
-      description="{{
-        'success-modeling.dimensions.system-quality-description' | translate
-      }}"
-      icon="devices"
-    ></app-success-dimension>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['Information Quality']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.information-quality' | translate }}"
-      description="{{
-        'success-modeling.dimensions.information-quality-description'
-          | translate
-      }}"
-      icon="info_outline"
-    ></app-success-dimension>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['Use']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.use' | translate }}"
-      description="{{
-        'success-modeling.dimensions.use-description' | translate
-      }}"
-      icon="access_time"
-    ></app-success-dimension>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['User Satisfaction']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.user-satisfaction' | translate }}"
-      description="{{
-        'success-modeling.dimensions.user-satisfaction-description' | translate
-      }}"
-      icon="sentiment_satisfied_alt"
-    ></app-success-dimension>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['Individual Impact']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.individual-impact' | translate }}"
-      description="{{
-        'success-modeling.dimensions.individual-impact-description' | translate
-      }}"
-      icon="person"
-    ></app-success-dimension>
-
-    <app-success-dimension
-      [factors]="getSuccessModel().dimensions['Community Impact']"
-      (factorsChange)="persistWorkspaceChanges()"
-      (measuresChange)="persistWorkspaceChanges()"
-      [measures]="getMeasureCatalog().measures"
-      [service]="serviceMap[getSuccessModel().service]"
-      [editMode]="canEdit()"
-      name="{{ 'success-modeling.dimensions.community-impact' | translate }}"
-      description="{{
-        'success-modeling.dimensions.community-impact-description' | translate
-      }}"
-      icon="group"
-    ></app-success-dimension>
-
-    <button
-      id="save-model-button"
-      mat-raised-button
-      *ngIf="editMode"
-      color="primary"
-      [disabled]="getMyRole() !== 'owner' || saveInProgress"
-      (click)="onSaveClicked()"
-    >
-      {{ 'success-modeling.save-model-button' | translate }}
-    </button>
-  </div>
-</div>
-
-<ng-template #noGroupSelect>
-  <mat-card>
-    {{ 'success-modeling.no-group-selected' | translate }}
-  </mat-card>
 </ng-template>
