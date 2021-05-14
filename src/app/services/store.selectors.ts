@@ -4,6 +4,12 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 
+export const SERVICES = (state: StoreState) =>
+  Object.values(state.Reducer.services);
+
+export const GROUPS = (state: StoreState) =>
+  Object.values(state.Reducer.groups);
+
 export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer.selectedService;
 

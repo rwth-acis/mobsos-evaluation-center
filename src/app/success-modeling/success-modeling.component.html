@@ -1,9 +1,9 @@
 <!-- Only show component if group is selected -->
-<ng-container *ngIf="groupID; else noGroupSelect">
-  <h3>
+<div *ngIf="groupID; else noGroupSelect">
+  <h3 *ngIf="selectedGroup$ | async as group">
     {{
       'success-modeling.community-success-model'
-        | translate: { community: getCurrentGroupName() }
+        | translate: { community: group.name ? group.name : '' }
     }}
   </h3>
   <mat-card id="header-card">
@@ -16,8 +16,11 @@
           (selectionChange)="onServiceSelected($event.value)"
           [formControl]="selectedServiceForm"
         >
-          <mat-option *ngFor="let service of services" [value]="service">
-            {{ serviceMap[service].alias }}
+          <mat-option
+            *ngFor="let service of services$ | async"
+            [value]="service"
+          >
+            {{ service.alias ? service.alias : service.name }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -373,7 +376,7 @@
       {{ 'success-modeling.save-model-button' | translate }}
     </button>
   </div>
-</ng-container>
+</div>
 
 <ng-template #noGroupSelect>
   <mat-card>

@@ -19,16 +19,22 @@ import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
-import { setService, toggleEdit } from '../services/store.actions';
+import {
+  fetchSuccessModel,
+  setService,
+  toggleEdit,
+} from '../services/store.actions';
 import { FormControl } from '@angular/forms';
 import {
   MEASURE_CATALOG,
   SELECTED_GROUP,
   SELECTED_SERVICE,
+  SERVICES,
   SUCCESS_MODEL,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
 import { Observable } from 'rxjs';
+import { first } from 'rxjs/operators';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -37,11 +43,12 @@ import { Observable } from 'rxjs';
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
+  services$ = this.ngrxStore.select(SERVICES);
   serviceMap: ServiceCollection = {};
   selectedService: string;
   selectedService$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
-  selectedGroupId$: Observable<GroupInformation> =
+  selectedGroup$: Observable<GroupInformation> =
     this.ngrxStore.select(SELECTED_GROUP);
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
@@ -99,6 +106,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.selectedService$
+      .pipe(first())
+      .subscribe(
+        (service) =>
+          (this.selectedService = service.alias ? service.alias : service.name)
+      );
     // this.store.startPolling();
     this.ngrxStore
       .select(SUCCESS_MODEL)
@@ -172,12 +185,15 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.stopPolling();
   }
 
-  onServiceSelected(service) {
+  onServiceSelected(service: ServiceInformation) {
     console.log(service);
     this.store.setEditMode(false);
-    this.ngrxStore.dispatch(setService({ serviceName: service }));
+    this.ngrxStore.dispatch(setService({ service }));
+    this.ngrxStore.dispatch(
+      fetchSuccessModel({ serviceName: service.name, groupId: this.groupID })
+    );
     this.cleanData();
-    this.store.selectedServiceSubject.next(service);
+    this.store.selectedServiceSubject.next(service.name);
   }
 
   async fetchXml() {

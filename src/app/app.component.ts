@@ -155,7 +155,8 @@ export class AppComponent implements OnInit, OnDestroy {
         first()
       )
       .subscribe((group) => {
-        this.selectedGroupForm.setValue(group.name);
+        this.selectedGroupForm.reset(group.name);
+        +this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id }));
       });
     this.ngrxStore.subscribe((state) => {
       console.log(state);
@@ -200,6 +201,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.store.selectedGroup.subscribe((selectedGroup) => {
       this.selectedGroup = selectedGroup;
       if (selectedGroup) {
+        this.ngrxStore.dispatch(
+          fetchMeasureCatalog({ groupId: selectedGroup })
+        );
         this.selectedGroupForm.setValue(selectedGroup);
       }
     });

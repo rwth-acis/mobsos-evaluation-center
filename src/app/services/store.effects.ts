@@ -7,15 +7,13 @@ import {
   map,
   mergeMap,
   catchError,
-  tap,
   switchMap,
   withLatestFrom,
-  share,
-  throttleTime,
+  tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
-import { SELECTED_GROUP_ID, SELECTED_SERVICE_NAME } from './store.selectors';
+import { SELECTED_GROUP_ID } from './store.selectors';
 
 @Injectable()
 export class StateEffects {
@@ -97,20 +95,21 @@ export class StateEffects {
     )
   );
 
-  setGroup$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.setGroup),
-
-      map(({ groupId }) => Action.fetchMeasureCatalog({ groupId }))
-    )
+  setGroup$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(Action.setGroup),
+        tap(({ groupId }) => Action.fetchMeasureCatalog({ groupId }))
+      ),
+    { dispatch: false }
   );
 
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
-      map(([{ serviceName }, groupId]) =>
-        Action.fetchSuccessModel({ groupId, serviceName })
+      map(([{ service }, groupId]) =>
+        Action.fetchSuccessModel({ groupId, serviceName: service.name })
       )
     )
   );
@@ -118,7 +117,6 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
-
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
           map((MeasureCatalogXML) =>

@@ -49,10 +49,10 @@ const _Reducer = createReducer(
     selectedGroup: state.groups[groupId],
     selectedGroupId: groupId,
   })),
-  on(Actions.setService, (state, { serviceName }) => ({
+  on(Actions.setService, (state, { service }) => ({
     ...state,
-    selectedService: state.services[serviceName],
-    selectedServiceName: serviceName,
+    selectedService: service,
+    selectedServiceName: service.name,
   })),
   on(Actions.toggleEdit, (state) => ({
     ...state,

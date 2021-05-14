@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
 
 enum FetchActions {
@@ -53,7 +54,7 @@ export const setGroup = createAction(
 
 export const setService = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ serviceName: string }>()
+  props<{ service: ServiceInformation }>()
 );
 
 export const storeUser = createAction(
