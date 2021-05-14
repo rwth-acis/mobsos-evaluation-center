@@ -17,6 +17,7 @@ export const initialState: AppState = {
   measureCatalogXML: undefined,
   successModelXML: undefined,
   currentNumberOfHttpCalls: 0,
+  expertMode: false,
 };
 
 const _Reducer = createReducer(
@@ -57,6 +58,10 @@ const _Reducer = createReducer(
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,
+  })),
+  on(Actions.toggleExpertMode, (state) => ({
+    ...state,
+    expertMode: !state.expertMode,
   })),
   on(Actions.storeUser, (state, { user }) => ({
     ...state,

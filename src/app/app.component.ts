@@ -30,6 +30,7 @@ import {
   fetchServices,
   setGroup,
   storeUser,
+  toggleExpertMode,
 } from './services/store.actions';
 import {
   HTTP_CALL_IS_LOADING,
@@ -124,6 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   setExpertMode(mode) {
     this.expertMode = mode;
+    this.ngrxStore.dispatch(toggleExpertMode());
     localStorage.setItem(this.LOCAL_STORAGE_EXPERT_MODE, mode);
   }
 

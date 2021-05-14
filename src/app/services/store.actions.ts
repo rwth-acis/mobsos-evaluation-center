@@ -25,6 +25,7 @@ enum StateActions {
   TOGGLE_EDIT = 'toggle edit mode for success model',
   INCREMENT_LOADING = 'Increase the number of current http calls',
   DECREMENT_LOADING = 'Decrease the number of current http calls',
+  TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
 }
 
 export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
@@ -77,3 +78,5 @@ export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
 export const decrementLoading = createAction(StateActions.INCREMENT_LOADING);
 
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
+
+export const toggleExpertMode = createAction(StateActions.TOGGLE_EDIT);

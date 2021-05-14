@@ -25,6 +25,7 @@ export interface AppState {
   successModelXML: string;
   measureCatalogXML: string;
   currentNumberOfHttpCalls: number;
+  expertMode: boolean;
 }
 /**
  * What the store looks like

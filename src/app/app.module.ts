@@ -110,6 +110,7 @@ export function localStorageSyncReducer(
           'selectedGroup',
           'selectedService',
           'questionnaires',
+          'expertMode',
         ],
       },
     ],
