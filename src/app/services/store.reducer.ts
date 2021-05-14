@@ -1,10 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { AppState } from '../models/state.model';
-import { ServiceCollection } from '../store.service';
-import { find, isEmpty, throttle } from 'lodash-es';
 import * as Actions from './store.actions';
-import { MeasureCatalog } from '../models/measure.catalog';
-import { SuccessModel } from '../models/success.model';
 
 export const initialState: AppState = {
   services: {},
@@ -20,6 +16,7 @@ export const initialState: AppState = {
   visualizations: {},
   measureCatalogXML: undefined,
   successModelXML: undefined,
+  currentNumberOfHttpCalls: 0,
 };
 
 const _Reducer = createReducer(
@@ -29,9 +26,9 @@ const _Reducer = createReducer(
     (state, { servicesFromL2P, servicesFromMobSOS }) => ({
       ...state,
       services: mergeServiceData(
-        state.services,
+        { ...state.services },
         servicesFromL2P,
-        state.messageDescriptions,
+        { ...state.messageDescriptions },
         servicesFromMobSOS
       ),
     })
@@ -41,7 +38,7 @@ const _Reducer = createReducer(
     (state, { groupsFromContactService, groupsFromMobSOS }) => ({
       ...state,
       groups: mergeGroupData(
-        state.groups,
+        { ...state.groups },
         groupsFromContactService,
         groupsFromMobSOS
       ),
@@ -72,6 +69,14 @@ const _Reducer = createReducer(
   on(Actions.storeSuccessModelXML, (state, { xml }) => ({
     ...state,
     successModelXML: xml,
+  })),
+  on(Actions.incrementLoading, (state) => ({
+    ...state,
+    currentNumberOfHttpCalls: state.currentNumberOfHttpCalls + 1,
+  })),
+  on(Actions.decrementLoading, (state) => ({
+    ...state,
+    currentNumberOfHttpCalls: state.currentNumberOfHttpCalls - 1,
   }))
 );
 
@@ -92,6 +97,7 @@ function mergeServiceData(
   messageDescriptions,
   servicesFromMobSOS
 ) {
+  serviceCollection = { ...serviceCollection };
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
       if (service) {
@@ -147,16 +153,15 @@ function mergeServiceData(
         };
       }
       if (!serviceCollection[serviceName]) continue;
-
-      serviceCollection[serviceName].mobsosIDs?.push({
+      let mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
+      mobsosIDs.push({
         agentID: serviceAgentID,
         registrationTime,
       });
-      serviceCollection[serviceName].mobsosIDs?.sort(
-        (a, b) => a.registrationTime - b.registrationTime
-      );
-      serviceCollection[serviceName].serviceMessageDescriptions =
-        serviceMessageDescriptions;
+      mobsosIDs.sort((a, b) => a.registrationTime - b.registrationTime);
+      serviceCollection[serviceName].serviceMessageDescriptions = {
+        ...serviceMessageDescriptions,
+      };
     }
   }
   return serviceCollection;
@@ -167,10 +172,9 @@ function getMessageDescriptionForService(
   serviceIdentifier: string
 ) {
   let serviceMessageDescriptions = {};
-  if (messageDescriptions)
-    serviceMessageDescriptions = messageDescriptions[serviceIdentifier]
-      ? messageDescriptions[serviceIdentifier]
-      : {};
+  if (messageDescriptions && messageDescriptions[serviceIdentifier])
+    serviceMessageDescriptions = messageDescriptions[serviceIdentifier];
+
   return serviceMessageDescriptions;
 }
 

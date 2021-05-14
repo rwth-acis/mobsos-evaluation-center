@@ -7,6 +7,9 @@ import {
 } from '../store.service';
 import { VisualizationCollection } from './visualization.model';
 
+/**
+ * state of the app
+ */
 export interface AppState {
   services: ServiceCollection;
   groups: GroupCollection;
@@ -21,4 +24,11 @@ export interface AppState {
   visualizations: VisualizationCollection;
   successModelXML: string;
   measureCatalogXML: string;
+  currentNumberOfHttpCalls: number;
+}
+/**
+ * What the store looks like
+ */
+export interface StoreState {
+  Reducer: AppState;
 }

@@ -4,6 +4,7 @@ import {
   CommunityWorkspace,
   GroupInformation,
   ServiceCollection,
+  ServiceInformation,
   StoreService,
   Visitor,
 } from '../store.service';
@@ -22,8 +23,8 @@ import { setService, toggleEdit } from '../services/store.actions';
 import { FormControl } from '@angular/forms';
 import {
   MEASURE_CATALOG,
-  SELECTED_GROUP_ID,
-  SELECTED_SERVICE_NAME,
+  SELECTED_GROUP,
+  SELECTED_SERVICE,
   SUCCESS_MODEL,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
@@ -38,11 +39,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   services = [];
   serviceMap: ServiceCollection = {};
   selectedService: string;
-  selectedServiceName$: Observable<string> = this.ngrxStore.select(
-    SELECTED_SERVICE_NAME
-  );
-  selectedGroupId$: Observable<string> =
-    this.ngrxStore.select(SELECTED_GROUP_ID);
+  selectedService$: Observable<ServiceInformation> =
+    this.ngrxStore.select(SELECTED_SERVICE);
+  selectedGroupId$: Observable<GroupInformation> =
+    this.ngrxStore.select(SELECTED_GROUP);
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   catalog: Catalog;

@@ -108,6 +108,10 @@
         {{ mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center' }}
       </h2>
     </las2peer-frontend-statusbar>
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="loading$ | async"
+    ></mat-progress-bar>
     <main>
       <router-outlet></router-outlet>
     </main>

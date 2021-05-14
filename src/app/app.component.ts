@@ -31,6 +31,12 @@ import {
   setGroup,
   storeUser,
 } from './services/store.actions';
+import {
+  HTTP_CALL_IS_LOADING,
+  SELECTED_GROUP,
+  SELECTED_SERVICE,
+} from './services/store.selectors';
+import { filter, first } from 'rxjs/operators';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -71,6 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
+  loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
 
   constructor(
     private logger: NGXLogger,
@@ -140,6 +147,16 @@ export class AppComponent implements OnInit, OnDestroy {
     this.store.startPolling();
     this.ngrxStore.dispatch(fetchServices());
     this.ngrxStore.dispatch(fetchGroups());
+
+    this.ngrxStore
+      .select(SELECTED_GROUP)
+      .pipe(
+        filter((group) => group && group.name === undefined),
+        first()
+      )
+      .subscribe((group) => {
+        this.selectedGroupForm.setValue(group.name);
+      });
     this.ngrxStore.subscribe((state) => {
       console.log(state);
     });

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { StoreModule } from '@ngrx/store';
+import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -24,6 +24,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
@@ -79,6 +80,7 @@ import { Reducer } from 'src/app/services/store.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
+import { localStorageSync } from 'ngrx-store-localstorage';
 
 // PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -95,6 +97,26 @@ class ImportLoader implements TranslateLoader {
 export function createTranslateLoader() {
   return new ImportLoader();
 }
+
+export function localStorageSyncReducer(
+  reducer: ActionReducer<any>
+): ActionReducer<any> {
+  return localStorageSync({
+    keys: [
+      {
+        Reducer: [
+          'services',
+          'groups',
+          'selectedGroup',
+          'selectedService',
+          'questionnaires',
+        ],
+      },
+    ],
+    rehydrate: true,
+  })(reducer);
+}
+const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
 
 @NgModule({
   declarations: [
@@ -143,7 +165,7 @@ export function createTranslateLoader() {
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
     MarkdownModule.forRoot(),
-    StoreModule.forRoot({ state: Reducer }),
+    StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatIconModule,
@@ -152,6 +174,7 @@ export function createTranslateLoader() {
     MatButtonModule,
     MatTabsModule,
     MatFormFieldModule,
+    MatProgressBarModule,
     MatSelectModule,
     MatSnackBarModule,
     MonacoEditorModule.forRoot(),
@@ -181,7 +204,11 @@ export function createTranslateLoader() {
       useFactory: getMonacoConfig,
       deps: [PlatformLocation],
     },
-    { provide: HTTP_INTERCEPTORS, useClass: Interceptor, multi: true },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: Interceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
   entryComponents: [

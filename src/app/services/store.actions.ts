@@ -22,6 +22,8 @@ enum StateActions {
   SET_GROUP = 'set current group',
   SET_SERVICE = 'set the current service',
   TOGGLE_EDIT = 'toggle edit mode for success model',
+  INCREMENT_LOADING = 'Increase the number of current http calls',
+  DECREMENT_LOADING = 'Decrease the number of current http calls',
 }
 
 export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
@@ -68,5 +70,9 @@ export const storeSuccessModelXML = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
   props<{ xml: string }>()
 );
+
+export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
+
+export const decrementLoading = createAction(StateActions.INCREMENT_LOADING);
 
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
