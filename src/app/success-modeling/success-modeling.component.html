@@ -1,5 +1,6 @@
 <!-- Only show component if group is selected -->
 <div *ngIf="selectedGroup$ | async as group; else noGroupSelect">
+  <!-- name of the group -->
   <h3 *ngIf="group.name">
     {{
       'success-modeling.community-success-model'
@@ -15,7 +16,7 @@
         }}</mat-label>
         <mat-select
           (selectionChange)="onServiceSelected($event.value)"
-          [formControl]="selectedServiceForm"
+          [(value)]="selectedService"
         >
           <mat-option
             *ngFor="let service of services$ | async"
@@ -276,16 +277,20 @@
       ></app-questionnaires>
 
       <app-success-dimension
-        *ngFor="let dimension of successDimensions"
+        *ngFor="let dimension of Objec.keys(translationMap)"
         [factors]="successModel.dimensions[dimension]"
         (factorsChange)="persistWorkspaceChanges()"
         (measuresChange)="persistWorkspaceChanges()"
         [measures]="measureCatalog.measures"
         [service]="selectedService$ | async"
         [editMode]="canEdit()"
-        name="{{ 'success-modeling.dimensions.system-quality' | translate }}"
+        name="{{
+          'success-modeling.dimensions.name.' + translationMap[dimension]
+            | translate
+        }}"
         description="{{
-          'success-modeling.dimensions.system-quality-description' | translate
+          'success-modeling.dimensions.description.' + translationMap[dimension]
+            | translate
         }}"
         icon="devices"
       ></app-success-dimension>

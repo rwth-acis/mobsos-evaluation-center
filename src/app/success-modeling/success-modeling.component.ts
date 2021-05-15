@@ -36,6 +36,7 @@ import {
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
 import { Observable } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
+import { translationMap } from './translations';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -56,7 +57,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   catalog: Catalog;
-
+  translationMap = translationMap;
   readonly successDimensions = [
     'System Quality',
     'Information Quality',
