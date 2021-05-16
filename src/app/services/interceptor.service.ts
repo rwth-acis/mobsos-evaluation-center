@@ -44,7 +44,7 @@ export class Interceptor implements HttpInterceptor {
         ),
         delayedRetry(200, 5, 100),
         catchError((err) => this.handleError(err, req, next)),
-        shareReplay()
+        share()
       );
       if (req.method === 'GET') {
         this.requestMap[req.url] = observableRequest; //put the observable request into the requestmap so further requests can subscribe to it
