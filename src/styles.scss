@@ -53,3 +53,6 @@ body {
   display: flex !important;
   flex-direction: column !important;
 }
+.mat-list-item-disabled {
+  background-color: rgba(160, 160, 160, 0.144) !important;
+}

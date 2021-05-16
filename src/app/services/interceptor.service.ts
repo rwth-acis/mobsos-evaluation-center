@@ -32,7 +32,6 @@ export class Interceptor implements HttpInterceptor {
       this.ngrxStore.dispatch(incrementLoading());
       //make a new request, handle any errors
       const observableRequest = next.handle(req).pipe(
-        delayedRetry(200, 5, 100),
         tap(
           (res) => {
             if (res instanceof HttpResponse) {
@@ -43,6 +42,7 @@ export class Interceptor implements HttpInterceptor {
             throw err;
           }
         ),
+        delayedRetry(200, 5, 100),
         catchError((err) => this.handleError(err, req, next)),
         shareReplay()
       );

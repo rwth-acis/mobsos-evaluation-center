@@ -10,6 +10,7 @@ import {
   switchMap,
   withLatestFrom,
   tap,
+  filter,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
@@ -107,6 +108,7 @@ export class StateEffects {
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
+      filter(({ service }) => service !== undefined),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
       map(([{ service }, groupId]) =>
         Action.fetchSuccessModel({ groupId, serviceName: service.name })
