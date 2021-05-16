@@ -7,10 +7,11 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { EMPTY, Observable, of } from 'rxjs';
+import { catchError, share, shareReplay, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
+import { delayedRetry } from './retryOperator';
 
 /** Pass untouched request through to the next request handler. */
 @Injectable({
@@ -24,46 +25,42 @@ export class Interceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    if (req.method === 'GET') {
-      if (req.url in this.requestMap) {
-        return this.requestMap[req.url];
-      } else {
-        this.ngrxStore.dispatch(incrementLoading());
-        const observableResponse = next.handle(req).pipe(
-          tap(
-            (res) => {
-              if (res instanceof HttpResponse) {
-                if (res.status >= 200 && res.status < 400) {
-                  delete this.requestMap[req.url];
-                } else {
-                  console.error('error response', res);
-                }
-                this.ngrxStore.dispatch(decrementLoading());
-              }
-            },
-            (err) => this.handleError(err, req, next)
-          ),
-          catchError((err) => this.handleError(err, req, next))
-        );
-        this.requestMap[req.url] = observableResponse;
-        return observableResponse;
-      }
+    if (req.method === 'GET' && req.url in this.requestMap) {
+      // a request is already being made to this url
+      return this.requestMap[req.url]; //return an observable of the initial request instead of making a new call
     } else {
       this.ngrxStore.dispatch(incrementLoading());
-      return next.handle(req).pipe(
+      //make a new request, handle any errors
+      const observableRequest = next.handle(req).pipe(
+        delayedRetry(200, 5, 100),
         tap(
           (res) => {
             if (res instanceof HttpResponse) {
-              this.ngrxStore.dispatch(decrementLoading());
+              this.handleResponse(res, req);
             }
           },
-          (err) => this.handleError(err, req, next)
+          (err) => {
+            throw err;
+          }
         ),
-        catchError((err) => this.handleError(err, req, next))
+        catchError((err) => this.handleError(err, req, next)),
+        shareReplay()
       );
+      if (req.method === 'GET') {
+        this.requestMap[req.url] = observableRequest; //put the observable request into the requestmap so further requests can subscribe to it
+      }
+      return observableRequest;
     }
   }
 
+  handleResponse(res: HttpResponse<any>, req: HttpRequest<any>) {
+    this.ngrxStore.dispatch(decrementLoading());
+    if (res.status >= 200 && res.status < 400) {
+      delete this.requestMap[req.url];
+    } else {
+      throw new Error(res.status.toString());
+    }
+  }
   /**
    * retry making the request. Request should be retried only once or twice
    * @param err
@@ -77,11 +74,7 @@ export class Interceptor implements HttpInterceptor {
     console.error(err.message);
     this.ngrxStore.dispatch(decrementLoading());
     delete this.requestMap[req.url];
-    if (err.status === 504) {
-      // exception during Rmi invocation
-      return next.handle(req);
-    }
 
-    return of(undefined);
+    return EMPTY;
   }
 }

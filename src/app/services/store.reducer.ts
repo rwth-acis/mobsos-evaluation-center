@@ -45,16 +45,24 @@ const _Reducer = createReducer(
       ),
     })
   ),
-  on(Actions.setGroup, (state, { groupId }) => ({
-    ...state,
-    selectedGroup: state.groups[groupId],
-    selectedGroupId: groupId,
-  })),
-  on(Actions.setService, (state, { service }) => ({
-    ...state,
-    selectedService: service,
-    selectedServiceName: service.name,
-  })),
+  on(Actions.setGroup, (state, { groupId }) =>
+    groupId
+      ? {
+          ...state,
+          selectedGroup: state.groups[groupId],
+          selectedGroupId: groupId,
+        }
+      : state
+  ),
+  on(Actions.setService, (state, { service }) =>
+    service
+      ? {
+          ...state,
+          selectedService: service,
+          selectedServiceName: service?.name,
+        }
+      : state
+  ),
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,
@@ -109,7 +117,7 @@ function mergeServiceData(
         // use most recent release and extract the human readable name
         let releases;
         let latestRelease;
-        if (service.releases?.length > 0) {
+        if (service?.releases?.length > 0) {
           releases = Object.keys(service.releases).sort();
           latestRelease = service.releases[releases.slice(-1)[0]];
         }
@@ -164,8 +172,9 @@ function mergeServiceData(
         registrationTime,
       });
       mobsosIDs.sort((a, b) => a.registrationTime - b.registrationTime);
-      serviceCollection[serviceName].serviceMessageDescriptions = {
-        ...serviceMessageDescriptions,
+      serviceCollection[serviceName] = {
+        ...serviceCollection[serviceName],
+        serviceMessageDescriptions: { ...serviceMessageDescriptions },
       };
     }
   }

@@ -75,7 +75,7 @@ export const storeSuccessModelXML = createAction(
 
 export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
 
-export const decrementLoading = createAction(StateActions.INCREMENT_LOADING);
+export const decrementLoading = createAction(StateActions.DECREMENT_LOADING);
 
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 
