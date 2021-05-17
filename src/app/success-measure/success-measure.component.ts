@@ -23,11 +23,10 @@ import { KpiVisualizationComponent } from '../visualizations/kpi-visualization/k
 import { ChartVisualizationComponent } from '../visualizations/chart-visualization/chart-visualization.component';
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { cloneDeep } from 'lodash';
+
 import { SuccessMeasureInterface } from './success-measure.interface';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { retagTsFile } from '@angular/compiler-cli/src/ngtsc/shims';
 
 @Component({
   selector: 'app-success-measure',
@@ -120,7 +119,7 @@ export class SuccessMeasureComponent
       minWidth: 300,
       width: '80%',
       data: {
-        measure: cloneDeep(this.measure),
+        measure: { ...this.measure },
         service: this.service,
         create: false,
       },

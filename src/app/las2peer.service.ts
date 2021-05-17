@@ -2,8 +2,6 @@ import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { merge } from 'lodash';
-import { isNumber } from 'util';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -59,7 +57,7 @@ export class Las2peerService {
   static joinAbsoluteUrlPath(...args) {
     return args
       .map((pathPart) => {
-        if (isNumber(pathPart)) {
+        if (typeof pathPart === 'number') {
           pathPart = pathPart.toString();
         }
         return pathPart.replace(/(^\/|\/$)/g, '');
@@ -90,29 +88,40 @@ export class Las2peerService {
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
     } = {}
   ): Promise<T> {
-    options = merge(
-      {
+    // options = merge(
+    //   {
+    //     method: 'GET',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'accept-language': 'en-US',
+    //     },
+    //   },
+    //   options
+    // );
+
+    options = {
+      ...options,
+      ...{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
         },
       },
-      options
-    );
+    }; //merge httpoptions
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      options = merge(
-        {
+      options = {
+        ...options,
+        ...{
           headers: {
             Authorization: 'Basic ' + btoa(username + ':' + password),
             access_token: token,
           },
         },
-        options
-      );
+      }; //merge httpoptions
     }
     if (!environment.production) {
       this.logger.debug(
@@ -160,29 +169,29 @@ export class Las2peerService {
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
     } = {}
   ) {
-    options = merge(
-      {
+    options = {
+      ...options,
+      ...{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
         },
       },
-      options
-    );
+    };
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      options = merge(
-        {
+      options = {
+        ...options,
+        ...{
           headers: {
             Authorization: 'Basic ' + btoa(username + ':' + password),
             access_token: token,
           },
         },
-        options
-      );
+      };
     }
     if (!environment.production) {
       this.logger.debug(

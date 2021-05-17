@@ -4,7 +4,7 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
-      production:boolean
+      production: boolean;
     };
   }
 }
@@ -27,7 +27,7 @@ export const environment = {
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server
-  yJsWebsocketUrl: window.env.yJsWebsocketUrl || 'wss://localhost:8089',
+  yJsWebsocketUrl: window.env.yJsWebsocketUrl || 'ws://localhost:1234',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend

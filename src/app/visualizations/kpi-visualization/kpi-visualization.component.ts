@@ -3,7 +3,7 @@ import { BaseVisualizationComponent } from '../visualization.component';
 import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
 import { KpiVisualization } from '../../../success-model/visualization';
-import { isNumber } from 'util';
+
 import { Measure } from 'src/success-model/measure';
 import { ServiceInformation } from 'src/app/store.service';
 
@@ -69,7 +69,7 @@ export class KpiVisualizationComponent
       abstractTerm.push('=');
       abstractTerm.push(this.measure.name);
       let termResult = visualization.evaluateTerm(term);
-      if (isNumber(termResult)) {
+      if (typeof termResult === 'number') {
         termResult = termResult.toFixed(2);
       }
       term.push('=');
