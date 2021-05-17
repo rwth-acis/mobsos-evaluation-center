@@ -593,6 +593,45 @@ export class Las2peerService {
       },
     });
   }
+  fetchVisualizationData(
+    query: string,
+    queryParams: string[],
+    format: string = 'JSON'
+  ) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.QUERY_VISUALIZATION_SERVICE_PATH,
+      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH
+      // `?access_token=${this.userCredentials.token}&format=${format}`
+    );
+    const requestBody = {
+      cache: false,
+      dbkey: 'las2peermon',
+      height: '200px',
+      width: '300px',
+      modtypei: null,
+      query,
+      queryparams: queryParams,
+      title: '',
+      save: false,
+    };
+    let profile = JSON.parse(localStorage.getItem('profile'));
+    let authorHeader;
+    if (profile) {
+      authorHeader = {
+        Authorization:
+          'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
+      };
+    }
+    // console.log(profile, authorHeader);
+    return this.makeRequestAndObserve(url, {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+      headers: {
+        ...authorHeader,
+      },
+    });
+  }
 
   async searchProjectOnReqBaz(project: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(

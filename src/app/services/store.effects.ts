@@ -14,7 +14,7 @@ import {
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
-import { SELECTED_GROUP_ID } from './store.selectors';
+import { SELECTED_GROUP_ID, VISUALIZATION_DATA } from './store.selectors';
 
 @Injectable()
 export class StateEffects {
@@ -128,6 +128,29 @@ export class StateEffects {
           )
         )
       )
+    )
+  );
+
+  fetchVisualizationData$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchVisualizationData),
+      withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
+      switchMap(([{ query, queryParams }, data]) => {
+        const dataForQuery = data[query];
+        if (
+          !dataForQuery ||
+          dataForQuery.fetchDate.getTime() > Date.now() - 300000
+        ) {
+          // no data yet or last fetch time more than 5min ago
+          return this.l2p.fetchVisualizationData(query, queryParams).pipe(
+            map((data) =>
+              Action.storeVisualizationData({
+                data,
+              })
+            )
+          );
+        }
+      })
     )
   );
 

@@ -42,7 +42,7 @@ export class Interceptor implements HttpInterceptor {
             throw err;
           }
         ),
-        delayedRetry(200, 5, 100),
+        delayedRetry(200, 3, 100),
         catchError((err) => this.handleError(err, req, next)),
         share()
       );

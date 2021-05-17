@@ -13,7 +13,7 @@ export const initialState: AppState = {
   editMode: false,
   questionnaires: [],
   messageDescriptions: undefined,
-  visualizations: {},
+  visualizationData: undefined,
   measureCatalogXML: undefined,
   successModelXML: undefined,
   currentNumberOfHttpCalls: 0,

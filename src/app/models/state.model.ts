@@ -5,7 +5,7 @@ import {
   ServiceCollection,
   ServiceInformation,
 } from '../store.service';
-import { VisualizationCollection } from './visualization.model';
+import { VisualizationData } from './visualization.model';
 
 /**
  * state of the app
@@ -21,7 +21,7 @@ export interface AppState {
   editMode: boolean;
   questionnaires: Questionnaire[];
   messageDescriptions: object;
-  visualizations: VisualizationCollection;
+  visualizationData: VisualizationData;
   successModelXML: string;
   measureCatalogXML: string;
   currentNumberOfHttpCalls: number;

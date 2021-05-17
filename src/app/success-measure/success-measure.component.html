@@ -22,25 +22,30 @@
   </h4>
 </div>
 
-<span *ngIf="visualizationError">{{ visualizationError }}</span>
-<container-element [ngSwitch]="measure.visualization.type">
-  <app-chart-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'Chart'"
-  ></app-chart-visualization>
-  <app-kpi-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'KPI'"
-  ></app-kpi-visualization>
-  <app-value-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'Value'"
-  ></app-value-visualization>
-  <div *ngSwitchDefault>
-    Unknown chartType: {{ measure.visualization.type }}
-  </div>
-</container-element>
+<span *ngIf="visualizationError; else visualizationBlock">{{
+  visualizationError
+}}</span>
+
+<ng-template #visualizationBlock>
+  <container-element [ngSwitch]="measure.visualization.type">
+    <app-chart-visualization
+      [measure]="measure"
+      [service]="service"
+      *ngSwitchCase="'Chart'"
+    ></app-chart-visualization>
+    <app-kpi-visualization
+      [measure]="measure"
+      [service]="service"
+      *ngSwitchCase="'KPI'"
+    ></app-kpi-visualization>
+    <app-value-visualization
+      [measure]="measure"
+      [service]="service"
+      *ngSwitchCase="'Value'"
+    ></app-value-visualization>
+    <div *ngSwitchDefault>
+      Unknown chartType: {{ measure.visualization.type }}
+    </div>
+  </container-element>
+</ng-template>
 <!-- <ng-template appVisualization></ng-template> -->

@@ -8,6 +8,7 @@ enum FetchActions {
   FETCH_SERVICE_MESSAGE_DESCRIPTION = 'fetch service descriptions for a service from the network ',
   FETCH_MEASURE_CATALOG_FOR_GROUP = 'fetch measure catalog for current Group',
   FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE = 'fetch success model for current Group and current service',
+  FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
 }
 
 enum StoreActions {
@@ -17,6 +18,7 @@ enum StoreActions {
   STORE_USER = 'Store the user',
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
+  FETCH_VISUALIZATION_DATA = 'Store visualization data from the qvs',
 }
 
 enum StateActions {
@@ -30,6 +32,10 @@ enum StateActions {
 
 export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
 export const fetchGroups = createAction(FetchActions.FETCH_GROUPS);
+export const fetchVisualizationData = createAction(
+  FetchActions.FETCH_VISUALIZATION_DATA,
+  props<{ query: string; queryParams: string[] }>()
+);
 export const fetchMeasureCatalog = createAction(
   FetchActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
   props<{ groupId: string }>()
@@ -61,6 +67,11 @@ export const setService = createAction(
 export const storeUser = createAction(
   StoreActions.STORE_USER,
   props<{ user: User }>()
+);
+
+export const storeVisualizationData = createAction(
+  FetchActions.FETCH_VISUALIZATION_DATA,
+  props<{ data: any }>()
 );
 
 export const storeCatalogXML = createAction(

@@ -2,6 +2,14 @@ export interface VisualizationCollection {
   [key: string]: Visualization;
 }
 
+export interface VisualizationData {
+  [query: string]: VData;
+}
+export interface VData {
+  fetchDate: Date;
+  data: object;
+}
+
 export class Visualization {
   type: string;
 
