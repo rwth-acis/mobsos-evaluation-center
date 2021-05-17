@@ -146,6 +146,7 @@ export class StateEffects {
             map((data) =>
               Action.storeVisualizationData({
                 data,
+                query,
               })
             )
           );

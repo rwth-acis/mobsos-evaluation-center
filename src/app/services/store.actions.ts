@@ -71,7 +71,7 @@ export const storeUser = createAction(
 
 export const storeVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ data: any }>()
+  props<{ data: any; query: string }>()
 );
 
 export const storeCatalogXML = createAction(

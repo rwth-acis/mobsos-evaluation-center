@@ -18,7 +18,10 @@ export const VISUALIZATION_DATA = (state: StoreState) =>
 export const VISUALIZATION_DATA_FOR_QUERY = (
   state: StoreState,
   query: string
-) => state.Reducer.visualizationData[query];
+) =>
+  state.Reducer.visualizationData && state.Reducer.visualizationData[query]
+    ? state.Reducer.visualizationData[query]
+    : undefined;
 
 export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer.selectedService;

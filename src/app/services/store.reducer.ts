@@ -1,5 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { AppState } from '../models/state.model';
+import { VData, VisualizationData } from '../models/visualization.model';
 import * as Actions from './store.actions';
 
 export const initialState: AppState = {
@@ -90,11 +91,28 @@ const _Reducer = createReducer(
   on(Actions.decrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls - 1,
+  })),
+  on(Actions.storeVisualizationData, (state, { data, query }) => ({
+    ...state,
+    visualizationData: updateVisualizationData(
+      { ...state.visualizationData },
+      data,
+      query
+    ),
   }))
 );
 
 export function Reducer(state, action) {
   return _Reducer(state, action);
+}
+
+function updateVisualizationData(
+  currentVisualizationData: VisualizationData,
+  data: VData,
+  query: string
+) {
+  currentVisualizationData[query] = { data, fetchDate: new Date() };
+  return currentVisualizationData;
 }
 
 /**
