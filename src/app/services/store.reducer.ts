@@ -19,6 +19,8 @@ export const initialState: AppState = {
   successModelXML: undefined,
   currentNumberOfHttpCalls: 0,
   expertMode: false,
+  successModelInitialized: false,
+  measureCatalogInitialized: false,
 };
 
 const _Reducer = createReducer(
@@ -68,6 +70,14 @@ const _Reducer = createReducer(
     ...state,
     editMode: !state.editMode,
   })),
+  on(Actions.enableEdit, (state) => ({
+    ...state,
+    editMode: true,
+  })),
+  on(Actions.disableEdit, (state) => ({
+    ...state,
+    editMode: false,
+  })),
   on(Actions.toggleExpertMode, (state) => ({
     ...state,
     expertMode: !state.expertMode,
@@ -79,10 +89,20 @@ const _Reducer = createReducer(
   on(Actions.storeCatalogXML, (state, { xml }) => ({
     ...state,
     measureCatalogXML: xml,
+    measureCatalogInitialized: true,
+  })),
+  on(Actions.fetchSuccessModel, (state) => ({
+    ...state,
+    successModelInitialized: false,
+  })),
+  on(Actions.fetchMeasureCatalog, (state) => ({
+    ...state,
+    measureCatalogInitialized: false,
   })),
   on(Actions.storeSuccessModelXML, (state, { xml }) => ({
     ...state,
     successModelXML: xml,
+    successModelInitialized: true,
   })),
   on(Actions.incrementLoading, (state) => ({
     ...state,

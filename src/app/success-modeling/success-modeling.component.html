@@ -1,12 +1,11 @@
 <!-- Only show component if group is selected -->
 <div *ngIf="selectedGroup$ | async as group; else noGroupSelect">
-  <!-- name of the group -->
-  <h3 *ngIf="group.name">
+  <h2 *ngIf="group?.name">
     {{
-      'success-modeling.community-success-model'
-        | translate: { community: group.name ? group.name : '' }
+      'success-modeling.community-workspace'
+        | translate: { community: group.name }
     }}
-  </h3>
+  </h2>
   <!-- service selection -->
   <mat-card id="header-card">
     <mat-toolbar-row>
@@ -15,8 +14,8 @@
           'success-modeling.select-application' | translate
         }}</mat-label>
         <mat-select
+          [value]="initialServiceName"
           (selectionChange)="onServiceSelected($event.value)"
-          [(value)]="selectedService"
         >
           <mat-option
             *ngFor="let service of services$ | async"
@@ -257,56 +256,65 @@
     </div>
   </mat-card>
 
-  <mat-card *ngIf="!(selectedService$ | async)">{{
-    'success-modeling.message-no-application-selected' | translate
-  }}</mat-card>
-
-  <ng-container
-    *ngIf="successModel$ | async as successModel; else noSuccessModel"
+  <div
+    *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
   >
-    <div *ngIf="measureCatalog$ | async as measureCatalog">
-      <app-questionnaires
-        [availableQuestionnaires]="availableQuestionnaires"
-        [model]="successModel"
-        [measures]="measureCatalog.measures"
-        [service]="selectedService$ | async"
-        [editMode]="canEdit()"
-        [groupID]="(selectedGroup$ | async).id"
-        (modelChange)="persistWorkspaceChanges()"
-        (measuresChange)="persistWorkspaceChanges()"
-      ></app-questionnaires>
+    <div *ngIf="workspaceInitialized$ | async; else notInitialized">
+      <div *ngIf="successModel$ | async as successModel; else noSuccessModel">
+        <h3 *ngIf="group?.name">
+          {{
+            'success-modeling.community-success-model'
+              | translate: { community: group.name }
+          }}
+        </h3>
+        <div *ngIf="measureCatalog$ | async as measureCatalog">
+          <app-questionnaires
+            [availableQuestionnaires]="availableQuestionnaires"
+            [model]="successModel"
+            [measures]="measureCatalog.measures"
+            [service]="selectedService$ | async"
+            [editMode]="canEdit()"
+            [groupID]="(selectedGroup$ | async).id"
+            (modelChange)="persistWorkspaceChanges()"
+            (measuresChange)="persistWorkspaceChanges()"
+          ></app-questionnaires>
+          <div *ngIf="translationMap !== undefined">
+            <app-success-dimension
+              *ngFor="let dimension of dimensions"
+              [factors]="successModel.dimensions[dimension]"
+              (factorsChange)="persistWorkspaceChanges()"
+              (measuresChange)="persistWorkspaceChanges()"
+              [measures]="measureCatalog.measures"
+              [service]="selectedService"
+              [editMode]="canEdit()"
+              name="{{
+                'success-modeling.dimensions.name.' + translationMap[dimension]
+                  | translate
+              }}"
+              description="{{
+                'success-modeling.dimensions.description.' +
+                  translationMap[dimension] | translate
+              }}"
+              icon="{{ iconMap[dimension] }}"
+            ></app-success-dimension>
+          </div>
 
-      <app-success-dimension
-        *ngFor="let dimension of Objec.keys(translationMap)"
-        [factors]="successModel.dimensions[dimension]"
-        (factorsChange)="persistWorkspaceChanges()"
-        (measuresChange)="persistWorkspaceChanges()"
-        [measures]="measureCatalog.measures"
-        [service]="selectedService$ | async"
-        [editMode]="canEdit()"
-        name="{{
-          'success-modeling.dimensions.name.' + translationMap[dimension]
-            | translate
-        }}"
-        description="{{
-          'success-modeling.dimensions.description.' + translationMap[dimension]
-            | translate
-        }}"
-        icon="devices"
-      ></app-success-dimension>
-
-      <button
-        id="save-model-button"
-        mat-raised-button
-        *ngIf="editMode$ | async"
-        color="primary"
-        [disabled]="getMyRole() !== 'owner' || saveInProgress"
-        (click)="onSaveClicked()"
-      >
-        {{ 'success-modeling.save-model-button' | translate }}
-      </button>
+          <button
+            id="save-model-button"
+            mat-raised-button
+            *ngIf="editMode$ | async"
+            color="primary"
+            [disabled]="
+              (getMyRole() && getMyRole() !== 'owner') || saveInProgress
+            "
+            (click)="onSaveClicked()"
+          >
+            {{ 'success-modeling.save-model-button' | translate }}
+          </button>
+        </div>
+      </div>
     </div>
-  </ng-container>
+  </div>
 </div>
 
 <ng-template #noGroupSelect>
@@ -315,9 +323,15 @@
   </mat-card>
 </ng-template>
 
+<ng-template #noServiceSelect>
+  <mat-card>{{
+    'success-modeling.message-no-application-selected' | translate
+  }}</mat-card>
+</ng-template>
+
 <ng-template #noSuccessModel>
   <!-- success model non existant -->
-  <mat-card *ngIf="(successModel$ | async) === null">
+  <mat-card>
     {{
       (isMemberOfSelectedGroup()
         ? 'success-modeling.message-no-success-model-found'
@@ -325,10 +339,9 @@
       ) | translate
     }}
   </mat-card>
+</ng-template>
+
+<ng-template #notInitialized>
   <!-- success model still loading -->
-  <mat-spinner
-    *ngIf="(successModel$ | async) === undefined"
-    style="margin: auto"
-  >
-  </mat-spinner>
+  <mat-spinner style="margin: auto"> </mat-spinner>
 </ng-template>

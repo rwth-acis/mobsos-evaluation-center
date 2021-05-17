@@ -73,6 +73,7 @@ export const translations = {
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    'community-workspace': 'Workspace of the {{community}} Community',
     'community-success-model': 'Success Model of the {{community}} Community',
     'copy-workspace-prompt':
       'Are you sure you want to replace your current model?',

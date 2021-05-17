@@ -15,6 +15,10 @@ export const GROUPS = (state: StoreState) =>
 export const VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer.visualizationData;
 
+export const WORKSPACE_INITIALIZED = (state: StoreState) =>
+  state.Reducer.successModelInitialized &&
+  state.Reducer.measureCatalogInitialized;
+
 export const VISUALIZATION_DATA_FOR_QUERY = (
   state: StoreState,
   query: string

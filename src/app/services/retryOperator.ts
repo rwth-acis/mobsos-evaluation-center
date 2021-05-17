@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { delay, mergeMap, retryWhen } from 'rxjs/operators';
 
@@ -26,12 +27,13 @@ export function delayedRetry(
       retryWhen((errors: Observable<any>) =>
         errors.pipe(
           delay(delayMs),
-          mergeMap((error) => {
+          mergeMap((error: HttpErrorResponse) => {
             if (retries-- > 0) {
               const backofftime = delayMs + (maxRetry - retries) * backoffMs;
               return of(error).pipe(delay(backofftime));
             }
-            return throwError(getErrorMessage(maxRetry));
+
+            return of(error);
           })
         )
       )

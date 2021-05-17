@@ -2,8 +2,9 @@ import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap, timeout } from 'rxjs/operators';
+import { delayedRetry } from './services/retryOperator';
 
 export interface SuccessModel {
   xml: string;
@@ -60,7 +61,7 @@ export class Las2peerService {
         if (typeof pathPart === 'number') {
           pathPart = pathPart.toString();
         }
-        return pathPart.replace(/(^\/|\/$)/g, '');
+        return pathPart?.replace(/(^\/|\/$)/g, '');
       })
       .join('/');
   }
@@ -108,7 +109,7 @@ export class Las2peerService {
           'accept-language': 'en-US',
         },
       },
-    }; //merge httpoptions
+    };
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
@@ -121,13 +122,13 @@ export class Las2peerService {
             access_token: token,
           },
         },
-      }; //merge httpoptions
+      };
     }
-    if (!environment.production) {
-      this.logger.debug(
-        'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
-      );
-    }
+    // if (!environment.production) {
+    //   this.logger.debug(
+    //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
+    //   );
+    // }
 
     const ngHttpOptions: {
       body?: any;
@@ -193,11 +194,11 @@ export class Las2peerService {
         },
       };
     }
-    if (!environment.production) {
-      this.logger.debug(
-        'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
-      );
-    }
+    // if (!environment.production) {
+    //   this.logger.debug(
+    //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
+    //   );
+    // }
 
     const ngHttpOptions: {
       body?: any;
@@ -225,7 +226,13 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
-    return this.http.request(options.method, url, ngHttpOptions);
+    return this.http.request(options.method, url, ngHttpOptions).pipe(
+      delayedRetry(700, 2, 100),
+      catchError((err) => {
+        console.log(err);
+        return of(undefined);
+      })
+    );
   }
 
   async fetchServicesFromDiscovery() {
@@ -518,9 +525,12 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID
     );
-    return this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
-      map((response) => response.xml)
+    let req = this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
+      tap((res) => console.log(res)),
+      map((response) => response['xml'])
     );
+
+    return req;
   }
 
   async saveMeasureCatalog(groupID: string, xml: string) {
@@ -639,7 +649,7 @@ export class Las2peerService {
       headers: {
         ...authorHeader,
       },
-    });
+    }).pipe(delayedRetry(700, 5, 100));
   }
 
   async searchProjectOnReqBaz(project: string) {

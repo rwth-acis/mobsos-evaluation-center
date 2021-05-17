@@ -20,6 +20,7 @@ import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   fetchSuccessModel,
   setService,
   toggleEdit,
@@ -32,11 +33,11 @@ import {
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
+  WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
-import { Observable } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
-import { translationMap } from './translations';
+import { iconMap, translationMap } from './config';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -46,32 +47,29 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
   editMode$ = this.ngrxStore.select(EDIT_MODE);
+  editMode = false;
   services$ = this.ngrxStore.select(SERVICES);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
   serviceMap: ServiceCollection = {};
-  selectedService: string;
+  selectedServiceName: string;
+  initialServiceName;
 
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
   catalog: Catalog;
-  translationMap = translationMap;
-  readonly successDimensions = [
-    'System Quality',
-    'Information Quality',
-    'Use',
-    'User Satisfaction',
-    'Individual Impact',
-    'Community Impact',
-  ];
+  translationMap;
+  iconMap;
   successModelXml: Document;
   successModel: SuccessModel = undefined;
   selectedServiceForm = new FormControl('');
-  editMode = false;
+
   communityWorkspace: CommunityWorkspace;
   user;
+  dimensions;
   workspaceUser;
   myGroups: GroupInformation[];
   saveInProgress = false;
@@ -86,7 +84,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private snackBar: MatSnackBar,
     private ngrxStore: Store
-  ) {}
+  ) {
+    this.translationMap = translationMap;
+    this.iconMap = iconMap;
+    this.dimensions = Object.keys(translationMap);
+  }
 
   static parseXml(xml) {
     const parser = new DOMParser();
@@ -119,43 +121,40 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.selectedService$
-      .pipe(
-        filter((service) => service !== undefined),
-        first()
-      )
-      .subscribe(
-        (service) =>
-          (this.selectedService = service.alias ? service.alias : service.name)
-      );
+      .pipe(filter((service) => service !== undefined))
+
+      .subscribe((service) => {
+        this.selectedServiceName = service.alias ? service.alias : service.name;
+        if (!this.initialServiceName)
+          this.initialServiceName = this.selectedServiceName;
+      });
     // this.store.startPolling();
 
-    this.successModel$.subscribe((model) => (this.successModel = model));
-
     this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
-    this.store.selectedGroup.subscribe((groupID) => {
-      this.groupID = groupID;
+    // this.store.selectedGroup.subscribe((groupID) => {
+    //   this.groupID = groupID;
 
-      this.successModel =
-        this.successModelXml =
-        this.measureCatalog =
-        this.measureCatalogXml =
-          undefined;
-      this.fetchXml();
-    });
-    this.store.selectedService.subscribe((serviceID) => {
-      this.selectedService = serviceID;
-      this.fetchXml();
-    });
-    this.store.services.subscribe((services) => {
-      this.services = Object.keys(services);
-      this.serviceMap = services;
-    });
-    this.store.user.subscribe((user) => {
-      this.user = user;
-      if (!this.user && this.editMode) {
-        this.store.setEditMode(false);
-      }
-    });
+    //   this.successModel =
+    //     this.successModelXml =
+    //     this.measureCatalog =
+    //     this.measureCatalogXml =
+    //       undefined;
+    //   this.fetchXml();
+    // });
+    // this.store.selectedService.subscribe((serviceID) => {
+    //   this.selectedService = serviceID;
+    //   this.fetchXml();
+    // });
+    // this.store.services.subscribe((services) => {
+    //   this.services = Object.keys(services);
+    //   this.serviceMap = services;
+    // });
+    // this.store.user.subscribe((user) => {
+    //   this.user = user;
+    //   if (!this.user && this.editMode) {
+    //     this.store.setEditMode(false);
+    //   }
+    // });
     this.store.communityWorkspace.subscribe(async (workspace) => {
       this.communityWorkspace = workspace;
       if (
@@ -172,12 +171,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.snackBar.open('Owner closed workspace', null, { duration: 3000 });
       }
     });
-    this.store.editMode.subscribe((editMode) => {
+    this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
         this.initWorkspace().then(() =>
           this.switchWorkspace(this.getMyUsername())
         );
-      } else if (this.editMode === true) {
+      } else if (this.editMode) {
         this.fetchXml();
         this.openClearWorkspaceDialog();
       }
@@ -198,8 +197,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onServiceSelected(service: ServiceInformation) {
-    console.log(service);
     this.store.setEditMode(false);
+    this.ngrxStore.dispatch(disableEdit());
     this.ngrxStore.dispatch(setService({ service }));
     this.ngrxStore.dispatch(
       fetchSuccessModel({ serviceName: service.name, groupId: this.groupID })
@@ -209,37 +208,37 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   async fetchXml() {
-    if (this.groupID) {
-      this.las2peer
-        .fetchMeasureCatalog(this.groupID)
-        .then((xml) => {
-          if (!xml) {
-            xml = '';
-          }
-          this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
-          this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
-        })
-        .catch(() => {
-          this.measureCatalogXml = null;
-          this.measureCatalog = null;
-        });
-      if (this.selectedService) {
-        const setServiceXml = (xml) => {
-          if (!xml) {
-            xml = '';
-          }
-          this.successModelXml = SuccessModelingComponent.parseXml(xml);
-          this.successModel = this.parseModel(this.successModelXml);
-        };
-        this.las2peer
-          .fetchSuccessModel(this.groupID, this.selectedService)
-          .then(setServiceXml)
-          .catch(() => {
-            this.successModelXml = null;
-            this.successModelXml = null;
-          });
-      }
-    }
+    // if (this.groupID) {
+    //   this.las2peer
+    //     .fetchMeasureCatalog(this.groupID)
+    //     .then((xml) => {
+    //       if (!xml) {
+    //         xml = '';
+    //       }
+    //       this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
+    //       this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
+    //     })
+    //     .catch(() => {
+    //       this.measureCatalogXml = null;
+    //       this.measureCatalog = null;
+    //     });
+    //   if (this.selectedService) {
+    //     const setServiceXml = (xml) => {
+    //       if (!xml) {
+    //         xml = '';
+    //       }
+    //       this.successModelXml = SuccessModelingComponent.parseXml(xml);
+    //       this.successModel = this.parseModel(this.successModelXml);
+    //     };
+    //     this.las2peer
+    //       .fetchSuccessModel(this.groupID, this.selectedService)
+    //       .then(setServiceXml)
+    //       .catch(() => {
+    //         this.successModelXml = null;
+    //         this.successModelXml = null;
+    //       });
+    //   }
+    // }
   }
 
   onEditModeChanged() {
@@ -249,13 +248,13 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
     const result = [];
-    if (!this.selectedService) {
+    if (!this.selectedServiceName) {
       return [];
     }
     const userWorkspaces = Object.values(this.communityWorkspace);
     for (const userWorkspace of userWorkspaces) {
-      if (Object.keys(userWorkspace).includes(this.selectedService)) {
-        result.push(userWorkspace[this.selectedService]);
+      if (Object.keys(userWorkspace).includes(this.selectedServiceName)) {
+        result.push(userWorkspace[this.selectedServiceName]);
       }
     }
     return result;
@@ -409,7 +408,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       );
       await this.las2peer.saveSuccessModel(
         this.groupID,
-        this.selectedService,
+        this.selectedServiceName,
         successModelXml.outerHTML
       );
       const message = await this.translate
@@ -447,7 +446,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   private getCurrentWorkspace(): ApplicationWorkspace {
     return this.getWorkspaceByUserAndService(
       this.workspaceUser,
-      this.selectedService
+      this.selectedServiceName
     );
   }
 
@@ -459,43 +458,43 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private async initWorkspace() {
-    await this.store.waitUntilWorkspaceIsSynchronized().then(() => {
-      const myUsername = this.getMyUsername();
-      this.workspaceUser = myUsername;
-      if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-        this.communityWorkspace[myUsername] = {};
-      }
-      const userWorkspace = this.communityWorkspace[myUsername];
-      if (!Object.keys(userWorkspace).includes(this.selectedService)) {
-        if (!this.measureCatalog) {
-          this.measureCatalog = new MeasureCatalog({});
-        }
-        if (!this.successModel) {
-          this.successModel = new SuccessModel(
-            this.serviceMap[this.selectedService].alias,
-            this.selectedService,
-            {
-              'System Quality': [],
-              'Information Quality': [],
-              Use: [],
-              'User Satisfaction': [],
-              'Individual Impact': [],
-              'Community Impact': [],
-            },
-            [],
-            null
-          );
-        }
-        userWorkspace[this.selectedService] = {
-          createdAt: new Date().toISOString(),
-          createdBy: myUsername,
-          visitors: [],
-          catalog: this.measureCatalog,
-          model: this.successModel,
-        };
-      }
-      this.persistWorkspaceChanges();
-    });
+    // await this.store.waitUntilWorkspaceIsSynchronized().then(() => {
+    //   const myUsername = this.getMyUsername();
+    //   this.workspaceUser = myUsername;
+    //   if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+    //     this.communityWorkspace[myUsername] = {};
+    //   }
+    //   const userWorkspace = this.communityWorkspace[myUsername];
+    //   if (!Object.keys(userWorkspace).includes(this.selectedService)) {
+    //     if (!this.measureCatalog) {
+    //       this.measureCatalog = new MeasureCatalog({});
+    //     }
+    //     if (!this.successModel) {
+    //       this.successModel = new SuccessModel(
+    //         this.serviceMap[this.selectedService].alias,
+    //         this.selectedService,
+    //         {
+    //           'System Quality': [],
+    //           'Information Quality': [],
+    //           Use: [],
+    //           'User Satisfaction': [],
+    //           'Individual Impact': [],
+    //           'Community Impact': [],
+    //         },
+    //         [],
+    //         null
+    //       );
+    //     }
+    //     userWorkspace[this.selectedService] = {
+    //       createdAt: new Date().toISOString(),
+    //       createdBy: myUsername,
+    //       visitors: [],
+    //       catalog: this.measureCatalog,
+    //       model: this.successModel,
+    //     };
+    //   }
+    //   this.persistWorkspaceChanges();
+    // });
   }
 
   private persistWorkspaceChanges() {
@@ -529,10 +528,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       return;
     }
     const userWorkspace = this.communityWorkspace[myUsername];
-    if (!Object.keys(userWorkspace).includes(this.selectedService)) {
+    if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
       return;
     }
-    delete userWorkspace[this.selectedService];
+    delete userWorkspace[this.selectedServiceName];
     this.persistWorkspaceChanges();
   }
 
@@ -549,11 +548,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
     const myWorkspace = this.getWorkspaceByUserAndService(
       myUsername,
-      this.selectedService
+      this.selectedServiceName
     );
     const ownerWorkspace = this.getWorkspaceByUserAndService(
       owner,
-      this.selectedService
+      this.selectedServiceName
     );
     if (!myWorkspace || !ownerWorkspace) {
       return;

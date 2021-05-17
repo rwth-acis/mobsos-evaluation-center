@@ -11,6 +11,7 @@ import {
   withLatestFrom,
   tap,
   filter,
+  share,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
@@ -119,6 +120,7 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
+      tap((res) => console.log(res)),
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
           map((MeasureCatalogXML) =>
@@ -127,7 +129,8 @@ export class StateEffects {
             })
           )
         )
-      )
+      ),
+      share()
     )
   );
 
@@ -166,7 +169,8 @@ export class StateEffects {
             })
           )
         )
-      )
+      ),
+      share()
     )
   );
 }
