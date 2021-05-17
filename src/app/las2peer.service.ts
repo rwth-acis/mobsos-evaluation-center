@@ -2,7 +2,7 @@ import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap, timeout } from 'rxjs/operators';
 import { delayedRetry } from './services/retryOperator';
 
@@ -526,7 +526,10 @@ export class Las2peerService {
       groupID
     );
     let req = this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
-      tap((res) => console.log(res)),
+      tap((res) =>
+        console.log('IMMMMMMMMMMMMMMMMMMMMHERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR')
+      ),
+      catchError((err) => of(err)),
       map((response) => response['xml'])
     );
 

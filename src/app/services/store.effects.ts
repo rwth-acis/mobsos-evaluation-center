@@ -12,6 +12,7 @@ import {
   tap,
   filter,
   share,
+  shareReplay,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
@@ -121,16 +122,20 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
       tap((res) => console.log(res)),
-      switchMap(({ groupId }) =>
+      mergeMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
+          share(),
           map((MeasureCatalogXML) =>
             Action.storeCatalogXML({
               xml: MeasureCatalogXML,
             })
-          )
+          ),
+          catchError((err) => {
+            this.ngrxStore.dispatch(Action.storeCatalogXML({ xml: null }));
+            return of(err);
+          })
         )
-      ),
-      share()
+      )
     )
   );
 

@@ -7,7 +7,7 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 
-import { EMPTY, Observable, of } from 'rxjs';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
 import { catchError, share, shareReplay, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
@@ -46,20 +46,18 @@ export class Interceptor implements HttpInterceptor {
             if (err.status == 404 || err.status >= 500) {
               this.unreachableServices[req.url] = true;
             }
-            throw err;
           }
         ),
 
         catchError((err) => {
           this.ngrxStore.dispatch(decrementLoading());
-
-          if (err.status == 404 || err.status >= 500) {
+          delete this.cachedRequests[req.url];
+          if (err.status >= 500) {
             this.unreachableServices[req.url] = true;
           }
-          throw err;
+          return of(err);
         }),
-        shareReplay(1), // need to use shareReplay to prevent observable from terminating
-        share()
+        shareReplay(1) // need to use shareReplay to prevent observable from terminating
       );
       if (req.method === 'GET') {
         this.cachedRequests[req.url] = observableRequest; //put the observable request into the request map so further requests can subscribe to it
