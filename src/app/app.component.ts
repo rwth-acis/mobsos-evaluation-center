@@ -93,8 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private ngrxStore: Store,
-    private effects: StateEffects
+    private ngrxStore: Store
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -161,9 +160,6 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((group) => {
         this.selectedGroupForm.reset(group.name);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
-        this.effects.fetchMeasureCatalog$.subscribe((state) => {
-          console.log(state);
-        });
       });
     this.ngrxStore.subscribe((state) => {
       console.log(state);

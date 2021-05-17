@@ -36,6 +36,7 @@ export class Interceptor implements HttpInterceptor {
       //make a new request, handle any errors
       const observableRequest = next.handle(req).pipe(
         // delayedRetry(200, 3, 100),
+        shareReplay(1), // need to use shareReplay to prevent observable from terminating
         tap(
           (res) => {
             if (res instanceof HttpResponse) {
@@ -56,8 +57,7 @@ export class Interceptor implements HttpInterceptor {
             this.unreachableServices[req.url] = true;
           }
           return of(err);
-        }),
-        shareReplay(1) // need to use shareReplay to prevent observable from terminating
+        })
       );
       if (req.method === 'GET') {
         this.cachedRequests[req.url] = observableRequest; //put the observable request into the request map so further requests can subscribe to it

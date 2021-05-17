@@ -121,7 +121,6 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
-      tap((res) => console.log(res)),
       mergeMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
           share(),
@@ -129,11 +128,7 @@ export class StateEffects {
             Action.storeCatalogXML({
               xml: MeasureCatalogXML,
             })
-          ),
-          catchError((err) => {
-            this.ngrxStore.dispatch(Action.storeCatalogXML({ xml: null }));
-            return of(err);
-          })
+          )
         )
       )
     )

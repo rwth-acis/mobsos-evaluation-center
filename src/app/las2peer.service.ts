@@ -3,7 +3,7 @@ import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap, timeout } from 'rxjs/operators';
+import { catchError, map, shareReplay, tap, timeout } from 'rxjs/operators';
 import { delayedRetry } from './services/retryOperator';
 
 export interface SuccessModel {
@@ -227,10 +227,10 @@ export class Las2peerService {
       ngHttpOptions.responseType = options.responseType;
     }
     return this.http.request(options.method, url, ngHttpOptions).pipe(
-      delayedRetry(700, 2, 100),
+      shareReplay(1),
       catchError((err) => {
         console.log(err);
-        return of(undefined);
+        return of(null);
       })
     );
   }
@@ -526,11 +526,7 @@ export class Las2peerService {
       groupID
     );
     let req = this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
-      tap((res) =>
-        console.log('IMMMMMMMMMMMMMMMMMMMMHERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR')
-      ),
-      catchError((err) => of(err)),
-      map((response) => response['xml'])
+      map((response) => (response ? response['xml'] : null))
     );
 
     return req;
