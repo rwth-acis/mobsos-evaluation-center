@@ -131,7 +131,7 @@ export class StateEffects {
             })
           ),
           catchError((err) => {
-            Action.storeCatalogXML({ xml: null });
+            this.ngrxStore.dispatch(Action.storeCatalogXML({ xml: null }));
             return of(undefined);
           })
         )
@@ -172,10 +172,13 @@ export class StateEffects {
             Action.storeCatalogXML({
               xml: SuccessModelXML,
             })
-          )
+          ),
+          catchError((err) => {
+            this.ngrxStore.dispatch(Action.storeSuccessModelXML({ xml: null }));
+            return of(undefined);
+          })
         )
-      ),
-      share()
+      )
     )
   );
 }
