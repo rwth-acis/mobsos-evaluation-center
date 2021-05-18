@@ -33,7 +33,7 @@ export function delayedRetry(
               return of(error).pipe(delay(backofftime));
             }
 
-            return of(error);
+            return of(getErrorMessage(maxRetry));
           })
         )
       )

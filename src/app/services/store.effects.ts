@@ -12,6 +12,8 @@ import {
   tap,
   filter,
   share,
+  exhaustMap,
+  throttleTime,
   shareReplay,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
@@ -121,14 +123,17 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
-      mergeMap(({ groupId }) =>
+      switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
-          share(),
           map((MeasureCatalogXML) =>
             Action.storeCatalogXML({
               xml: MeasureCatalogXML,
             })
-          )
+          ),
+          catchError((err) => {
+            Action.storeCatalogXML({ xml: null });
+            return of(undefined);
+          })
         )
       )
     )

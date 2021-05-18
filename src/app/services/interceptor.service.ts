@@ -5,12 +5,14 @@ import {
   HttpHandler,
   HttpRequest,
   HttpResponse,
+  HttpErrorResponse,
 } from '@angular/common/http';
 
-import { EMPTY, Observable, of, throwError } from 'rxjs';
-import { catchError, share, shareReplay, tap } from 'rxjs/operators';
+import { BehaviorSubject, EMPTY, Observable, of, throwError } from 'rxjs';
+import { catchError, filter, share, shareReplay, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
+import { delayedRetry } from './retryOperator';
 
 /** Pass untouched request through to the next request handler. */
 @Injectable({
@@ -26,41 +28,53 @@ export class Interceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     if (req.url in this.unreachableServices) {
-      return of(undefined);
+      return of(null);
     }
-    if (req.method === 'GET' && this.cachedRequests[req.url]) {
+    if (req.method === 'GET' && req.url in this.cachedRequests) {
       // a request is already being made to this url
+      this.cachedRequests[req.url].subscribe((err) => {
+        if (err.status !== 200) {
+          console.log(err.status);
+        }
+      });
       return this.cachedRequests[req.url]; //return an observable of the initial request instead of making a new call
     } else {
       this.ngrxStore.dispatch(incrementLoading());
       //make a new request, handle any errors
-      const observableRequest = next.handle(req).pipe(
-        // delayedRetry(200, 3, 100),
-        shareReplay(1), // need to use shareReplay to prevent observable from terminating
+      let observableRequest = next.handle(req).pipe(
+        filter(
+          (res) =>
+            res instanceof HttpErrorResponse || res instanceof HttpResponse
+        ),
         tap(
           (res) => {
             if (res instanceof HttpResponse) {
               this.handleResponse(res, req);
             }
-          },
-          (err) => {
-            if (err.status == 404 || err.status >= 500) {
-              this.unreachableServices[req.url] = true;
-            }
           }
+          // (err) => {
+          //   if (err.status == 404 || err.status >= 500) {
+          //     this.unreachableServices[req.url] = true;
+          //   }
+          //   this.handleResponse(null, req);
+          // }
         ),
-
         catchError((err) => {
           this.ngrxStore.dispatch(decrementLoading());
-          delete this.cachedRequests[req.url];
+
+          setTimeout(() => {
+            delete this.cachedRequests[req.url];
+          }, 30000);
           if (err.status >= 500) {
             this.unreachableServices[req.url] = true;
           }
-          return of(err);
-        })
+          return throwError(err);
+        }),
+        shareReplay(1) // need to use shareReplay to prevent observable from terminating
       );
       if (req.method === 'GET') {
-        this.cachedRequests[req.url] = observableRequest; //put the observable request into the request map so further requests can subscribe to it
+        this.cachedRequests[req.url] = observableRequest; // put the observable request into the request map so further requests can subscribe to it
+        this.cachedRequests[req.url].subscribe();
       }
       return observableRequest;
     }
@@ -68,8 +82,8 @@ export class Interceptor implements HttpInterceptor {
 
   handleResponse(res: HttpResponse<any>, req: HttpRequest<any>) {
     this.ngrxStore.dispatch(decrementLoading());
-    // this.cachedResponses[req.url] = res;
-
-    delete this.cachedRequests[req.url];
+    setTimeout(() => {
+      delete this.cachedRequests[req.url];
+    }, 30000);
   }
 }

@@ -4,6 +4,7 @@ import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, shareReplay, tap, timeout } from 'rxjs/operators';
+import { merge } from 'lodash';
 import { delayedRetry } from './services/retryOperator';
 
 export interface SuccessModel {
@@ -89,27 +90,17 @@ export class Las2peerService {
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
     } = {}
   ): Promise<T> {
-    // options = merge(
-    //   {
-    //     method: 'GET',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'accept-language': 'en-US',
-    //     },
-    //   },
-    //   options
-    // );
-
-    options = {
-      ...options,
-      ...{
+    options = merge(
+      {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
         },
       },
-    };
+      options
+    );
+
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
@@ -168,6 +159,7 @@ export class Las2peerService {
       };
       body?: string;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+      observe?: string;
     } = {}
   ) {
     options = {
@@ -226,13 +218,9 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
-    return this.http.request(options.method, url, ngHttpOptions).pipe(
-      shareReplay(1),
-      catchError((err) => {
-        console.log(err);
-        return of(null);
-      })
-    );
+    return this.http
+      .request(options.method, url, ngHttpOptions)
+      .pipe(shareReplay(1));
   }
 
   async fetchServicesFromDiscovery() {
@@ -525,9 +513,13 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID
     );
-    let req = this.makeRequestAndObserve<MeasureCatalog>(url).pipe(
+    let req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+      observe: 'body',
+    }).pipe(
+      // delayedRetry(20, 3, 5),
       map((response) => (response ? response['xml'] : null))
     );
+    req.subscribe();
 
     return req;
   }
@@ -648,7 +640,7 @@ export class Las2peerService {
       headers: {
         ...authorHeader,
       },
-    }).pipe(delayedRetry(700, 5, 100));
+    });
   }
 
   async searchProjectOnReqBaz(project: string) {
