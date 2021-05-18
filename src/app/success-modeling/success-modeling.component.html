@@ -1,5 +1,5 @@
 <!-- Only show component if group is selected -->
-<div *ngIf="selectedGroup$ | async as group; else noGroupSelect">
+<ng-container *ngIf="selectedGroup$ | async as group; else noGroupSelect">
   <h2 *ngIf="group?.name">
     {{
       'success-modeling.community-workspace'
@@ -230,34 +230,29 @@
   </mat-card>
 
   <!-- workspace info -->
-  <mat-card *ngIf="editMode$ | async" id="workspace-info">
-    <div id="info-content">
-      <mat-icon color="primary">info_outline</mat-icon>
-      <span id="info-text">
-        <span *ngIf="workspaceUser === getMyUsername()">
-          {{ 'success-modeling.info.own-workspace' | translate }}
-        </span>
-        <span *ngIf="workspaceUser !== getMyUsername()">
-          {{ 'success-modeling.info.workspace-of' | translate }}
-          <strong>{{ workspaceUser }}</strong
-          >.
-          <span *ngIf="getMyRole() === 'spectator'">
-            {{ 'success-modeling.info.workspace-rights-spectator' | translate }}
+  <ng-container
+    *ngIf="(user$ | async)?.profile?.preferred_username as username"
+  >
+    <mat-card *ngIf="editMode$ | async" id="workspace-info">
+      <div id="info-content">
+        <mat-icon color="primary">info_outline</mat-icon>
+        <span id="info-text">
+          <span *ngIf="workspaceUser === username; else notUserWorkspace">
+            {{ 'success-modeling.info.own-workspace' | translate }}
           </span>
-          <span *ngIf="getMyRole() === 'editor'">
-            {{ 'success-modeling.info.workspace-rights-editor' | translate }}
-          </span>
-          {{ 'success-modeling.info.workspace-ask-owner-to-save' | translate }}
         </span>
-      </span>
-    </div>
-  </mat-card>
+      </div>
+    </mat-card>
+  </ng-container>
 
-  <div
+  <!-- Success model -->
+  <ng-container
     *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
   >
-    <div *ngIf="workspaceInitialized$ | async; else notInitialized">
-      <div *ngIf="successModel$ | async as successModel; else noSuccessModel">
+    <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
+      <ng-container
+        *ngIf="successModel$ | async as successModel; else noSuccessModel"
+      >
         <h3 *ngIf="group?.name">
           {{
             'success-modeling.community-success-model'
@@ -269,8 +264,8 @@
                   }
           }}
         </h3>
-        <div *ngIf="measureCatalog$ | async as measureCatalog">
-          <app-questionnaires
+        <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+          <!-- <app-questionnaires
             [availableQuestionnaires]="availableQuestionnaires"
             [model]="successModel"
             [measures]="measureCatalog.measures"
@@ -279,45 +274,41 @@
             [groupID]="(selectedGroup$ | async).id"
             (modelChange)="persistWorkspaceChanges()"
             (measuresChange)="persistWorkspaceChanges()"
-          ></app-questionnaires>
-          <div *ngIf="translationMap !== undefined">
-            <app-success-dimension
-              *ngFor="let dimension of dimensions"
-              [factors]="successModel.dimensions[dimension]"
-              (factorsChange)="persistWorkspaceChanges()"
-              (measuresChange)="persistWorkspaceChanges()"
-              [measures]="measureCatalog.measures"
-              [service]="selectedService"
-              [editMode]="canEdit()"
-              name="{{
-                'success-modeling.dimensions.name.' + translationMap[dimension]
-                  | translate
-              }}"
-              description="{{
-                'success-modeling.dimensions.description.' +
-                  translationMap[dimension] | translate
-              }}"
-              icon="{{ iconMap[dimension] }}"
-            ></app-success-dimension>
-          </div>
+          ></app-questionnaires> -->
+
+          <app-success-dimension
+            *ngFor="let dimension of dimensions"
+            [factors]="successModel.dimensions[dimension]"
+            (sendFactorsToSuccessModel)="onFactorsChange($event)"
+            (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
+            [measures]="measureCatalog.measures"
+            [service]="selectedService"
+            name="{{
+              'success-modeling.dimensions.name.' + translationMap[dimension]
+                | translate
+            }}"
+            description="{{
+              'success-modeling.dimensions.description.' +
+                translationMap[dimension] | translate
+            }}"
+            icon="{{ iconMap[dimension] }}"
+          ></app-success-dimension>
 
           <button
             id="save-model-button"
             mat-raised-button
             *ngIf="editMode$ | async"
             color="primary"
-            [disabled]="
-              (getMyRole() && getMyRole() !== 'owner') || saveInProgress
-            "
+            [disabled]="saveInProgress"
             (click)="onSaveClicked()"
           >
             {{ 'success-modeling.save-model-button' | translate }}
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ng-container>
 
 <ng-template #noGroupSelect>
   <mat-card>
@@ -346,4 +337,17 @@
 <ng-template #notInitialized>
   <!-- success model still loading -->
   <mat-spinner style="margin: auto"> </mat-spinner>
+</ng-template>
+
+<ng-template #notUserWorkspace>
+  {{ 'success-modeling.info.workspace-of' | translate }}
+  <strong>{{ workspaceUser }}</strong
+  >.
+  <span *ngIf="getMyRole() === 'spectator'">
+    {{ 'success-modeling.info.workspace-rights-spectator' | translate }}
+  </span>
+  <span *ngIf="getMyRole() === 'editor'">
+    {{ 'success-modeling.info.workspace-rights-editor' | translate }}
+  </span>
+  {{ 'success-modeling.info.workspace-ask-owner-to-save' | translate }}
 </ng-template>

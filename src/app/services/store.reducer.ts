@@ -21,6 +21,7 @@ export const initialState: AppState = {
   expertMode: false,
   successModelInitialized: false,
   measureCatalogInitialized: false,
+  currentApplicationWorkspace: undefined,
 };
 
 const _Reducer = createReducer(
@@ -54,6 +55,8 @@ const _Reducer = createReducer(
           ...state,
           selectedGroup: state.groups[groupId],
           selectedGroupId: groupId,
+          measureCatalogXML: initialState.measureCatalogXML,
+          measureCatalogInitialized: false,
         }
       : state
   ),
@@ -63,6 +66,8 @@ const _Reducer = createReducer(
           ...state,
           selectedService: service,
           selectedServiceName: service?.name,
+          successModelXML: initialState.successModelXML,
+          successModelInitialized: false,
         }
       : state
   ),
@@ -111,6 +116,10 @@ const _Reducer = createReducer(
   on(Actions.decrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls - 1,
+  })),
+  on(Actions.updateAppWorkspace, (state, { workspace }) => ({
+    ...state,
+    currentApplicationWorkspace: workspace,
   })),
   on(Actions.storeVisualizationData, (state, { data, query }) => ({
     ...state,

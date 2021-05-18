@@ -32,8 +32,8 @@
         [service]="service"
         [measures]="measures"
         [editMode]="editMode"
-        (factorChange)="factorsChange.emit(factors)"
-        (measuresChange)="measuresChange.emit(measures)"
+        (sendFactorToDimension)="_onFactorsChange($event)"
+        (sendMeasuresToDimension)="_onMeasuresChange($event)"
       >
       </app-success-factor>
     </div>

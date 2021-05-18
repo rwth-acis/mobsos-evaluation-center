@@ -10,6 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
+import { editFactorForDimension } from '../services/store.actions';
 
 @Component({
   selector: 'app-success-factor',
@@ -18,12 +19,13 @@ import { EDIT_MODE } from '../services/store.selectors';
 })
 export class SuccessFactorComponent implements OnInit {
   @Input() factor: SuccessFactor;
+  @Input() dimensionName: string;
   @Input() service: ServiceInformation;
   @Input() measures: MeasureMap;
   editMode$ = this.ngrxStore.select(EDIT_MODE);
 
-  @Output() factorChange = new EventEmitter<SuccessFactor>();
-  @Output() measuresChange = new EventEmitter<MeasureMap>();
+  @Output() sendFactorToDimension = new EventEmitter<SuccessFactor>();
+  @Output() sendMeasuresToDimension = new EventEmitter<MeasureMap>();
 
   constructor(
     private translate: TranslateService,
@@ -52,13 +54,16 @@ export class SuccessFactorComponent implements OnInit {
     const dialogRef = this.dialog.open(PickMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
-      data: { measures: Object.values(this.measures), service: this.service },
+      data: {
+        measures: Object.values(this.measures),
+        service: this.service,
+      },
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.factor.measures.push((result as Measure).name);
       }
-      this.factorChange.emit(this.factor);
+      this.sendFactorToDimension.emit(this.factor);
     });
     dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
       const existingMeasures = [];
@@ -72,8 +77,8 @@ export class SuccessFactorComponent implements OnInit {
           delete this.measures[measureName];
         }
       }
-      console.error(this.measures);
-      this.measuresChange.emit(this.measures);
+      // console.error(this.measures);
+      this.sendMeasuresToDimension.emit(this.measures);
     });
   }
 
@@ -83,16 +88,21 @@ export class SuccessFactorComponent implements OnInit {
       data: { factor: this.factor },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe((result: SuccessFactor) => {
       if (result) {
+        this.ngrxStore.dispatch(
+          editFactorForDimension({
+            factor: result,
+            dimensionName: this.dimensionName,
+          })
+        );
         this.factor = result;
-        this.factorChange.emit(this.factor);
       }
     });
   }
 
   private removeMeasure(measureIndex: number) {
     this.factor.measures.splice(measureIndex, 1);
-    this.factorChange.emit(this.factor);
+    this.sendFactorToDimension.emit(this.factor);
   }
 }

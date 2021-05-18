@@ -6,6 +6,7 @@ import {
   ServiceInformation,
 } from '../store.service';
 import { VisualizationData } from './visualization.model';
+import { ApplicationWorkspace } from './workspace.model';
 
 /**
  * state of the app
@@ -28,6 +29,7 @@ export interface AppState {
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;
   expertMode: boolean;
+  currentApplicationWorkspace: ApplicationWorkspace;
 }
 /**
  * What the store looks like

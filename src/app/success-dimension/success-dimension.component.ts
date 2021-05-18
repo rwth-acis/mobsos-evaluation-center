@@ -22,8 +22,11 @@ export class SuccessDimensionComponent implements OnInit {
   @Input() icon: string;
   editMode$ = this.ngrxStore.select(EDIT_MODE);
 
-  @Output() factorsChange = new EventEmitter<SuccessFactor[]>();
-  @Output() measuresChange = new EventEmitter<MeasureMap>();
+  @Output() sendFactorsToSuccessModel = new EventEmitter<{
+    factors: SuccessFactor[];
+    dimensionName: string;
+  }>();
+  @Output() sendMeasuresToSuccessModel = new EventEmitter<MeasureMap>();
 
   constructor(
     private dialog: MatDialog,
@@ -45,16 +48,28 @@ export class SuccessDimensionComponent implements OnInit {
 
   openAddFactorDialog() {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
-      width: '250px',
+      // width: '250px',
       data: { factor: new SuccessFactor('', []) },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this._factors.push(result);
-        this.factorsChange.emit(this._factors);
+        this.sendFactorsToSuccessModel.emit({
+          factors: this._factors,
+          dimensionName: this.name,
+        });
       }
     });
+  }
+
+  _onMeasuresChange(event) {
+    this.sendMeasuresToSuccessModel.emit(event);
+  }
+
+  _onFactorsChange(event) {
+    console.log(event);
+    this.sendFactorsToSuccessModel.emit(event);
   }
 
   async openRemoveFactorDialog(factorIndex: number) {
@@ -74,6 +89,9 @@ export class SuccessDimensionComponent implements OnInit {
 
   private removeFactor(factorIndex: number) {
     this._factors.splice(factorIndex, 1);
-    this.factorsChange.emit(this._factors);
+    this.sendFactorsToSuccessModel.emit({
+      factors: this._factors,
+      dimensionName: this.name,
+    });
   }
 }

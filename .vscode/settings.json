@@ -12,5 +12,6 @@
         "peermon",
         "reqbaz",
         "signin"
-    ]
+    ],
+    "angular.enable-strict-mode-prompt": false
 }

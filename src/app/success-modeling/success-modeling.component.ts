@@ -23,7 +23,9 @@ import {
   disableEdit,
   fetchSuccessModel,
   setService,
+  storeSuccessModelXML,
   toggleEdit,
+  updateAppWorkspace,
 } from '../services/store.actions';
 import { FormControl } from '@angular/forms';
 import {
@@ -33,6 +35,7 @@ import {
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
+  USER,
   USER_GROUPS,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
@@ -54,10 +57,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
-
   workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
   userGroups$ = this.ngrxStore.select(USER_GROUPS);
-  serviceMap: ServiceCollection = {};
+  user$ = this.ngrxStore.select(USER);
   selectedServiceName: string;
   initialServiceName;
 
@@ -68,7 +70,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   iconMap;
   successModelXml: Document;
   successModel: SuccessModel = undefined;
-  selectedServiceForm = new FormControl('');
+  selectedService;
 
   communityWorkspace: CommunityWorkspace;
   user;
@@ -126,7 +128,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.selectedService$
       .pipe(filter((service) => service !== undefined))
-
       .subscribe((service) => {
         this.selectedServiceName = service.alias ? service.alias : service.name;
         if (!this.initialServiceName) {
@@ -134,35 +135,22 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           this.ngrxStore.dispatch(setService({ service }));
         }
       });
-    // this.store.startPolling();
 
     this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
     this.userGroups$.subscribe((groups) => (this.myGroups = groups));
     this.selectedGroup$.subscribe((group) => (this.selectedGroup = group));
-    // this.store.selectedGroup.subscribe((groupID) => {
-    //   this.groupID = groupID;
+    this.user$.subscribe((user) => (this.user = user));
+    this.services$.subscribe((services) => (this.services = services));
+    this.successModel$.subscribe(
+      (successModel) =>
+        (this.successModel = successModel
+          ? successModel
+          : this.emptySuccessModel())
+    );
+    this.selectedService$.subscribe(
+      (service) => (this.selectedService = service)
+    );
 
-    //   this.successModel =
-    //     this.successModelXml =
-    //     this.measureCatalog =
-    //     this.measureCatalogXml =
-    //       undefined;
-    //   this.fetchXml();
-    // });
-    // this.store.selectedService.subscribe((serviceID) => {
-    //   this.selectedService = serviceID;
-    //   this.fetchXml();
-    // });
-    // this.store.services.subscribe((services) => {
-    //   this.services = Object.keys(services);
-    //   this.serviceMap = services;
-    // });
-    // this.store.user.subscribe((user) => {
-    //   this.user = user;
-    //   if (!this.user && this.editMode) {
-    //     this.store.setEditMode(false);
-    //   }
-    // });
     this.store.communityWorkspace.subscribe(async (workspace) => {
       this.communityWorkspace = workspace;
       if (
@@ -185,18 +173,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           this.switchWorkspace(this.getMyUsername())
         );
       } else if (this.editMode) {
-        this.fetchXml();
         this.openClearWorkspaceDialog();
       }
       this.editMode = editMode;
-    });
-    this.store.groups.subscribe((groups) => {
-      const allGroups = Object.values(groups);
-      this.myGroups = allGroups.filter((group) => group.member).sort();
-    });
-    this.store.questionnaires.subscribe((questionnaires) => {
-      questionnaires.sort((a, b) => (a.name > b.name ? 1 : -1));
-      this.availableQuestionnaires = questionnaires;
     });
   }
 
@@ -206,44 +185,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   onServiceSelected(service: ServiceInformation) {
     this.store.setEditMode(false);
-    this.ngrxStore.dispatch(disableEdit());
-    this.ngrxStore.dispatch(setService({ service }));
-    this.cleanData();
-    this.store.selectedServiceSubject.next(service.name);
-  }
 
-  async fetchXml() {
-    // if (this.groupID) {
-    //   this.las2peer
-    //     .fetchMeasureCatalog(this.groupID)
-    //     .then((xml) => {
-    //       if (!xml) {
-    //         xml = '';
-    //       }
-    //       this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
-    //       this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
-    //     })
-    //     .catch(() => {
-    //       this.measureCatalogXml = null;
-    //       this.measureCatalog = null;
-    //     });
-    //   if (this.selectedService) {
-    //     const setServiceXml = (xml) => {
-    //       if (!xml) {
-    //         xml = '';
-    //       }
-    //       this.successModelXml = SuccessModelingComponent.parseXml(xml);
-    //       this.successModel = this.parseModel(this.successModelXml);
-    //     };
-    //     this.las2peer
-    //       .fetchSuccessModel(this.groupID, this.selectedService)
-    //       .then(setServiceXml)
-    //       .catch(() => {
-    //         this.successModelXml = null;
-    //         this.successModelXml = null;
-    //       });
-    //   }
-    // }
+    // Make popup here to ask if user really wants to cancel editing
+    this.ngrxStore.dispatch(disableEdit());
+
+    this.ngrxStore.dispatch(setService({ service }));
   }
 
   onEditModeChanged() {
@@ -346,7 +292,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   isMemberOfSelectedGroup(): boolean {
-    return this.selectedGroup.member;
+    return this.user && this.selectedGroup.member;
   }
 
   canEdit() {
@@ -452,6 +398,17 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     );
   }
 
+  onMeasuresChange(event) {
+    console.log(event);
+  }
+  onFactorsChange({ factors, dimensionName }) {
+    console.log(factors);
+    this.successModel.dimensions[dimensionName] = factors;
+    this.ngrxStore.dispatch(
+      storeSuccessModelXML({ xml: this.successModel.toXml().outerHTML })
+    );
+  }
+
   private getMyUsername() {
     if (!this.user) {
       return null;
@@ -460,21 +417,21 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private async initWorkspace() {
-    // await this.store.waitUntilWorkspaceIsSynchronized().then(() => {
+    // this.store.waitUntilWorkspaceIsSynchronized().then(() => {
     //   const myUsername = this.getMyUsername();
     //   this.workspaceUser = myUsername;
     //   if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
     //     this.communityWorkspace[myUsername] = {};
     //   }
     //   const userWorkspace = this.communityWorkspace[myUsername];
-    //   if (!Object.keys(userWorkspace).includes(this.selectedService)) {
+    //   if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
     //     if (!this.measureCatalog) {
     //       this.measureCatalog = new MeasureCatalog({});
     //     }
     //     if (!this.successModel) {
     //       this.successModel = new SuccessModel(
-    //         this.serviceMap[this.selectedService].alias,
-    //         this.selectedService,
+    //         this.selectedService.alias,
+    //         this.selectedService.name,
     //         {
     //           'System Quality': [],
     //           'Information Quality': [],
@@ -487,23 +444,43 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     //         null
     //       );
     //     }
-    //     userWorkspace[this.selectedService] = {
+    //     const appworkspace = {
     //       createdAt: new Date().toISOString(),
     //       createdBy: myUsername,
     //       visitors: [],
     //       catalog: this.measureCatalog,
     //       model: this.successModel,
     //     };
+    //     userWorkspace[this.selectedServiceName] = appworkspace;
+    //     this.ngrxStore.dispatch(
+    //       updateAppWorkspace({ workspace: appworkspace })
+    //     );
     //   }
     //   this.persistWorkspaceChanges();
     // });
   }
 
-  private persistWorkspaceChanges() {
-    this.logger.debug(
-      'Workspace changed: ' + JSON.stringify(this.communityWorkspace)
+  emptySuccessModel() {
+    return new SuccessModel(
+      this.selectedService.alias,
+      this.selectedService.name,
+      {
+        'System Quality': [],
+        'Information Quality': [],
+        Use: [],
+        'User Satisfaction': [],
+        'Individual Impact': [],
+        'Community Impact': [],
+      },
+      [],
+      null
     );
-    this.store.setCommunityWorkspace(this.communityWorkspace);
+  }
+  private persistWorkspaceChanges() {
+    // this.logger.debug(
+    //   'Workspace changed: ' + JSON.stringify(this.communityWorkspace)
+    // );
+    // this.store.setCommunityWorkspace(this.communityWorkspace);
   }
 
   private async openClearWorkspaceDialog() {
@@ -525,16 +502,16 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private removeWorkspace() {
-    const myUsername = this.user.profile.preferred_username;
-    if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-      return;
-    }
-    const userWorkspace = this.communityWorkspace[myUsername];
-    if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
-      return;
-    }
-    delete userWorkspace[this.selectedServiceName];
-    this.persistWorkspaceChanges();
+    // const myUsername = this.user.profile.preferred_username;
+    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+    //   return;
+    // }
+    // const userWorkspace = this.communityWorkspace[myUsername];
+    // if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
+    //   return;
+    // }
+    // delete userWorkspace[this.selectedServiceName];
+    // this.persistWorkspaceChanges();
   }
 
   private cleanData() {

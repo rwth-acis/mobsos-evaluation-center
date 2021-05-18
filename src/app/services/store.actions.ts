@@ -1,6 +1,11 @@
 import { createAction, props } from '@ngrx/store';
+import { SuccessFactor } from 'src/success-model/success-factor';
 import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from '../models/workspace.model';
 
 enum FetchActions {
   FETCH_SERVICES = 'Fetch services from the network',
@@ -18,7 +23,10 @@ enum StoreActions {
   STORE_USER = 'Store the user',
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
-  FETCH_VISUALIZATION_DATA = 'Store visualization data from the qvs',
+  STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
+  UPDATE_APPLICATION_WORKSPACE = 'updates the current application workspace',
+  UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
+  EDIT_FACTOR = 'updates a specific factor for a dimension',
 }
 
 enum StateActions {
@@ -71,6 +79,11 @@ export const storeUser = createAction(
   props<{ user: User }>()
 );
 
+export const editFactorForDimension = createAction(
+  StoreActions.EDIT_FACTOR,
+  props<{ factor: SuccessFactor; dimensionName: string }>()
+);
+
 export const storeVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
   props<{ data: any; query: string }>()
@@ -84,6 +97,15 @@ export const storeCatalogXML = createAction(
 export const storeSuccessModelXML = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
   props<{ xml: string }>()
+);
+export const updateAppWorkspace = createAction(
+  StoreActions.UPDATE_APPLICATION_WORKSPACE,
+  props<{ workspace: ApplicationWorkspace }>()
+);
+
+export const updateCommunityWorkspace = createAction(
+  StoreActions.UPDATE_COMMUNITY_WORKSPACE,
+  props<{ workspace: CommunityWorkspace }>()
 );
 
 export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);

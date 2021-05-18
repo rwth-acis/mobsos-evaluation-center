@@ -17,14 +17,20 @@ import {
   shareReplay,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
+import { StoreService } from '../store.service';
 import * as Action from './store.actions';
-import { SELECTED_GROUP_ID, VISUALIZATION_DATA } from './store.selectors';
+import {
+  SELECTED_GROUP,
+  SELECTED_GROUP_ID,
+  VISUALIZATION_DATA,
+} from './store.selectors';
 
 @Injectable()
 export class StateEffects {
   constructor(
     private actions$: Actions,
     private l2p: Las2peerService,
+    private store: StoreService,
     private ngrxStore: Store,
     private logger: NGXLogger
   ) {}
@@ -112,10 +118,13 @@ export class StateEffects {
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      filter(({ service }) => service !== undefined),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
-      map(([{ service }, groupId]) =>
-        Action.fetchSuccessModel({ groupId, serviceName: service.name })
+      filter(([{ service }, groupId]) => service !== undefined),
+      tap(([action, groupId]) => {
+        this.store.startSynchronizingWorkspace(groupId);
+      }),
+      switchMap(([{ service }, groupId]) =>
+        of(Action.fetchSuccessModel({ groupId, serviceName: service.name }))
       )
     )
   );
