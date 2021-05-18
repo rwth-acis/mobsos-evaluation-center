@@ -13,10 +13,7 @@
         <mat-label>{{
           'success-modeling.select-application' | translate
         }}</mat-label>
-        <mat-select
-          [value]="initialServiceName"
-          (selectionChange)="onServiceSelected($event.value)"
-        >
+        <mat-select (selectionChange)="onServiceSelected($event.value)">
           <mat-option
             *ngFor="let service of services$ | async"
             [value]="service"
