@@ -264,7 +264,12 @@
         <h3 *ngIf="group?.name">
           {{
             'success-modeling.community-success-model'
-              | translate: { community: group.name }
+              | translate
+                : {
+                    service: selectedService.alias
+                      ? selectedService.alias
+                      : selectedService.name
+                  }
           }}
         </h3>
         <div *ngIf="measureCatalog$ | async as measureCatalog">

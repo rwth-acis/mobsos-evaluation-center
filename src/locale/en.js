@@ -74,7 +74,7 @@ export const translations = {
   },
   'success-modeling': {
     'community-workspace': 'Workspace of the {{community}} Community',
-    'community-success-model': 'Success Model of the {{community}} Community',
+    'community-success-model': 'Success Model for the {{service}} service ',
     'copy-workspace-prompt':
       'Are you sure you want to replace your current model?',
     dimensions: {
