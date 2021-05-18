@@ -125,8 +125,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
       .subscribe((service) => {
         this.selectedServiceName = service.alias ? service.alias : service.name;
-        if (!this.initialServiceName)
+        if (!this.initialServiceName) {
           this.initialServiceName = this.selectedServiceName;
+          this.ngrxStore.dispatch(setService({ service }));
+        }
       });
     // this.store.startPolling();
 
@@ -200,9 +202,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.store.setEditMode(false);
     this.ngrxStore.dispatch(disableEdit());
     this.ngrxStore.dispatch(setService({ service }));
-    this.ngrxStore.dispatch(
-      fetchSuccessModel({ serviceName: service.name, groupId: this.groupID })
-    );
+
     this.cleanData();
     this.store.selectedServiceSubject.next(service.name);
   }

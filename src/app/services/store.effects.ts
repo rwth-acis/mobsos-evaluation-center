@@ -131,8 +131,7 @@ export class StateEffects {
             })
           ),
           catchError((err) => {
-            this.ngrxStore.dispatch(Action.storeCatalogXML({ xml: null }));
-            return of(undefined);
+            return of(Action.storeCatalogXML({ xml: null }));
           })
         )
       )
@@ -166,7 +165,7 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      switchMap(({ groupId, serviceName }) =>
+      mergeMap(({ groupId, serviceName }) =>
         this.l2p.fetchSuccessModelAsObservable(groupId, serviceName).pipe(
           map((SuccessModelXML) =>
             Action.storeCatalogXML({
@@ -174,8 +173,7 @@ export class StateEffects {
             })
           ),
           catchError((err) => {
-            this.ngrxStore.dispatch(Action.storeSuccessModelXML({ xml: null }));
-            return of(undefined);
+            return of(Action.storeSuccessModelXML({ xml: null }));
           })
         )
       )
