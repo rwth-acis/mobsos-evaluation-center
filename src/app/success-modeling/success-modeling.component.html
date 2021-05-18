@@ -6,7 +6,7 @@
         | translate: { community: group.name }
     }}
   </h2>
-  <!-- service selection -->
+  <!-- service selection and edit toggle -->
   <mat-card id="header-card">
     <mat-toolbar-row>
       <mat-form-field id="community-service-select">
@@ -27,7 +27,7 @@
     <mat-toolbar-row id="edit-controls">
       <mat-slide-toggle
         labelPosition="before"
-        [checked]="editMode"
+        [checked]="editMode$ | async"
         (toggleChange)="onEditModeChanged()"
         [disabled]="!isMemberOfSelectedGroup()"
         [matTooltip]="

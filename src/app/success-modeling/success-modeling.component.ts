@@ -33,6 +33,7 @@ import {
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
+  USER_GROUPS,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
@@ -53,7 +54,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+
   workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
+  userGroups$ = this.ngrxStore.select(USER_GROUPS);
   serviceMap: ServiceCollection = {};
   selectedServiceName: string;
   initialServiceName;
@@ -75,6 +78,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   saveInProgress = false;
   availableQuestionnaires: Questionnaire[];
   numberOfRequirements = 0;
+  selectedGroup: GroupInformation;
 
   constructor(
     private store: StoreService,
@@ -133,6 +137,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     // this.store.startPolling();
 
     this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
+    this.userGroups$.subscribe((groups) => (this.myGroups = groups));
+    this.selectedGroup$.subscribe((group) => (this.selectedGroup = group));
     // this.store.selectedGroup.subscribe((groupID) => {
     //   this.groupID = groupID;
 
@@ -340,10 +346,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   isMemberOfSelectedGroup(): boolean {
-    const searchResult = this.myGroups.filter(
-      (value) => value.id === this.groupID
+    return (
+      this.myGroups.find((group) => group.id === this.selectedGroup.id) !==
+      undefined
     );
-    return searchResult.length > 0;
   }
 
   canEdit() {

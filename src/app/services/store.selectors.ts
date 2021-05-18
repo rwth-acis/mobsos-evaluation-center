@@ -87,4 +87,5 @@ function _filterGroups(groups: GroupCollection) {
       userGroups.push(groups[groupId]);
     }
   }
+  return userGroups;
 }
