@@ -346,10 +346,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   isMemberOfSelectedGroup(): boolean {
-    return (
-      this.myGroups.find((group) => group.id === this.selectedGroup.id) !==
-      undefined
-    );
+    return this.selectedGroup.member;
   }
 
   canEdit() {

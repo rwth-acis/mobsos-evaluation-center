@@ -59,6 +59,10 @@ mat-sidenav-container {
 
   mat-sidenav-content {
     height: 100vh;
+    position: relative;
+    mat-progress-bar {
+      position: absolute !important;
+    }
     #las2peer-statusbar {
       --statusbar-background: #{mat-color($primary)};
       --user-widget-button-background: white;
