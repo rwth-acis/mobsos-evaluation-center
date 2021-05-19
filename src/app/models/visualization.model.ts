@@ -14,6 +14,7 @@ export class Visualization {
   type: string;
 
   static fromXml(xml: Element): Visualization {
+    if (!xml) return;
     const visualizationType = xml.getAttribute('type');
     switch (visualizationType) {
       case 'KPI':
@@ -28,6 +29,7 @@ export class Visualization {
   }
 
   public static fromPlainObject(obj: Visualization): Visualization {
+    if (!obj) return;
     const visualizationType = obj.type;
     switch (visualizationType) {
       case 'KPI':

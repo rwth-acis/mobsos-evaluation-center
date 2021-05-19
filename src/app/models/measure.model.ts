@@ -29,6 +29,7 @@ export class Measure {
   }
 
   public static fromPlainObject(obj: Measure): Measure {
+    if (!obj) return;
     const queries: Query[] = [];
     for (const objQuery of obj.queries) {
       queries.push(Query.fromPlainObject(objQuery));
@@ -45,7 +46,10 @@ export class Measure {
     for (const query of this.queries) {
       measure.appendChild(query.toXml());
     }
-    measure.appendChild(this.visualization.toXml());
+    if (this.visualization) {
+      measure.appendChild(this.visualization.toXml());
+    }
+
     return measure;
   }
 }

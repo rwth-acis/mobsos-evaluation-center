@@ -31,6 +31,8 @@ export class SuccessModel {
   ) {}
 
   public static emptySuccessModel(service: ServiceInformation) {
+    if (!service) return undefined;
+
     return new SuccessModel(
       service.alias,
       service.name,
@@ -48,6 +50,9 @@ export class SuccessModel {
   }
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
+    if (!obj) {
+      return undefined;
+    }
     const dimensions: DimensionMap = merge({}, initialDimensionMap);
     for (const objDimensionName of Object.keys(obj.dimensions)) {
       dimensions[objDimensionName] = [];

@@ -18,6 +18,7 @@ export class MeasureCatalog {
   }
 
   public static fromPlainObject(obj: MeasureCatalog): MeasureCatalog {
+    if (!obj) return;
     const measureMap: MeasureMap = {};
     for (const measureName of Object.keys(obj.measures)) {
       measureMap[measureName] = Measure.fromPlainObject(
