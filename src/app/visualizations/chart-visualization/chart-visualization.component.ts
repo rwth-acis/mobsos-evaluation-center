@@ -8,6 +8,12 @@ import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { Measure } from 'src/success-model/measure';
 import { ServiceInformation } from 'src/app/store.service';
+import { Store } from '@ngrx/store';
+import { fetchVisualizationData } from 'src/app/services/store.actions';
+import {
+  VISUALIZATION_DATA,
+  VISUALIZATION_DATA_FOR_QUERY,
+} from 'src/app/services/store.selectors';
 
 class GoogleChart {
   constructor(
@@ -31,17 +37,20 @@ export class ChartVisualizationComponent
   @Input() service: ServiceInformation;
   chart: GoogleChart;
   data: [][];
+  data$ = this.ngrxStore.select(
+    VISUALIZATION_DATA_FOR_QUERY,
+    this.measure.queries[0].sql
+  );
   columns;
 
   constructor(
     las2peer: Las2peerService,
     dialog: MatDialog,
-    private translate: TranslateService
+    private ngrxStore: Store
   ) {
     super(las2peer, dialog);
   }
   async ngOnInit() {
-    console.log(this.measure, this.service);
     if (!this.measure || !this.service) return;
     // this.graph.config.locale = this.translate.currentLang;
     const visualization = this.measure.visualization as ChartVisualization;
@@ -52,17 +61,19 @@ export class ChartVisualizationComponent
       ChartVisualizationComponent.applyCompatibilityFixForVisualizationService(
         query
       );
-    const dataTable = await this.fetchVisualization(query, queryParams, 'JSON');
-    if (dataTable instanceof Array && dataTable.length >= 2) {
-      const data = dataTable.slice(2);
-      this.chart = new GoogleChart(
-        '',
-        visualization.chartType,
-        data,
-        dataTable[0]
-      );
-      if (this.chart) this.visualizationInitialized = true;
-    }
+    this.ngrxStore.dispatch(fetchVisualizationData({ query, queryParams }));
+    this.data$.subscribe((dataTable) => {
+      if (dataTable instanceof Array && dataTable.length >= 2) {
+        const data = dataTable.slice(2);
+        this.chart = new GoogleChart(
+          '',
+          visualization.chartType,
+          data,
+          dataTable[0]
+        );
+        if (this.chart) this.visualizationInitialized = true;
+      }
+    });
   }
 
   async renderVisualization() {
