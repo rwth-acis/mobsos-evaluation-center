@@ -1,7 +1,7 @@
 <div id="measure-header">
   <button
     mat-icon-button
-    *ngIf="editMode && canDelete"
+    *ngIf="editMode$ | async"
     color="warn"
     (click)="onDeleteClicked($event)"
     id="delete-button"
@@ -10,7 +10,7 @@
   </button>
   <button
     mat-icon-button
-    *ngIf="editMode"
+    *ngIf="editMode$ | async"
     color="primary"
     (click)="onEditClicked($event)"
     id="edit-button"
@@ -22,30 +22,33 @@
   </h4>
 </div>
 
-<span *ngIf="visualizationError; else visualizationBlock">{{
-  visualizationError
-}}</span>
+<span
+  *ngIf="visualizationError || !measure.visualization; else visualizationBlock"
+  >{{ visualizationError }}</span
+>
 
 <ng-template #visualizationBlock>
-  <container-element [ngSwitch]="measure.visualization.type">
-    <app-chart-visualization
-      [measure]="measure"
-      [service]="service"
-      *ngSwitchCase="'Chart'"
-    ></app-chart-visualization>
-    <app-kpi-visualization
-      [measure]="measure"
-      [service]="service"
-      *ngSwitchCase="'KPI'"
-    ></app-kpi-visualization>
-    <app-value-visualization
-      [measure]="measure"
-      [service]="service"
-      *ngSwitchCase="'Value'"
-    ></app-value-visualization>
-    <div *ngSwitchDefault>
-      Unknown chartType: {{ measure.visualization.type }}
-    </div>
-  </container-element>
+  <div *ngIf="measure$ | async as measureAsync">
+    <container-element [ngSwitch]="measureAsync.visualization.type">
+      <app-chart-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'Chart'"
+      ></app-chart-visualization>
+      <app-kpi-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'KPI'"
+      ></app-kpi-visualization>
+      <app-value-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'Value'"
+      ></app-value-visualization>
+      <div *ngSwitchDefault>
+        Unknown chartType: {{ measureAsync.visualization.type }}
+      </div>
+    </container-element>
+  </div>
 </ng-template>
 <!-- <ng-template appVisualization></ng-template> -->
