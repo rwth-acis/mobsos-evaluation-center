@@ -1,16 +1,18 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ServiceInformation } from '../store.service';
-import { MeasureMap } from '../../success-model/measure-catalog';
-import { SuccessFactor } from '../../success-model/success-factor';
+
 import { MatDialog } from '@angular/material/dialog';
 import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-dialog.component';
-import { Measure } from '../../success-model/measure';
+
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
 import { editFactorInDimension } from '../services/store.actions';
+import { SuccessFactor } from '../models/success.model';
+import { MeasureMap } from '../models/measure.catalog';
+import { Measure } from '../models/measure.model';
 
 @Component({
   selector: 'app-success-factor',
@@ -57,20 +59,21 @@ export class SuccessFactorComponent implements OnInit {
       data: {
         measures: Object.values(this.measures),
         service: this.service,
+        factorName: this.factor.name,
+        dimensionName: this.dimensionName,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.factor.measures.push((result as Measure).name);
+        this.ngrxStore.dispatch(
+          editFactorInDimension({
+            factor: this.factor,
+            oldFactorName: this.factor.name,
+            dimensionName: this.dimensionName,
+          })
+        );
       }
-      this.ngrxStore.dispatch(
-        editFactorInDimension({
-          factor: this.factor,
-          oldFactorName: this.factor.name,
-          dimensionName: this.dimensionName,
-        })
-      );
-      this.sendFactorToDimension.emit(this.factor);
     });
     dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
       const existingMeasures = [];
