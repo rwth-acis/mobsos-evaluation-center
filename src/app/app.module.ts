@@ -111,6 +111,7 @@ export function localStorageSyncReducer(
           'selectedService',
           'questionnaires',
           'expertMode',
+          'measureCatalog',
         ],
       },
     ],

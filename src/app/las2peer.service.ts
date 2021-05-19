@@ -340,6 +340,25 @@ export class Las2peerService {
     );
   }
 
+  checkIfSuccessModelPresent(groupID: string, service: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MODELS_PATH,
+      groupID,
+      service
+    );
+    return this.makeRequestAndObserve<SuccessModel>(url, {
+      observe: 'response',
+    }).pipe(
+      map(
+        (response) => !!response,
+        () => false
+      ),
+      catchError(() => of(false))
+    );
+  }
+
   async fetchMobSOSQuestionnaires() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -492,6 +511,36 @@ export class Las2peerService {
       });
   }
 
+  saveSuccessModelAndObserve(groupID: string, service: string, xml: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MODELS_PATH,
+      groupID,
+      service
+    );
+    let method;
+
+    return this.checkIfSuccessModelPresent(groupID, service).pipe(
+      map((res) => {
+        method = res ? 'PUT' : 'POST';
+        return this.makeRequestAndObserve<SuccessModel>(url, {
+          method,
+          body: JSON.stringify({ xml }),
+          observe: 'response',
+        });
+      }),
+      catchError((err) => {
+        method = 'POST';
+        return this.makeRequestAndObserve<SuccessModel>(url, {
+          method,
+          body: JSON.stringify({ xml }),
+          observe: 'response',
+        });
+      })
+    );
+  }
+
   async fetchMeasureCatalog(groupID: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -524,6 +573,25 @@ export class Las2peerService {
     return req;
   }
 
+  checkIfMeasureCatalogPresent(groupID: string): Observable<boolean> {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MEASURE_PATH,
+      groupID
+    );
+    let req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+      observe: 'response',
+    });
+    return req.pipe(
+      map(
+        (response) => !!response,
+        () => false
+      ),
+      catchError(() => of(false))
+    );
+  }
+
   async saveMeasureCatalog(groupID: string, xml: string) {
     let method;
     try {
@@ -548,6 +616,36 @@ export class Las2peerService {
         this.logger.error(response);
         throw response;
       });
+  }
+
+  saveMeasureCatalogAndObserve(groupID: string, xml: string) {
+    let method: string;
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_MEASURE_PATH,
+      groupID
+    );
+    // we could somehow set a flag initially to see if a catalog already exists
+    return this.checkIfMeasureCatalogPresent(groupID).pipe(
+      map((res) => {
+        method = res ? 'PUT' : 'POST';
+
+        return this.makeRequestAndObserve<MeasureCatalog>(url, {
+          method,
+          body: JSON.stringify({ xml }),
+          observe: 'response',
+        });
+      }),
+      catchError(() => {
+        method = 'POST';
+        return this.makeRequestAndObserve<MeasureCatalog>(url, {
+          method,
+          body: JSON.stringify({ xml }),
+          observe: 'response',
+        });
+      })
+    );
   }
 
   async fetchMessageDescriptions(serviceName: string) {
