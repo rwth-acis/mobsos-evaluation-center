@@ -17,6 +17,12 @@ enum FetchActions {
   FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
 }
 
+enum PostActions {
+  SAVE_MODEL_AND_CATALOG = 'send an update to the server',
+  SUCCESS_RESPONSE = 'response was successfully',
+  FAILURE_RESPONSE = 'response was not successfully',
+}
+
 enum StoreActions {
   STORE_SERVICE_MESSAGE_DESCRIPTION = 'store the service descriptions for a service from the network',
   STORE_SERVICES = 'store services',
@@ -31,8 +37,7 @@ enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
-  UPDATE_MEASURE_IN_CATALOG = 'updates an existing measure in the catalog',
-  EDIT_MEASURE_IN_SUCCESS_FACTOR = 'updates an existing measure in the catalog',
+  EDIT_MEASURE = 'updates an existing measure ',
 }
 
 enum StateActions {
@@ -87,9 +92,23 @@ export const addMeasureToFactor = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
   props<{ measure: Measure; factorName: string; dimensionName: string }>()
 );
+
+export const editMeasure = createAction(
+  StoreActions.EDIT_MEASURE,
+  props<{
+    measure: Measure;
+    oldMeasureName: string;
+    factorName: string;
+    dimensionName: string;
+  }>()
+);
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
   props<{ groupsFromContactService; groupsFromMobSOS }>()
+);
+
+export const saveModelAndCatalog = createAction(
+  PostActions.SAVE_MODEL_AND_CATALOG
 );
 
 export const setGroup = createAction(
@@ -117,7 +136,7 @@ export const storeCatalogXML = createAction(
   props<{ xml: string }>()
 );
 
-export const storeSuccessModelXML = createAction(
+export const storeSuccessModel = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
   props<{ xml: string }>()
 );
@@ -138,3 +157,10 @@ export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 export const enableEdit = createAction(StateActions.ENABLE_EDIT);
 export const disableEdit = createAction(StateActions.DISABLE_EDIT);
 export const toggleExpertMode = createAction(StateActions.TOGGLE_EDIT);
+
+// http results
+export const successResponse = createAction(PostActions.SUCCESS_RESPONSE);
+export const failureResponse = createAction(
+  PostActions.FAILURE_RESPONSE,
+  props<{ reason: Error }>()
+);

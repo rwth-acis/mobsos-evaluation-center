@@ -2,7 +2,11 @@ import { createReducer, on } from '@ngrx/store';
 import { MeasureCatalog, MeasureMap } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { AppState } from '../models/state.model';
-import { SuccessFactor, SuccessModel } from '../models/success.model';
+import {
+  DimensionMap,
+  SuccessFactor,
+  SuccessModel,
+} from '../models/success.model';
 import { VData, VisualizationData } from '../models/visualization.model';
 import * as Actions from './store.actions';
 
@@ -17,15 +21,13 @@ export const initialState: AppState = {
   editMode: false,
   questionnaires: [],
   messageDescriptions: undefined,
-  visualizationData: undefined,
+  visualizationData: {},
   measureCatalog: undefined,
-  measureCatalogXML: undefined,
+  measureCatalogInitialized: false,
   successModel: undefined,
-  successModelXML: undefined,
+  successModelInitialized: false,
   currentNumberOfHttpCalls: 0,
   expertMode: false,
-  successModelInitialized: false,
-  measureCatalogInitialized: false,
   currentApplicationWorkspace: undefined,
 };
 
@@ -60,7 +62,6 @@ const _Reducer = createReducer(
           ...state,
           selectedGroup: state.groups[groupId],
           selectedGroupId: groupId,
-          measureCatalogXML: initialState.measureCatalogXML,
           measureCatalogInitialized: false,
         }
       : state
@@ -71,7 +72,6 @@ const _Reducer = createReducer(
           ...state,
           selectedService: service,
           selectedServiceName: service?.name,
-          successModelXML: initialState.successModelXML,
           successModelInitialized: false,
         }
       : state
@@ -99,7 +99,7 @@ const _Reducer = createReducer(
   on(Actions.storeCatalogXML, (state, { xml }) => ({
     ...state,
     measureCatalog: parseCatalog(xml),
-    measureCatalogXML: xml,
+
     measureCatalogInitialized: true,
   })),
   on(Actions.fetchSuccessModel, (state) => ({
@@ -110,14 +110,11 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
-  on(Actions.storeSuccessModelXML, (state, { xml }) => ({
+  on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModel: xml
-      ? state.successModel
+      ? parseModel(xml)
       : SuccessModel.emptySuccessModel(state.selectedService),
-    successModelXML: xml
-      ? xml
-      : SuccessModel.emptySuccessModel(state.selectedService).toXml().outerHTML,
     successModelInitialized: true,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -158,6 +155,24 @@ const _Reducer = createReducer(
         props.measure
       ),
     } as MeasureCatalog,
+  })),
+  on(Actions.editMeasure, (state, props) => ({
+    ...state,
+    measureCatalog: {
+      ...state.measureCatalog,
+      measures: updateMeasureInCatalog(
+        state.measureCatalog.measures,
+        props.measure,
+        props.oldMeasureName
+      ),
+    } as MeasureCatalog,
+    successModel: {
+      ...state.successModel,
+      dimensions: updateMeasureInSuccessModel(
+        state.successModel.dimensions,
+        props
+      ),
+    } as SuccessModel,
   })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,
@@ -326,7 +341,7 @@ function parseCatalog(xml: string): MeasureCatalog {
   try {
     return MeasureCatalog.fromXml(doc.documentElement);
   } catch (e) {
-    this.logger.warn(e);
+    console.error(e);
   }
 }
 
@@ -386,15 +401,58 @@ function addMeasureToFactorInModel(
   factorName: string,
   measure: Measure
 ) {
+  if (!dimensionName) return successModel;
   let dimensions = { ...successModel.dimensions };
   let factorsForDimension = [...dimensions[dimensionName]] as SuccessFactor[];
   let factorList = factorsForDimension.filter(
     (factor) => factor.name === factorName
   );
-  for (const factor of factorList) {
+  let copyFactorList = [];
+  for (let factor of factorList) {
+    factor = { ...factor, measures: [...factor.measures] } as SuccessFactor;
     factor.measures.push(measure.name);
+    copyFactorList.push(factor);
   }
 
-  dimensions[dimensionName] = factorList;
+  dimensions[dimensionName] = copyFactorList;
   return { ...successModel, dimensions: dimensions } as SuccessModel;
+}
+
+function updateMeasureInCatalog(
+  measures: MeasureMap,
+  measure: Measure,
+  oldMeasureName: string
+) {
+  let copy = { ...measures };
+  copy[oldMeasureName] = measure;
+  return copy;
+}
+
+function updateMeasureInSuccessModel(
+  dimensions: DimensionMap,
+  props: {
+    measure: Measure;
+    oldMeasureName: string;
+    factorName: string;
+    dimensionName: string;
+  }
+) {
+  let copyDimensions = { ...dimensions };
+  let copyFactors = [...copyDimensions[props.dimensionName]];
+  copyFactors = copyFactors.map((factor) =>
+    factor.name === props.factorName
+      ? updateMeasureInFactor(factor, props.measure, props.oldMeasureName)
+      : factor
+  );
+  copyDimensions[props.dimensionName] = copyFactors;
+  return copyDimensions;
+}
+
+function updateMeasureInFactor(
+  factor: SuccessFactor,
+  measure: Measure,
+  oldMeasureName: string
+) {
+  let copy = [...factor.measures];
+  return copy.map((m) => (measure.name === oldMeasureName ? measure : m));
 }

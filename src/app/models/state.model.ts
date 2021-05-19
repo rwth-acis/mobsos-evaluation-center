@@ -26,10 +26,10 @@ export interface AppState {
   messageDescriptions: object;
   visualizationData: VisualizationData;
   successModel: SuccessModel;
-  successModelXML: string;
+
   successModelInitialized: boolean;
   measureCatalog: MeasureCatalog;
-  measureCatalogXML: string;
+
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;
   expertMode: boolean;

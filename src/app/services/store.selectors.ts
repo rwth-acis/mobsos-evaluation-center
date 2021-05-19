@@ -9,6 +9,9 @@ import { SuccessModel } from '../models/success.model';
 export const SERVICES = (state: StoreState) =>
   Object.values(state.Reducer.services);
 
+export const MEASURE = (state: StoreState, name: string) =>
+  state.Reducer.measureCatalog.measures[name];
+
 export const GROUPS = (state: StoreState) =>
   Object.values(state.Reducer.groups);
 
@@ -21,10 +24,11 @@ export const WORKSPACE_INITIALIZED = (state: StoreState) =>
 
 export const VISUALIZATION_DATA_FOR_QUERY = (
   state: StoreState,
-  query: string
+  queryString: string
 ) =>
-  state.Reducer.visualizationData && state.Reducer.visualizationData[query]
-    ? state.Reducer.visualizationData[query]
+  state.Reducer.visualizationData &&
+  state.Reducer.visualizationData[queryString]
+    ? state.Reducer.visualizationData[queryString]
     : undefined;
 
 export const SELECTED_SERVICE = (state: StoreState) =>
@@ -44,7 +48,7 @@ export const SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer.selectedServiceName;
 
 export const SELECTED_GROUP_ID = (state: StoreState) =>
-  state.Reducer.selectedGroupId;
+  state.Reducer.selectedGroup.id;
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer.currentNumberOfHttpCalls > 0;
@@ -54,9 +58,20 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 
 export const SUCCESS_MODEL = (state: StoreState) => state.Reducer.successModel;
 
+export const SUCCESS_MODEL_XML = (state: StoreState) =>
+  state.Reducer.successModel
+    ? SuccessModel.fromPlainObject(state.Reducer.successModel)?.toXml()
+        ?.outerHTML
+    : undefined;
+
 export const MEASURE_CATALOG = (state: StoreState) =>
-  parseCatalog(state.Reducer.measureCatalogXML);
-// export const TagOptions = createSelector(AllTags, ActiveTags, (all, selected) => selectRemaining(all, selected));
+  state.Reducer.measureCatalog;
+
+export const MEASURE_CATALOG_XML = (state: StoreState) =>
+  state.Reducer.measureCatalog
+    ? MeasureCatalog.fromPlainObject(state.Reducer.measureCatalog)?.toXml()
+        ?.outerHTML
+    : undefined;
 
 function parseXml(xml: string) {
   const parser = new DOMParser();

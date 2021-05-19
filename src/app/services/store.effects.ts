@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { forkJoin, of } from 'rxjs';
+import { combineLatest, forkJoin, of } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -20,8 +20,13 @@ import { Las2peerService } from '../las2peer.service';
 import { StoreService } from '../store.service';
 import * as Action from './store.actions';
 import {
+  MEASURE_CATALOG,
+  MEASURE_CATALOG_XML,
   SELECTED_GROUP,
   SELECTED_GROUP_ID,
+  SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
+  SUCCESS_MODEL_XML,
   VISUALIZATION_DATA,
 } from './store.selectors';
 
@@ -147,6 +152,43 @@ export class StateEffects {
     )
   );
 
+  saveModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveModelAndCatalog),
+      withLatestFrom(
+        combineLatest([
+          this.ngrxStore.select(SUCCESS_MODEL_XML),
+          this.ngrxStore.select(MEASURE_CATALOG_XML),
+          this.ngrxStore.select(SELECTED_GROUP_ID),
+          this.ngrxStore.select(SELECTED_SERVICE_NAME),
+        ])
+      ),
+      mergeMap(
+        ([
+          action,
+          [successModelXML, measureCatalogXML, groupId, serviceName],
+        ]) =>
+          this.l2p
+            .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
+            .pipe(
+              map(() =>
+                this.l2p.saveSuccessModelAndObserve(
+                  groupId,
+                  serviceName,
+                  successModelXML
+                )
+              ),
+              map((res) => Action.successResponse())
+            )
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
+    )
+  );
+
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
@@ -177,12 +219,12 @@ export class StateEffects {
       mergeMap(({ groupId, serviceName }) =>
         this.l2p.fetchSuccessModelAsObservable(groupId, serviceName).pipe(
           map((SuccessModelXML) =>
-            Action.storeCatalogXML({
+            Action.storeSuccessModel({
               xml: SuccessModelXML,
             })
           ),
           catchError((err) => {
-            return of(Action.storeSuccessModelXML({ xml: null }));
+            return of(Action.storeSuccessModel({ xml: null }));
           })
         )
       )
