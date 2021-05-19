@@ -9,7 +9,7 @@ import {
   Visitor,
 } from '../store.service';
 import { Las2peerService, Questionnaire } from '../las2peer.service';
-import { SuccessModel } from '../../success-model/success-model';
+
 import { MeasureCatalog } from '../../success-model/measure-catalog';
 import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -42,6 +42,7 @@ import {
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
 import { filter, first } from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
+import { SuccessModel } from '../models/success.model';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -145,7 +146,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       (successModel) =>
         (this.successModel = successModel
           ? successModel
-          : this.emptySuccessModel())
+          : SuccessModel.emptySuccessModel(this.selectedService))
     );
     this.selectedService$.subscribe(
       (service) => (this.selectedService = service)
@@ -460,22 +461,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     // });
   }
 
-  emptySuccessModel() {
-    return new SuccessModel(
-      this.selectedService.alias,
-      this.selectedService.name,
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null
-    );
-  }
   private persistWorkspaceChanges() {
     // this.logger.debug(
     //   'Workspace changed: ' + JSON.stringify(this.communityWorkspace)

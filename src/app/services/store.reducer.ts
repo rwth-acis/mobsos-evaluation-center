@@ -1,5 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
+import { MeasureCatalog, MeasureMap } from '../models/measure.catalog';
+import { Measure } from '../models/measure.model';
 import { AppState } from '../models/state.model';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VData, VisualizationData } from '../models/visualization.model';
 import * as Actions from './store.actions';
 
@@ -15,7 +18,9 @@ export const initialState: AppState = {
   questionnaires: [],
   messageDescriptions: undefined,
   visualizationData: undefined,
+  measureCatalog: undefined,
   measureCatalogXML: undefined,
+  successModel: undefined,
   successModelXML: undefined,
   currentNumberOfHttpCalls: 0,
   expertMode: false,
@@ -93,6 +98,7 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeCatalogXML, (state, { xml }) => ({
     ...state,
+    measureCatalog: parseCatalog(xml),
     measureCatalogXML: xml,
     measureCatalogInitialized: true,
   })),
@@ -106,7 +112,12 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeSuccessModelXML, (state, { xml }) => ({
     ...state,
-    successModelXML: xml,
+    successModel: xml
+      ? state.successModel
+      : SuccessModel.emptySuccessModel(state.selectedService),
+    successModelXML: xml
+      ? xml
+      : SuccessModel.emptySuccessModel(state.selectedService).toXml().outerHTML,
     successModelInitialized: true,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -120,6 +131,42 @@ const _Reducer = createReducer(
   on(Actions.updateAppWorkspace, (state, { workspace }) => ({
     ...state,
     currentApplicationWorkspace: workspace,
+  })),
+  on(Actions.addFactorToDimension, (state, props) => ({
+    ...state,
+    successModel: addFactorToDimension(
+      props.factor,
+      props.dimensionName,
+      state.successModel
+    ),
+  })),
+  on(Actions.editFactorInDimension, (state, props) => ({
+    ...state,
+    successModel: editFactorInDimension(
+      props.factor,
+      props.oldFactorName,
+      props.dimensionName,
+      state.successModel
+    ),
+  })),
+  on(Actions.addMeasureToCatalog, (state, props) => ({
+    ...state,
+    measureCatalog: {
+      ...state.measureCatalog,
+      measures: addMeasureToMeasures(
+        state.measureCatalog.measures,
+        props.measure
+      ),
+    } as MeasureCatalog,
+  })),
+  on(Actions.addMeasureToFactor, (state, props) => ({
+    ...state,
+    successModel: addMeasureToFactorInModel(
+      state.successModel,
+      props.dimensionName,
+      props.factorName,
+      props.measure
+    ),
   })),
   on(Actions.storeVisualizationData, (state, { data, query }) => ({
     ...state,
@@ -267,4 +314,87 @@ function mergeGroupData(groups, groupsFromContactService, groupsFromMobSOS) {
   }
 
   return groups;
+}
+
+function parseXml(xml: string) {
+  const parser = new DOMParser();
+  return parser.parseFromString(xml, 'text/xml');
+}
+
+function parseCatalog(xml: string): MeasureCatalog {
+  let doc = parseXml(xml);
+  try {
+    return MeasureCatalog.fromXml(doc.documentElement);
+  } catch (e) {
+    this.logger.warn(e);
+  }
+}
+
+function parseModel(xml: string): SuccessModel {
+  let doc = parseXml(xml);
+  try {
+    return SuccessModel.fromXml(doc.documentElement);
+  } catch (e) {
+    this.logger.warn(e);
+  }
+}
+function addFactorToDimension(
+  factor: SuccessFactor,
+  dimensionName: string,
+  successModel: SuccessModel
+) {
+  if (!successModel) return;
+  const copy = { ...successModel.dimensions };
+  let factorsList = copy[dimensionName];
+  if (!factorsList) factorsList = [];
+  factorsList = [...factorsList];
+  factorsList.push(factor);
+  copy[dimensionName] = factorsList;
+
+  return { ...successModel, dimensions: copy } as SuccessModel;
+}
+function editFactorInDimension(
+  factor: SuccessFactor,
+  oldFactorName: string,
+  dimensionName: string,
+  successModel: SuccessModel
+) {
+  if (!successModel) return;
+  const copy = { ...successModel.dimensions };
+  let factorsList = copy[dimensionName];
+  if (!factorsList) return successModel;
+  factorsList = [...factorsList];
+  for (let i = 0; i < factorsList.length; i++) {
+    let f = factorsList[i];
+    if (f.name === oldFactorName) {
+      factorsList[i] = factor;
+    }
+  }
+  copy[dimensionName] = factorsList;
+  return { ...successModel, dimensions: copy } as SuccessModel;
+}
+
+function addMeasureToMeasures(measureMap: MeasureMap, measure: Measure) {
+  let copy = { ...measureMap } as MeasureMap;
+  copy[measure.name] = measure;
+  return copy;
+}
+
+function addMeasureToFactorInModel(
+  successModel: SuccessModel,
+  dimensionName: string,
+  factorName: string,
+  measure: Measure
+) {
+  let dimensions = { ...successModel.dimensions };
+  let factorsForDimension = [...dimensions[dimensionName]] as SuccessFactor[];
+  let factorList = factorsForDimension.filter(
+    (factor) => factor.name === factorName
+  );
+  for (const factor of factorList) {
+    factor.measures.push(measure.name);
+  }
+
+  dimensions[dimensionName] = factorList;
+  return { ...successModel, dimensions: dimensions } as SuccessModel;
 }

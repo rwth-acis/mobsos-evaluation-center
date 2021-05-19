@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { SuccessFactor } from 'src/success-model/success-factor';
+import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
 import {
@@ -26,7 +27,12 @@ enum StoreActions {
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
   UPDATE_APPLICATION_WORKSPACE = 'updates the current application workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
-  EDIT_FACTOR = 'updates a specific factor for a dimension',
+  ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
+  EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
+  ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
+  ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
+  UPDATE_MEASURE_IN_CATALOG = 'updates an existing measure in the catalog',
+  EDIT_MEASURE_IN_SUCCESS_FACTOR = 'updates an existing measure in the catalog',
 }
 
 enum StateActions {
@@ -40,6 +46,7 @@ enum StateActions {
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
 }
 
+//fetching
 export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
 export const fetchGroups = createAction(FetchActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
@@ -50,14 +57,35 @@ export const fetchMeasureCatalog = createAction(
   FetchActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
   props<{ groupId: string }>()
 );
-
 export const fetchSuccessModel = createAction(
   FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
   props<{ groupId; serviceName }>()
 );
+
+//storing
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
   props<{ servicesFromL2P; servicesFromMobSOS }>()
+);
+export const addFactorToDimension = createAction(
+  StoreActions.ADD_FACTOR_TO_DIMENSION,
+  props<{ factor: SuccessFactor; dimensionName: string }>()
+);
+export const editFactorInDimension = createAction(
+  StoreActions.EDIT_FACTOR_IN_DIMENSION,
+  props<{
+    factor: SuccessFactor;
+    oldFactorName: string;
+    dimensionName: string;
+  }>()
+);
+export const addMeasureToCatalog = createAction(
+  StoreActions.ADD_MEASURE_TO_CATALOG,
+  props<{ measure: Measure }>()
+);
+export const addMeasureToFactor = createAction(
+  StoreActions.ADD_MEASURE_TO_CATALOG,
+  props<{ measure: Measure; factorName: string; dimensionName: string }>()
 );
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
@@ -77,11 +105,6 @@ export const setService = createAction(
 export const storeUser = createAction(
   StoreActions.STORE_USER,
   props<{ user: User }>()
-);
-
-export const editFactorForDimension = createAction(
-  StoreActions.EDIT_FACTOR,
-  props<{ factor: SuccessFactor; dimensionName: string }>()
 );
 
 export const storeVisualizationData = createAction(
@@ -108,12 +131,10 @@ export const updateCommunityWorkspace = createAction(
   props<{ workspace: CommunityWorkspace }>()
 );
 
+// modes
 export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
-
 export const decrementLoading = createAction(StateActions.DECREMENT_LOADING);
-
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 export const enableEdit = createAction(StateActions.ENABLE_EDIT);
 export const disableEdit = createAction(StateActions.DISABLE_EDIT);
-
 export const toggleExpertMode = createAction(StateActions.TOGGLE_EDIT);

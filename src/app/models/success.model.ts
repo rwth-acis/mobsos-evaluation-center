@@ -1,6 +1,7 @@
 import { merge } from 'lodash-es';
 import { Questionnaire } from './questionnaire.model';
 import { ReqbazProject } from './reqbaz.model';
+import { ServiceInformation } from './service.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -28,6 +29,23 @@ export class SuccessModel {
     public questionnaires: Questionnaire[],
     public reqBazProject: ReqbazProject
   ) {}
+
+  public static emptySuccessModel(service: ServiceInformation) {
+    return new SuccessModel(
+      service.alias,
+      service.name,
+      {
+        'System Quality': [],
+        'Information Quality': [],
+        Use: [],
+        'User Satisfaction': [],
+        'Individual Impact': [],
+        'Community Impact': [],
+      },
+      [],
+      null
+    );
+  }
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
     const dimensions: DimensionMap = merge({}, initialDimensionMap);

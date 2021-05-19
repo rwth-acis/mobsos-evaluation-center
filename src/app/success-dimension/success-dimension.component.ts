@@ -8,6 +8,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
+import { addFactorToDimension } from '../services/store.actions';
 
 @Component({
   selector: 'app-success-dimension',
@@ -41,7 +42,7 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   @Input() set factors(factors: SuccessFactor[]) {
-    this._factors = factors;
+    this._factors = [...factors];
   }
 
   ngOnInit() {}
@@ -55,10 +56,13 @@ export class SuccessDimensionComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this._factors.push(result);
-        this.sendFactorsToSuccessModel.emit({
-          factors: this._factors,
-          dimensionName: this.name,
-        });
+        this.ngrxStore.dispatch(
+          addFactorToDimension({ factor: result, dimensionName: this.name })
+        );
+        // this.sendFactorsToSuccessModel.emit({
+        //   factors: this._factors,
+        //   dimensionName: this.name,
+        // });
       }
     });
   }

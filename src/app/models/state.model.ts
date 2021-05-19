@@ -5,6 +5,8 @@ import {
   ServiceCollection,
   ServiceInformation,
 } from '../store.service';
+import { MeasureCatalog } from './measure.catalog';
+import { SuccessModel } from './success.model';
 import { VisualizationData } from './visualization.model';
 import { ApplicationWorkspace } from './workspace.model';
 
@@ -23,8 +25,10 @@ export interface AppState {
   questionnaires: Questionnaire[];
   messageDescriptions: object;
   visualizationData: VisualizationData;
+  successModel: SuccessModel;
   successModelXML: string;
   successModelInitialized: boolean;
+  measureCatalog: MeasureCatalog;
   measureCatalogXML: string;
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;

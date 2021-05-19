@@ -10,7 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
-import { editFactorForDimension } from '../services/store.actions';
+import { editFactorInDimension } from '../services/store.actions';
 
 @Component({
   selector: 'app-success-factor',
@@ -63,6 +63,13 @@ export class SuccessFactorComponent implements OnInit {
       if (result) {
         this.factor.measures.push((result as Measure).name);
       }
+      this.ngrxStore.dispatch(
+        editFactorInDimension({
+          factor: this.factor,
+          oldFactorName: this.factor.name,
+          dimensionName: this.dimensionName,
+        })
+      );
       this.sendFactorToDimension.emit(this.factor);
     });
     dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
@@ -85,14 +92,15 @@ export class SuccessFactorComponent implements OnInit {
   onEditClicked() {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       width: '250px',
-      data: { factor: this.factor },
+      data: { factor: { ...this.factor } },
     });
 
     dialogRef.afterClosed().subscribe((result: SuccessFactor) => {
       if (result) {
         this.ngrxStore.dispatch(
-          editFactorForDimension({
+          editFactorInDimension({
             factor: result,
+            oldFactorName: this.factor.name,
             dimensionName: this.dimensionName,
           })
         );

@@ -49,8 +49,10 @@ export const SELECTED_GROUP_ID = (state: StoreState) =>
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer.currentNumberOfHttpCalls > 0;
 
-export const SUCCESS_MODEL = (state: StoreState) =>
-  parseModel(state.Reducer.successModelXML);
+// export const SUCCESS_MODEL = (state: StoreState) =>
+//   parseModel(state.Reducer.successModelXML);
+
+export const SUCCESS_MODEL = (state: StoreState) => state.Reducer.successModel;
 
 export const MEASURE_CATALOG = (state: StoreState) =>
   parseCatalog(state.Reducer.measureCatalogXML);

@@ -32,6 +32,7 @@
         [service]="service"
         [measures]="measures"
         [editMode]="editMode"
+        [dimensionName]="this.name"
         (sendFactorToDimension)="_onFactorsChange($event)"
         (sendMeasuresToDimension)="_onMeasuresChange($event)"
       >
