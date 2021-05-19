@@ -4,17 +4,24 @@ import {
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { Measure } from '../../../success-model/measure';
+
 import { ServiceInformation } from '../../store.service';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { Query } from '../../../success-model/query';
-import { ValueVisualization } from '../../../success-model/visualization';
+
 import { Store } from '@ngrx/store';
-import { addMeasureToCatalog } from 'src/app/services/store.actions';
+import {
+  addMeasureToCatalog,
+  addMeasureToFactor,
+} from 'src/app/services/store.actions';
+import { Measure } from 'src/app/models/measure.model';
+import { ValueVisualization } from 'src/app/models/visualization.model';
 
 export interface DialogData {
   measures: Measure[];
   service: ServiceInformation;
+  dimensionName: string;
+  factorName: string;
 }
 
 @Component({
@@ -35,7 +42,14 @@ export class PickMeasureDialogComponent implements OnInit {
   ngOnInit() {}
 
   onMeasureClicked(measure: Measure) {
-    this.dialogRef.close(measure);
+    this.ngrxStore.dispatch(
+      addMeasureToFactor({
+        measure: measure,
+        factorName: this.data.factorName,
+        dimensionName: this.data.dimensionName,
+      })
+    );
+    this.dialogRef.close();
   }
 
   openNewMeasureDialog() {
@@ -57,7 +71,7 @@ export class PickMeasureDialogComponent implements OnInit {
       if (result) {
         this.data.measures.unshift(result);
         this.ngrxStore.dispatch(addMeasureToCatalog({ measure: result }));
-        this.measuresChanged.emit(this.data.measures);
+        // this.measuresChanged.emit(this.data.measures);
       }
     });
   }
