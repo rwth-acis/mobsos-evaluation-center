@@ -12,7 +12,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { Measure } from '../../success-model/measure';
+
 import { ServiceInformation } from '../store.service';
 import { Las2peerService } from '../las2peer.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -27,6 +27,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { SuccessMeasureInterface } from './success-measure.interface';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
+import { Store } from '@ngrx/store';
+import { EDIT_MODE, MEASURE } from '../services/store.selectors';
+import { editMeasure } from '../services/store.actions';
+import { Measure } from '../models/measure.model';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-success-measure',
@@ -41,9 +46,14 @@ export class SuccessMeasureComponent
   @Input() service: ServiceInformation;
   @Input() editMode = false;
   @Input() canDelete = false;
-
+  @Input() dimensionName = '';
+  @Input() factorName = '';
   @Output() measureChange = new EventEmitter<Measure>();
   @Output() measureDelete = new EventEmitter();
+  meaureName: string;
+  measure$: Observable<Measure>;
+
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
 
   public visualizationError: string;
   public error: Response;
@@ -55,14 +65,19 @@ export class SuccessMeasureComponent
     private translate: TranslateService,
     private sanitizer: DomSanitizer,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private ngrxStore: Store
   ) {}
 
   ngOnInit() {
+    this.measure = { ...this.measure } as Measure;
+
     this.refreshVisualization();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.measure$ = this.ngrxStore.select(MEASURE, this.measure.name);
+
     this.relayPropertiesToVisualizationComponent();
     if (Object.keys(changes).includes('editMode')) {
       this.onResize();
@@ -122,15 +137,25 @@ export class SuccessMeasureComponent
         measure: { ...this.measure },
         service: this.service,
         create: false,
+        dimensionName: this.dimensionName,
+        factorName: this.factorName,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.ngrxStore.dispatch(
+          editMeasure({
+            measure: result,
+            factorName: this.factorName,
+            oldMeasureName: this.measure.name,
+            dimensionName: this.dimensionName,
+          })
+        );
         this.measure.name = result.name;
         this.measure.queries = result.queries;
         this.measure.visualization = result.visualization;
-        this.rerenderVisualizationComponent();
-        this.measureChange.emit(this.measure);
+        // this.rerenderVisualizationComponent();
+        // this.measureChange.emit(this.measure);
       }
     });
     event.stopPropagation();
@@ -153,12 +178,12 @@ export class SuccessMeasureComponent
   }
 
   private relayPropertiesToVisualizationComponent() {
-    if (this.componentRef) {
-      (this.componentRef.instance as VisualizationComponent).service =
-        this.service;
-      (this.componentRef.instance as VisualizationComponent).measure =
-        this.measure;
-    }
+    // if (this.componentRef) {
+    //   (this.componentRef.instance as VisualizationComponent).service =
+    //     this.service;
+    //   (this.componentRef.instance as VisualizationComponent).measure =
+    //     this.measure;
+    // }
   }
 
   async onDeleteClicked($event: MouseEvent) {

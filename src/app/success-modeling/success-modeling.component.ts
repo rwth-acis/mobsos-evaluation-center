@@ -22,8 +22,9 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   fetchSuccessModel,
+  saveModelAndCatalog,
   setService,
-  storeSuccessModelXML,
+  storeSuccessModel,
   toggleEdit,
   updateAppWorkspace,
 } from '../services/store.actions';
@@ -43,6 +44,7 @@ import { MeasureCatalog as Catalog } from '../models/measure.catalog';
 import { filter, first } from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
+import { StateEffects } from '../services/store.effects';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -90,7 +92,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
-    private ngrxStore: Store
+    private ngrxStore: Store,
+    private actionState: StateEffects
   ) {
     this.translationMap = translationMap;
     this.iconMap = iconMap;
@@ -249,17 +252,17 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   switchWorkspace(user: string) {
-    this.workspaceUser = user;
-    const visitors = this.getCurrentWorkspace().visitors;
-    const myUsername = this.getMyUsername();
-    const meAsVisitorArr = visitors.filter(
-      (visitor) => visitor.username === myUsername
-    );
-    if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
-      visitors.push({ username: myUsername, role: 'spectator' });
-      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-      this.persistWorkspaceChanges();
-    }
+    // this.workspaceUser = user;
+    // const visitors = this.getCurrentWorkspace().visitors;
+    // const myUsername = this.getMyUsername();
+    // const meAsVisitorArr = visitors.filter(
+    //   (visitor) => visitor.username === myUsername
+    // );
+    // if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
+    //   visitors.push({ username: myUsername, role: 'spectator' });
+    //   visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
+    //   this.persistWorkspaceChanges();
+    // }
   }
 
   changeVisitorRole(visitorName: string, role: string) {
@@ -343,39 +346,53 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     });
   }
 
-  async onSaveClicked() {
-    const workspace = this.getCurrentWorkspace();
-    const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
-    const measureXml = catalog.toXml();
-    const model = SuccessModel.fromPlainObject(workspace.model);
-    const successModelXml = model.toXml();
+  onSaveClicked() {
     this.saveInProgress = true;
-    try {
-      await this.las2peer.saveMeasureCatalog(
-        this.groupID,
-        measureXml.outerHTML
-      );
-      await this.las2peer.saveSuccessModel(
-        this.groupID,
-        this.selectedServiceName,
-        successModelXml.outerHTML
-      );
-      const message = await this.translate
-        .get('success-modeling.snackbar-save-success')
-        .toPromise();
-      this.snackBar.open(message, null, {
-        duration: 2000,
-      });
-    } catch (e) {
-      let message = await this.translate
-        .get('success-modeling.snackbar-save-failure')
-        .toPromise();
-      message += e;
-      this.snackBar.open(message, 'Ok', {
-        duration: 2000,
+    this.ngrxStore.dispatch(saveModelAndCatalog());
+    if (this.saveInProgress) {
+      this.actionState.saveModel$.subscribe((result) => {
+        this.saveInProgress = false;
+
+        let message = this.translate.instant(
+          'success-modeling.snackbar-save-failure'
+        );
+
+        this.snackBar.open(message, 'Ok');
       });
     }
-    this.saveInProgress = false;
+
+    // const workspace = this.getCurrentWorkspace();
+    // const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
+    // const measureXml = catalog.toXml();
+    // const model = SuccessModel.fromPlainObject(workspace.model);
+    // const successModelXml = model.toXml();
+    // this.saveInProgress = true;
+    // try {
+    //   await this.las2peer.saveMeasureCatalog(
+    //     this.groupID,
+    //     measureXml.outerHTML
+    //   );
+    //   await this.las2peer.saveSuccessModel(
+    //     this.groupID,
+    //     this.selectedServiceName,
+    //     successModelXml.outerHTML
+    //   );
+    //   const message = await this.translate
+    //     .get('success-modeling.snackbar-save-success')
+    //     .toPromise();
+    //   this.snackBar.open(message, null, {
+    //     duration: 2000,
+    //   });
+    // } catch (e) {
+    //   let message = await this.translate
+    //     .get('success-modeling.snackbar-save-failure')
+    //     .toPromise();
+    //   message += e;
+    //   this.snackBar.open(message, 'Ok', {
+    //     duration: 2000,
+    //   });
+    // }
+    // this.saveInProgress = false;
   }
 
   private getWorkspaceByUserAndService(
@@ -404,10 +421,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
   onFactorsChange({ factors, dimensionName }) {
     console.log(factors);
-    this.successModel.dimensions[dimensionName] = factors;
-    this.ngrxStore.dispatch(
-      storeSuccessModelXML({ xml: this.successModel.toXml().outerHTML })
-    );
+    // this.successModel.dimensions[dimensionName] = factors;
+    // this.ngrxStore.dispatch(
+    //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
+    // );
   }
 
   private getMyUsername() {
