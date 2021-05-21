@@ -73,7 +73,11 @@ export interface CommunityWorkspace {
   // user ID is key
   [key: string]: UserWorkspace;
 }
-
+/**
+ *
+ * @param groupID
+ * @deprecated use ngrxstore instead
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -312,9 +316,9 @@ export class StoreService {
     }
     this.userSubject.next(user);
     // refresh groups from MobSOS to update group membership status
-    this.las2peer.fetchMobSOSGroups().then((groups) => {
-      this.groupsFromMobSOSSubject.next(groups);
-    });
+    // this.las2peer.fetchMobSOSGroups().then((groups) => {
+    //   this.groupsFromMobSOSSubject.next(groups);
+    // });
   }
 
   startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
@@ -350,11 +354,19 @@ export class StoreService {
         });
     }
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   setGroup(groupID: string) {
     this.selectedGroupSubject.next(groupID);
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   setEditMode(editMode: boolean) {
     this.editModeSubject.next(editMode);
   }
@@ -362,7 +374,11 @@ export class StoreService {
   setCommunityWorkspace(workspace: CommunityWorkspace) {
     this.communityWorkspaceSubject.next(workspace);
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   getGroupById(groupId: string): GroupInformation {
     const groups = this.groupsSubject.getValue();
     if (Object.keys(groups).includes(groupId)) {

@@ -39,6 +39,8 @@ export const SELECTED_GROUP = (state: StoreState) =>
 
 export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
 
+export const EXPERT_MODE = (state: StoreState) => state.Reducer.expertMode;
+
 export const USER_GROUPS = (state: StoreState) =>
   _filterGroups(state.Reducer.groups);
 

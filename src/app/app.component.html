@@ -57,7 +57,7 @@
     <footer>
       <mat-slide-toggle
         labelPosition="before"
-        [checked]="expertMode"
+        [checked]="expertMode$ | async"
         (change)="setExpertMode($event.checked)"
       >
         {{ 'app.expert-mode.switch-label' | translate }}

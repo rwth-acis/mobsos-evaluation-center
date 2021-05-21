@@ -201,7 +201,7 @@ export const translations = {
       'view-requirement': 'Ansehen',
     },
     'save-model-button': 'Modell speichern',
-    'select-application': 'Anwendung',
+    'select-application': 'Anwendung wechseln',
     'snackbar-save-failure':
       'Das Erfolosmodell konnte nicht gespeichert werden.',
     'snackbar-save-success': 'Das Erfolosmodell wurde erfolgreich gespeichert.',

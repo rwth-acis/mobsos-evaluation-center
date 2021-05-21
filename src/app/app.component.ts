@@ -28,11 +28,13 @@ import {
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
+  initState,
   setGroup,
   storeUser,
   toggleExpertMode,
 } from './services/store.actions';
 import {
+  EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
   SELECTED_GROUP,
   SELECTED_SERVICE,
@@ -80,6 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
 
   constructor(
     private logger: NGXLogger,
@@ -127,7 +130,6 @@ export class AppComponent implements OnInit, OnDestroy {
   setExpertMode(mode) {
     this.expertMode = mode;
     this.ngrxStore.dispatch(toggleExpertMode());
-    localStorage.setItem(this.LOCAL_STORAGE_EXPERT_MODE, mode);
   }
 
   setUser(user) {
@@ -147,7 +149,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.store.startPolling();
+    this.ngrxStore.dispatch(initState());
     this.ngrxStore.dispatch(fetchServices());
     this.ngrxStore.dispatch(fetchGroups());
 

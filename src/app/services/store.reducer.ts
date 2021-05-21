@@ -80,6 +80,14 @@ const _Reducer = createReducer(
     ...state,
     editMode: !state.editMode,
   })),
+  on(Actions.initState, (state) => ({
+    ...state,
+    measureCatalogInitialized: !!state.measureCatalog,
+    successModel: state.measureCatalog
+      ? state.successModel
+      : initialState.successModel,
+    successModelInitialized: !!state.measureCatalog,
+  })),
   on(Actions.enableEdit, (state) => ({
     ...state,
     editMode: true,

@@ -13,7 +13,10 @@
         <mat-label>{{
           'success-modeling.select-application' | translate
         }}</mat-label>
-        <mat-select (selectionChange)="onServiceSelected($event.value)">
+        <mat-select
+          [formControl]="serviceSelectForm"
+          (selectionChange)="onServiceSelected($event.value)"
+        >
           <mat-option
             *ngFor="let service of services$ | async"
             [value]="service"
@@ -275,25 +278,26 @@
             (modelChange)="persistWorkspaceChanges()"
             (measuresChange)="persistWorkspaceChanges()"
           ></app-questionnaires> -->
-
-          <app-success-dimension
-            *ngFor="let dimension of dimensions"
-            [factors]="successModel.dimensions[dimension]"
-            (sendFactorsToSuccessModel)="onFactorsChange($event)"
-            (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
-            [measures]="measureCatalog.measures"
-            [service]="selectedService"
-            name="{{
-              'success-modeling.dimensions.name.' + translationMap[dimension]
-                | translate
-            }}"
-            description="{{
-              'success-modeling.dimensions.description.' +
-                translationMap[dimension] | translate
-            }}"
-            icon="{{ iconMap[dimension] }}"
-          ></app-success-dimension>
-
+          <div id="dimensions">
+            <app-success-dimension
+              [@slideInOut]
+              *ngFor="let dimension of dimensions"
+              [factors]="successModel.dimensions[dimension]"
+              (sendFactorsToSuccessModel)="onFactorsChange($event)"
+              (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
+              [measures]="measureCatalog.measures"
+              [service]="selectedService"
+              name="{{
+                'success-modeling.dimensions.name.' + translationMap[dimension]
+                  | translate
+              }}"
+              description="{{
+                'success-modeling.dimensions.description.' +
+                  translationMap[dimension] | translate
+              }}"
+              icon="{{ iconMap[dimension] }}"
+            ></app-success-dimension>
+          </div>
           <button
             id="save-model-button"
             mat-raised-button
@@ -302,6 +306,8 @@
             [disabled]="saveInProgress"
             (click)="onSaveClicked()"
           >
+            <mat-spinner *ngIf="saveInProgress" color="warn" [diameter]="25">
+            </mat-spinner>
             {{ 'success-modeling.save-model-button' | translate }}
           </button>
         </ng-container>

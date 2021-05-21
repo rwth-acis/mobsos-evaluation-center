@@ -49,6 +49,7 @@ enum StateActions {
   INCREMENT_LOADING = 'Increase the number of current http calls',
   DECREMENT_LOADING = 'Decrease the number of current http calls',
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
+  INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
 }
 
 //fetching
@@ -152,11 +153,12 @@ export const updateCommunityWorkspace = createAction(
 
 // modes
 export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
+export const initState = createAction(StateActions.INITIALIZE_STATE);
 export const decrementLoading = createAction(StateActions.DECREMENT_LOADING);
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 export const enableEdit = createAction(StateActions.ENABLE_EDIT);
 export const disableEdit = createAction(StateActions.DISABLE_EDIT);
-export const toggleExpertMode = createAction(StateActions.TOGGLE_EDIT);
+export const toggleExpertMode = createAction(StateActions.TOGGLE_EXPERT_MODE);
 
 // http results
 export const successResponse = createAction(PostActions.SUCCESS_RESPONSE);

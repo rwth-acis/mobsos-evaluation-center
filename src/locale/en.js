@@ -199,7 +199,7 @@ export const translations = {
       'view-requirement': 'View',
     },
     'save-model-button': 'Save Model',
-    'select-application': 'Application',
+    'select-application': 'Switch Application',
     'snackbar-save-failure': 'The success model could not be saved.',
     'snackbar-save-success': 'The success model has been saved successfully.',
     visitors: {

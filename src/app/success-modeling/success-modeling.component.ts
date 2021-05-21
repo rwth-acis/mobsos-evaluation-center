@@ -3,12 +3,11 @@ import {
   ApplicationWorkspace,
   CommunityWorkspace,
   GroupInformation,
-  ServiceCollection,
   ServiceInformation,
   StoreService,
   Visitor,
 } from '../store.service';
-import { Las2peerService, Questionnaire } from '../las2peer.service';
+import { Questionnaire } from '../las2peer.service';
 
 import { MeasureCatalog } from '../../success-model/measure-catalog';
 import { NGXLogger } from 'ngx-logger';
@@ -21,14 +20,10 @@ import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
-  fetchSuccessModel,
   saveModelAndCatalog,
   setService,
-  storeSuccessModel,
   toggleEdit,
-  updateAppWorkspace,
 } from '../services/store.actions';
-import { FormControl } from '@angular/forms';
 import {
   EDIT_MODE,
   MEASURE_CATALOG,
@@ -41,15 +36,28 @@ import {
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
-import { filter, first } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
 import { Subscription } from 'rxjs';
+import { FormControl } from '@angular/forms';
+import { animate, style, transition, trigger } from '@angular/animations';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
   styleUrls: ['./success-modeling.component.scss'],
+  animations: [
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateY(200%)' }),
+        animate('500ms ease-in', style({ transform: 'translateY(0%)' })),
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ transform: 'translateY(100%)' })),
+      ]),
+    ]),
+  ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
@@ -75,6 +83,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   successModelXml: Document;
   successModel: SuccessModel = undefined;
   selectedService;
+  serviceSelectForm = new FormControl('');
 
   communityWorkspace: CommunityWorkspace;
   user;
@@ -139,6 +148,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         if (!this.initialServiceName) {
           this.initialServiceName = this.selectedServiceName;
         }
+        this.serviceSelectForm.setValue(this.selectedServiceName);
       });
     this.subscriptions$.push(sub);
 
