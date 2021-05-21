@@ -43,10 +43,8 @@ export class ValueVisualizationComponent
     super.fetchVisualizationData(query, queryParams);
     this.value$ = this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query);
     this.value$.pipe(filter((data) => !!data)).subscribe((data) => {
-      if (data) {
-        this.value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
-        this.visualizationInitialized = true;
-      }
+      this.value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
+      this.visualizationInitialized = true;
     });
   }
 }

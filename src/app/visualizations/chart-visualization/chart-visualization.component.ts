@@ -9,13 +9,15 @@ import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
 import { filter } from 'rxjs/operators';
 import { VData } from 'src/app/models/visualization.model';
 import { Observable } from 'rxjs';
+import { animation } from '@angular/animations';
 
 class GoogleChart {
   constructor(
     public title: string,
     public chartType: string,
     public data: any[][],
-    public columns: string[]
+    public columns: string[],
+    public options: object
   ) {}
 }
 
@@ -61,7 +63,11 @@ export class ChartVisualizerComponent
           '',
           visualization.chartType,
           rows,
-          dataTable[0]
+          dataTable[0],
+          {
+            colors: ['#00796b', '#ff4081', '#40c4ff', '#ff5252', '#ffd600'],
+            animation: { startup: true },
+          }
         );
         if (this.chart) this.visualizationInitialized = true;
       }
