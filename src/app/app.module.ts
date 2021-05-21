@@ -113,6 +113,7 @@ export function localStorageSyncReducer(
           'expertMode',
           'measureCatalog',
           'successModel',
+          'visualizationData',
         ],
       },
     ],
