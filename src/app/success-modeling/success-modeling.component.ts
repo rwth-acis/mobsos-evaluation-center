@@ -45,6 +45,7 @@ import { filter, first } from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -85,9 +86,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   numberOfRequirements = 0;
   selectedGroup: GroupInformation;
 
+  subscriptions$: Subscription[] = [];
+
   constructor(
     private store: StoreService,
-    private las2peer: Las2peerService,
     private logger: NGXLogger,
     private dialog: MatDialog,
     private translate: TranslateService,
@@ -117,8 +119,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     const currentGroup = this.myGroups.find(
       (group) => group.id == this.groupID
     );
-
-    return currentGroup ? currentGroup.name : 'Default';
+    return currentGroup ? currentGroup.name : '';
   }
 
   parseModel(xml: Document) {
@@ -130,32 +131,41 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.selectedService$
+    let sub = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {
         this.selectedServiceName = service.alias ? service.alias : service.name;
+        this.ngrxStore.dispatch(setService({ service }));
         if (!this.initialServiceName) {
           this.initialServiceName = this.selectedServiceName;
-          this.ngrxStore.dispatch(setService({ service }));
         }
       });
+    this.subscriptions$.push(sub);
 
-    this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
-    this.userGroups$.subscribe((groups) => (this.myGroups = groups));
-    this.selectedGroup$.subscribe((group) => (this.selectedGroup = group));
-    this.user$.subscribe((user) => (this.user = user));
-    this.services$.subscribe((services) => (this.services = services));
-    this.successModel$.subscribe(
+    sub = this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
+    this.subscriptions$.push(sub);
+    sub = this.userGroups$.subscribe((groups) => (this.myGroups = groups));
+    this.subscriptions$.push(sub);
+    sub = this.selectedGroup$.subscribe(
+      (group) => (this.selectedGroup = group)
+    );
+    this.subscriptions$.push(sub);
+    sub = this.user$.subscribe((user) => (this.user = user));
+    this.subscriptions$.push(sub);
+    sub = this.services$.subscribe((services) => (this.services = services));
+    this.subscriptions$.push(sub);
+    sub = this.successModel$.subscribe(
       (successModel) =>
         (this.successModel = successModel
           ? successModel
           : SuccessModel.emptySuccessModel(this.selectedService))
     );
-    this.selectedService$.subscribe(
+    this.subscriptions$.push(sub);
+    sub = this.selectedService$.subscribe(
       (service) => (this.selectedService = service)
     );
-
-    this.store.communityWorkspace.subscribe(async (workspace) => {
+    this.subscriptions$.push(sub);
+    sub = this.store.communityWorkspace.subscribe(async (workspace) => {
       this.communityWorkspace = workspace;
       if (
         this.workspaceUser &&
@@ -171,7 +181,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.snackBar.open('Owner closed workspace', null, { duration: 3000 });
       }
     });
-    this.editMode$.subscribe((editMode) => {
+    this.subscriptions$.push(sub);
+    sub = this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
         this.initWorkspace().then(() =>
           this.switchWorkspace(this.getMyUsername())
@@ -181,6 +192,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       }
       this.editMode = editMode;
     });
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {

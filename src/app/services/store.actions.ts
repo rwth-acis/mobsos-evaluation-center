@@ -131,7 +131,7 @@ export const storeVisualizationData = createAction(
   props<{ data: any; query: string }>()
 );
 
-export const storeCatalogXML = createAction(
+export const storeCatalog = createAction(
   StoreActions.STORE_MEASURE_CATALOG,
   props<{ xml: string }>()
 );

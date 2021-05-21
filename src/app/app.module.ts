@@ -54,8 +54,8 @@ import { SuccessMeasureComponent } from './success-measure/success-measure.compo
 import { SuccessFactorComponent } from './success-factor/success-factor.component';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 import { ValueVisualizationComponent } from './visualizations/value-visualization/value-visualization.component';
-import { VisualizationDirective } from './visualization.directive';
-import { ChartVisualizationComponent } from './visualizations/chart-visualization/chart-visualization.component';
+
+import { ChartVisualizerComponent } from './visualizations/chart-visualization/chart-visualization.component';
 import { KpiVisualizationComponent } from './visualizations/kpi-visualization/kpi-visualization.component';
 import { BaseVisualizationComponent } from './visualizations/visualization.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
@@ -112,6 +112,7 @@ export function localStorageSyncReducer(
           'questionnaires',
           'expertMode',
           'measureCatalog',
+          'successModel',
         ],
       },
     ],
@@ -135,8 +136,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     ErrorDialogComponent,
     BaseVisualizationComponent,
     ValueVisualizationComponent,
-    VisualizationDirective,
-    ChartVisualizationComponent,
+    ChartVisualizerComponent,
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
     EditFactorDialogComponent,
@@ -213,19 +213,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     },
   ],
   bootstrap: [AppComponent],
-  entryComponents: [
-    ErrorDialogComponent,
-    ValueVisualizationComponent,
-    ChartVisualizationComponent,
-    KpiVisualizationComponent,
-    ConfirmationDialogComponent,
-    EditFactorDialogComponent,
-    PickMeasureDialogComponent,
-    EditMeasureDialogComponent,
-    PickQuestionnaireDialogComponent,
-    DeleteQuestionnaireDialogComponent,
-    PickReqbazProjectComponent,
-  ],
+
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

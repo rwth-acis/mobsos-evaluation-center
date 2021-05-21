@@ -96,10 +96,9 @@ const _Reducer = createReducer(
     ...state,
     user: user,
   })),
-  on(Actions.storeCatalogXML, (state, { xml }) => ({
+  on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,
-    measureCatalog: parseCatalog(xml),
-
+    measureCatalog: xml ? parseCatalog(xml) : new MeasureCatalog({}),
     measureCatalogInitialized: true,
   })),
   on(Actions.fetchSuccessModel, (state) => ({
@@ -112,9 +111,10 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
-    successModel: xml
-      ? parseModel(xml)
-      : SuccessModel.emptySuccessModel(state.selectedService),
+    successModel:
+      xml !== null
+        ? parseModel(xml)
+        : SuccessModel.emptySuccessModel(state.selectedService),
     successModelInitialized: true,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -185,11 +185,9 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeVisualizationData, (state, { data, query }) => ({
     ...state,
-    visualizationData: updateVisualizationData(
-      { ...state.visualizationData },
-      data,
-      query
-    ),
+    visualizationData: data
+      ? updateVisualizationData({ ...state.visualizationData }, data, query)
+      : state.visualizationData,
   }))
 );
 
@@ -199,10 +197,10 @@ export function Reducer(state, action) {
 
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
-  data: VData,
+  data: any[][],
   query: string
 ) {
-  currentVisualizationData[query] = { data, fetchDate: new Date() };
+  currentVisualizationData[query] = { data: data, fetchDate: new Date() };
   return currentVisualizationData;
 }
 
@@ -337,6 +335,9 @@ function parseXml(xml: string) {
 }
 
 function parseCatalog(xml: string): MeasureCatalog {
+  if (!xml) {
+    return;
+  }
   let doc = parseXml(xml);
   try {
     return MeasureCatalog.fromXml(doc.documentElement);
@@ -346,6 +347,9 @@ function parseCatalog(xml: string): MeasureCatalog {
 }
 
 function parseModel(xml: string): SuccessModel {
+  if (!xml) {
+    return;
+  }
   let doc = parseXml(xml);
   try {
     return SuccessModel.fromXml(doc.documentElement);

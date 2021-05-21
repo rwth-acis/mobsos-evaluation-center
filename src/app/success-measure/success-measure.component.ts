@@ -10,21 +10,18 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 
 import { ServiceInformation } from '../store.service';
 import { Las2peerService } from '../las2peer.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { VisualizationDirective } from '../visualization.directive';
+
 import { ValueVisualizationComponent } from '../visualizations/value-visualization/value-visualization.component';
-import { VisualizationComponent } from '../visualizations/visualization.component';
 import { KpiVisualizationComponent } from '../visualizations/kpi-visualization/kpi-visualization.component';
-import { ChartVisualizationComponent } from '../visualizations/chart-visualization/chart-visualization.component';
+
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
-import { SuccessMeasureInterface } from './success-measure.interface';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
@@ -38,10 +35,7 @@ import { Observable } from 'rxjs';
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent
-  implements SuccessMeasureInterface, OnInit, OnChanges, OnDestroy
-{
-  @ViewChild(VisualizationDirective) visualizationHost: VisualizationDirective;
+export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
   @Input() editMode = false;
@@ -71,63 +65,12 @@ export class SuccessMeasureComponent
 
   ngOnInit() {
     this.measure = { ...this.measure } as Measure;
-
-    this.refreshVisualization();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
     this.measure$ = this.ngrxStore.select(MEASURE, this.measure.name);
-
-    this.relayPropertiesToVisualizationComponent();
-    if (Object.keys(changes).includes('editMode')) {
-      this.onResize();
-    }
   }
+
+  ngOnChanges(changes: SimpleChanges): void {}
 
   ngOnDestroy(): void {}
-
-  refreshVisualization(force = false) {
-    if (
-      force ||
-      (this.measure &&
-        this.measure.visualization.type !== this.visualizationType)
-    ) {
-      if (this.componentRef) {
-        this.componentRef.destroy();
-      }
-      let componentFactory;
-      const visualization = this.measure.visualization;
-      if (visualization.type === 'Value') {
-        componentFactory =
-          this.componentFactoryResolver.resolveComponentFactory(
-            ValueVisualizationComponent
-          );
-      } else if (visualization.type === 'Chart') {
-        componentFactory =
-          this.componentFactoryResolver.resolveComponentFactory(
-            ChartVisualizationComponent
-          );
-      } else if (visualization.type === 'KPI') {
-        componentFactory =
-          this.componentFactoryResolver.resolveComponentFactory(
-            KpiVisualizationComponent
-          );
-      } else {
-        this.visualizationError = `The visualization type ${visualization.type} is not supported yet.`;
-        return;
-      }
-      return;
-      const viewContainerRef = this.visualizationHost?.viewContainerRef;
-      if (!viewContainerRef) {
-        return this.relayPropertiesToVisualizationComponent();
-      }
-      viewContainerRef.clear();
-      this.componentRef = viewContainerRef.createComponent(componentFactory);
-      this.relayPropertiesToVisualizationComponent();
-      this.visualizationError = null;
-      this.visualizationType = this.measure.visualization.type;
-    }
-  }
 
   onEditClicked(event: MouseEvent) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
@@ -167,14 +110,6 @@ export class SuccessMeasureComponent
     //     this.componentRef.instance as VisualizationComponent
     //   ).renderVisualization();
     // }
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    // chart visualization do not behave correctly when decreasing the available width so we reinitialize it
-    if (this.visualizationType === 'Chart') {
-      this.refreshVisualization(true);
-    }
   }
 
   private relayPropertiesToVisualizationComponent() {

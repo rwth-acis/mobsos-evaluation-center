@@ -7,7 +7,7 @@ export interface VisualizationData {
 }
 export interface VData {
   fetchDate: Date;
-  data: object;
+  data: any[][];
 }
 
 export class Visualization {

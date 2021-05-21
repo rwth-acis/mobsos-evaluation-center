@@ -18,6 +18,7 @@ import {
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { StoreService } from '../store.service';
+import { delayedRetry } from './retryOperator';
 import * as Action from './store.actions';
 import {
   MEASURE_CATALOG,
@@ -140,12 +141,12 @@ export class StateEffects {
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
           map((MeasureCatalogXML) =>
-            Action.storeCatalogXML({
+            Action.storeCatalog({
               xml: MeasureCatalogXML,
             })
           ),
           catchError((err) => {
-            return of(Action.storeCatalogXML({ xml: null }));
+            return of(Action.storeCatalog({ xml: null }));
           })
         )
       )
@@ -193,14 +194,15 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      switchMap(([{ query, queryParams }, data]) => {
+      mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (
-          !dataForQuery ||
-          dataForQuery.fetchDate.getTime() > Date.now() - 300000
+          !dataForQuery?.data ||
+          dataForQuery.fetchDate.getTime() < Date.now() - 300000
         ) {
           // no data yet or last fetch time more than 5min ago
           return this.l2p.fetchVisualizationData(query, queryParams).pipe(
+            delayedRetry(100, 3, 10),
             map((data) =>
               Action.storeVisualizationData({
                 data,
@@ -209,7 +211,9 @@ export class StateEffects {
             )
           );
         }
-      })
+        return of(Action.failureResponse(undefined));
+      }),
+      catchError((err) => of(Action.failureResponse(err)))
     )
   );
 
