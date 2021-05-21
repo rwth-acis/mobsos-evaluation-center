@@ -105,15 +105,13 @@ export class Las2peerService {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      options = {
-        ...options,
-        ...{
-          headers: {
-            Authorization: 'Basic ' + btoa(username + ':' + password),
-            access_token: token,
-          },
+
+      options = merge(options, {
+        headers: {
+          Authorization: 'Basic ' + btoa(username + ':' + password),
+          access_token: token,
         },
-      };
+      });
     }
     // if (!environment.production) {
     //   this.logger.debug(
