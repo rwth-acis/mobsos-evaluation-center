@@ -162,11 +162,11 @@ export class SuccessMeasureComponent
   }
 
   public rerenderVisualizationComponent() {
-    if (this.componentRef) {
-      (
-        this.componentRef.instance as VisualizationComponent
-      ).renderVisualization();
-    }
+    // if (this.componentRef) {
+    //   (
+    //     this.componentRef.instance as VisualizationComponent
+    //   ).renderVisualization();
+    // }
   }
 
   @HostListener('window:resize', ['$event'])

@@ -162,29 +162,29 @@ export class Las2peerService {
       observe?: string;
     } = {}
   ) {
-    options = {
-      ...options,
-      ...{
+    options = merge(
+      {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
         },
       },
-    };
+      options
+    );
     if (this.userCredentials) {
       const username = this.userCredentials.user;
       const password = this.userCredentials.password;
       const token = this.userCredentials.token;
-      options = {
-        ...options,
-        ...{
+      options = merge(
+        {
           headers: {
             Authorization: 'Basic ' + btoa(username + ':' + password),
             access_token: token,
           },
         },
-      };
+        options
+      );
     }
     // if (!environment.production) {
     //   this.logger.debug(
@@ -670,8 +670,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
-      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH
-      // `?access_token=${this.userCredentials.token}&format=${format}`
+      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH + `?format=${format}`
     );
     const requestBody = {
       cache: false,
@@ -710,7 +709,6 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH
-      // `?access_token=${this.userCredentials.token}&format=${format}`
     );
     const requestBody = {
       cache: false,
