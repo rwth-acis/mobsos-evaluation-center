@@ -1,21 +1,23 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { StoreService } from "../store.service";
-import { Las2peerService } from "../las2peer.service";
-import vkbeautify from "vkbeautify";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { TranslateService } from "@ngx-translate/core";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { StoreService } from '../store.service';
+import { Las2peerService } from '../las2peer.service';
+import vkbeautify from 'vkbeautify';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateService } from '@ngx-translate/core';
+import { Store } from '@ngrx/store';
+import { storeSuccessModel } from '../services/store.actions';
 
 @Component({
-  selector: "app-raw-edit",
-  templateUrl: "./raw-edit.component.html",
-  styleUrls: ["./raw-edit.component.scss"],
+  selector: 'app-raw-edit',
+  templateUrl: './raw-edit.component.html',
+  styleUrls: ['./raw-edit.component.scss'],
 })
 export class RawEditComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
   serviceMap = {};
   selectedService: string;
-  editorOptions = { theme: "vs", language: "xml", automaticLayout: true };
+  editorOptions = { theme: 'vs', language: 'xml', automaticLayout: true };
   measureCatalogXml: string;
   successModelXml: string;
   measureCatalogEditor;
@@ -26,7 +28,8 @@ export class RawEditComponent implements OnInit, OnDestroy {
     private store: StoreService,
     private las2peer: Las2peerService,
     private snackBar: MatSnackBar,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private ngrxStore: Store
   ) {}
 
   static prettifyXml(xml) {
@@ -69,7 +72,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     if (this.groupID) {
       this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
         if (!xml) {
-          xml = "";
+          xml = '';
         }
         xml = RawEditComponent.prettifyXml(xml);
         this.measureCatalogXml = xml;
@@ -77,7 +80,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
       if (this.selectedService) {
         const setServiceXml = (xml) => {
           if (!xml) {
-            xml = "";
+            xml = '';
           }
           this.successModelXml = RawEditComponent.prettifyXml(xml);
         };
@@ -95,8 +98,11 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .saveMeasureCatalog(this.groupID, this.measureCatalogXml)
       .then(async () => {
         this.saveInProgress = false;
+        this.ngrxStore.dispatch(
+          storeMeasureCatalog({ xml: this.measureCatalogXml })
+        );
         const message = await this.translate
-          .get("raw-edit.measures.snackbar-success")
+          .get('raw-edit.measures.snackbar-success')
           .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
@@ -105,7 +111,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .catch(async () => {
         this.saveInProgress = false;
         const message = await this.translate
-          .get("raw-edit.measures.snackbar-failure")
+          .get('raw-edit.measures.snackbar-failure')
           .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
@@ -123,8 +129,11 @@ export class RawEditComponent implements OnInit, OnDestroy {
       )
       .then(async () => {
         this.saveInProgress = false;
+        this.ngrxStore.dispatch(
+          storeSuccessModel({ xml: this.successModelXml })
+        );
         const message = await this.translate
-          .get("raw-edit.success-models.snackbar-success")
+          .get('raw-edit.success-models.snackbar-success')
           .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
@@ -133,11 +142,14 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .catch(async () => {
         this.saveInProgress = false;
         const message = await this.translate
-          .get("raw-edit.success-models.snackbar-failure")
+          .get('raw-edit.success-models.snackbar-failure')
           .toPromise();
         this.snackBar.open(message, null, {
           duration: 2000,
         });
       });
   }
+}
+function storeMeasureCatalog(arg0: { xml: string }): any {
+  throw new Error('Function not implemented.');
 }
