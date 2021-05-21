@@ -41,6 +41,7 @@ import {
 } from './services/store.selectors';
 import { filter, first } from 'rxjs/operators';
 import { StateEffects } from './services/store.effects';
+import { Subscription } from 'rxjs';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -83,6 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private silentSigninIntervalHandle: Timer;
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  subscriptions$: Subscription[] = [];
 
   constructor(
     private logger: NGXLogger,
@@ -120,6 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false
     );
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   useLanguage(language: string) {
@@ -153,7 +156,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(fetchServices());
     this.ngrxStore.dispatch(fetchGroups());
 
-    this.ngrxStore
+    let sub = this.ngrxStore
       .select(SELECTED_GROUP)
       .pipe(
         filter((group) => group && group.name === undefined),
@@ -163,9 +166,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selectedGroupForm.reset(group.name);
         // this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
       });
-    this.ngrxStore.subscribe((state) => {
+    this.subscriptions$.push(sub);
+    sub = this.ngrxStore.subscribe((state) => {
       console.log(state);
     });
+    this.subscriptions$.push(sub);
 
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
@@ -197,13 +202,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
 
-    this.store.groups.subscribe((groups) => {
+    sub = this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
       this.myGroups = allGroups.filter((group) => group.member).sort();
       this.otherGroups = allGroups.filter((group) => !group.member).sort();
       this.groupMap = groups;
     });
-    this.store.selectedGroup.subscribe((selectedGroup) => {
+    this.subscriptions$.push(sub);
+    sub = this.store.selectedGroup.subscribe((selectedGroup) => {
       this.selectedGroup = selectedGroup;
       if (selectedGroup) {
         this.ngrxStore.dispatch(
@@ -212,19 +218,20 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selectedGroupForm.setValue(selectedGroup);
       }
     });
+    this.subscriptions$.push(sub);
+
     const silentLoginFunc = () => {
       this.userManager
         .signinSilentCallback()
-        .then(() => {
-          this.logger.debug('Silent login succeeded');
-        })
+        .then(() => {})
         .catch(() => {
           this.setUser(null);
           this.logger.debug('Silent login failed');
         });
     };
     silentLoginFunc();
-    this.store.user.subscribe((user) => {
+
+    sub = this.store.user.subscribe((user) => {
       this.user = user;
       this.signedIn = !!user;
       clearInterval(this.silentSigninIntervalHandle);
@@ -235,5 +242,6 @@ export class AppComponent implements OnInit, OnDestroy {
         );
       }
     });
+    this.subscriptions$.push(sub);
   }
 }

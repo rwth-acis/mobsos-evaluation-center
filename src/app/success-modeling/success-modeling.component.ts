@@ -207,6 +207,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.store.stopPolling();
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   onServiceSelected(service: ServiceInformation) {
