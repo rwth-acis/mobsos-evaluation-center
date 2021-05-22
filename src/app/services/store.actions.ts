@@ -21,6 +21,7 @@ enum PostActions {
   SAVE_MODEL_AND_CATALOG = 'send an update to the server',
   SUCCESS_RESPONSE = 'response was successfully',
   FAILURE_RESPONSE = 'response was not successfully',
+  SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
 }
 
 enum StoreActions {
@@ -113,12 +114,12 @@ export const saveModelAndCatalog = createAction(
 );
 
 export const setGroup = createAction(
-  StoreActions.STORE_SERVICES,
+  StateActions.SET_GROUP,
   props<{ groupId: string }>()
 );
 
 export const setService = createAction(
-  StoreActions.STORE_SERVICES,
+  StateActions.SET_SERVICE,
   props<{ service: ServiceInformation }>()
 );
 
@@ -162,6 +163,9 @@ export const toggleExpertMode = createAction(StateActions.TOGGLE_EXPERT_MODE);
 
 // http results
 export const successResponse = createAction(PostActions.SUCCESS_RESPONSE);
+export const saveCatalogSuccess = createAction(
+  PostActions.SAVE_CATALOG_SUCCESS
+);
 export const failureResponse = createAction(
   PostActions.FAILURE_RESPONSE,
   props<{ reason: Error }>()
