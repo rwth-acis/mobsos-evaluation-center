@@ -141,8 +141,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onGroupSelected(groupId: string) {
-    this.store.setGroup(groupId);
-    this.ngrxStore.dispatch(setGroup({ groupId }));
+    // this.store.setGroup(groupId);
+    if (groupId) {
+      this.ngrxStore.dispatch(setGroup({ groupId }));
+    }
   }
 
   menuItemClicked() {
@@ -159,12 +161,14 @@ export class AppComponent implements OnInit, OnDestroy {
     let sub = this.ngrxStore
       .select(SELECTED_GROUP)
       .pipe(
-        filter((group) => group && group.name === undefined),
+        filter((group) => !!group && !!group.name),
         first()
       )
       .subscribe((group) => {
-        this.selectedGroupForm.reset(group.name);
-        // this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
+        if (this.selectedGroupForm.value == !group.name) {
+          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
+          this.selectedGroupForm.reset(group.name);
+        }
       });
     this.subscriptions$.push(sub);
     sub = this.ngrxStore.subscribe((state) => {
