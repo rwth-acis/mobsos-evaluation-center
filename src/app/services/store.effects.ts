@@ -9,24 +9,16 @@ import {
   catchError,
   switchMap,
   withLatestFrom,
-  tap,
   filter,
   share,
-  exhaustMap,
-  throttleTime,
-  shareReplay,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
-import { StoreService } from '../store.service';
 import { delayedRetry } from './retryOperator';
 import * as Action from './store.actions';
 import {
-  MEASURE_CATALOG,
   MEASURE_CATALOG_XML,
-  SELECTED_GROUP,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
-  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
   VISUALIZATION_DATA,
 } from './store.selectors';
@@ -36,7 +28,6 @@ export class StateEffects {
   constructor(
     private actions$: Actions,
     private l2p: Las2peerService,
-    private store: StoreService,
     private ngrxStore: Store,
     private logger: NGXLogger
   ) {}
@@ -73,7 +64,12 @@ export class StateEffects {
             })
           )
         )
-      )
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
     )
   );
 
@@ -101,6 +97,10 @@ export class StateEffects {
             })
           ),
         ]).pipe(
+          filter(
+            ([groupsFromContactService, groupsFromMobSOS]) =>
+              !!groupsFromContactService || !!groupsFromMobSOS
+          ),
           map(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.storeGroups({
               groupsFromContactService,
@@ -108,27 +108,28 @@ export class StateEffects {
             })
           )
         )
-      )
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
     )
   );
 
-  setGroup$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(Action.setGroup),
-        tap(({ groupId }) => Action.fetchMeasureCatalog({ groupId }))
-      ),
-    { dispatch: false }
+  setGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.setGroup),
+      filter(({ groupId }) => !!groupId),
+      switchMap(({ groupId }) => of(Action.fetchMeasureCatalog({ groupId })))
+    )
   );
 
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
-      filter(([{ service }, groupId]) => service !== undefined),
-      tap(([action, groupId]) => {
-        this.store.startSynchronizingWorkspace(groupId);
-      }),
+      filter(([{ service }, groupId]) => !!service),
       switchMap(([{ service }, groupId]) =>
         of(Action.fetchSuccessModel({ groupId, serviceName: service.name }))
       )
@@ -153,34 +154,42 @@ export class StateEffects {
     )
   );
 
-  saveModel$ = createEffect(() =>
+  saveModelAndCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveModelAndCatalog),
       withLatestFrom(
         combineLatest([
-          this.ngrxStore.select(SUCCESS_MODEL_XML),
           this.ngrxStore.select(MEASURE_CATALOG_XML),
+          this.ngrxStore.select(SELECTED_GROUP_ID),
+        ])
+      ),
+      switchMap(([action, [measureCatalogXML, groupId]]) =>
+        this.l2p
+          .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
+          .pipe(map(() => Action.saveCatalogSuccess()))
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
+    )
+  );
+
+  saveModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveCatalogSuccess),
+      withLatestFrom(
+        combineLatest([
+          this.ngrxStore.select(SUCCESS_MODEL_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_SERVICE_NAME),
         ])
       ),
-      mergeMap(
-        ([
-          action,
-          [successModelXML, measureCatalogXML, groupId, serviceName],
-        ]) =>
-          this.l2p
-            .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
-            .pipe(
-              map(() =>
-                this.l2p.saveSuccessModelAndObserve(
-                  groupId,
-                  serviceName,
-                  successModelXML
-                )
-              ),
-              map((res) => Action.successResponse())
-            )
+      switchMap(([action, [successModelXML, groupId, serviceName]]) =>
+        this.l2p
+          .saveSuccessModelAndObserve(groupId, serviceName, successModelXML)
+          .pipe(map(() => Action.successResponse()))
       ),
       catchError((err) => {
         console.error(err);
