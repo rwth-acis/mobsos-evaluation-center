@@ -17,7 +17,6 @@ export interface AppState {
   services: ServiceCollection;
   groups: GroupCollection;
   user: object;
-  selectedGroup: GroupInformation;
   selectedGroupId: string;
   selectedServiceName: string;
   selectedService: ServiceInformation;
