@@ -20,12 +20,14 @@ import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
+  failureResponse,
   saveModelAndCatalog,
   setService,
   toggleEdit,
 } from '../services/store.actions';
 import {
   EDIT_MODE,
+  IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   SELECTED_GROUP,
   SELECTED_SERVICE,
@@ -36,11 +38,11 @@ import {
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { MeasureCatalog as Catalog } from '../models/measure.catalog';
-import { filter } from 'rxjs/operators';
+import { catchError, filter, map, timeout } from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
-import { Subscription } from 'rxjs';
+import { combineLatest, of, Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
 @Component({
@@ -72,6 +74,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
   userGroups$ = this.ngrxStore.select(USER_GROUPS);
   user$ = this.ngrxStore.select(USER);
+  memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
+  showEditButton$ = combineLatest([
+    this.selectedGroup$,
+    this.selectedService$,
+    this.workspaceInitialized$,
+  ]).pipe(map(([group, service, init]) => !!group && !!service && init));
   selectedServiceName: string;
   initialServiceName;
 
@@ -93,7 +101,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   saveInProgress = false;
   availableQuestionnaires: Questionnaire[];
   numberOfRequirements = 0;
-  selectedGroup: GroupInformation;
 
   subscriptions$: Subscription[] = [];
 
@@ -156,10 +163,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
     sub = this.userGroups$.subscribe((groups) => (this.myGroups = groups));
     this.subscriptions$.push(sub);
-    sub = this.selectedGroup$.subscribe(
-      (group) => (this.selectedGroup = group)
-    );
-    this.subscriptions$.push(sub);
+    // sub = this.selectedGroup$.subscribe(
+    //   (group) => (this.selectedGroup = group)
+    // );
+    // this.subscriptions$.push(sub);
     sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
     sub = this.services$.subscribe((services) => (this.services = services));
@@ -175,22 +182,26 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       (service) => (this.selectedService = service)
     );
     this.subscriptions$.push(sub);
-    sub = this.store.communityWorkspace.subscribe(async (workspace) => {
-      this.communityWorkspace = workspace;
-      if (
-        this.workspaceUser &&
-        this.workspaceUser !== this.getMyUsername() &&
-        this.getCurrentWorkspace() === null
-      ) {
-        this.initWorkspace().then(() =>
-          this.switchWorkspace(this.getMyUsername())
-        );
-        const message = await this.translate
-          .get('success-modeling.workspace-closed-message')
-          .toPromise();
-        this.snackBar.open('Owner closed workspace', null, { duration: 3000 });
-      }
-    });
+    sub = this.store.communityWorkspace
+      .pipe(filter((workspace) => !!workspace))
+      .subscribe(async (workspace) => {
+        this.communityWorkspace = workspace;
+        if (
+          this.workspaceUser &&
+          this.workspaceUser !== this.getMyUsername() &&
+          this.getCurrentWorkspace() === null
+        ) {
+          this.initWorkspace().then(() =>
+            this.switchWorkspace(this.getMyUsername())
+          );
+          const message = await this.translate
+            .get('success-modeling.workspace-closed-message')
+            .toPromise();
+          this.snackBar.open('Owner closed workspace', null, {
+            duration: 3000,
+          });
+        }
+      });
     this.subscriptions$.push(sub);
     sub = this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
@@ -318,10 +329,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     return 'spectator';
   }
 
-  isMemberOfSelectedGroup(): boolean {
-    return this.user && this.selectedGroup.member;
-  }
-
   canEdit() {
     if (this.editMode) {
       const role = this.getMyRole();
@@ -373,15 +380,34 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(saveModelAndCatalog());
     if (this.saveInProgress) {
-      this.actionState.saveModel$.subscribe((result) => {
-        this.saveInProgress = false;
+      let sub = this.actionState.saveModelAndCatalog$
+        .pipe(
+          timeout(300000),
+          catchError(() => {
+            return of({ reason: 'The request took too long' });
+          })
+        )
+        .subscribe((result) => {
+          this.saveInProgress = false;
 
-        let message = this.translate.instant(
-          'success-modeling.snackbar-save-failure'
-        );
+          console.log(result);
 
-        this.snackBar.open(message, 'Ok');
-      });
+          if ('reason' in result) {
+            let message =
+              this.translate.instant('success-modeling.snackbar-save-failure') +
+              result['reason'];
+
+            this.snackBar.open(message, 'Ok');
+          } else {
+            let message = this.translate.instant(
+              'success-modeling.snackbar-save-success'
+            );
+            this.snackBar.open(message, null, {
+              duration: 2000,
+            });
+          }
+          sub.unsubscribe();
+        });
     }
 
     // const workspace = this.getCurrentWorkspace();
@@ -565,4 +591,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     myWorkspace.model = cloneDeep(ownerWorkspace.model);
     this.persistWorkspaceChanges();
   }
+}
+function TypedAction<T>() {
+  throw new Error('Function not implemented.');
 }

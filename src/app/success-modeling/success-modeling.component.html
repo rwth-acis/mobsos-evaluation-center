@@ -27,14 +27,14 @@
       </mat-form-field>
     </mat-toolbar-row>
 
-    <mat-toolbar-row id="edit-controls">
+    <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
       <mat-slide-toggle
         labelPosition="before"
         [checked]="editMode$ | async"
         (toggleChange)="onEditModeChanged()"
-        [disabled]="!isMemberOfSelectedGroup()"
+        [disabled]="!(memberOfGroup$ | async)"
         [matTooltip]="
-          isMemberOfSelectedGroup()
+          (memberOfGroup$ | async)
             ? ('success-modeling.edit-tooltip' | translate)
             : ('success-modeling.edit-disabled-tooltip' | translate)
         "
@@ -240,7 +240,10 @@
       <div id="info-content">
         <mat-icon color="primary">info_outline</mat-icon>
         <span id="info-text">
-          <span *ngIf="workspaceUser === username; else notUserWorkspace">
+          <!-- <span *ngIf="workspaceUser === username; else notUserWorkspace">
+            {{ 'success-modeling.info.own-workspace' | translate }}
+          </span> -->
+          <span *ngIf="true; else notUserWorkspace">
             {{ 'success-modeling.info.own-workspace' | translate }}
           </span>
         </span>
@@ -330,14 +333,18 @@
 
 <ng-template #noSuccessModel>
   <!-- success model non existant -->
-  <mat-card>
-    {{
-      (isMemberOfSelectedGroup()
-        ? 'success-modeling.message-no-success-model-found'
-        : 'success-modeling.message-no-success-model-found-not-member'
-      ) | translate
-    }}
+  <mat-card *ngIf="memberOfGroup$ | async; else notMemberOfSelectedGroup">
+    {{ 'success-modeling.message-no-success-model-found' | translate }}
   </mat-card>
+
+  <ng-template #notMemberOfSelectedGroup>
+    <!-- success model non existant -->
+    <mat-card>
+      {{
+        'success-modeling.message-no-success-model-found-not-member' | translate
+      }}
+    </mat-card>
+  </ng-template>
 </ng-template>
 
 <ng-template #notInitialized>

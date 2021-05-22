@@ -11,7 +11,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-
+import { cloneDeep } from 'lodash';
 import { ServiceInformation } from '../store.service';
 import { Las2peerService } from '../las2peer.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -64,7 +64,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.measure = { ...this.measure } as Measure;
+    this.measure = JSON.parse(JSON.stringify(this.measure)) as Measure;
     this.measure$ = this.ngrxStore.select(MEASURE, this.measure.name);
   }
 
@@ -77,7 +77,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
       minWidth: 300,
       width: '80%',
       data: {
-        measure: { ...this.measure },
+        measure: cloneDeep(this.measure),
         service: this.service,
         create: false,
         dimensionName: this.dimensionName,

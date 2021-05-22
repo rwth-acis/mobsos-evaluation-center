@@ -58,6 +58,7 @@ export class ChartVisualizerComponent
     this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
       const dataTable = data;
       if (dataTable instanceof Array && dataTable.length >= 2) {
+        let labelTypes = dataTable[1]; 
         const rows = dataTable.slice(2) as any[][];
         this.chart = new GoogleChart(
           '',

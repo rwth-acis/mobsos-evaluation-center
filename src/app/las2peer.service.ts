@@ -3,7 +3,14 @@ import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError, map, shareReplay, tap, timeout } from 'rxjs/operators';
+import {
+  catchError,
+  map,
+  share,
+  shareReplay,
+  tap,
+  timeout,
+} from 'rxjs/operators';
 import { merge } from 'lodash';
 import { delayedRetry } from './services/retryOperator';
 
@@ -216,9 +223,7 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
-    return this.http
-      .request(options.method, url, ngHttpOptions)
-      .pipe(shareReplay(1));
+    return this.http.request(options.method, url, ngHttpOptions).pipe(share());
   }
 
   async fetchServicesFromDiscovery() {

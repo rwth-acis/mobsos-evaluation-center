@@ -14,7 +14,7 @@ export const initialState: AppState = {
   services: {},
   groups: {},
   user: undefined,
-  selectedGroup: undefined,
+
   selectedGroupId: undefined,
   selectedService: undefined,
   selectedServiceName: undefined,
@@ -60,7 +60,6 @@ const _Reducer = createReducer(
     groupId
       ? {
           ...state,
-          selectedGroup: state.groups[groupId],
           selectedGroupId: groupId,
           measureCatalogInitialized: false,
         }
@@ -323,14 +322,13 @@ function mergeGroupData(groups, groupsFromContactService, groupsFromMobSOS) {
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
-  if (groupsFromMobSOS) {
-    for (const group of groupsFromMobSOS) {
-      const groupID = group.groupID;
-      const groupName = group.name;
-      const member = group.isMember;
-      if (!(groupID in groups)) {
-        groups[groupID] = { id: groupID, name: groupName, member };
-      }
+  if (!groupsFromMobSOS) return groups;
+  for (const group of groupsFromMobSOS) {
+    const groupID = group.groupID;
+    const groupName = group.name;
+    const member = group.isMember;
+    if (!groupsFromContactService || !(groupID in groupsFromContactService)) {
+      groups[groupID] = { id: groupID, name: groupName, member };
     }
   }
 

@@ -1,19 +1,26 @@
 import { createSelector } from '@ngrx/store';
-import { GroupCollection } from '../models/community.model';
+import { GroupCollection, GroupInformation } from '../models/community.model';
 import { MeasureCatalog } from '../models/measure.catalog';
+import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 
 //all of these should be used to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
 
 export const SERVICES = (state: StoreState) =>
-  Object.values(state.Reducer.services);
+  Object.values(state.Reducer.services).sort((a, b) =>
+    sortServicesByName(a, b)
+  );
 
 export const MEASURE = (state: StoreState, name: string) =>
   state.Reducer.measureCatalog.measures[name];
 
 export const GROUPS = (state: StoreState) =>
-  Object.values(state.Reducer.groups);
+  state.Reducer.groups
+    ? Object.values(state.Reducer.groups).sort((a, b) => sortGroupsByName(a, b))
+    : undefined;
+
+const _GROUPS = (state: StoreState) => state.Reducer.groups;
 
 export const VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer.visualizationData;
@@ -34,9 +41,6 @@ export const VISUALIZATION_DATA_FOR_QUERY = (
 export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer.selectedService;
 
-export const SELECTED_GROUP = (state: StoreState) =>
-  state.Reducer.selectedGroup;
-
 export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
 
 export const EXPERT_MODE = (state: StoreState) => state.Reducer.expertMode;
@@ -50,13 +54,24 @@ export const SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer.selectedServiceName;
 
 export const SELECTED_GROUP_ID = (state: StoreState) =>
-  state.Reducer.selectedGroup.id;
+  state.Reducer.selectedGroupId;
+
+export const SELECTED_GROUP = createSelector(
+  SELECTED_GROUP_ID,
+  _GROUPS,
+  (groupId, groups) => (groups ? groups[groupId] : undefined)
+);
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer.currentNumberOfHttpCalls > 0;
 
 // export const SUCCESS_MODEL = (state: StoreState) =>
 //   parseModel(state.Reducer.successModelXML);
+export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
+  SELECTED_GROUP,
+  USER,
+  (group, user) => !!user && group?.member
+);
 
 export const SUCCESS_MODEL = (state: StoreState) => state.Reducer.successModel;
 
@@ -103,10 +118,26 @@ function parseModel(xml: string): SuccessModel {
  */
 function _filterGroups(groups: GroupCollection) {
   let userGroups = [];
+  if (!groups) {
+    return;
+  }
   for (const groupId of Object.keys(groups)) {
     if (groups[groupId].member) {
       userGroups.push(groups[groupId]);
     }
   }
   return userGroups;
+}
+function sortGroupsByName(a: GroupInformation, b: GroupInformation): number {
+  if (a.name < b.name) {
+    return -1;
+  } else return 1;
+}
+function sortServicesByName(
+  a: ServiceInformation,
+  b: ServiceInformation
+): number {
+  if (a.name < b.name) {
+    return -1;
+  } else return 1;
 }

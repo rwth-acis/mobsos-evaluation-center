@@ -28,6 +28,7 @@
     <app-success-measure
       *ngIf="measure"
       [measure]="measures[measure]"
+      [dimensionName]="this.dimensionName"
       (measureChange)="this.measuresChange.emit(measures)"
       [service]="service"
       [editMode]="editMode"
