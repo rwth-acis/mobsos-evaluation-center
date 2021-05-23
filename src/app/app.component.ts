@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  isDevMode,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -180,10 +181,12 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
-    sub = this.ngrxStore.subscribe((state) => {
-      console.log(state);
-    });
-    this.subscriptions$.push(sub);
+    if (isDevMode()) {
+      sub = this.ngrxStore.subscribe((state) => {
+        console.log(state);
+      });
+      this.subscriptions$.push(sub);
+    }
 
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});

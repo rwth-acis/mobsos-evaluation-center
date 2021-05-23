@@ -72,7 +72,7 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   _onFactorsChange(event) {
-    console.log(event);
+    // console.log(event);
     this.sendFactorsToSuccessModel.emit(event);
   }
 

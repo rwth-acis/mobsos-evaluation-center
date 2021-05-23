@@ -302,7 +302,7 @@ export class StoreService {
   }
 
   setUser(user) {
-    console.log(user);
+    // console.log(user);
     if (user) {
       // the local storage items will be picked up by the survey frontend
       localStorage.setItem('id_token', user.id_token);
