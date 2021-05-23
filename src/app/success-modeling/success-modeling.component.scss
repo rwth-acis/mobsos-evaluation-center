@@ -1,12 +1,13 @@
 #community-service-select {
-  width: 100%
+  width: 100%;
 }
 
 #header-card {
   margin: 0 0 10px 0;
 }
 
-mat-card, app-success-dimension {
+mat-card,
+app-success-dimension {
   margin: 10px 0 10px 0;
 }
 
@@ -34,15 +35,22 @@ mat-card, app-success-dimension {
   }
 }
 
-#info-content{
+#info-content {
   display: flex;
-  #info-text{
+  #info-text {
     margin-left: 5px;
     flex-grow: 1;
   }
 }
 
-#save-model-button{
+#save-model-button {
   margin-top: 20px;
   width: 100%;
+  position: relative;
+  mat-spinner {
+    top: 5px;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+  }
 }

@@ -1,14 +1,54 @@
 <div id="measure-header">
-  <button mat-icon-button *ngIf="editMode && canDelete" color="warn" (click)="onDeleteClicked($event)" id="delete-button">
+  <button
+    mat-icon-button
+    *ngIf="editMode$ | async"
+    color="warn"
+    (click)="onDeleteClicked($event)"
+    id="delete-button"
+  >
     <mat-icon>remove_circle_outline</mat-icon>
   </button>
-  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked($event)" id="edit-button">
+  <button
+    mat-icon-button
+    *ngIf="editMode$ | async"
+    color="primary"
+    (click)="onEditClicked($event)"
+    id="edit-button"
+  >
     <mat-icon>edit</mat-icon>
   </button>
   <h4 *ngIf="measure">
-    {{measure.name}}
+    {{ measure.name }}
   </h4>
 </div>
 
-<span *ngIf="visualizationError">{{visualizationError}}</span>
-<ng-template appVisualization></ng-template>
+<span
+  *ngIf="visualizationError || !measure?.visualization; else visualizationBlock"
+  >{{ visualizationError }}</span
+>
+
+<ng-template #visualizationBlock>
+  <div *ngIf="measure$ | async as measureAsync">
+    <div [ngSwitch]="measureAsync.visualization.type">
+      <app-kpi-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'KPI'"
+      ></app-kpi-visualization>
+      <app-value-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'Value'"
+      ></app-value-visualization>
+      <app-chart-visualization
+        *ngSwitchCase="'Chart'"
+        [measureName]="measureAsync.name"
+        [service]="service"
+      ></app-chart-visualization>
+      <div *ngSwitchDefault>
+        Unknown chartType: {{ measureAsync.visualization.type }}
+      </div>
+    </div>
+  </div>
+</ng-template>
+<!-- <ng-template appVisualization></ng-template> -->

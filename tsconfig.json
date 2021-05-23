@@ -7,7 +7,7 @@
     "declaration": false,
     "module": "es2015",
     "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": true,  
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "es5",
@@ -18,5 +18,5 @@
       "es2018",
       "dom"
     ]
-  }
+  },
 }

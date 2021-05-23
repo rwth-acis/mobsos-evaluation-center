@@ -1,7 +1,7 @@
-:host ::ng-deep .value-visualization {
-  font-size: 4em;
-  font-weight: bold;
-}
+// :host ::ng-deep .value-visualization {
+//   font-size: 4em;
+//   font-weight: bold;
+// }
 
 .loading-placeholder {
   mat-icon {
@@ -17,10 +17,11 @@
   }
 }
 
-#measure-header{
+#measure-header {
   display: flex;
   flex-direction: row;
-  #edit-button,#delete-button{
+  #edit-button,
+  #delete-button {
     margin-top: 5px;
   }
 }
