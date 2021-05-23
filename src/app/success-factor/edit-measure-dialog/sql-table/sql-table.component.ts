@@ -1,6 +1,13 @@
-import {ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
-import {Las2peerService} from '../../../las2peer.service';
-import {ServiceInformation} from '../../../store.service';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { Las2peerService } from '../../../las2peer.service';
+import { ServiceInformation } from '../../../store.service';
 
 @Component({
   selector: 'app-sql-table',
@@ -10,10 +17,9 @@ import {ServiceInformation} from '../../../store.service';
 export class SqlTableComponent implements OnInit, OnChanges {
   @Input() query: string;
   @Input() service: ServiceInformation;
-  results: any[][] = [];
+  results: any[][];
 
-  constructor(private las2peer: Las2peerService) {
-  }
+  constructor(private las2peer: Las2peerService) {}
 
   static htmlDecode(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
@@ -32,14 +38,15 @@ export class SqlTableComponent implements OnInit, OnChanges {
     let query = this.query;
     const queryParams = this.getParamsForQuery(query);
     query = this.applyVariableReplacements(query);
-    query = SqlTableComponent.applyCompatibilityFixForVisualizationService(query);
-    this.fetchData(query, queryParams, 'JSON')
-      .then(results => this.results = results as any[][]);
+    query =
+      SqlTableComponent.applyCompatibilityFixForVisualizationService(query);
+    this.fetchData(query, queryParams, 'JSON').then(
+      (results) => (this.results = results as any[][])
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (Object.keys(changes).includes('query') && this.query) {
-
     }
   }
 

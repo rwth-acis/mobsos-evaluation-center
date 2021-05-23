@@ -1,26 +1,51 @@
 <div id="factor-header">
-  <button mat-icon-button *ngIf="editMode" color="primary" (click)="onEditClicked()" id="edit-button">
+  <button
+    mat-icon-button
+    *ngIf="editMode$ | async"
+    color="primary"
+    (click)="onEditClicked()"
+    id="edit-button"
+  >
     <mat-icon>edit</mat-icon>
   </button>
-  <h3 *ngIf="factor">{{factor.name}}</h3>
+  <h3 *ngIf="factor">{{ factor.name }}</h3>
 </div>
 
 <div *ngIf="factor && factor.measures.length > 0">
-  <div *ngFor="let measure of factor.measures; let i = index" class="measure-row">
-    <button *ngIf="measure && editMode" mat-icon-button matTooltipShowDelay="0"
-            matTooltip="{{'success-factor.remove-measure-tooltip'|translate}}"
-            (click)="openRemoveMeasureDialog(i)">
+  <div
+    *ngFor="let measure of factor.measures; let i = index"
+    class="measure-row"
+  >
+    <button
+      *ngIf="measure && editMode"
+      mat-icon-button
+      matTooltipShowDelay="0"
+      matTooltip="{{ 'success-factor.remove-measure-tooltip' | translate }}"
+      (click)="openRemoveMeasureDialog(i)"
+    >
       <mat-icon color="warn">remove_circle_outline</mat-icon>
     </button>
-    <app-success-measure *ngIf="measure" [measure]="measures[measure]" (measureChange)="this.measuresChange.emit(measures)"
-                         [service]="service"
-                         [editMode]="editMode"></app-success-measure>
+    <app-success-measure
+      *ngIf="measure"
+      [measure]="measures[measure]"
+      [dimensionName]="this.dimensionName"
+      (measureChange)="this.measuresChange.emit(measures)"
+      [service]="service"
+      [editMode]="editMode"
+    ></app-success-measure>
   </div>
 </div>
-<button id="add-measure-button" mat-raised-button *ngIf="factor && editMode" mat-button color="primary"
-        (click)="openPickMeasureDialog()">
-  {{'success-factor.add-measure-button'|translate}}
-</button>
-<div *ngIf="!editMode && factor && factor.measures.length === 0">
-  {{'success-factor.no-measures-placeholder'|translate}}
+<div *ngIf="editMode$ | async as editMode">
+  <button
+    id="add-measure-button"
+    mat-raised-button
+    mat-button
+    color="primary"
+    (click)="openPickMeasureDialog()"
+  >
+    {{ 'success-factor.add-measure-button' | translate }}
+  </button>
+  <div *ngIf="!editMode && factor && factor.measures.length === 0">
+    {{ 'success-factor.no-measures-placeholder' | translate }}
+  </div>
 </div>

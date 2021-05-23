@@ -60,7 +60,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     }
     const xml = PickQuestionnaireDialogComponent.parseXml(this.selectedQuestionnaire.formXML);
     const successModelRecommendations = Array.from(xml.getElementsByTagName('qu:SuccessModelRecommendation'));
-    const resultSet = new Set();
+    const resultSet = new Set<string>();
     for (const recommendation of successModelRecommendations) {
       resultSet.add(recommendation.getAttribute('dimension'));
     }
