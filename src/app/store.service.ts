@@ -7,7 +7,6 @@ import { distinctUntilChanged, filter, pairwise } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { SuccessModel } from '../success-model/success-model';
 import { MeasureCatalog } from '../success-model/measure-catalog';
-import { YJsService } from './y-js.service';
 
 export interface State {
   servicesFromDiscovery: any[];
@@ -123,11 +122,7 @@ export class StoreService {
 
   public yjsConnected: Observable<boolean>;
 
-  constructor(
-    private logger: NGXLogger,
-    private las2peer: Las2peerService,
-    private yjs: YJsService
-  ) {
+  constructor(private logger: NGXLogger, private las2peer: Las2peerService) {
     // init subjects and observables
     this.initState();
 
@@ -322,23 +317,23 @@ export class StoreService {
   }
 
   startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
-    if (name) {
-      this.logger.debug('Synchronizing community workspace via y-js...');
-      this.yjs.syncObject(
-        name,
-        this.communityWorkspaceSubject,
-        this.communityWorkspaceInitializedSubject
-      );
-    }
+    // if (name) {
+    //   this.logger.debug('Synchronizing community workspace via y-js...');
+    //   this.yjs.syncObject(
+    //     name,
+    //     this.communityWorkspaceSubject,
+    //     this.communityWorkspaceInitializedSubject
+    //   );
+    // }
   }
 
   stopSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
-    if (name) {
-      this.logger.debug('Stopping community workspace synchronization...');
-      this.yjs.stopSync(name);
-      this.communityWorkspaceInitializedSubject.next(false);
-      this.communityWorkspaceSubject.next({});
-    }
+    // if (name) {
+    //   this.logger.debug('Stopping community workspace synchronization...');
+    //   this.yjs.stopSync(name);
+    //   this.communityWorkspaceInitializedSubject.next(false);
+    //   this.communityWorkspaceSubject.next({});
+    // }
   }
 
   updateMessageDescriptionsForCurrentService() {
@@ -392,7 +387,7 @@ export class StoreService {
   }
 
   private initState() {
-    this.yjsConnected = this.yjs.connected;
+    // this.yjsConnected = this.yjs.connected;
     const previousState = StoreService.loadState();
 
     let initialServicesFromDiscovery = [];
