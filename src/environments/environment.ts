@@ -8,7 +8,7 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
-      production:boolean
+      production: boolean;
     };
   }
 }
@@ -22,9 +22,7 @@ export const environment = {
     window.env.openIdClientId || 'f8622260-875b-499a-82db-db55f89f9deb',
   openIdSilentLoginInterval: 60,
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
-  las2peerWebConnectorUrl:
-    window.env.las2peerWebConnectorUrl ||
-    'https://las2peer.tech4comp.dbis.rwth-aachen.de',
+  las2peerWebConnectorUrl: 'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
@@ -33,8 +31,7 @@ export const environment = {
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // useLas2peerServiceDiscovery: false,
-  yJsWebsocketUrl:
-    window.env.yJsWebsocketUrl || 'wss://cloud10.dbis.rwth-aachen.de:8089',
+  yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',
   // yJsWebsocketUrl: 'ws://localhost:1234',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',

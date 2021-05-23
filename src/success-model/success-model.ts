@@ -1,12 +1,13 @@
-import {SuccessFactor} from './success-factor';
-import {merge} from 'lodash-es';
-import {Questionnaire} from './questionnaire';
-import {ReqbazProject} from './reqbaz-project';
+import { SuccessFactor } from './success-factor';
+import { merge } from 'lodash-es';
+import { Questionnaire } from './questionnaire';
+import { ReqbazProject } from './reqbaz-project';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
   'Information Quality': SuccessFactor[];
-  'Use': SuccessFactor[];
+  Use: SuccessFactor[];
   'User Satisfaction': SuccessFactor[];
   'Individual Impact': SuccessFactor[];
   'Community Impact': SuccessFactor[];
@@ -22,17 +23,22 @@ const initialDimensionMap: DimensionMap = {
 };
 
 export class SuccessModel {
-
-  constructor(public name: string, public service: string, public dimensions: DimensionMap,
-              public questionnaires: Questionnaire[], public reqBazProject: ReqbazProject) {
-  }
+  constructor(
+    public name: string,
+    public service: string,
+    public dimensions: DimensionMap,
+    public questionnaires: Questionnaire[],
+    public reqBazProject: ReqbazProject
+  ) {}
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
     const dimensions: DimensionMap = merge({}, initialDimensionMap);
     for (const objDimensionName of Object.keys(obj.dimensions)) {
       dimensions[objDimensionName] = [];
       for (const objFactor of obj.dimensions[objDimensionName]) {
-        dimensions[objDimensionName].push(SuccessFactor.fromPlainObject(objFactor));
+        dimensions[objDimensionName].push(
+          SuccessFactor.fromPlainObject(objFactor)
+        );
       }
     }
     const questionnaires = [];
@@ -48,7 +54,13 @@ export class SuccessModel {
       reqBazProject = null;
     }
 
-    return new SuccessModel(obj.name, obj.service, dimensions, questionnaires, reqBazProject);
+    return new SuccessModel(
+      obj.name,
+      obj.service,
+      dimensions,
+      questionnaires,
+      reqBazProject
+    );
   }
 
   static fromXml(xml: Element) {
@@ -61,14 +73,20 @@ export class SuccessModel {
         const dimensionName = dimensionNode.getAttribute('name');
         const availableDimensions = Object.keys(dimensions);
         if (!availableDimensions.includes(dimensionName)) {
-          throw new Error(`${dimensionName} is not a valid dimension. Valid dimensions are ${availableDimensions.join()}`);
+          throw new Error(
+            `${dimensionName} is not a valid dimension. Valid dimensions are ${availableDimensions.join()}`
+          );
         }
-        const factorNodes = Array.from(dimensionNode.getElementsByTagName('factor'));
+        const factorNodes = Array.from(
+          dimensionNode.getElementsByTagName('factor')
+        );
         for (const factorNode of factorNodes) {
           dimensions[dimensionName].push(SuccessFactor.fromXml(factorNode));
         }
       }
-      const questionnaireCollectionNodes = Array.from(xml.getElementsByTagName('questionnaires'));
+      const questionnaireCollectionNodes = Array.from(
+        xml.getElementsByTagName('questionnaires')
+      );
       const questionnaires = [];
       if (questionnaireCollectionNodes.length > 0) {
         const questionnaireCollectionNode = questionnaireCollectionNodes[0];
@@ -80,17 +98,25 @@ export class SuccessModel {
         }
       }
 
-      const reqBazProjectNodes = Array.from(xml.getElementsByTagName('reqbaz-project'));
+      const reqBazProjectNodes = Array.from(
+        xml.getElementsByTagName('reqbaz-project')
+      );
       let reqBazProject = null;
       if (reqBazProjectNodes.length > 0) {
         reqBazProject = ReqbazProject.fromXml(reqBazProjectNodes[0]);
       }
 
-      return new SuccessModel(modelName, service, dimensions, questionnaires, reqBazProject);
+      return new SuccessModel(
+        modelName,
+        service,
+        dimensions,
+        questionnaires,
+        reqBazProject
+      );
     } catch (e) {
       throw new Error('Parsing model failed: ' + e);
     }
-    return null
+    return null;
   }
 
   toXml(): Element {

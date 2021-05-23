@@ -3,12 +3,12 @@ import {
   ApplicationWorkspace,
   CommunityWorkspace,
   GroupInformation,
-  ServiceCollection,
+  ServiceInformation,
   StoreService,
   Visitor,
 } from '../store.service';
-import { Las2peerService, Questionnaire } from '../las2peer.service';
-import { SuccessModel } from '../../success-model/success-model';
+import { Questionnaire } from '../las2peer.service';
+
 import { MeasureCatalog } from '../../success-model/measure-catalog';
 import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -17,39 +17,107 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
-
-
+import { Store } from '@ngrx/store';
+import {
+  disableEdit,
+  failureResponse,
+  PostActions,
+  saveModelAndCatalog,
+  setService,
+  toggleEdit,
+} from '../services/store.actions';
+import {
+  EDIT_MODE,
+  IS_MEMBER_OF_SELECTED_GROUP,
+  MEASURE_CATALOG,
+  SELECTED_GROUP,
+  SELECTED_SERVICE,
+  SERVICES,
+  SUCCESS_MODEL,
+  USER,
+  USER_GROUPS,
+  WORKSPACE_INITIALIZED,
+} from '../services/store.selectors';
+import { MeasureCatalog as Catalog } from '../models/measure.catalog';
+import { catchError, filter, map, timeout } from 'rxjs/operators';
+import { iconMap, translationMap } from './config';
+import { SuccessModel } from '../models/success.model';
+import { StateEffects } from '../services/store.effects';
+import { combineLatest, of, Subscription } from 'rxjs';
+import { FormControl } from '@angular/forms';
+import { animate, style, transition, trigger } from '@angular/animations';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
   styleUrls: ['./success-modeling.component.scss'],
+  animations: [
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateY(200%)' }),
+        animate('500ms ease-in', style({ transform: 'translateY(0%)' })),
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ transform: 'translateY(100%)' })),
+      ]),
+    ]),
+  ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
-  serviceMap: ServiceCollection = {};
-  selectedService: string;
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  editMode = false;
+  services$ = this.ngrxStore.select(SERVICES);
+  successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+  measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
+  selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
+  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
+  userGroups$ = this.ngrxStore.select(USER_GROUPS);
+  user$ = this.ngrxStore.select(USER);
+  memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
+  showEditButton$ = combineLatest([
+    this.selectedGroup$,
+    this.selectedService$,
+    this.workspaceInitialized$,
+  ]).pipe(map(([group, service, init]) => !!group && !!service && init));
+  selectedServiceName: string;
+  initialServiceName;
+
   measureCatalogXml: Document;
   measureCatalog: MeasureCatalog;
+  catalog: Catalog;
+  translationMap;
+  iconMap;
   successModelXml: Document;
-  successModel: SuccessModel=undefined;
-  editMode = false;
+  successModel: SuccessModel = undefined;
+  selectedService;
+  serviceSelectForm = new FormControl('');
+
   communityWorkspace: CommunityWorkspace;
   user;
+  dimensions;
   workspaceUser;
   myGroups: GroupInformation[];
   saveInProgress = false;
   availableQuestionnaires: Questionnaire[];
   numberOfRequirements = 0;
 
+  subscriptions$: Subscription[] = [];
+
   constructor(
     private store: StoreService,
-    private las2peer: Las2peerService,
     private logger: NGXLogger,
     private dialog: MatDialog,
     private translate: TranslateService,
-    private snackBar: MatSnackBar
-  ) {}
+    private snackBar: MatSnackBar,
+    private ngrxStore: Store,
+    private actionState: StateEffects
+  ) {
+    this.translationMap = translationMap;
+    this.iconMap = iconMap;
+    this.dimensions = Object.keys(translationMap);
+  }
 
   static parseXml(xml) {
     const parser = new DOMParser();
@@ -64,10 +132,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
   }
 
-  getCurrentGroupName(){
-    const currentGroup = this.myGroups.find((group=>group.id==this.groupID))
-    
-   return currentGroup?currentGroup.name : "Default";
+  getCurrentGroupName() {
+    const currentGroup = this.myGroups.find(
+      (group) => group.id == this.groupID
+    );
+    return currentGroup ? currentGroup.name : '';
   }
 
   parseModel(xml: Document) {
@@ -79,123 +148,100 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.store.startPolling();
-    this.store.selectedGroup.subscribe((groupID) => {
-      if (groupID) {
-        this.groupID = groupID;
-      } 
-      
-      this.successModel = this.successModelXml = this.measureCatalog = this.measureCatalogXml = undefined;
-      this.fetchXml();
-    });
-    this.store.selectedService.subscribe((serviceID) => {
-      this.selectedService = serviceID;
-      this.fetchXml();
-    });
-    this.store.services.subscribe((services) => {
-      this.services = Object.keys(services);
-      this.serviceMap = services;
-    });
-    this.store.user.subscribe((user) => {
-      this.user = user;
-      if (!this.user && this.editMode) {
-        this.store.setEditMode(false);
-      }
-    });
-    this.store.communityWorkspace.subscribe(async (workspace) => {
-      this.communityWorkspace = workspace;
-      if (
-        this.workspaceUser &&
-        this.workspaceUser !== this.getMyUsername() &&
-        this.getCurrentWorkspace() === null
-      ) {
-        this.initWorkspace().then(() =>
-          this.switchWorkspace(this.getMyUsername())
-        );
-        const message = await this.translate
-          .get('success-modeling.workspace-closed-message')
-          .toPromise();
-        this.snackBar.open('Owner closed workspace', null, { duration: 3000 });
-      }
-    });
-    this.store.editMode.subscribe((editMode) => {
+    let sub = this.selectedService$
+      .pipe(filter((service) => service !== undefined))
+      .subscribe((service) => {
+        this.selectedServiceName = service.alias ? service.alias : service.name;
+        this.ngrxStore.dispatch(setService({ service }));
+        if (!this.initialServiceName) {
+          this.initialServiceName = this.selectedServiceName;
+          this.serviceSelectForm.setValue(this.selectedServiceName);
+        }
+      });
+    this.subscriptions$.push(sub);
+
+    sub = this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
+    this.subscriptions$.push(sub);
+    sub = this.userGroups$.subscribe((groups) => (this.myGroups = groups));
+    this.subscriptions$.push(sub);
+
+    sub = this.user$.subscribe((user) => (this.user = user));
+    this.subscriptions$.push(sub);
+    sub = this.services$.subscribe((services) => (this.services = services));
+    this.subscriptions$.push(sub);
+    sub = this.successModel$.subscribe(
+      (successModel) =>
+        (this.successModel = successModel
+          ? successModel
+          : SuccessModel.emptySuccessModel(this.selectedService))
+    );
+    this.subscriptions$.push(sub);
+    sub = this.selectedService$.subscribe(
+      (service) => (this.selectedService = service)
+    );
+    this.subscriptions$.push(sub);
+    sub = this.store.communityWorkspace
+      .pipe(filter((workspace) => !!workspace))
+      .subscribe(async (workspace) => {
+        this.communityWorkspace = workspace;
+        if (
+          this.workspaceUser &&
+          this.workspaceUser !== this.getMyUsername() &&
+          this.getCurrentWorkspace() === null
+        ) {
+          this.initWorkspace().then(() =>
+            this.switchWorkspace(this.getMyUsername())
+          );
+          const message = await this.translate
+            .get('success-modeling.workspace-closed-message')
+            .toPromise();
+          this.snackBar.open('Owner closed workspace', null, {
+            duration: 3000,
+          });
+        }
+      });
+    this.subscriptions$.push(sub);
+    sub = this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
         this.initWorkspace().then(() =>
           this.switchWorkspace(this.getMyUsername())
         );
-      } else if (this.editMode === true) {
-        this.fetchXml();
+      } else if (this.editMode) {
         this.openClearWorkspaceDialog();
       }
       this.editMode = editMode;
     });
-    this.store.groups.subscribe((groups) => {
-      const allGroups = Object.values(groups);
-      this.myGroups = allGroups.filter((group) => group.member).sort();
-    });
-    this.store.questionnaires.subscribe((questionnaires) => {
-      questionnaires.sort((a, b) => (a.name > b.name ? 1 : -1));
-      this.availableQuestionnaires = questionnaires;
-    });
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {
     this.store.stopPolling();
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  onServiceSelected(service) {
+  onServiceSelected(service: ServiceInformation) {
     this.store.setEditMode(false);
-    this.cleanData();
-    this.store.selectedServiceSubject.next(service);
-  }
 
-  async fetchXml() {
-    if (this.groupID) {
-      this.las2peer
-        .fetchMeasureCatalog(this.groupID)
-        .then((xml) => {
-          if (!xml) {
-            xml = '';
-          }
-          this.measureCatalogXml = SuccessModelingComponent.parseXml(xml);
-          this.measureCatalog = this.parseCatalog(this.measureCatalogXml);
-        })
-        .catch(() => {
-          this.measureCatalogXml = null;
-          this.measureCatalog = null;
-        });
-      if (this.selectedService) {
-        const setServiceXml = (xml) => {
-          if (!xml) {
-            xml = '';
-          }
-          this.successModelXml = SuccessModelingComponent.parseXml(xml);
-          this.successModel = this.parseModel(this.successModelXml);
-        };
-        this.las2peer
-          .fetchSuccessModel(this.groupID, this.selectedService)
-          .then(setServiceXml)
-          .catch(() => {
-            this.successModelXml = null;
-            this.successModelXml = null;
-          });
-      }
-    }
+    // Make popup here to ask if user really wants to cancel editing
+    this.ngrxStore.dispatch(disableEdit());
+
+    this.ngrxStore.dispatch(setService({ service }));
   }
 
   onEditModeChanged() {
+    this.ngrxStore.dispatch(toggleEdit());
     this.store.setEditMode(!this.editMode);
   }
 
   getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
     const result = [];
-    if (!this.selectedService) {
+    if (!this.selectedServiceName) {
       return [];
     }
     const userWorkspaces = Object.values(this.communityWorkspace);
     for (const userWorkspace of userWorkspaces) {
-      if (Object.keys(userWorkspace).includes(this.selectedService)) {
-        result.push(userWorkspace[this.selectedService]);
+      if (Object.keys(userWorkspace).includes(this.selectedServiceName)) {
+        result.push(userWorkspace[this.selectedServiceName]);
       }
     }
     return result;
@@ -238,17 +284,17 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   switchWorkspace(user: string) {
-    this.workspaceUser = user;
-    const visitors = this.getCurrentWorkspace().visitors;
-    const myUsername = this.getMyUsername();
-    const meAsVisitorArr = visitors.filter(
-      (visitor) => visitor.username === myUsername
-    );
-    if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
-      visitors.push({ username: myUsername, role: 'spectator' });
-      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-      this.persistWorkspaceChanges();
-    }
+    // this.workspaceUser = user;
+    // const visitors = this.getCurrentWorkspace().visitors;
+    // const myUsername = this.getMyUsername();
+    // const meAsVisitorArr = visitors.filter(
+    //   (visitor) => visitor.username === myUsername
+    // );
+    // if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
+    //   visitors.push({ username: myUsername, role: 'spectator' });
+    //   visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
+    //   this.persistWorkspaceChanges();
+    // }
   }
 
   changeVisitorRole(visitorName: string, role: string) {
@@ -279,13 +325,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       return visitorSearchResult[0].role;
     }
     return 'spectator';
-  }
-
-  isMemberOfSelectedGroup(): boolean {
-    const searchResult = this.myGroups.filter(
-      (value) => value.id === this.groupID
-    );
-    return searchResult.length > 0;
   }
 
   canEdit() {
@@ -335,39 +374,76 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     });
   }
 
-  async onSaveClicked() {
-    const workspace = this.getCurrentWorkspace();
-    const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
-    const measureXml = catalog.toXml();
-    const model = SuccessModel.fromPlainObject(workspace.model);
-    const successModelXml = model.toXml();
+  onSaveClicked() {
     this.saveInProgress = true;
-    try {
-      await this.las2peer.saveMeasureCatalog(
-        this.groupID,
-        measureXml.outerHTML
-      );
-      await this.las2peer.saveSuccessModel(
-        this.groupID,
-        this.selectedService,
-        successModelXml.outerHTML
-      );
-      const message = await this.translate
-        .get('success-modeling.snackbar-save-success')
-        .toPromise();
-      this.snackBar.open(message, null, {
-        duration: 2000,
-      });
-    } catch (e) {
-      let message = await this.translate
-        .get('success-modeling.snackbar-save-failure')
-        .toPromise();
-      message += e;
-      this.snackBar.open(message, "Ok", {
-        duration: 2000,
-      });
+    this.ngrxStore.dispatch(saveModelAndCatalog());
+    if (this.saveInProgress) {
+      let sub = this.actionState.saveModelAndCatalog$
+        .pipe(
+          timeout(300000),
+          catchError(() => {
+            return of(
+              failureResponse({
+                reason: new Error('The request took too long and was aborted'),
+              })
+            );
+          })
+        )
+        .subscribe((result) => {
+          this.saveInProgress = false;
+
+          console.log(result);
+
+          if (result && result instanceof failureResponse) {
+            let message =
+              this.translate.instant('success-modeling.snackbar-save-failure') +
+              (result as { reason: Error }).reason.message;
+
+            this.snackBar.open(message, 'Ok');
+          } else {
+            let message = this.translate.instant(
+              'success-modeling.snackbar-save-success'
+            );
+            this.snackBar.open(message, null, {
+              duration: 2000,
+            });
+          }
+          sub.unsubscribe();
+        });
     }
-    this.saveInProgress = false;
+
+    // const workspace = this.getCurrentWorkspace();
+    // const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
+    // const measureXml = catalog.toXml();
+    // const model = SuccessModel.fromPlainObject(workspace.model);
+    // const successModelXml = model.toXml();
+    // this.saveInProgress = true;
+    // try {
+    //   await this.las2peer.saveMeasureCatalog(
+    //     this.groupID,
+    //     measureXml.outerHTML
+    //   );
+    //   await this.las2peer.saveSuccessModel(
+    //     this.groupID,
+    //     this.selectedServiceName,
+    //     successModelXml.outerHTML
+    //   );
+    //   const message = await this.translate
+    //     .get('success-modeling.snackbar-save-success')
+    //     .toPromise();
+    //   this.snackBar.open(message, null, {
+    //     duration: 2000,
+    //   });
+    // } catch (e) {
+    //   let message = await this.translate
+    //     .get('success-modeling.snackbar-save-failure')
+    //     .toPromise();
+    //   message += e;
+    //   this.snackBar.open(message, 'Ok', {
+    //     duration: 2000,
+    //   });
+    // }
+    // this.saveInProgress = false;
   }
 
   private getWorkspaceByUserAndService(
@@ -387,8 +463,19 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   private getCurrentWorkspace(): ApplicationWorkspace {
     return this.getWorkspaceByUserAndService(
       this.workspaceUser,
-      this.selectedService
+      this.selectedServiceName
     );
+  }
+
+  onMeasuresChange(event) {
+    // console.log(event);
+  }
+  onFactorsChange({ factors, dimensionName }) {
+    // console.log(factors);
+    // // this.successModel.dimensions[dimensionName] = factors;
+    // // this.ngrxStore.dispatch(
+    // //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
+    // // );
   }
 
   private getMyUsername() {
@@ -399,50 +486,54 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private async initWorkspace() {
-    await this.store.waitUntilWorkspaceIsSynchronized().then(() => {
-      const myUsername = this.getMyUsername();
-      this.workspaceUser = myUsername;
-      if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-        this.communityWorkspace[myUsername] = {};
-      }
-      const userWorkspace = this.communityWorkspace[myUsername];
-      if (!Object.keys(userWorkspace).includes(this.selectedService)) {
-        if (!this.measureCatalog) {
-          this.measureCatalog = new MeasureCatalog({});
-        }
-        if (!this.successModel) {
-          this.successModel = new SuccessModel(
-            this.serviceMap[this.selectedService].alias,
-            this.selectedService,
-            {
-              'System Quality': [],
-              'Information Quality': [],
-              Use: [],
-              'User Satisfaction': [],
-              'Individual Impact': [],
-              'Community Impact': [],
-            },
-            [],
-            null
-          );
-        }
-        userWorkspace[this.selectedService] = {
-          createdAt: new Date().toISOString(),
-          createdBy: myUsername,
-          visitors: [],
-          catalog: this.measureCatalog,
-          model: this.successModel,
-        };
-      }
-      this.persistWorkspaceChanges();
-    });
+    // this.store.waitUntilWorkspaceIsSynchronized().then(() => {
+    //   const myUsername = this.getMyUsername();
+    //   this.workspaceUser = myUsername;
+    //   if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+    //     this.communityWorkspace[myUsername] = {};
+    //   }
+    //   const userWorkspace = this.communityWorkspace[myUsername];
+    //   if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
+    //     if (!this.measureCatalog) {
+    //       this.measureCatalog = new MeasureCatalog({});
+    //     }
+    //     if (!this.successModel) {
+    //       this.successModel = new SuccessModel(
+    //         this.selectedService.alias,
+    //         this.selectedService.name,
+    //         {
+    //           'System Quality': [],
+    //           'Information Quality': [],
+    //           Use: [],
+    //           'User Satisfaction': [],
+    //           'Individual Impact': [],
+    //           'Community Impact': [],
+    //         },
+    //         [],
+    //         null
+    //       );
+    //     }
+    //     const appworkspace = {
+    //       createdAt: new Date().toISOString(),
+    //       createdBy: myUsername,
+    //       visitors: [],
+    //       catalog: this.measureCatalog,
+    //       model: this.successModel,
+    //     };
+    //     userWorkspace[this.selectedServiceName] = appworkspace;
+    //     this.ngrxStore.dispatch(
+    //       updateAppWorkspace({ workspace: appworkspace })
+    //     );
+    //   }
+    //   this.persistWorkspaceChanges();
+    // });
   }
 
   private persistWorkspaceChanges() {
-    this.logger.debug(
-      'Workspace changed: ' + JSON.stringify(this.communityWorkspace)
-    );
-    this.store.setCommunityWorkspace(this.communityWorkspace);
+    // this.logger.debug(
+    //   'Workspace changed: ' + JSON.stringify(this.communityWorkspace)
+    // );
+    // this.store.setCommunityWorkspace(this.communityWorkspace);
   }
 
   private async openClearWorkspaceDialog() {
@@ -464,16 +555,16 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private removeWorkspace() {
-    const myUsername = this.user.profile.preferred_username;
-    if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-      return;
-    }
-    const userWorkspace = this.communityWorkspace[myUsername];
-    if (!Object.keys(userWorkspace).includes(this.selectedService)) {
-      return;
-    }
-    delete userWorkspace[this.selectedService];
-    this.persistWorkspaceChanges();
+    // const myUsername = this.user.profile.preferred_username;
+    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+    //   return;
+    // }
+    // const userWorkspace = this.communityWorkspace[myUsername];
+    // if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
+    //   return;
+    // }
+    // delete userWorkspace[this.selectedServiceName];
+    // this.persistWorkspaceChanges();
   }
 
   private cleanData() {
@@ -489,11 +580,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     }
     const myWorkspace = this.getWorkspaceByUserAndService(
       myUsername,
-      this.selectedService
+      this.selectedServiceName
     );
     const ownerWorkspace = this.getWorkspaceByUserAndService(
       owner,
-      this.selectedService
+      this.selectedServiceName
     );
     if (!myWorkspace || !ownerWorkspace) {
       return;
@@ -502,4 +593,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     myWorkspace.model = cloneDeep(ownerWorkspace.model);
     this.persistWorkspaceChanges();
   }
+}
+function TypedAction<T>() {
+  throw new Error('Function not implemented.');
 }

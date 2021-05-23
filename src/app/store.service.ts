@@ -73,7 +73,11 @@ export interface CommunityWorkspace {
   // user ID is key
   [key: string]: UserWorkspace;
 }
-
+/**
+ *
+ * @param groupID
+ * @deprecated use ngrxstore instead
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -112,9 +116,10 @@ export class StoreService {
   public communityWorkspace = this.communityWorkspaceSubject.asObservable();
 
   communityWorkspaceInitializedSubject = new BehaviorSubject<boolean>(false);
-  public communityWorkspaceInitialized = this.communityWorkspaceInitializedSubject
-    .asObservable()
-    .pipe(distinctUntilChanged());
+  public communityWorkspaceInitialized =
+    this.communityWorkspaceInitializedSubject
+      .asObservable()
+      .pipe(distinctUntilChanged());
 
   public yjsConnected: Observable<boolean>;
 
@@ -210,28 +215,30 @@ export class StoreService {
           () => {}
         );
       }
-      this.serviceMobSOSPollingHandle = this.las2peer.pollMobSOSServiceDiscovery(
-        (services) => {
-          if (services === undefined) {
-            services = {};
-          }
-          this.servicesFromMobSOSSubject.next(services);
-        },
-        () => {}
-      );
-      this.groupContactServicePollingHandle = this.las2peer.pollContactServiceGroups(
-        (groups) => {
-          if (groups === undefined) {
-            groups = {};
-          }
-          this.groupsFromContactServiceSubject.next(groups);
-        },
-        () => {}
-      );
+      this.serviceMobSOSPollingHandle =
+        this.las2peer.pollMobSOSServiceDiscovery(
+          (services) => {
+            if (services === undefined) {
+              services = {};
+            }
+            this.servicesFromMobSOSSubject.next(services);
+          },
+          () => {}
+        );
+      this.groupContactServicePollingHandle =
+        this.las2peer.pollContactServiceGroups(
+          (groups) => {
+            if (groups === undefined) {
+              groups = {};
+            }
+            this.groupsFromContactServiceSubject.next(groups);
+          },
+          () => {}
+        );
       this.groupMobSOSPollingHandle = this.las2peer.pollMobSOSGroups(
         (groups) => {
           if (groups === undefined) {
-            return
+            return;
           }
           this.groupsFromMobSOSSubject.next(groups);
         },
@@ -279,7 +286,8 @@ export class StoreService {
         servicesFromDiscovery: this.servicesFromDiscoverySubject.getValue(),
         servicesFromMobSOS: this.servicesFromMobSOSSubject.getValue(),
         services: this.servicesSubject.getValue(),
-        groupsFromContactService: this.groupsFromContactServiceSubject.getValue(),
+        groupsFromContactService:
+          this.groupsFromContactServiceSubject.getValue(),
         groupsFromMobSOS: this.groupsFromMobSOSSubject.getValue(),
         groups: this.groupsSubject.getValue(),
         user: this.userSubject.getValue(),
@@ -308,9 +316,9 @@ export class StoreService {
     }
     this.userSubject.next(user);
     // refresh groups from MobSOS to update group membership status
-    this.las2peer.fetchMobSOSGroups().then((groups) => {
-      this.groupsFromMobSOSSubject.next(groups);
-    });
+    // this.las2peer.fetchMobSOSGroups().then((groups) => {
+    //   this.groupsFromMobSOSSubject.next(groups);
+    // });
   }
 
   startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
@@ -339,17 +347,26 @@ export class StoreService {
       this.las2peer
         .fetchMessageDescriptions(serviceInformation)
         .then((messageDescriptions) => {
-          const allMessageDescriptions = this.messageDescriptionSubject.getValue();
+          const allMessageDescriptions =
+            this.messageDescriptionSubject.getValue();
           allMessageDescriptions[serviceInformation] = messageDescriptions;
           this.messageDescriptionSubject.next(allMessageDescriptions);
         });
     }
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   setGroup(groupID: string) {
     this.selectedGroupSubject.next(groupID);
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   setEditMode(editMode: boolean) {
     this.editModeSubject.next(editMode);
   }
@@ -357,7 +374,11 @@ export class StoreService {
   setCommunityWorkspace(workspace: CommunityWorkspace) {
     this.communityWorkspaceSubject.next(workspace);
   }
-
+  /**
+   *
+   * @param groupID
+   * @deprecated use ngrxstore instead
+   */
   getGroupById(groupId: string): GroupInformation {
     const groups = this.groupsSubject.getValue();
     if (Object.keys(groups).includes(groupId)) {
@@ -367,9 +388,7 @@ export class StoreService {
   }
 
   async waitUntilWorkspaceIsSynchronized() {
-    return new Promise((resolve) => {
-      this.communityWorkspaceInitialized.toPromise();
-    });
+    this.communityWorkspaceInitialized.toPromise();
   }
 
   private initState() {
@@ -466,7 +485,9 @@ export class StoreService {
     this.selectedGroup = this.selectedGroupSubject.asObservable();
     this.selectedService = this.selectedServiceSubject.asObservable();
     this.editMode = this.editModeSubject.asObservable();
-    this.questionnaires = this.questionnairesSubject.asObservable().pipe(distinctUntilChanged());
+    this.questionnaires = this.questionnairesSubject
+      .asObservable()
+      .pipe(distinctUntilChanged());
   }
 
   /**
@@ -528,9 +549,8 @@ export class StoreService {
       serviceCollection[serviceName].mobsosIDs.sort(
         (a, b) => a.registrationTime - b.registrationTime
       );
-      serviceCollection[
-        serviceName
-      ].serviceMessageDescriptions = serviceMessageDescriptions;
+      serviceCollection[serviceName].serviceMessageDescriptions =
+        serviceMessageDescriptions;
     }
     this.servicesSubject.next(serviceCollection);
   }
@@ -544,7 +564,8 @@ export class StoreService {
    */
   private mergeGroupData() {
     const groups = {};
-    const groupsFromContactService = this.groupsFromContactServiceSubject.getValue();
+    const groupsFromContactService =
+      this.groupsFromContactServiceSubject.getValue();
     // mark all these groups as groups the current user is a member of
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
@@ -568,7 +589,8 @@ export class StoreService {
    * and update the group information in MobSOS if necessary.
    */
   private transferGroupDataToMobSOS() {
-    const groupsFromContactService = this.groupsFromContactServiceSubject.getValue();
+    const groupsFromContactService =
+      this.groupsFromContactServiceSubject.getValue();
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];

@@ -13,13 +13,16 @@
       >
         <mat-option
           class="mat-body-strong"
-          *ngFor="let group of myGroups"
+          *ngFor="let group of userGroups$ | async"
           [value]="group.id"
         >
           {{ group.name }}
         </mat-option>
         <mat-divider></mat-divider>
-        <mat-option *ngFor="let group of otherGroups" [value]="group.id">
+        <mat-option
+          *ngFor="let group of foreignGroups$ | async"
+          [value]="group.id"
+        >
           {{ group.name }}
         </mat-option>
       </mat-select>
@@ -57,7 +60,7 @@
     <footer>
       <mat-slide-toggle
         labelPosition="before"
-        [checked]="expertMode"
+        [checked]="expertMode$ | async"
         (change)="setExpertMode($event.checked)"
       >
         {{ 'app.expert-mode.switch-label' | translate }}
@@ -108,8 +111,14 @@
         {{ mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center' }}
       </h2>
     </las2peer-frontend-statusbar>
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="loading$ | async"
+    ></mat-progress-bar>
     <main>
-      <router-outlet></router-outlet>
+      <ng-container *ngIf="user$ | async; else notLoggedIn">
+        <router-outlet></router-outlet
+      ></ng-container>
     </main>
     <footer id="footer">
       <a href="https://las2peer.org/" target="_blank">
@@ -122,3 +131,7 @@
     </footer>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<ng-template #notLoggedIn>
+  <mat-card> {{ 'not-logged-in' | translate }} </mat-card>
+</ng-template>

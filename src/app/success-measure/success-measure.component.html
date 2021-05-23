@@ -1,7 +1,7 @@
 <div id="measure-header">
   <button
     mat-icon-button
-    *ngIf="editMode && canDelete"
+    *ngIf="editMode$ | async"
     color="warn"
     (click)="onDeleteClicked($event)"
     id="delete-button"
@@ -10,7 +10,7 @@
   </button>
   <button
     mat-icon-button
-    *ngIf="editMode"
+    *ngIf="editMode$ | async"
     color="primary"
     (click)="onEditClicked($event)"
     id="edit-button"
@@ -22,25 +22,33 @@
   </h4>
 </div>
 
-<span *ngIf="visualizationError">{{ visualizationError }}</span>
-<container-element [ngSwitch]="measure.visualization.type">
-  <app-chart-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'Chart'"
-  ></app-chart-visualization>
-  <app-kpi-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'KPI'"
-  ></app-kpi-visualization>
-  <app-value-visualization
-    [measure]="measure"
-    [service]="service"
-    *ngSwitchCase="'Value'"
-  ></app-value-visualization>
-  <div *ngSwitchDefault>
-    Unknown chartType: {{ measure.visualization.type }}
+<span
+  *ngIf="visualizationError || !measure?.visualization; else visualizationBlock"
+  >{{ visualizationError }}</span
+>
+
+<ng-template #visualizationBlock>
+  <div *ngIf="measure$ | async as measureAsync">
+    <div [ngSwitch]="measureAsync.visualization.type">
+      <app-kpi-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'KPI'"
+      ></app-kpi-visualization>
+      <app-value-visualization
+        [measure]="measureAsync"
+        [service]="service"
+        *ngSwitchCase="'Value'"
+      ></app-value-visualization>
+      <app-chart-visualization
+        *ngSwitchCase="'Chart'"
+        [measureName]="measureAsync.name"
+        [service]="service"
+      ></app-chart-visualization>
+      <div *ngSwitchDefault>
+        Unknown chartType: {{ measureAsync.visualization.type }}
+      </div>
+    </div>
   </div>
-</container-element>
+</ng-template>
 <!-- <ng-template appVisualization></ng-template> -->

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-
+import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -24,6 +24,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
@@ -53,8 +54,8 @@ import { SuccessMeasureComponent } from './success-measure/success-measure.compo
 import { SuccessFactorComponent } from './success-factor/success-factor.component';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 import { ValueVisualizationComponent } from './visualizations/value-visualization/value-visualization.component';
-import { VisualizationDirective } from './visualization.directive';
-import { ChartVisualizationComponent } from './visualizations/chart-visualization/chart-visualization.component';
+
+import { ChartVisualizerComponent } from './visualizations/chart-visualization/chart-visualization.component';
 import { KpiVisualizationComponent } from './visualizations/kpi-visualization/kpi-visualization.component';
 import { BaseVisualizationComponent } from './visualizations/visualization.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
@@ -72,8 +73,14 @@ import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-tabl
 import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
 // tslint:disable-next-line:max-line-length
 import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { GoogleChartsModule } from 'angular-google-charts';
+
+import { Reducer } from 'src/app/services/store.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { StateEffects } from './services/store.effects';
+import { Interceptor } from './services/interceptor.service';
+import { localStorageSync } from 'ngrx-store-localstorage';
 
 // PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -91,6 +98,31 @@ export function createTranslateLoader() {
   return new ImportLoader();
 }
 
+export function localStorageSyncReducer(
+  reducer: ActionReducer<any>
+): ActionReducer<any> {
+  return localStorageSync({
+    keys: [
+      {
+        Reducer: [
+          'services',
+          'groups',
+          'selectedGroupId',
+          'selectedService',
+          'questionnaires',
+          'expertMode',
+          'measureCatalog',
+          'user',
+          'successModel',
+          'visualizationData',
+        ],
+      },
+    ],
+    rehydrate: true,
+  })(reducer);
+}
+const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -106,8 +138,7 @@ export function createTranslateLoader() {
     ErrorDialogComponent,
     BaseVisualizationComponent,
     ValueVisualizationComponent,
-    VisualizationDirective,
-    ChartVisualizationComponent,
+    ChartVisualizerComponent,
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
     EditFactorDialogComponent,
@@ -138,6 +169,8 @@ export function createTranslateLoader() {
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
     MarkdownModule.forRoot(),
+    StoreModule.forRoot({ Reducer }, { metaReducers }),
+    EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatIconModule,
     MatListModule,
@@ -145,6 +178,7 @@ export function createTranslateLoader() {
     MatButtonModule,
     MatTabsModule,
     MatFormFieldModule,
+    MatProgressBarModule,
     MatSelectModule,
     MatSnackBarModule,
     MonacoEditorModule.forRoot(),
@@ -174,21 +208,14 @@ export function createTranslateLoader() {
       useFactory: getMonacoConfig,
       deps: [PlatformLocation],
     },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: Interceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
-  entryComponents: [
-    ErrorDialogComponent,
-    ValueVisualizationComponent,
-    ChartVisualizationComponent,
-    KpiVisualizationComponent,
-    ConfirmationDialogComponent,
-    EditFactorDialogComponent,
-    PickMeasureDialogComponent,
-    EditMeasureDialogComponent,
-    PickQuestionnaireDialogComponent,
-    DeleteQuestionnaireDialogComponent,
-    PickReqbazProjectComponent,
-  ],
+
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

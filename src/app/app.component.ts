@@ -23,6 +23,28 @@ import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import {
+  fetchGroups,
+  fetchMeasureCatalog,
+  fetchServices,
+  initState,
+  setGroup,
+  storeUser,
+  toggleExpertMode,
+} from './services/store.actions';
+import {
+  EXPERT_MODE,
+  FOREIGN_GROUPS,
+  HTTP_CALL_IS_LOADING,
+  SELECTED_GROUP,
+  SELECTED_SERVICE,
+  USER,
+  USER_GROUPS,
+} from './services/store.selectors';
+import { filter, first } from 'rxjs/operators';
+import { StateEffects } from './services/store.effects';
+import { Observable, Subscription } from 'rxjs';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -52,6 +74,11 @@ export class AppComponent implements OnInit, OnDestroy {
   LOCAL_STORAGE_EXPERT_MODE = 'expert-mode';
   expertMode = false;
   myGroups: GroupInformation[] = [];
+  userGroups$: Observable<GroupInformation[]> =
+    this.ngrxStore.select(USER_GROUPS);
+  user$ = this.ngrxStore.select(USER);
+  foreignGroups$: Observable<GroupInformation[]> =
+    this.ngrxStore.select(FOREIGN_GROUPS);
   otherGroups: GroupInformation[] = [];
   groups = [];
   groupMap = {};
@@ -63,6 +90,9 @@ export class AppComponent implements OnInit, OnDestroy {
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
+  loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  subscriptions$: Subscription[] = [];
 
   constructor(
     private logger: NGXLogger,
@@ -75,7 +105,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private ngrxStore: Store
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -99,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false
     );
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   useLanguage(language: string) {
@@ -108,15 +140,19 @@ export class AppComponent implements OnInit, OnDestroy {
 
   setExpertMode(mode) {
     this.expertMode = mode;
-    localStorage.setItem(this.LOCAL_STORAGE_EXPERT_MODE, mode);
+    this.ngrxStore.dispatch(toggleExpertMode());
   }
 
   setUser(user) {
+    this.ngrxStore.dispatch(storeUser({ user }));
     this.store.setUser(user);
   }
 
-  onGroupSelected(group) {
-    this.store.setGroup(group);
+  onGroupSelected(groupId: string) {
+    // this.store.setGroup(groupId);
+    if (groupId) {
+      this.ngrxStore.dispatch(setGroup({ groupId }));
+    }
   }
 
   menuItemClicked() {
@@ -126,11 +162,27 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const group = JSON.parse(localStorage.getItem('state'))?.selectedGroup;
-    this.store.startPolling();
-    if (group) {
-      this.store.setGroup(this.selectedGroup);
-    }
+    this.ngrxStore.dispatch(initState());
+    this.ngrxStore.dispatch(fetchServices());
+    this.ngrxStore.dispatch(fetchGroups());
+
+    let sub = this.ngrxStore
+      .select(SELECTED_GROUP)
+      .pipe(
+        filter((group) => !!group && !!group.name),
+        first()
+      )
+      .subscribe((group) => {
+        if (this.selectedGroupForm.value == !group.name) {
+          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
+          this.selectedGroupForm.reset(group.name);
+        }
+      });
+    this.subscriptions$.push(sub);
+    sub = this.ngrxStore.subscribe((state) => {
+      console.log(state);
+    });
+    this.subscriptions$.push(sub);
 
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
@@ -162,31 +214,36 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
 
-    this.store.groups.subscribe((groups) => {
+    sub = this.store.groups.subscribe((groups) => {
       const allGroups = Object.values(groups);
       this.myGroups = allGroups.filter((group) => group.member).sort();
       this.otherGroups = allGroups.filter((group) => !group.member).sort();
       this.groupMap = groups;
     });
-    this.store.selectedGroup.subscribe((selectedGroup) => {
+    this.subscriptions$.push(sub);
+    sub = this.store.selectedGroup.subscribe((selectedGroup) => {
       this.selectedGroup = selectedGroup;
       if (selectedGroup) {
+        this.ngrxStore.dispatch(
+          fetchMeasureCatalog({ groupId: selectedGroup })
+        );
         this.selectedGroupForm.setValue(selectedGroup);
       }
     });
+    this.subscriptions$.push(sub);
+
     const silentLoginFunc = () => {
       this.userManager
         .signinSilentCallback()
-        .then(() => {
-          this.logger.debug('Silent login succeeded');
-        })
+        .then(() => {})
         .catch(() => {
           this.setUser(null);
           this.logger.debug('Silent login failed');
         });
     };
     silentLoginFunc();
-    this.store.user.subscribe((user) => {
+
+    sub = this.store.user.subscribe((user) => {
       this.user = user;
       this.signedIn = !!user;
       clearInterval(this.silentSigninIntervalHandle);
@@ -197,5 +254,6 @@ export class AppComponent implements OnInit, OnDestroy {
         );
       }
     });
+    this.subscriptions$.push(sub);
   }
 }

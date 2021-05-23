@@ -11,14 +11,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { Store } from '@ngrx/store';
+import { fetchVisualizationData } from '../services/store.actions';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
   measure: Measure;
   visualizationInitialized: boolean;
   error: Response;
-
-  renderVisualization();
 }
 
 @Component({
@@ -28,10 +28,7 @@ export interface VisualizationComponent {
 export class BaseVisualizationComponent
   implements VisualizationComponent, OnInit, OnChanges, OnDestroy
 {
-  constructor(
-    protected las2peer: Las2peerService,
-    protected dialog: MatDialog
-  ) {}
+  constructor(protected ngrxStore: Store, protected dialog: MatDialog) {}
   measure: Measure;
   service: ServiceInformation;
   visualizationInitialized = false;
@@ -67,21 +64,11 @@ export class BaseVisualizationComponent
     return query.replace('$SERVICES$', servicesString);
   }
 
-  ngOnInit() {
-    this.renderVisualizationReal();
-    this.refreshVisualizationHandle = setInterval(
-      () => this.renderVisualizationReal(),
-      environment.visualizationRefreshInterval * 1000
-    );
-  }
+  ngOnInit() {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.renderVisualizationReal();
-  }
+  ngOnChanges(changes: SimpleChanges): void {}
 
-  ngOnDestroy(): void {
-    clearInterval(this.refreshVisualizationHandle);
-  }
+  ngOnDestroy(): void {}
 
   async openErrorDialog() {
     let errorText;
@@ -97,10 +84,6 @@ export class BaseVisualizationComponent
       width: '80%',
       data: { error: errorText },
     });
-  }
-
-  public async renderVisualization() {
-    throw new Error('You have to implement the method renderVisualization!');
   }
 
   protected getParamsForQuery(query: string) {
@@ -122,32 +105,7 @@ export class BaseVisualizationComponent
     return params;
   }
 
-  protected fetchVisualization(query, queryParams, format: string) {
-    return this.las2peer
-      .visualizeQuery(query, queryParams, format)
-      .then((data) => {
-        this.error = null;
-        return data;
-      })
-      .catch((error) => {
-        this.error = error.error;
-        throw error;
-      });
-  }
-
-  protected renderVisualizationReal() {
-    if (this.service && this.measure) {
-      this.visualizationInitialized = true;
-      // special case: MobSOS has no knowledge of this service
-      // thus we can save the REST call and use null as value
-      if (this.service && this.service.mobsosIDs.length > 0) {
-        this.renderVisualization();
-        this.serviceNotFoundInMobSOS = false;
-      } else {
-        this.serviceNotFoundInMobSOS = true;
-      }
-    } else {
-      this.visualizationInitialized = false;
-    }
+  protected fetchVisualizationData(query: string, queryParams: string[]) {
+    this.ngrxStore.dispatch(fetchVisualizationData({ query, queryParams }));
   }
 }
