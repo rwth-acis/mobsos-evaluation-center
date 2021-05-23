@@ -59,7 +59,7 @@ import { ChartVisualizerComponent } from './visualizations/chart-visualization/c
 import { KpiVisualizationComponent } from './visualizations/kpi-visualization/kpi-visualization.component';
 import { BaseVisualizationComponent } from './visualizations/visualization.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import { MdePopoverModule } from '@material-extended/mde';
+
 import { EditFactorDialogComponent } from './success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { PickMeasureDialogComponent } from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 import { EditMeasureDialogComponent } from './success-factor/edit-measure-dialog/edit-measure-dialog.component';
@@ -193,7 +193,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatBadgeModule,
-    MdePopoverModule,
+
     MatTooltipModule,
     MatInputModule,
     MatRippleModule,

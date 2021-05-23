@@ -12,7 +12,7 @@ import { Questionnaire } from '../las2peer.service';
 import { MeasureCatalog } from '../../success-model/measure-catalog';
 import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { MatDialog, MatSnackBar } from '@angular/material';
+
 import { TranslateService } from '@ngx-translate/core';
 import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
@@ -45,6 +45,8 @@ import { StateEffects } from '../services/store.effects';
 import { combineLatest, of, Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',

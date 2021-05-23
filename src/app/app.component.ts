@@ -14,7 +14,7 @@ import { NGXLogger } from 'ngx-logger';
 import { LanguageService } from './language.service';
 import { GroupInformation, StoreService } from './store.service';
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
-import { MatIconRegistry, MatSidenav, MatSnackBar } from '@angular/material';
+
 import * as Hammer from 'hammerjs';
 import { SwUpdate } from '@angular/service-worker';
 import { TranslateService } from '@ngx-translate/core';
@@ -43,6 +43,9 @@ import {
 import { filter, first } from 'rxjs/operators';
 import { StateEffects } from './services/store.effects';
 import { Observable, Subscription } from 'rxjs';
+import { MatSidenav } from '@angular/material/sidenav';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatIconRegistry } from '@angular/material/icon';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"

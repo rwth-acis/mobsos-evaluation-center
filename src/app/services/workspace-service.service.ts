@@ -5,7 +5,7 @@ import {
   ApplicationWorkspace,
   CommunityWorkspace,
 } from '../models/workspace.model';
-import { YJsService } from '../y-js.service';
+// import { YJsService } from '../y-js.service';
 import { updateAppWorkspace, updateCommunityWorkspace } from './store.actions';
 import { cloneDeep } from 'lodash';
 @Injectable({
@@ -14,7 +14,6 @@ import { cloneDeep } from 'lodash';
 export class WorkspaceServiceService {
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(false);
   communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
-
   async waitUntilWorkspaceIsSynchronized() {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
   }
@@ -23,21 +22,21 @@ export class WorkspaceServiceService {
   }
 
   stopSynchronizingWorkspace(groupId: string) {
-    if (groupId) {
-      this.yjs.stopSync(groupId);
-      this.communityWorkspaceInitialized$.next(false);
-      this.communityWorkspace$.next({});
-    }
+    // if (groupId) {
+    //   this.yjs.stopSync(groupId);
+    //   this.communityWorkspaceInitialized$.next(false);
+    //   this.communityWorkspace$.next({});
+    // }
   }
 
   startSynchronizingWorkspace(groupId: string) {
-    if (groupId) {
-      this.yjs.syncObject(
-        groupId,
-        this.communityWorkspace$,
-        this.communityWorkspaceInitialized$
-      );
-    }
+    // if (groupId) {
+    //   this.yjs.syncObject(
+    //     groupId,
+    //     this.communityWorkspace$,
+    //     this.communityWorkspaceInitialized$
+    //   );
+    // }
   }
 
   removeWorkspace(username: string, serviceName: string) {
@@ -100,9 +99,12 @@ export class WorkspaceServiceService {
     );
   }
 
-  constructor(private yjs: YJsService, private ngrxStore: Store) {
-    this.communityWorkspace$.subscribe((workspace) => {
-      this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
-    });
+  constructor(
+    // private yjs: YJsService,
+    private ngrxStore: Store
+  ) {
+    // this.communityWorkspace$.subscribe((workspace) => {
+    //   this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
+    // });
   }
 }
