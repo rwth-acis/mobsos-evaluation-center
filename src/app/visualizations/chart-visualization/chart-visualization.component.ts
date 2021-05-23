@@ -7,9 +7,7 @@ import { ServiceInformation } from 'src/app/store.service';
 import { Store } from '@ngrx/store';
 import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
 import { filter } from 'rxjs/operators';
-import { VData } from 'src/app/models/visualization.model';
 import { Observable } from 'rxjs';
-import { animation } from '@angular/animations';
 
 class GoogleChart {
   constructor(
@@ -58,7 +56,7 @@ export class ChartVisualizerComponent
     this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
       const dataTable = data;
       if (dataTable instanceof Array && dataTable.length >= 2) {
-        let labelTypes = dataTable[1]; 
+        let labelTypes = dataTable[1];
         const rows = dataTable.slice(2) as any[][];
         this.chart = new GoogleChart(
           '',

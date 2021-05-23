@@ -1,5 +1,5 @@
 
-FROM node:8 AS my-app-build
+FROM node:16-alpine AS my-app-build
 
 WORKDIR /app
 COPY . .
