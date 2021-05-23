@@ -63,6 +63,7 @@ mat-sidenav-container {
     mat-progress-bar {
       top: 0;
       position: sticky !important;
+      height: 6px;
       z-index: 999;
     }
     #las2peer-statusbar {

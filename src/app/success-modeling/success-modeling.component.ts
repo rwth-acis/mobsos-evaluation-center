@@ -21,6 +21,7 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
+  PostActions,
   saveModelAndCatalog,
   setService,
   toggleEdit,
@@ -154,8 +155,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.ngrxStore.dispatch(setService({ service }));
         if (!this.initialServiceName) {
           this.initialServiceName = this.selectedServiceName;
+          this.serviceSelectForm.setValue(this.selectedServiceName);
         }
-        this.serviceSelectForm.setValue(this.selectedServiceName);
       });
     this.subscriptions$.push(sub);
 
@@ -163,10 +164,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
     sub = this.userGroups$.subscribe((groups) => (this.myGroups = groups));
     this.subscriptions$.push(sub);
-    // sub = this.selectedGroup$.subscribe(
-    //   (group) => (this.selectedGroup = group)
-    // );
-    // this.subscriptions$.push(sub);
+
     sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
     sub = this.services$.subscribe((services) => (this.services = services));
@@ -384,7 +382,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         .pipe(
           timeout(300000),
           catchError(() => {
-            return of({ reason: 'The request took too long' });
+            return of(
+              failureResponse({
+                reason: new Error('The request took too long and was aborted'),
+              })
+            );
           })
         )
         .subscribe((result) => {
@@ -392,10 +394,10 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
           console.log(result);
 
-          if ('reason' in result) {
+          if (result && result instanceof failureResponse) {
             let message =
               this.translate.instant('success-modeling.snackbar-save-failure') +
-              result['reason'];
+              (result as { reason: Error }).reason.message;
 
             this.snackBar.open(message, 'Ok');
           } else {
@@ -466,14 +468,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onMeasuresChange(event) {
-    console.log(event);
+    // console.log(event);
   }
   onFactorsChange({ factors, dimensionName }) {
-    console.log(factors);
-    // this.successModel.dimensions[dimensionName] = factors;
-    // this.ngrxStore.dispatch(
-    //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
-    // );
+    // console.log(factors);
+    // // this.successModel.dimensions[dimensionName] = factors;
+    // // this.ngrxStore.dispatch(
+    // //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
+    // // );
   }
 
   private getMyUsername() {

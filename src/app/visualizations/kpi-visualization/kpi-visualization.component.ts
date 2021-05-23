@@ -7,7 +7,10 @@ import { KpiVisualization } from '../../../success-model/visualization';
 import { Measure } from 'src/success-model/measure';
 import { ServiceInformation } from 'src/app/store.service';
 import { Store } from '@ngrx/store';
-import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
+import {
+  MEASURE,
+  VISUALIZATION_DATA_FOR_QUERY,
+} from 'src/app/services/store.selectors';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -25,9 +28,12 @@ export class KpiVisualizationComponent
     super(ngrxStore, dialog);
   }
   @Input() measure: Measure;
+  @Input() measureName: string;
+  measure$;
   @Input() service: ServiceInformation;
 
   async ngOnInit() {
+    this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
     const queries = this.measure.queries;
     let visualization: KpiVisualization = this.measure
       .visualization as KpiVisualization;

@@ -17,7 +17,7 @@ enum FetchActions {
   FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
 }
 
-enum PostActions {
+export enum PostActions {
   SAVE_MODEL_AND_CATALOG = 'send an update to the server',
   SUCCESS_RESPONSE = 'response was successfully',
   FAILURE_RESPONSE = 'response was not successfully',

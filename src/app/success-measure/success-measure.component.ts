@@ -1,9 +1,7 @@
 import {
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
   EventEmitter,
-  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -13,11 +11,6 @@ import {
 } from '@angular/core';
 import { cloneDeep } from 'lodash';
 import { ServiceInformation } from '../store.service';
-import { Las2peerService } from '../las2peer.service';
-import { DomSanitizer } from '@angular/platform-browser';
-
-import { ValueVisualizationComponent } from '../visualizations/value-visualization/value-visualization.component';
-import { KpiVisualizationComponent } from '../visualizations/kpi-visualization/kpi-visualization.component';
 
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -52,19 +45,16 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   public visualizationError: string;
   public error: Response;
   componentRef: ComponentRef<{}>;
-  private visualizationType: string;
 
   constructor(
-    private las2peer: Las2peerService,
     private translate: TranslateService,
-    private sanitizer: DomSanitizer,
-    private componentFactoryResolver: ComponentFactoryResolver,
+
     private dialog: MatDialog,
     private ngrxStore: Store
   ) {}
 
   ngOnInit() {
-    this.measure = JSON.parse(JSON.stringify(this.measure)) as Measure;
+    this.measure = cloneDeep(this.measure) as Measure;
     this.measure$ = this.ngrxStore.select(MEASURE, this.measure.name);
   }
 
@@ -97,8 +87,6 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
         this.measure.name = result.name;
         this.measure.queries = result.queries;
         this.measure.visualization = result.visualization;
-        // this.rerenderVisualizationComponent();
-        // this.measureChange.emit(this.measure);
       }
     });
     event.stopPropagation();

@@ -522,26 +522,26 @@ export class Las2peerService {
       groupID,
       service
     );
-    let method;
+    let method = 'PUT';
+    return this.makeRequestAndObserve<SuccessModel>(url, {
+      method,
+      body: JSON.stringify({ xml }),
+      observe: 'response',
+    });
+    // return this.checkIfSuccessModelPresent(groupID, service).pipe(
+    //   map((res) => {
+    //     method = res ? 'PUT' : 'POST';
 
-    return this.checkIfSuccessModelPresent(groupID, service).pipe(
-      map((res) => {
-        method = res ? 'PUT' : 'POST';
-        return this.makeRequestAndObserve<SuccessModel>(url, {
-          method,
-          body: JSON.stringify({ xml }),
-          observe: 'response',
-        });
-      }),
-      catchError((err) => {
-        method = 'POST';
-        return this.makeRequestAndObserve<SuccessModel>(url, {
-          method,
-          body: JSON.stringify({ xml }),
-          observe: 'response',
-        });
-      })
-    );
+    //   }),
+    //   catchError((err) => {
+    //     method = 'POST';
+    //     return this.makeRequestAndObserve<SuccessModel>(url, {
+    //       method,
+    //       body: JSON.stringify({ xml }),
+    //       observe: 'response',
+    //     });
+    //   })
+    // );
   }
 
   async fetchMeasureCatalog(groupID: string) {
@@ -629,26 +629,12 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID
     );
-    // we could somehow set a flag initially to see if a catalog already exists
-    return this.checkIfMeasureCatalogPresent(groupID).pipe(
-      map((res) => {
-        method = res ? 'PUT' : 'POST';
-
-        return this.makeRequestAndObserve<MeasureCatalog>(url, {
-          method,
-          body: JSON.stringify({ xml }),
-          observe: 'response',
-        });
-      }),
-      catchError(() => {
-        method = 'POST';
-        return this.makeRequestAndObserve<MeasureCatalog>(url, {
-          method,
-          body: JSON.stringify({ xml }),
-          observe: 'response',
-        });
-      })
-    );
+    method = 'PUT';
+    return this.makeRequestAndObserve<MeasureCatalog>(url, {
+      method,
+      body: JSON.stringify({ xml }),
+      observe: 'response',
+    });
   }
 
   async fetchMessageDescriptions(serviceName: string) {

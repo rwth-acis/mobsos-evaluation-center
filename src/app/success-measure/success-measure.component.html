@@ -23,7 +23,7 @@
 </div>
 
 <span
-  *ngIf="visualizationError || !measure.visualization; else visualizationBlock"
+  *ngIf="visualizationError || !measure?.visualization; else visualizationBlock"
   >{{ visualizationError }}</span
 >
 

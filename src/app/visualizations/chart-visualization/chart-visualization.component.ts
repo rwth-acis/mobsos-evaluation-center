@@ -5,7 +5,10 @@ import { ChartVisualization } from '../../../success-model/visualization';
 import { Measure } from 'src/success-model/measure';
 import { ServiceInformation } from 'src/app/store.service';
 import { Store } from '@ngrx/store';
-import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
+import {
+  MEASURE,
+  VISUALIZATION_DATA_FOR_QUERY,
+} from 'src/app/services/store.selectors';
 import { filter } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -29,11 +32,13 @@ export class ChartVisualizerComponent
   implements OnInit
 {
   @Input() measure: Measure;
+  @Input() measureName: string;
   @Input() service: ServiceInformation;
   chart: GoogleChart;
   data: any[][];
   data$: Observable<any[][]>;
   columns;
+  measure$;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -41,6 +46,8 @@ export class ChartVisualizerComponent
   ngOnInit() {
     if (!this.measure || !this.service)
       return console.error('Service or measure undefined');
+
+    this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
     // this.graph.config.locale = this.translate.currentLang;
     const visualization = this.measure.visualization as ChartVisualization;
     let query = this.measure.queries[0].sql;
@@ -64,7 +71,7 @@ export class ChartVisualizerComponent
           rows,
           dataTable[0],
           {
-            colors: ['#00796b', '#ff4081', '#40c4ff', '#ff5252', '#ffd600'],
+            colors: ['#00a895', '#9500a8', '#a89500', '#ff5252', '#ffd600'],
             animation: { startup: true },
           }
         );
