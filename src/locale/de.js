@@ -74,7 +74,7 @@ export const translations = {
   },
   'success-modeling': {
     'community-workspace': 'Arbeitsbereich der {{community}} Community',
-    'community-success-model': 'Success Modell vom {{service}} Service',
+    'community-success-model': 'Erfolgs Modell vom {{service}} Service',
     'copy-workspace-prompt':
       'Bist du sicher, dass du dein derzeitiges Modell ersetzen möchtest?',
     dimensions: {
@@ -223,4 +223,7 @@ export const translations = {
       'your-workspace': 'Du',
     },
   },
+  'not-logged-in': 'Logge dich ein um diese App zu nutzen',
+  'not-part-of-selected-community':
+    'Du bist leider nicht Teil der {{ community }} Community',
 };

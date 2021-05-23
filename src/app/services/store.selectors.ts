@@ -38,7 +38,10 @@ export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
 export const EXPERT_MODE = (state: StoreState) => state.Reducer.expertMode;
 
 export const USER_GROUPS = (state: StoreState) =>
-  _filterGroups(state.Reducer.groups);
+  _userGroups(state.Reducer.groups);
+
+export const FOREIGN_GROUPS = (state: StoreState) =>
+  _foreignGroups(state.Reducer.groups);
 
 export const USER = (state: StoreState) => state.Reducer.user;
 
@@ -117,13 +120,26 @@ function parseModel(xml: string): SuccessModel {
  * filter groups that the user is a part of
  * @param groups
  */
-function _filterGroups(groups: GroupCollection) {
+function _userGroups(groups: GroupCollection) {
   let userGroups = [];
   if (!groups) {
-    return;
+    return [];
   }
   for (const groupId of Object.keys(groups)) {
     if (groups[groupId].member) {
+      userGroups.push(groups[groupId]);
+    }
+  }
+  return userGroups;
+}
+
+function _foreignGroups(groups: GroupCollection) {
+  let userGroups = [];
+  if (!groups) {
+    return [];
+  }
+  for (const groupId of Object.keys(groups)) {
+    if (!groups[groupId].member) {
       userGroups.push(groups[groupId]);
     }
   }

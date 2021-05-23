@@ -42,7 +42,7 @@
       ></app-value-visualization>
       <app-chart-visualization
         *ngSwitchCase="'Chart'"
-        [measure]="measureAsync"
+        [measureName]="measureAsync.name"
         [service]="service"
       ></app-chart-visualization>
       <div *ngSwitchDefault>

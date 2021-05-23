@@ -55,7 +55,11 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     this.measure = cloneDeep(this.measure) as Measure;
-    this.measure$ = this.ngrxStore.select(MEASURE, this.measure.name);
+    // this.measure = this.measure
+    //   ? (JSON.parse(JSON.stringify(this.measure)) as Measure)
+    //   : this.measure;
+
+    this.measure$ = this.ngrxStore.select(MEASURE, this.measure?.name);
   }
 
   ngOnChanges(changes: SimpleChanges): void {}

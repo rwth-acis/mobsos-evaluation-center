@@ -112,6 +112,7 @@ export function localStorageSyncReducer(
           'questionnaires',
           'expertMode',
           'measureCatalog',
+          'user',
           'successModel',
           'visualizationData',
         ],

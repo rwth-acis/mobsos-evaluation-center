@@ -35,13 +35,16 @@ import {
 } from './services/store.actions';
 import {
   EXPERT_MODE,
+  FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   SELECTED_GROUP,
   SELECTED_SERVICE,
+  USER,
+  USER_GROUPS,
 } from './services/store.selectors';
 import { filter, first } from 'rxjs/operators';
 import { StateEffects } from './services/store.effects';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -71,6 +74,11 @@ export class AppComponent implements OnInit, OnDestroy {
   LOCAL_STORAGE_EXPERT_MODE = 'expert-mode';
   expertMode = false;
   myGroups: GroupInformation[] = [];
+  userGroups$: Observable<GroupInformation[]> =
+    this.ngrxStore.select(USER_GROUPS);
+  user$ = this.ngrxStore.select(USER);
+  foreignGroups$: Observable<GroupInformation[]> =
+    this.ngrxStore.select(FOREIGN_GROUPS);
   otherGroups: GroupInformation[] = [];
   groups = [];
   groupMap = {};

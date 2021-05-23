@@ -219,4 +219,7 @@ export const translations = {
       'your-workspace': 'You',
     },
   },
+  'not-logged-in': 'You need to be logged in to use this App',
+  'not-part-of-selected-community':
+    'You are not a member of the {{ community }} Community',
 };

@@ -31,7 +31,6 @@ export class ChartVisualizerComponent
   extends BaseVisualizationComponent
   implements OnInit
 {
-  @Input() measure: Measure;
   @Input() measureName: string;
   @Input() service: ServiceInformation;
   chart: GoogleChart;
@@ -39,44 +38,92 @@ export class ChartVisualizerComponent
   data$: Observable<any[][]>;
   columns;
   measure$;
+  query: string;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
   }
   ngOnInit() {
-    if (!this.measure || !this.service)
-      return console.error('Service or measure undefined');
+    if (!this.service) return console.error('service cannot be  undefined');
 
     this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
-    // this.graph.config.locale = this.translate.currentLang;
-    const visualization = this.measure.visualization as ChartVisualization;
-    let query = this.measure.queries[0].sql;
-    const queryParams = this.getParamsForQuery(query);
-    query = this.applyVariableReplacements(query, this.service);
-    query =
-      BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-        query
-      );
-    super.fetchVisualizationData(query, queryParams);
+    this.measure$
+      .pipe(filter((data) => !!data))
+      .subscribe((measure: Measure) => {
+        const visualization = measure.visualization as ChartVisualization;
+        let query = measure.queries[0].sql;
+        const queryParams = this.getParamsForQuery(query);
+        query = this.applyVariableReplacements(query, this.service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query
+          );
 
-    this.data$ = this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query);
-    this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
-      const dataTable = data;
-      if (dataTable instanceof Array && dataTable.length >= 2) {
-        let labelTypes = dataTable[1];
-        const rows = dataTable.slice(2) as any[][];
-        this.chart = new GoogleChart(
-          '',
-          visualization.chartType,
-          rows,
-          dataTable[0],
-          {
-            colors: ['#00a895', '#9500a8', '#a89500', '#ff5252', '#ffd600'],
-            animation: { startup: true },
-          }
-        );
-        if (this.chart) this.visualizationInitialized = true;
-      }
-    });
+        if (this.query !== query) {
+          this.chart == null;
+          this.visualizationInitialized = false;
+          this.query = query;
+          super.fetchVisualizationData(query, queryParams);
+          this.data$ = this.ngrxStore.select(
+            VISUALIZATION_DATA_FOR_QUERY,
+            query
+          );
+          this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
+            const dataTable = data;
+            if (dataTable instanceof Array && dataTable.length >= 2) {
+              let labelTypes = dataTable[1];
+              const rows = dataTable.slice(2) as any[][];
+              this.chart = new GoogleChart(
+                '',
+                visualization.chartType,
+                rows,
+                dataTable[0],
+                {
+                  colors: [
+                    '#00a895',
+                    '#9500a8',
+                    '#a89500',
+                    '#ff5252',
+                    '#ffd600',
+                  ],
+                  animation: { startup: true },
+                }
+              );
+              if (this.chart) this.visualizationInitialized = true;
+            }
+          });
+        }
+      });
+
+    // this.graph.config.locale = this.translate.currentLang;
+    // const visualization = this.measure.visualization as ChartVisualization;
+    // let query = this.measure.queries[0].sql;
+    // const queryParams = this.getParamsForQuery(query);
+    // query = this.applyVariableReplacements(query, this.service);
+    // query =
+    //   BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+    //     query
+    //   );
+    // super.fetchVisualizationData(query, queryParams);
+
+    // this.data$ = this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query);
+    // this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
+    //   const dataTable = data;
+    //   if (dataTable instanceof Array && dataTable.length >= 2) {
+    //     let labelTypes = dataTable[1];
+    //     const rows = dataTable.slice(2) as any[][];
+    //     this.chart = new GoogleChart(
+    //       '',
+    //       visualization.chartType,
+    //       rows,
+    //       dataTable[0],
+    //       {
+    //         colors: ['#00a895', '#9500a8', '#a89500', '#ff5252', '#ffd600'],
+    //         animation: { startup: true },
+    //       }
+    //     );
+    //     if (this.chart) this.visualizationInitialized = true;
+    //   }
+    // });
   }
 }

@@ -1,277 +1,281 @@
 <!-- Only show component if group is selected -->
 <ng-container *ngIf="selectedGroup$ | async as group; else noGroupSelect">
-  <h2 *ngIf="group?.name">
-    {{
-      'success-modeling.community-workspace'
-        | translate: { community: group.name }
-    }}
-  </h2>
-  <!-- service selection and edit toggle -->
-  <mat-card id="header-card">
-    <mat-toolbar-row>
-      <mat-form-field id="community-service-select">
-        <mat-label>{{
-          'success-modeling.select-application' | translate
-        }}</mat-label>
-        <mat-select
-          [formControl]="serviceSelectForm"
-          (selectionChange)="onServiceSelected($event.value)"
-        >
-          <mat-option
-            *ngFor="let service of services$ | async"
-            [value]="service"
+  <ng-container *ngIf="group.member; else notPartOfCommunity">
+    <h2 *ngIf="group?.name">
+      {{
+        'success-modeling.community-workspace'
+          | translate: { community: group.name }
+      }}
+    </h2>
+    <!-- service selection and edit toggle -->
+    <mat-card id="header-card">
+      <mat-toolbar-row>
+        <mat-form-field id="community-service-select">
+          <mat-label>{{
+            'success-modeling.select-application' | translate
+          }}</mat-label>
+          <mat-select
+            [formControl]="serviceSelectForm"
+            (selectionChange)="onServiceSelected($event.value)"
           >
-            {{ service.alias ? service.alias : service.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </mat-toolbar-row>
+            <mat-option
+              *ngFor="let service of services$ | async"
+              [value]="service"
+            >
+              {{ service.alias ? service.alias : service.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </mat-toolbar-row>
 
-    <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
-      <mat-slide-toggle
-        labelPosition="before"
-        [checked]="editMode$ | async"
-        (toggleChange)="onEditModeChanged()"
-        [disabled]="!(memberOfGroup$ | async)"
-        [matTooltip]="
-          (memberOfGroup$ | async)
-            ? ('success-modeling.edit-tooltip' | translate)
-            : ('success-modeling.edit-disabled-tooltip' | translate)
-        "
-      >
-        {{ 'success-modeling.edit-mode-toggle' | translate }}
-      </mat-slide-toggle>
+      <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
+        <mat-slide-toggle
+          labelPosition="before"
+          [checked]="editMode$ | async"
+          (toggleChange)="onEditModeChanged()"
+          [disabled]="!(memberOfGroup$ | async)"
+          [matTooltip]="
+            (memberOfGroup$ | async)
+              ? ('success-modeling.edit-tooltip' | translate)
+              : ('success-modeling.edit-disabled-tooltip' | translate)
+          "
+        >
+          {{ 'success-modeling.edit-mode-toggle' | translate }}
+        </mat-slide-toggle>
 
-      <mat-button-toggle-group *ngIf="editMode">
-        <mat-button-toggle
-          aria-label="Requirements Bazaar"
-          [mdePopoverTriggerFor]="reqBazPopover"
-          mdePopoverTriggerOn="click"
-          #reqBazToggle
-          matTooltip="{{ 'success-modeling.reqbaz.tooltip' | translate }}"
-        >
-          <mat-icon
-            color="primary"
-            svgIcon="reqbaz-logo"
-            [matBadge]="
-              numberOfRequirements === 0
-                ? null
-                : numberOfRequirements.toString()
-            "
+        <mat-button-toggle-group *ngIf="editMode">
+          <mat-button-toggle
+            aria-label="Requirements Bazaar"
+            [mdePopoverTriggerFor]="reqBazPopover"
+            mdePopoverTriggerOn="click"
+            #reqBazToggle
+            matTooltip="{{ 'success-modeling.reqbaz.tooltip' | translate }}"
           >
-          </mat-icon>
-        </mat-button-toggle>
-        <mde-popover
-          #reqBazPopover="mdePopover"
-          [mdePopoverOverlapTrigger]="false"
-          [mdePopoverCloseOnClick]="false"
-          (close)="reqBazToggle.checked = false"
-        >
-          <mat-card class="popover-content">
-            <mat-card-content>
-              <app-requirements-list
-                [successModel]="getSuccessModel()"
-                (successModelChange)="persistWorkspaceChanges()"
-                (numberOfRequirements)="numberOfRequirements = $event.valueOf()"
-              >
-              </app-requirements-list>
-            </mat-card-content>
-          </mat-card>
-        </mde-popover>
-        <mat-button-toggle
-          aria-label="Spectators"
-          [mdePopoverTriggerFor]="spectatorPopover"
-          mdePopoverTriggerOn="click"
-          #spectatorToggle
-          matTooltip="{{ 'success-modeling.visitors.tooltip' | translate }}"
-        >
-          <mat-icon
-            color="primary"
-            [matBadge]="
-              getNumberOfOtherWorkspaceVisitors() === 0
-                ? null
-                : getNumberOfOtherWorkspaceVisitors().toString()
-            "
+            <mat-icon
+              color="primary"
+              svgIcon="reqbaz-logo"
+              [matBadge]="
+                numberOfRequirements === 0
+                  ? null
+                  : numberOfRequirements.toString()
+              "
+            >
+            </mat-icon>
+          </mat-button-toggle>
+          <mde-popover
+            #reqBazPopover="mdePopover"
+            [mdePopoverOverlapTrigger]="false"
+            [mdePopoverCloseOnClick]="false"
+            (close)="reqBazToggle.checked = false"
           >
-            supervisor_account
-          </mat-icon>
-        </mat-button-toggle>
-        <mde-popover
-          #spectatorPopover="mdePopover"
-          [mdePopoverOverlapTrigger]="false"
-          [mdePopoverCloseOnClick]="false"
-          (close)="spectatorToggle.checked = false"
-        >
-          <mat-card class="popover-content">
-            <mat-card-content>
-              <h3>{{ 'success-modeling.visitors.heading' | translate }}</h3>
-              <div
-                *ngIf="getCurrentVisitorsExceptMe().length === 0"
-                class="popover-row"
-              >
-                {{ 'success-modeling.visitors.no-visitors' | translate }}
-              </div>
-              <div
-                *ngFor="let visitor of getCurrentVisitorsExceptMe()"
-                class="popover-row"
-              >
-                {{ visitor.username }}
-                <button
-                  *ngIf="
-                    getMyRole() === 'owner' &&
-                    visitor &&
-                    visitor.role !== 'editor'
+            <mat-card class="popover-content">
+              <mat-card-content>
+                <app-requirements-list
+                  [successModel]="getSuccessModel()"
+                  (successModelChange)="persistWorkspaceChanges()"
+                  (numberOfRequirements)="
+                    numberOfRequirements = $event.valueOf()
                   "
-                  mat-icon-button
-                  matTooltip="{{
-                    'success-modeling.visitors.edit-role-description'
-                      | translate
-                  }}"
-                  matTooltipShowDelay="0"
-                  (click)="changeVisitorRole(visitor.username, 'editor')"
                 >
-                  <mat-icon>create</mat-icon>
-                </button>
-                <button
-                  *ngIf="
-                    getMyRole() === 'owner' &&
-                    visitor &&
-                    visitor.role !== 'spectator'
-                  "
-                  mat-icon-button
-                  matTooltip="{{
-                    'success-modeling.visitors.spectator-role-description'
-                      | translate
-                  }}"
-                  matTooltipShowDelay="0"
-                  (click)="changeVisitorRole(visitor.username, 'spectator')"
-                >
-                  <mat-icon>remove_red_eye</mat-icon>
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mde-popover>
-        <mat-button-toggle
-          aria-label="Workspaces"
-          [mdePopoverTriggerFor]="workspacesPopover"
-          mdePopoverTriggerOn="click"
-          #workspacesToggle
-          matTooltip="{{ 'success-modeling.workspaces.tooltip' | translate }}"
-        >
-          <mat-icon
-            color="primary"
-            [matBadge]="
-              getNumberOfOpenWorkspacesFromOtherUsers() === 0
-                ? null
-                : getNumberOfOpenWorkspacesFromOtherUsers().toString()
-            "
+                </app-requirements-list>
+              </mat-card-content>
+            </mat-card>
+          </mde-popover>
+          <mat-button-toggle
+            aria-label="Spectators"
+            [mdePopoverTriggerFor]="spectatorPopover"
+            mdePopoverTriggerOn="click"
+            #spectatorToggle
+            matTooltip="{{ 'success-modeling.visitors.tooltip' | translate }}"
           >
-            view_carousel
-          </mat-icon>
-        </mat-button-toggle>
-        <mde-popover
-          #workspacesPopover="mdePopover"
-          [mdePopoverOverlapTrigger]="false"
-          [mdePopoverCloseOnClick]="false"
-          (close)="workspacesToggle.checked = false"
-        >
-          <mat-card class="popover-content">
-            <mat-card-content>
-              <h3>{{ 'success-modeling.workspaces.heading' | translate }}</h3>
-              <div
-                *ngIf="
-                  getAllWorkspacesForCurrentServiceExceptActive().length === 0
-                "
-                class="popover-row"
-              >
-                {{ 'success-modeling.workspaces.no-workspaces' | translate }}
-              </div>
-              <div
-                *ngFor="
-                  let workspace of getAllWorkspacesForCurrentServiceExceptActive()
-                "
-                class="popover-row"
-              >
-                <span>
-                  {{ workspace.createdBy }}
-                  <strong *ngIf="workspace.createdBy === getMyUsername()">
-                    ({{
-                      'success-modeling.workspaces.your-workspace' | translate
-                    }})
-                  </strong>
-                </span>
-                <span>
+            <mat-icon
+              color="primary"
+              [matBadge]="
+                getNumberOfOtherWorkspaceVisitors() === 0
+                  ? null
+                  : getNumberOfOtherWorkspaceVisitors().toString()
+              "
+            >
+              supervisor_account
+            </mat-icon>
+          </mat-button-toggle>
+          <mde-popover
+            #spectatorPopover="mdePopover"
+            [mdePopoverOverlapTrigger]="false"
+            [mdePopoverCloseOnClick]="false"
+            (close)="spectatorToggle.checked = false"
+          >
+            <mat-card class="popover-content">
+              <mat-card-content>
+                <h3>{{ 'success-modeling.visitors.heading' | translate }}</h3>
+                <div
+                  *ngIf="getCurrentVisitorsExceptMe().length === 0"
+                  class="popover-row"
+                >
+                  {{ 'success-modeling.visitors.no-visitors' | translate }}
+                </div>
+                <div
+                  *ngFor="let visitor of getCurrentVisitorsExceptMe()"
+                  class="popover-row"
+                >
+                  {{ visitor.username }}
                   <button
-                    *ngIf="getMyRole() === 'owner'"
+                    *ngIf="
+                      getMyRole() === 'owner' &&
+                      visitor &&
+                      visitor.role !== 'editor'
+                    "
                     mat-icon-button
                     matTooltip="{{
-                      'success-modeling.workspaces.copy-workspace' | translate
+                      'success-modeling.visitors.edit-role-description'
+                        | translate
                     }}"
                     matTooltipShowDelay="0"
-                    (click)="openCopyWorkspaceDialog(workspace.createdBy)"
+                    (click)="changeVisitorRole(visitor.username, 'editor')"
                   >
-                    <mat-icon>content_copy</mat-icon>
+                    <mat-icon>create</mat-icon>
                   </button>
                   <button
+                    *ngIf="
+                      getMyRole() === 'owner' &&
+                      visitor &&
+                      visitor.role !== 'spectator'
+                    "
                     mat-icon-button
                     matTooltip="{{
-                      'success-modeling.workspaces.go-to' | translate
+                      'success-modeling.visitors.spectator-role-description'
+                        | translate
                     }}"
                     matTooltipShowDelay="0"
-                    (click)="switchWorkspace(workspace.createdBy)"
+                    (click)="changeVisitorRole(visitor.username, 'spectator')"
                   >
-                    <mat-icon>exit_to_app</mat-icon>
+                    <mat-icon>remove_red_eye</mat-icon>
                   </button>
-                </span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mde-popover>
-      </mat-button-toggle-group>
-    </mat-toolbar-row>
-  </mat-card>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mde-popover>
+          <mat-button-toggle
+            aria-label="Workspaces"
+            [mdePopoverTriggerFor]="workspacesPopover"
+            mdePopoverTriggerOn="click"
+            #workspacesToggle
+            matTooltip="{{ 'success-modeling.workspaces.tooltip' | translate }}"
+          >
+            <mat-icon
+              color="primary"
+              [matBadge]="
+                getNumberOfOpenWorkspacesFromOtherUsers() === 0
+                  ? null
+                  : getNumberOfOpenWorkspacesFromOtherUsers().toString()
+              "
+            >
+              view_carousel
+            </mat-icon>
+          </mat-button-toggle>
+          <mde-popover
+            #workspacesPopover="mdePopover"
+            [mdePopoverOverlapTrigger]="false"
+            [mdePopoverCloseOnClick]="false"
+            (close)="workspacesToggle.checked = false"
+          >
+            <mat-card class="popover-content">
+              <mat-card-content>
+                <h3>{{ 'success-modeling.workspaces.heading' | translate }}</h3>
+                <div
+                  *ngIf="
+                    getAllWorkspacesForCurrentServiceExceptActive().length === 0
+                  "
+                  class="popover-row"
+                >
+                  {{ 'success-modeling.workspaces.no-workspaces' | translate }}
+                </div>
+                <div
+                  *ngFor="
+                    let workspace of getAllWorkspacesForCurrentServiceExceptActive()
+                  "
+                  class="popover-row"
+                >
+                  <span>
+                    {{ workspace.createdBy }}
+                    <strong *ngIf="workspace.createdBy === getMyUsername()">
+                      ({{
+                        'success-modeling.workspaces.your-workspace'
+                          | translate
+                      }})
+                    </strong>
+                  </span>
+                  <span>
+                    <button
+                      *ngIf="getMyRole() === 'owner'"
+                      mat-icon-button
+                      matTooltip="{{
+                        'success-modeling.workspaces.copy-workspace' | translate
+                      }}"
+                      matTooltipShowDelay="0"
+                      (click)="openCopyWorkspaceDialog(workspace.createdBy)"
+                    >
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      matTooltip="{{
+                        'success-modeling.workspaces.go-to' | translate
+                      }}"
+                      matTooltipShowDelay="0"
+                      (click)="switchWorkspace(workspace.createdBy)"
+                    >
+                      <mat-icon>exit_to_app</mat-icon>
+                    </button>
+                  </span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mde-popover>
+        </mat-button-toggle-group>
+      </mat-toolbar-row>
+    </mat-card>
 
-  <!-- workspace info -->
-  <ng-container
-    *ngIf="(user$ | async)?.profile?.preferred_username as username"
-  >
-    <mat-card *ngIf="editMode$ | async" id="workspace-info">
-      <div id="info-content">
-        <mat-icon color="primary">info_outline</mat-icon>
-        <span id="info-text">
-          <!-- <span *ngIf="workspaceUser === username; else notUserWorkspace">
+    <!-- workspace info -->
+    <ng-container
+      *ngIf="(user$ | async)?.profile?.preferred_username as username"
+    >
+      <mat-card *ngIf="editMode$ | async" id="workspace-info">
+        <div id="info-content">
+          <mat-icon color="primary">info_outline</mat-icon>
+          <span id="info-text">
+            <!-- <span *ngIf="workspaceUser === username; else notUserWorkspace">
             {{ 'success-modeling.info.own-workspace' | translate }}
           </span> -->
-          <span *ngIf="true; else notUserWorkspace">
-            {{ 'success-modeling.info.own-workspace' | translate }}
+            <span *ngIf="true; else notUserWorkspace">
+              {{ 'success-modeling.info.own-workspace' | translate }}
+            </span>
           </span>
-        </span>
-      </div>
-    </mat-card>
-  </ng-container>
+        </div>
+      </mat-card>
+    </ng-container>
 
-  <!-- Success model -->
-  <ng-container
-    *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
-  >
-    <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
-      <ng-container
-        *ngIf="successModel$ | async as successModel; else noSuccessModel"
-      >
-        <h3 *ngIf="group?.name">
-          {{
-            'success-modeling.community-success-model'
-              | translate
-                : {
-                    service: selectedService.alias
-                      ? selectedService.alias
-                      : selectedService.name
-                  }
-          }}
-        </h3>
-        <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-          <!-- <app-questionnaires
+    <!-- Success model -->
+    <ng-container
+      *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
+    >
+      <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
+        <ng-container
+          *ngIf="successModel$ | async as successModel; else noSuccessModel"
+        >
+          <h3 *ngIf="group?.name">
+            {{
+              'success-modeling.community-success-model'
+                | translate
+                  : {
+                      service: selectedService.alias
+                        ? selectedService.alias
+                        : selectedService.name
+                    }
+            }}
+          </h3>
+          <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+            <!-- <app-questionnaires
             [availableQuestionnaires]="availableQuestionnaires"
             [model]="successModel"
             [measures]="measureCatalog.measures"
@@ -281,38 +285,39 @@
             (modelChange)="persistWorkspaceChanges()"
             (measuresChange)="persistWorkspaceChanges()"
           ></app-questionnaires> -->
-          <div id="dimensions">
-            <app-success-dimension
-              [@slideInOut]
-              *ngFor="let dimension of dimensions"
-              [factors]="successModel.dimensions[dimension]"
-              (sendFactorsToSuccessModel)="onFactorsChange($event)"
-              (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
-              [measures]="measureCatalog.measures"
-              [service]="selectedService"
-              name="{{
-                'success-modeling.dimensions.name.' + translationMap[dimension]
-                  | translate
-              }}"
-              description="{{
-                'success-modeling.dimensions.description.' +
-                  translationMap[dimension] | translate
-              }}"
-              icon="{{ iconMap[dimension] }}"
-            ></app-success-dimension>
-          </div>
-          <button
-            id="save-model-button"
-            mat-raised-button
-            *ngIf="editMode$ | async"
-            color="primary"
-            [disabled]="saveInProgress"
-            (click)="onSaveClicked()"
-          >
-            <mat-spinner *ngIf="saveInProgress" color="warn" [diameter]="25">
-            </mat-spinner>
-            {{ 'success-modeling.save-model-button' | translate }}
-          </button>
+            <div id="dimensions">
+              <app-success-dimension
+                [@slideInOut]
+                *ngFor="let dimension of dimensions"
+                [factors]="successModel.dimensions[dimension]"
+                (sendFactorsToSuccessModel)="onFactorsChange($event)"
+                (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
+                [measures]="measureCatalog.measures"
+                [service]="selectedService"
+                name="{{
+                  'success-modeling.dimensions.name.' +
+                    translationMap[dimension] | translate
+                }}"
+                description="{{
+                  'success-modeling.dimensions.description.' +
+                    translationMap[dimension] | translate
+                }}"
+                icon="{{ iconMap[dimension] }}"
+              ></app-success-dimension>
+            </div>
+            <button
+              id="save-model-button"
+              mat-raised-button
+              *ngIf="editMode$ | async"
+              color="primary"
+              [disabled]="saveInProgress"
+              (click)="onSaveClicked()"
+            >
+              <mat-spinner *ngIf="saveInProgress" color="warn" [diameter]="25">
+              </mat-spinner>
+              {{ 'success-modeling.save-model-button' | translate }}
+            </button>
+          </ng-container>
         </ng-container>
       </ng-container>
     </ng-container>
@@ -363,4 +368,13 @@
     {{ 'success-modeling.info.workspace-rights-editor' | translate }}
   </span>
   {{ 'success-modeling.info.workspace-ask-owner-to-save' | translate }}
+</ng-template>
+
+<ng-template #notPartOfCommunity>
+  <mat-card>
+    {{
+      'not-part-of-selected-community'
+        | translate: { community: (selectedGroup$ | async).name }
+    }}
+  </mat-card>
 </ng-template>
