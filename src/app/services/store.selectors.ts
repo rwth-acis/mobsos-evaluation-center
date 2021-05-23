@@ -4,6 +4,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
+import { VisualizationData } from '../models/visualization.model';
 
 //all of these should be used to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
 
@@ -28,15 +29,6 @@ export const VISUALIZATION_DATA = (state: StoreState) =>
 export const WORKSPACE_INITIALIZED = (state: StoreState) =>
   state.Reducer.successModelInitialized &&
   state.Reducer.measureCatalogInitialized;
-
-export const VISUALIZATION_DATA_FOR_QUERY = (
-  state: StoreState,
-  queryString: string
-) =>
-  state.Reducer.visualizationData &&
-  state.Reducer.visualizationData[queryString]?.data
-    ? state.Reducer.visualizationData[queryString].data
-    : undefined;
 
 export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer.selectedService;
@@ -88,6 +80,15 @@ export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
     ? MeasureCatalog.fromPlainObject(state.Reducer.measureCatalog)?.toXml()
         ?.outerHTML
+    : undefined;
+
+export const VISUALIZATION_DATA_FOR_QUERY = (
+  state: StoreState,
+  queryString: string
+) =>
+  state.Reducer.visualizationData &&
+  state.Reducer.visualizationData[queryString]?.data
+    ? state.Reducer.visualizationData[queryString].data
     : undefined;
 
 function parseXml(xml: string) {
