@@ -25,7 +25,6 @@
     "@angular/platform-browser-dynamic": "^11.0.0",
     "@angular/router": "^11.0.0",
     "@angular/service-worker": "^11.0.0",
-    "@material-extended/mde": "^3.0.3",
     "@ngrx/effects": "^11.1.1",
     "@ngrx/store": "^11.1.1",
     "@ngx-translate/core": "^11.0.1",
@@ -49,8 +48,6 @@
     "tslib": "^2.0.0",
     "vkbeautify": "^0.99.3",
     "xml-formatter": "^1.2.1",
-    "y-text": "^9.5.1",
-    "yjs": "^13.0.0-78",
     "zone.js": "^0.10.3"
   },
   "devDependencies": {
@@ -61,6 +58,7 @@
     "@types/jasminewd2": "^2.0.9",
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
+    "cssnano-preset-default": "^5.1.1",
     "jasmine-core": "^3.7.1",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",
@@ -68,6 +66,7 @@
     "karma-coverage-istanbul-reporter": "~3.0.2",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.6.0",
+    "postcss": "^8.2.15",
     "protractor": "~7.0.0",
     "ts-node": "~7.0.0",
     "tslint": "~6.1.0",
