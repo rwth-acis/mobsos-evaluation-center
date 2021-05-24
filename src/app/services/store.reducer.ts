@@ -12,7 +12,7 @@ import * as Actions from './store.actions';
 
 export const initialState: AppState = {
   services: {},
-  groups: {},
+  groups: undefined,
   user: undefined,
 
   selectedGroupId: undefined,

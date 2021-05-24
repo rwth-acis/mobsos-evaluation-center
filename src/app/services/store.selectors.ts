@@ -121,6 +121,9 @@ function parseModel(xml: string): SuccessModel {
  * @param groups
  */
 function _userGroups(groups: GroupCollection) {
+  if (!groups) {
+    return undefined;
+  }
   let userGroups = [];
   if (!groups) {
     return [];
@@ -134,6 +137,9 @@ function _userGroups(groups: GroupCollection) {
 }
 
 function _foreignGroups(groups: GroupCollection) {
+  if (!groups) {
+    return undefined;
+  }
   let userGroups = [];
   if (!groups) {
     return [];
