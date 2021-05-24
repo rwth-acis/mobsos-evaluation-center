@@ -81,6 +81,12 @@ export class AppComponent implements OnInit, OnDestroy {
   user$ = this.ngrxStore.select(USER);
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
+  groupsAreLoaded$: Observable<boolean> = combineLatest([
+    this.userGroups$,
+    this.foreignGroups$,
+  ]).pipe(
+    map(([userGroups, foreignGroups]) => !!userGroups || !!foreignGroups)
+  );
   otherGroups: GroupInformation[] = [];
   groups = [];
   groupMap = {};

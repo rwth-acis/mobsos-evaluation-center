@@ -26,6 +26,12 @@
           {{ group.name }}
         </mat-option>
       </mat-select>
+      <mat-spinner
+        color="accent"
+        *ngIf="!(groupsAreLoaded$ | async)"
+        [diameter]="25"
+      >
+      </mat-spinner>
     </mat-form-field>
     <mat-divider></mat-divider>
     <mat-nav-list>
