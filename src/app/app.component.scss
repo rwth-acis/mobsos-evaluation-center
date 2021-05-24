@@ -31,6 +31,12 @@ mat-sidenav-container {
     #community-selection {
       margin-top: 10px;
       margin-bottom: 10px;
+      position: relative;
+      mat-spinner {
+        position: absolute;
+        top: 5px;
+        right: 15px;
+      }
     }
 
     .mat-list-item,
