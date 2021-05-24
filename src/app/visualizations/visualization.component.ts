@@ -1,28 +1,34 @@
-import {Measure} from '../../success-model/measure';
-import {ServiceInformation} from '../store.service';
-import {Las2peerService} from '../las2peer.service';
-import {ErrorDialogComponent} from '../error-dialog/error-dialog.component';
-import {MatDialog} from '@angular/material';
-import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
-import {environment} from '../../environments/environment';
+import { Measure } from '../../success-model/measure';
+import { ServiceInformation } from '../store.service';
+import { Las2peerService } from '../las2peer.service';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  Component,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { environment } from '../../environments/environment';
+import { Store } from '@ngrx/store';
+import { fetchVisualizationData } from '../services/store.actions';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
   measure: Measure;
   visualizationInitialized: boolean;
   error: Response;
-
-  renderVisualization();
 }
 
 @Component({
   selector: 'app-base-visualization',
-  template: ''
+  template: '',
 })
-export class BaseVisualizationComponent implements VisualizationComponent, OnInit, OnChanges, OnDestroy {
-
-  constructor(protected las2peer: Las2peerService, protected dialog: MatDialog) {
-  }
+export class BaseVisualizationComponent
+  implements VisualizationComponent, OnInit, OnChanges, OnDestroy
+{
+  constructor(protected ngrxStore: Store, protected dialog: MatDialog) {}
   measure: Measure;
   service: ServiceInformation;
   visualizationInitialized = false;
@@ -42,9 +48,15 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     return query;
   }
 
-  protected applyVariableReplacements(query: string) {
+  protected applyVariableReplacements(
+    query: string,
+    service: ServiceInformation
+  ) {
     let servicesString = '(';
     const services = [];
+    if (!this.service) {
+      this.service = service;
+    }
     for (const mobsosID of this.service.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
@@ -52,26 +64,16 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     return query.replace('$SERVICES$', servicesString);
   }
 
-  ngOnInit() {
-    this.renderVisualizationReal();
-    this.refreshVisualizationHandle = setInterval(
-      () => this.renderVisualizationReal(),
-      environment.visualizationRefreshInterval * 1000
-    );
-  }
+  ngOnInit() {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.renderVisualizationReal();
-  }
+  ngOnChanges(changes: SimpleChanges): void {}
 
-  ngOnDestroy(): void {
-    clearInterval(this.refreshVisualizationHandle);
-  }
+  ngOnDestroy(): void {}
 
   async openErrorDialog() {
     let errorText;
     if (this.error.body) {
-      const {value} = await this.error.body.getReader().read();
+      const { value } = await this.error.body.getReader().read();
       const responseBody = new TextDecoder('utf-8').decode(value);
       errorText = (this.error.statusText + ': ' + responseBody).trim();
     } else {
@@ -80,16 +82,12 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
 
     this.dialog.open(ErrorDialogComponent, {
       width: '80%',
-      data: {error: errorText}
+      data: { error: errorText },
     });
   }
 
-  public async renderVisualization() {
-    throw new Error('You have to implement the method renderVisualization!');
-  }
-
   protected getParamsForQuery(query: string) {
-    if (this.service.mobsosIDs.length === 0) {
+    if (!this.service || this.service.mobsosIDs.length === 0) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
@@ -107,30 +105,7 @@ export class BaseVisualizationComponent implements VisualizationComponent, OnIni
     return params;
   }
 
-  protected fetchVisualization(query, queryParams, format: string) {
-    return this.las2peer.visualizeQuery(query, queryParams, format).then(data => {
-      this.error = null;
-      return data;
-    }).catch(error => {
-      this.error = error.error;
-      throw error;
-    });
-  }
-
-  protected renderVisualizationReal() {
-    if (this.service && this.measure) {
-      this.visualizationInitialized = true;
-      // special case: MobSOS has no knowledge of this service
-      // thus we can save the REST call and use null as value
-      if (this.service && this.service.mobsosIDs.length > 0) {
-        this.renderVisualization();
-        this.serviceNotFoundInMobSOS = false;
-      } else {
-        this.serviceNotFoundInMobSOS = true;
-      }
-    } else {
-      this.visualizationInitialized = false;
-    }
-
+  protected fetchVisualizationData(query: string, queryParams: string[]) {
+    this.ngrxStore.dispatch(fetchVisualizationData({ query, queryParams }));
   }
 }

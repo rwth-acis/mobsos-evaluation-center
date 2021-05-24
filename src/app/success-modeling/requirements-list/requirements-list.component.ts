@@ -1,22 +1,31 @@
-import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
-import {SuccessModel} from '../../../success-model/success-model';
-import {MatDialog} from '@angular/material';
-import {PickReqbazProjectComponent} from './pick-reqbaz-project/pick-reqbaz-project.component';
-import {ReqbazProject} from '../../../success-model/reqbaz-project';
-import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmation-dialog.component';
-import {TranslateService} from '@ngx-translate/core';
-import {environment} from '../../../environments/environment';
-import {Las2peerService} from '../../las2peer.service';
-import {isNumber} from 'util';
-import {StoreService, User} from '../../store.service';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import { SuccessModel } from '../../../success-model/success-model';
+
+import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
+import { ReqbazProject } from '../../../success-model/reqbaz-project';
+import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
+import { TranslateService } from '@ngx-translate/core';
+import { environment } from '../../../environments/environment';
+import { Las2peerService } from '../../las2peer.service';
+import { isNumber } from 'util';
+import { StoreService, User } from '../../store.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-requirements-list',
   templateUrl: './requirements-list.component.html',
-  styleUrls: ['./requirements-list.component.scss']
+  styleUrls: ['./requirements-list.component.scss'],
 })
 export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
-
   @Input() successModel: SuccessModel;
   @Output() successModelChange = new EventEmitter<SuccessModel>();
   @Output() numberOfRequirements = new EventEmitter<number>();
@@ -27,17 +36,22 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
   openedRequirement = null;
   private user: User;
 
-  constructor(private dialog: MatDialog, private translate: TranslateService, private las2peer: Las2peerService,
-              private store: StoreService) {
-  }
+  constructor(
+    private dialog: MatDialog,
+    private translate: TranslateService,
+    private las2peer: Las2peerService,
+    private store: StoreService
+  ) {}
 
   static joinAbsoluteUrlPath(...args) {
-    return args.map(pathPart => {
-      if (isNumber(pathPart)) {
-        pathPart = pathPart.toString();
-      }
-      return pathPart.replace(/(^\/|\/$)/g, '');
-    }).join('/');
+    return args
+      .map((pathPart) => {
+        if (isNumber(pathPart)) {
+          pathPart = pathPart.toString();
+        }
+        return pathPart.replace(/(^\/|\/$)/g, '');
+      })
+      .join('/');
   }
 
   ngOnInit() {
@@ -46,7 +60,7 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
       () => this.refreshRequirements(),
       environment.servicePollingInterval * 1000
     );
-    this.store.user.subscribe(user => this.user = user);
+    this.store.user.subscribe((user) => (this.user = user));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -55,18 +69,20 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 
   openPickProjectDialog() {
     const dialogRef = this.dialog.open(PickReqbazProjectComponent, {
       minWidth: 300,
       width: '80%',
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.successModel.reqBazProject = new ReqbazProject(result.selectedProject.name, result.selectedProject.id,
-          result.selectedCategory.id);
+        this.successModel.reqBazProject = new ReqbazProject(
+          result.selectedProject.name,
+          result.selectedProject.id,
+          result.selectedCategory.id
+        );
         this.successModelChange.emit(this.successModel);
         this.refreshRequirements();
       }
@@ -74,12 +90,14 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   async openDisconnectProjectDialog() {
-    const message = await this.translate.get('success-modeling.requirements-list.disconnect-project-prompt').toPromise();
+    const message = await this.translate
+      .get('success-modeling.requirements-list.disconnect-project-prompt')
+      .toPromise();
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.successModel.reqBazProject = null;
         this.successModelChange.emit(this.successModel);
@@ -93,8 +111,9 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
       this.requirements = [];
       return;
     }
-    this.las2peer.fetchRequirementsOnReqBaz(this.successModel.reqBazProject.categoryId)
-      .then(requirements => {
+    this.las2peer
+      .fetchRequirementsOnReqBaz(this.successModel.reqBazProject.categoryId)
+      .then((requirements) => {
         this.requirements = requirements;
         this.numberOfRequirements.emit((requirements as []).length);
       });
@@ -105,9 +124,12 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   isLead(requirement) {
-    return Object.keys(requirement).includes('leadDeveloper')
-      && this.user
-      && requirement.leadDeveloper.userName === this.user.profile.preferred_username;
+    return (
+      Object.keys(requirement).includes('leadDeveloper') &&
+      this.user &&
+      requirement.leadDeveloper.userName ===
+        this.user.profile.preferred_username
+    );
   }
 
   realizeRequirement(requirement: any) {
@@ -135,7 +157,14 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     if (!reqBazProject) {
       return '';
     }
-    return RequirementsListComponent.joinAbsoluteUrlPath(environment.reqBazFrontendUrl, 'projects',
-      reqBazProject.id, 'categories', reqBazProject.categoryId, 'requirements', requirement.id);
+    return RequirementsListComponent.joinAbsoluteUrlPath(
+      environment.reqBazFrontendUrl,
+      'projects',
+      reqBazProject.id,
+      'categories',
+      reqBazProject.categoryId,
+      'requirements',
+      requirement.id
+    );
   }
 }

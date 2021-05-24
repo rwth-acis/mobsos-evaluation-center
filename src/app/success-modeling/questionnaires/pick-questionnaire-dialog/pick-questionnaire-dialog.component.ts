@@ -1,7 +1,13 @@
-import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA} from '@angular/material';
-import {Questionnaire} from '../../../las2peer.service';
-import {environment} from '../../../../environments/environment';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit,
+} from '@angular/core';
+
+import { Questionnaire } from '../../../las2peer.service';
+import { environment } from '../../../../environments/environment';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -10,9 +16,9 @@ import {environment} from '../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PickQuestionnaireDialogComponent implements OnInit {
-
-  constructor(@Inject(MAT_DIALOG_DATA) public availableQuestionnaires: Questionnaire[]) {
-  }
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public availableQuestionnaires: Questionnaire[]
+  ) {}
 
   selectedQuestionnaire: Questionnaire;
   addMeasures = true;
@@ -43,14 +49,15 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   getNumberOfQuestions(): number {
     if (!this.selectedQuestionnaire) {
       return null;
     }
-    const xml = PickQuestionnaireDialogComponent.parseXml(this.selectedQuestionnaire.formXML);
+    const xml = PickQuestionnaireDialogComponent.parseXml(
+      this.selectedQuestionnaire.formXML
+    );
     return Array.from(xml.getElementsByTagName('qu:Page')).length;
   }
 
@@ -58,15 +65,22 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     if (!this.selectedQuestionnaire) {
       return [];
     }
-    const xml = PickQuestionnaireDialogComponent.parseXml(this.selectedQuestionnaire.formXML);
-    const successModelRecommendations = Array.from(xml.getElementsByTagName('qu:SuccessModelRecommendation'));
-    const resultSet = new Set();
+    const xml = PickQuestionnaireDialogComponent.parseXml(
+      this.selectedQuestionnaire.formXML
+    );
+    const successModelRecommendations = Array.from(
+      xml.getElementsByTagName('qu:SuccessModelRecommendation')
+    );
+    const resultSet = new Set<string>();
     for (const recommendation of successModelRecommendations) {
       resultSet.add(recommendation.getAttribute('dimension'));
     }
     let result = [];
     resultSet.forEach((value) => {
-      const translateStringValue = PickQuestionnaireDialogComponent.getTranslateStringForDimensionName(value);
+      const translateStringValue =
+        PickQuestionnaireDialogComponent.getTranslateStringForDimensionName(
+          value
+        );
       result.push(translateStringValue);
     });
     result = result.sort();
