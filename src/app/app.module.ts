@@ -119,6 +119,7 @@ export function localStorageSyncReducer(
       },
     ],
     rehydrate: true,
+    removeOnUndefined: true,
   })(reducer);
 }
 const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
