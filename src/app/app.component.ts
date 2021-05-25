@@ -41,12 +41,20 @@ import {
   USER,
   USER_GROUPS,
 } from './services/store.selectors';
-import { filter, first, map } from 'rxjs/operators';
+import {
+  distinctUntilKeyChanged,
+  filter,
+  first,
+  map,
+  startWith,
+  tap,
+} from 'rxjs/operators';
 import { StateEffects } from './services/store.effects';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
+import { User } from './models/user.model';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -78,7 +86,7 @@ export class AppComponent implements OnInit, OnDestroy {
   myGroups: GroupInformation[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
-  user$ = this.ngrxStore.select(USER);
+  user$: Observable<User> = this.ngrxStore.select(USER);
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
   groupsAreLoaded$: Observable<boolean> = combineLatest([
@@ -170,11 +178,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    let sub = this.user$
+      .pipe(distinctUntilKeyChanged('signedIn'))
+      .subscribe((user) => {
+        if (user.signedIn) {
+          this.ngrxStore.dispatch(fetchGroups());
+        }
+      });
+    this.subscriptions$.push(sub);
     this.ngrxStore.dispatch(initState());
     this.ngrxStore.dispatch(fetchServices());
-    this.ngrxStore.dispatch(fetchGroups());
-
-    let sub = this.ngrxStore
+    sub = this.ngrxStore
       .select(SELECTED_GROUP)
       .pipe(
         filter((group) => !!group && !!group.name),

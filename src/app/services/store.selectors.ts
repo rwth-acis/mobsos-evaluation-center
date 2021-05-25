@@ -4,6 +4,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
+import { User } from '../models/user.model';
 import { VisualizationData } from '../models/visualization.model';
 
 //all of these should be used to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
@@ -43,7 +44,7 @@ export const USER_GROUPS = (state: StoreState) =>
 export const FOREIGN_GROUPS = (state: StoreState) =>
   _foreignGroups(state.Reducer.groups);
 
-export const USER = (state: StoreState) => state.Reducer.user;
+export const USER = (state: StoreState) => state.Reducer.user as User;
 
 export const SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer.selectedServiceName;

@@ -3,6 +3,7 @@ export interface User {
   access_token: string;
   session_state?: string;
   id_token?: string;
+  signedIn?: boolean;
 }
 
 export interface Visitor {

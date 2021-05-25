@@ -101,7 +101,7 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
-    user: user,
+    user: { ...user, signedIn: !!user },
   })),
   on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,
