@@ -179,15 +179,19 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     let sub = this.user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
+      .pipe(
+        filter((user) => !!user),
+        distinctUntilKeyChanged('signedIn')
+      )
       .subscribe((user) => {
-        if (user.signedIn) {
+        if (user?.signedIn) {
           this.ngrxStore.dispatch(fetchGroups());
         }
+         this.ngrxStore.dispatch(fetchServices());
       });
     this.subscriptions$.push(sub);
     this.ngrxStore.dispatch(initState());
-    this.ngrxStore.dispatch(fetchServices());
+    
     sub = this.ngrxStore
       .select(SELECTED_GROUP)
       .pipe(
