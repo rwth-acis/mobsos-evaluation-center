@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore.select(USER);
+  loggedIn$ = this.user$.pipe(map((user) => user && user.signedIn));
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
   groupsAreLoaded$: Observable<boolean> = combineLatest([
@@ -187,11 +188,11 @@ export class AppComponent implements OnInit, OnDestroy {
         if (user?.signedIn) {
           this.ngrxStore.dispatch(fetchGroups());
         }
-         this.ngrxStore.dispatch(fetchServices());
+        this.ngrxStore.dispatch(fetchServices());
       });
     this.subscriptions$.push(sub);
     this.ngrxStore.dispatch(initState());
-    
+
     sub = this.ngrxStore
       .select(SELECTED_GROUP)
       .pipe(

@@ -122,7 +122,7 @@
       *ngIf="loading$ | async"
     ></mat-progress-bar>
     <main>
-      <ng-container *ngIf="user$ | async; else notLoggedIn">
+      <ng-container *ngIf="loggedIn$ | async; else notLoggedIn">
         <router-outlet></router-outlet
       ></ng-container>
     </main>
