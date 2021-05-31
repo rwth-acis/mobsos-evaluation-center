@@ -552,7 +552,7 @@ export class Las2peerService {
       groupID
     );
     return this.makeRequest<MeasureCatalog>(url)
-      .then((response) => response.xml)
+      .then((response) => response?.xml)
       .catch((response) => {
         throw response;
       });

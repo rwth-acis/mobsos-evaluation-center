@@ -19,10 +19,14 @@
 .send-button {
   width: 100%;
   position: relative;
-}
-mat-spinner {
+  mat-spinner {
   top: 5px;
   margin: 0;
   padding: 0;
   position: absolute;
+}
+}
+
+mat-spinner {
+ margin: auto;
 }

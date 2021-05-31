@@ -11,6 +11,7 @@ import {
   withLatestFrom,
   filter,
   share,
+  tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { delayedRetry } from './retryOperator';
@@ -176,7 +177,7 @@ export class StateEffects {
     )
   );
 
-  saveModel$ = createEffect(() =>
+  saveModelAndCatalogResult$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveCatalogSuccess),
       withLatestFrom(
@@ -190,6 +191,55 @@ export class StateEffects {
         this.l2p
           .saveSuccessModelAndObserve(groupId, serviceName, successModelXML)
           .pipe(map(() => Action.successResponse()))
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
+    )
+  );
+
+  saveModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveModel),
+      withLatestFrom(
+        combineLatest([
+          this.ngrxStore.select(SELECTED_GROUP_ID),
+          this.ngrxStore.select(SELECTED_SERVICE_NAME),
+        ])
+      ),
+      switchMap(([action, [groupId, serviceName]]) =>
+        this.l2p
+          .saveSuccessModelAndObserve(groupId, serviceName, action.xml)
+          .pipe(
+            tap((res) => {
+              console.log(res);
+              // Action.storeSuccessModel({xml:action.xml})
+            }),
+            map(() => Action.successResponse())
+          )
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
+    )
+  );
+
+  saveCatalog$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveCatalog),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      switchMap(([action, groupId]) =>
+        this.l2p.saveMeasureCatalogAndObserve(groupId, action.xml).pipe(
+          tap((res) => {
+            console.log(res);
+            // Action.storeCatalog({xml:action.xml})
+          }),
+          map(() => Action.successResponse())
+        )
       ),
       catchError((err) => {
         console.error(err);

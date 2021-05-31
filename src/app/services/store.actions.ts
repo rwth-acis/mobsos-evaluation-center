@@ -18,7 +18,9 @@ enum FetchActions {
 }
 
 export enum PostActions {
-  SAVE_MODEL_AND_CATALOG = 'send an update to the server',
+  SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
+  SAVE_CATALOG = 'save catalog on the server',
+  SAVE_MODEL = 'save model on the server',
   SUCCESS_RESPONSE = 'response was successfully',
   FAILURE_RESPONSE = 'response was not successfully',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
@@ -111,6 +113,16 @@ export const storeGroups = createAction(
 
 export const saveModelAndCatalog = createAction(
   PostActions.SAVE_MODEL_AND_CATALOG
+);
+
+export const saveModel = createAction(
+  PostActions.SAVE_MODEL,
+  props<{ xml: string }>()
+);
+
+export const saveCatalog = createAction(
+  PostActions.SAVE_CATALOG,
+  props<{ xml: string }>()
 );
 
 export const setGroup = createAction(
