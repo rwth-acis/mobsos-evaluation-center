@@ -207,8 +207,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         this.initWorkspace().then(() =>
           this.switchWorkspace(this.getMyUsername())
         );
-      } else if (this.editMode) {
-        this.openClearWorkspaceDialog();
       }
       this.editMode = editMode;
     });
@@ -408,6 +406,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
             this.snackBar.open(message, null, {
               duration: 2000,
             });
+            this.ngrxStore.dispatch(disableEdit());
           }
           sub.unsubscribe();
         });

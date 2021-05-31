@@ -109,6 +109,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private silentSigninIntervalHandle: Timer;
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   subscriptions$: Subscription[] = [];
 
   constructor(
@@ -193,8 +194,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
     this.ngrxStore.dispatch(initState());
 
-    sub = this.ngrxStore
-      .select(SELECTED_GROUP)
+    sub = this.selectedGroup$
       .pipe(
         filter((group) => !!group && !!group.name),
         first()
@@ -250,13 +250,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.groupMap = groups;
     });
     this.subscriptions$.push(sub);
-    sub = this.store.selectedGroup.subscribe((selectedGroup) => {
-      this.selectedGroup = selectedGroup;
+    sub = this.selectedGroup$.subscribe((selectedGroup) => {
+      this.selectedGroup = selectedGroup.id;
       if (selectedGroup) {
         this.ngrxStore.dispatch(
-          fetchMeasureCatalog({ groupId: selectedGroup })
+          fetchMeasureCatalog({ groupId: selectedGroup.id })
         );
-        this.selectedGroupForm.setValue(selectedGroup);
+        this.selectedGroupForm.setValue(selectedGroup.id);
       }
     });
     this.subscriptions$.push(sub);
