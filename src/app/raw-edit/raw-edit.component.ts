@@ -11,6 +11,7 @@ import {
   saveModel,
   setService,
   storeSuccessModel,
+  successResponse,
 } from '../services/store.actions';
 import {
   MEASURE_CATALOG,
@@ -147,21 +148,22 @@ export class RawEditComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          console.log(result);
-
-          if (result && result instanceof failureResponse) {
-            let message =
-              this.translate.instant('raw-edit.measures.snackbar-failure') +
-              (result as { reason: Error }).reason.message;
-
-            this.snackBar.open(message, 'Ok');
-          } else {
+          if (result && result instanceof successResponse) {
             let message = this.translate.instant(
               'raw-edit.measures.snackbar-success'
             );
             this.snackBar.open(message, null, {
               duration: 2000,
             });
+          } else {
+            let message = this.translate.instant(
+              'raw-edit.measures.snackbar-failure'
+            );
+            if (result && result instanceof failureResponse) {
+              message += (result as { reason: Error }).reason.message;
+            }
+
+            this.snackBar.open(message, 'Ok');
           }
           sub.unsubscribe();
         });
@@ -171,7 +173,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   _onModelSaveClicked() {
     this.saveInProgress = true;
 
-    this.ngrxStore.dispatch(saveModel({ xml: this.measureCatalogXml }));
+    this.ngrxStore.dispatch(saveModel({ xml: this.successModelXml }));
     if (this.saveInProgress) {
       let sub = this.actionState.saveModel$
         .pipe(
@@ -187,22 +189,20 @@ export class RawEditComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          console.log(result);
-
-          if (result && result instanceof failureResponse) {
-            let message =
-              this.translate.instant(
-                'raw-edit.success-models.snackbar-failure'
-              ) + (result as { reason: Error }).reason.message;
-
-            this.snackBar.open(message, 'Ok');
-          } else {
+          if (result && result instanceof successResponse) {
             let message = this.translate.instant(
               'raw-edit.success-models.snackbar-success'
             );
             this.snackBar.open(message, null, {
               duration: 2000,
             });
+          } else {
+            let message = this.translate.instant(
+              'raw-edit.success-models.snackbar-failure'
+            );
+            if (result && result instanceof failureResponse)
+              message += (result as { reason: Error }).reason.message;
+            this.snackBar.open(message, 'Ok');
           }
           sub.unsubscribe();
         });
