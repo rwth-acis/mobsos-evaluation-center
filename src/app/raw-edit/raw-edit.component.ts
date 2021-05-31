@@ -74,8 +74,10 @@ export class RawEditComponent implements OnInit, OnDestroy {
         this.fetchXml();
       });
     this.selectedService$
-
-      .pipe(map((service) => service.name))
+      .pipe(
+        filter((service) => !!service),
+        map((service) => service.name)
+      )
 
       .subscribe((serviceName) => {
         this.selectedService = serviceName;

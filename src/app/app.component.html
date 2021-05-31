@@ -64,7 +64,7 @@
       </a>
     </mat-nav-list>
     <footer>
-      <mat-slide-toggle
+      <mat-slide-toggle *ngIf="user$ | async"
         labelPosition="before"
         [checked]="expertMode$ | async"
         (change)="setExpertMode($event.checked)"
