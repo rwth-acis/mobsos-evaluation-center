@@ -214,8 +214,8 @@ export class StateEffects {
           .saveSuccessModelAndObserve(groupId, serviceName, action.xml)
           .pipe(
             tap((res) => {
-              console.log(res);
-              // Action.storeSuccessModel({xml:action.xml})
+              
+               Action.storeSuccessModel({ xml: action.xml });
             }),
             map(() => Action.successResponse())
           )
@@ -235,8 +235,8 @@ export class StateEffects {
       switchMap(([action, groupId]) =>
         this.l2p.saveMeasureCatalogAndObserve(groupId, action.xml).pipe(
           tap((res) => {
-            console.log(res);
-            // Action.storeCatalog({xml:action.xml})
+         
+             Action.storeCatalog({ xml: action.xml });
           }),
           map(() => Action.successResponse())
         )
@@ -261,7 +261,6 @@ export class StateEffects {
         ) {
           // no data yet or last fetch time more than 5min ago
           return this.l2p.fetchVisualizationData(query, queryParams).pipe(
-            delayedRetry(100, 3, 10),
             map((data) =>
               Action.storeVisualizationData({
                 data,
