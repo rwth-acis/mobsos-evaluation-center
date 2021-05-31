@@ -6,10 +6,19 @@ import {
   HttpRequest,
   HttpResponse,
   HttpErrorResponse,
+  HttpUserEvent,
 } from '@angular/common/http';
 
 import { BehaviorSubject, EMPTY, Observable, of, throwError } from 'rxjs';
-import { catchError, filter, share, shareReplay, tap } from 'rxjs/operators';
+import {
+  catchError,
+  filter,
+  share,
+  shareReplay,
+  tap,
+  timeout,
+  timeoutWith,
+} from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
 import { delayedRetry } from './retryOperator';
@@ -46,19 +55,12 @@ export class Interceptor implements HttpInterceptor {
           (res) =>
             res instanceof HttpErrorResponse || res instanceof HttpResponse
         ),
-        tap(
-          (res) => {
-            if (res instanceof HttpResponse) {
-              this.handleResponse(res, req);
-            }
+        timeoutWith(300000, throwError("Timeout")),
+        tap((res) => {
+          if (res instanceof HttpResponse) {
+            this.handleResponse(res, req);
           }
-          // (err) => {
-          //   if (err.status == 404 || err.status >= 500) {
-          //     this.unreachableServices[req.url] = true;
-          //   }
-          //   this.handleResponse(null, req);
-          // }
-        ),
+        }),
         catchError((err) => {
           this.ngrxStore.dispatch(decrementLoading());
 
