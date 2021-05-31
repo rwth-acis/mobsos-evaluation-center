@@ -22,7 +22,7 @@ export const environment = {
     window.env.openIdClientId || 'f8622260-875b-499a-82db-db55f89f9deb',
   openIdSilentLoginInterval: 60,
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
-  las2peerWebConnectorUrl: 'https://las2peer.tech4comp.dbis.rwth-aachen.de',
+  las2peerWebConnectorUrl: 'https://git.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
