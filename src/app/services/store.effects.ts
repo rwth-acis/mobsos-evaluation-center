@@ -16,6 +16,7 @@ import {
 import { Las2peerService } from '../las2peer.service';
 import { delayedRetry } from './retryOperator';
 import * as Action from './store.actions';
+import { transferMissingGroupsToMobSOS } from './store.actions';
 import {
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
@@ -101,6 +102,12 @@ export class StateEffects {
           filter(
             ([groupsFromContactService, groupsFromMobSOS]) =>
               !!groupsFromContactService || !!groupsFromMobSOS
+          ),
+          tap(([groupsFromContactService, groupsFromMobSOS]) =>
+            Action.transferMissingGroupsToMobSOS({
+              groupsFromContactService,
+              groupsFromMobSOS,
+            })
           ),
           map(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.storeGroups({
@@ -200,6 +207,25 @@ export class StateEffects {
     )
   );
 
+  transferMissingGroupsToMobSOS$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.transferMissingGroupsToMobSOS),
+      switchMap((action) => {
+        let missingGroups = action.groupsFromContactService.filter(
+          (group) => !action.groupsFromMobSOS.find((g) => g.name === group.name)
+        );  
+        return this.l2p
+          .saveGroupsToMobSOS(missingGroups)
+          .pipe(map(() => Action.successResponse()));
+      }),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share()
+    )
+  );
+
   saveModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveModel),
@@ -214,8 +240,7 @@ export class StateEffects {
           .saveSuccessModelAndObserve(groupId, serviceName, action.xml)
           .pipe(
             tap((res) => {
-              
-               Action.storeSuccessModel({ xml: action.xml });
+              Action.storeSuccessModel({ xml: action.xml });
             }),
             map(() => Action.successResponse())
           )
@@ -235,8 +260,7 @@ export class StateEffects {
       switchMap(([action, groupId]) =>
         this.l2p.saveMeasureCatalogAndObserve(groupId, action.xml).pipe(
           tap((res) => {
-         
-             Action.storeCatalog({ xml: action.xml });
+            Action.storeCatalog({ xml: action.xml });
           }),
           map(() => Action.successResponse())
         )

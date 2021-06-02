@@ -11,14 +11,16 @@
   as soon as you interact with it.
 </span>
 <ng-template #elseBlock>
+  <div class="window-aspect-ratio">
   <google-chart
     *ngIf="data$ | async"
     [title]="this.chart.title"
     [type]="this.chart.chartType"
     [data]="this.chart.data"
     [options]="this.chart.options"
-    style=" width: 100%"
+    class="content"
     [columns]="columnNames"
     [dynamicResize]="true"
   ></google-chart>
+  </div>
 </ng-template>

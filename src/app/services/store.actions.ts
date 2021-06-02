@@ -45,6 +45,7 @@ enum StoreActions {
 
 enum StateActions {
   SET_GROUP = 'set current group',
+  TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
@@ -118,6 +119,11 @@ export const saveModelAndCatalog = createAction(
 export const saveModel = createAction(
   PostActions.SAVE_MODEL,
   props<{ xml: string }>()
+);
+
+export const transferMissingGroupsToMobSOS = createAction(
+  StateActions.TRANSFER_MISSING_GROUPS_TO_MOBSOS,
+  props<{ groupsFromContactService; groupsFromMobSOS }>()
 );
 
 export const saveCatalog = createAction(

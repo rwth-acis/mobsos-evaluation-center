@@ -2,7 +2,7 @@ import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 import {
   catchError,
   map,
@@ -485,6 +485,29 @@ export class Las2peerService {
       this.logger.error(response);
       throw response;
     });
+  }
+
+  saveGroupsToMobSOS(groups) {
+    let method;
+    let url;
+
+    method = 'POST';
+    url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_GROUP_PATH
+    );
+
+    let requests = [];
+    for (const group of groups) {
+      requests.push(
+        this.makeRequestAndObserve(url, {
+          method,
+          body: JSON.stringify({ groupID: group.id, name: group.groupName }),
+        })
+      );
+    }
+    return forkJoin(requests);
   }
 
   async saveSuccessModel(groupID: string, service: string, xml: string) {
