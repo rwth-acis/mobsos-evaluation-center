@@ -19,6 +19,7 @@ Its features include:
 Edit the variables in `src/environments/environment.ts` to configure your development environment and `src/environments/environment.prod.ts` for the productive build.
 
 ## Development server
+Run `npm install` to fetch the dependencies.
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
