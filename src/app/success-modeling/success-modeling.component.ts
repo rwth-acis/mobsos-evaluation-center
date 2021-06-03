@@ -129,7 +129,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     try {
       return MeasureCatalog.fromXml(xml.documentElement);
     } catch (e) {
-      this.logger.warn(e);
+      console.error(e);
     }
   }
 
@@ -144,7 +144,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     try {
       return SuccessModel.fromXml(xml.documentElement);
     } catch (e) {
-      this.logger.warn(e);
+      console.error(e);
     }
   }
 
