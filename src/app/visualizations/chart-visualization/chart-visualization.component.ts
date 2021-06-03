@@ -11,16 +11,9 @@ import {
 } from 'src/app/services/store.selectors';
 import { filter } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-
-class GoogleChart {
-  constructor(
-    public title: string,
-    public chartType: string,
-    public data: any[][],
-    public columns: string[],
-    public options: object
-  ) {}
-}
+import { Measure } from 'src/app/models/measure.model';
+import { ChartVisualization } from 'src/app/models/visualization.model';
+import { GoogleChart } from 'src/app/models/chart.model';
 
 @Component({
   selector: 'app-chart-visualization',
