@@ -213,7 +213,7 @@ export class StateEffects {
       switchMap((action) => {
         let missingGroups = action.groupsFromContactService.filter(
           (group) => !action.groupsFromMobSOS.find((g) => g.name === group.name)
-        );  
+        );
         return this.l2p
           .saveGroupsToMobSOS(missingGroups)
           .pipe(map(() => Action.successResponse()));
@@ -239,7 +239,7 @@ export class StateEffects {
         this.l2p
           .saveSuccessModelAndObserve(groupId, serviceName, action.xml)
           .pipe(
-            tap((res) => {
+            tap(() => {
               Action.storeSuccessModel({ xml: action.xml });
             }),
             map(() => Action.successResponse())
