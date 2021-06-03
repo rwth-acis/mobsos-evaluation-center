@@ -23,6 +23,7 @@ import {
   PostActions,
   saveModelAndCatalog,
   setService,
+  successResponse,
   toggleEdit,
 } from '../services/store.actions';
 import {
@@ -108,7 +109,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: StoreService,
-    private logger: NGXLogger,
     private dialog: MatDialog,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
@@ -391,15 +391,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          console.log(result);
-
-          if (result && result instanceof failureResponse) {
-            let message =
-              this.translate.instant('success-modeling.snackbar-save-failure') +
-              (result as { reason: Error }).reason.message;
-
-            this.snackBar.open(message, 'Ok');
-          } else {
+          if (result.type === PostActions.SAVE_CATALOG_SUCCESS) {
             let message = this.translate.instant(
               'success-modeling.snackbar-save-success'
             );
@@ -407,6 +399,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
               duration: 2000,
             });
             this.ngrxStore.dispatch(disableEdit());
+          } else {
+            let message = this.translate.instant(
+              'success-modeling.snackbar-save-failure'
+            );
+            if (result instanceof failureResponse) {
+              message += (result as { reason: Error }).reason.message;
+            }
+            this.snackBar.open(message, 'Ok');
           }
           sub.unsubscribe();
         });
