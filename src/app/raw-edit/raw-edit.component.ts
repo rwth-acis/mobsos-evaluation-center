@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
   failureResponse,
+  PostActions,
   saveCatalog,
   saveModel,
   setService,
@@ -148,7 +149,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          if (result && result instanceof successResponse) {
+          if (result?.type === PostActions.SUCCESS_RESPONSE) {
             let message = this.translate.instant(
               'raw-edit.measures.snackbar-success'
             );
@@ -186,10 +187,9 @@ export class RawEditComponent implements OnInit, OnDestroy {
             );
           })
         )
-        .subscribe((result) => {
+        .subscribe((result: { type: PostActions } | typeof failureResponse) => {
           this.saveInProgress = false;
-
-          if (result && result instanceof successResponse) {
+          if (result?.type === PostActions.SUCCESS_RESPONSE) {
             let message = this.translate.instant(
               'raw-edit.success-models.snackbar-success'
             );
@@ -201,7 +201,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
               'raw-edit.success-models.snackbar-failure'
             );
             if (result && result instanceof failureResponse)
-              message += (result as { reason: Error }).reason.message;
+              message += (result as { type; reason }).reason.message;
             this.snackBar.open(message, 'Ok');
           }
           sub.unsubscribe();
