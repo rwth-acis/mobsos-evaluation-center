@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
-  GroupInformation,
   ServiceInformation,
   StoreService,
   Visitor,
@@ -13,13 +12,11 @@ import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 import { TranslateService } from '@ngx-translate/core';
-import { isArray } from 'util';
 import { cloneDeep } from 'lodash';
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
-  PostActions,
   saveModelAndCatalog,
   setService,
   toggleEdit,
@@ -33,10 +30,8 @@ import {
   SERVICES,
   SUCCESS_MODEL,
   USER,
-  USER_GROUPS,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
-import { MeasureCatalog } from '../models/measure.catalog';
 import {
   catchError,
   distinctUntilChanged,
@@ -229,7 +224,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   getCurrentVisitors(): Visitor[] {
     const workspace = this.getCurrentWorkspace();
-    if (workspace == null || !isArray(workspace.visitors)) {
+    if (workspace == null || workspace.visitors instanceof Array) {
       return [];
     }
     return workspace.visitors;
