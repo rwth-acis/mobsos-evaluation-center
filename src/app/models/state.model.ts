@@ -19,7 +19,6 @@ export interface AppState {
   user: object;
   selectedGroupId: string;
   selectedServiceName: string;
-  selectedService: ServiceInformation; // this is not necessary. We should get the selected service by looking it up in service list using the selected service name
   editMode: boolean;
   questionnaires: Questionnaire[];
   messageDescriptions: object;

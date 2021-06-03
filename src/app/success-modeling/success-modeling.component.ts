@@ -9,7 +9,6 @@ import {
 } from '../store.service';
 import { Questionnaire } from '../las2peer.service';
 
-import { MeasureCatalog } from '../../success-model/measure-catalog';
 import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
@@ -37,8 +36,15 @@ import {
   USER_GROUPS,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
-import { MeasureCatalog as Catalog } from '../models/measure.catalog';
-import { catchError, filter, map, timeout } from 'rxjs/operators';
+import { MeasureCatalog } from '../models/measure.catalog';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  map,
+  timeout,
+  withLatestFrom,
+} from 'rxjs/operators';
 import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
@@ -64,17 +70,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
-  groupID;
-  services = [];
+  serviceSelectForm = new FormControl('');
+
   editMode$ = this.ngrxStore.select(EDIT_MODE);
-  editMode = false;
   services$ = this.ngrxStore.select(SERVICES);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   workspaceInitialized$ = this.ngrxStore.select(WORKSPACE_INITIALIZED);
-  userGroups$ = this.ngrxStore.select(USER_GROUPS);
   user$ = this.ngrxStore.select(USER);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   showEditButton$ = combineLatest([
@@ -82,24 +86,20 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.selectedService$,
     this.workspaceInitialized$,
   ]).pipe(map(([group, service, init]) => !!group && !!service && init));
-  selectedServiceName: string;
-  initialServiceName;
 
-  measureCatalogXml: Document;
-  measureCatalog: MeasureCatalog;
-  catalog: Catalog;
-  translationMap;
-  iconMap;
-  successModelXml: Document;
-  successModel: SuccessModel = undefined;
-  selectedService;
-  serviceSelectForm = new FormControl('');
+  selectedServiceName: string;
+  editMode = false;
+
+  successModel: SuccessModel;
+  dimensions = Object.keys(translationMap);
+
+  translationMap = translationMap; //maps dimensions to their translation keys
+  iconMap = iconMap; // maps dimensions to their icons
 
   communityWorkspace: CommunityWorkspace;
   user;
-  dimensions;
   workspaceUser;
-  myGroups: GroupInformation[];
+
   saveInProgress = false;
   availableQuestionnaires: Questionnaire[];
   numberOfRequirements = 0;
@@ -114,74 +114,34 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private ngrxStore: Store,
     private actionState: StateEffects
-  ) {
-    this.translationMap = translationMap;
-    this.iconMap = iconMap;
-    this.dimensions = Object.keys(translationMap);
-  }
-
-  static parseXml(xml) {
-    const parser = new DOMParser();
-    return parser.parseFromString(xml, 'text/xml');
-  }
-
-  parseCatalog(xml: Document): MeasureCatalog {
-    try {
-      return MeasureCatalog.fromXml(xml.documentElement);
-    } catch (e) {
-      this.logger.warn(e);
-    }
-  }
-
-  getCurrentGroupName() {
-    const currentGroup = this.myGroups.find(
-      (group) => group.id == this.groupID
-    );
-    return currentGroup ? currentGroup.name : '';
-  }
-
-  parseModel(xml: Document) {
-    try {
-      return SuccessModel.fromXml(xml.documentElement);
-    } catch (e) {
-      this.logger.warn(e);
-    }
-  }
+  ) {}
 
   ngOnInit() {
     let sub = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {
         this.selectedServiceName = service.alias ? service.alias : service.name;
-        this.ngrxStore.dispatch(setService({ service }));
-        if (!this.initialServiceName) {
-          this.initialServiceName = this.selectedServiceName;
-          this.serviceSelectForm.setValue(this.selectedServiceName);
-        }
+        this.ngrxStore.dispatch(setService({ service })); //this is used so that the initial success model is fetched. We should rather use a new effect for this
+        this.serviceSelectForm.setValue(this.selectedServiceName); // set the value in the selection
       });
-    this.subscriptions$.push(sub);
-
-    sub = this.measureCatalog$.subscribe((catalog) => (this.catalog = catalog));
-    this.subscriptions$.push(sub);
-    sub = this.userGroups$.subscribe((groups) => (this.myGroups = groups));
     this.subscriptions$.push(sub);
 
     sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
-    sub = this.services$.subscribe((services) => (this.services = services));
+
+    sub = this.successModel$
+      .pipe(distinctUntilChanged(), withLatestFrom(this.selectedService$))
+      .subscribe(([successModel, selectedService]) => {
+        if (successModel === null) {
+          //success model is null iif no success model exists yet
+          this.successModel = SuccessModel.emptySuccessModel(selectedService); //note that this will return undefined if no service is selected
+        } else {
+          this.successModel = successModel;
+        }
+      });
     this.subscriptions$.push(sub);
-    sub = this.successModel$.subscribe(
-      (successModel) =>
-        (this.successModel = successModel
-          ? successModel
-          : SuccessModel.emptySuccessModel(this.selectedService))
-    );
-    this.subscriptions$.push(sub);
-    sub = this.selectedService$.subscribe(
-      (service) => (this.selectedService = service)
-    );
-    this.subscriptions$.push(sub);
-    sub = this.store.communityWorkspace
+
+    sub = this.store.communityWorkspace //this is not working currently
       .pipe(filter((workspace) => !!workspace))
       .subscribe(async (workspace) => {
         this.communityWorkspace = workspace;
@@ -202,9 +162,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
+
     sub = this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
         this.initWorkspace().then(() =>
+          //this is not working currently
           this.switchWorkspace(this.getMyUsername())
         );
       }
@@ -221,9 +183,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   onServiceSelected(service: ServiceInformation) {
     this.store.setEditMode(false);
 
-    // Make popup here to ask if user really wants to cancel editing
     this.ngrxStore.dispatch(disableEdit());
-
     this.ngrxStore.dispatch(setService({ service }));
   }
 
@@ -334,30 +294,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  getMeasureCatalog(): MeasureCatalog {
-    if (this.editMode) {
-      const workspace = this.getCurrentWorkspace();
-      if (!workspace) {
-        return null;
-      }
-      return workspace.catalog;
-    } else {
-      return this.measureCatalog;
-    }
-  }
-
-  getSuccessModel(): SuccessModel {
-    if (this.editMode) {
-      const workspace = this.getCurrentWorkspace();
-      if (!workspace) {
-        return undefined;
-      }
-      return workspace.model;
-    } else {
-      return this.successModel;
-    }
-  }
-
   async openCopyWorkspaceDialog(owner: string) {
     const message = await this.translate
       .get('success-modeling.copy-workspace-prompt')
@@ -411,39 +347,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           sub.unsubscribe();
         });
     }
-
-    // const workspace = this.getCurrentWorkspace();
-    // const catalog = MeasureCatalog.fromPlainObject(workspace.catalog);
-    // const measureXml = catalog.toXml();
-    // const model = SuccessModel.fromPlainObject(workspace.model);
-    // const successModelXml = model.toXml();
-    // this.saveInProgress = true;
-    // try {
-    //   await this.las2peer.saveMeasureCatalog(
-    //     this.groupID,
-    //     measureXml.outerHTML
-    //   );
-    //   await this.las2peer.saveSuccessModel(
-    //     this.groupID,
-    //     this.selectedServiceName,
-    //     successModelXml.outerHTML
-    //   );
-    //   const message = await this.translate
-    //     .get('success-modeling.snackbar-save-success')
-    //     .toPromise();
-    //   this.snackBar.open(message, null, {
-    //     duration: 2000,
-    //   });
-    // } catch (e) {
-    //   let message = await this.translate
-    //     .get('success-modeling.snackbar-save-failure')
-    //     .toPromise();
-    //   message += e;
-    //   this.snackBar.open(message, 'Ok', {
-    //     duration: 2000,
-    //   });
-    // }
-    // this.saveInProgress = false;
   }
 
   private getWorkspaceByUserAndService(
@@ -565,12 +468,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     // }
     // delete userWorkspace[this.selectedServiceName];
     // this.persistWorkspaceChanges();
-  }
-
-  private cleanData() {
-    this.successModelXml = null;
-    this.successModel = undefined;
-    this.workspaceUser = this.getMyUsername();
   }
 
   private copyWorkspace(owner: string) {

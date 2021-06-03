@@ -71,7 +71,7 @@
             <mat-card class="popover-content">
               <mat-card-content>
                 <app-requirements-list
-                  [successModel]="getSuccessModel()"
+                  [successModel]="successModel$ | async"
                   (successModelChange)="persistWorkspaceChanges()"
                   (numberOfRequirements)="
                     numberOfRequirements = $event.valueOf()

@@ -32,8 +32,10 @@ export const WORKSPACE_INITIALIZED = (state: StoreState) =>
   state.Reducer.measureCatalogInitialized;
 
 export const SELECTED_SERVICE = (state: StoreState) =>
-  state.Reducer.selectedService;
-
+  state.Reducer.services && state.Reducer.selectedServiceName
+    ? state.Reducer.services[state.Reducer.selectedServiceName]
+    : undefined;
+    
 export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
 
 export const EXPERT_MODE = (state: StoreState) => state.Reducer.expertMode;

@@ -1,8 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ChartVisualization } from '../../../success-model/visualization';
-import { Measure } from 'src/success-model/measure';
 import { ServiceInformation } from 'src/app/store.service';
 import { Store } from '@ngrx/store';
 import {
@@ -26,26 +24,28 @@ export class ChartVisualizerComponent
 {
   @Input() measureName: string;
   @Input() service: ServiceInformation;
-  chart: GoogleChart;
-  data: any[][];
-  data$: Observable<any[][]>;
-  columns;
-  measure$;
-  query: string;
 
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
+  data$: Observable<any[][]>;
+  measure$: Observable<Measure>;
+  query: string; //local copy of the sql query
+  chart: GoogleChart; 
+
+  constructor(protected dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
   }
-  ngOnInit() {
-    if (!this.service) return console.error('service cannot be  undefined');
 
-    this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
+  ngOnInit() {
+    if (this.service){ 
+    this.measure$ = this.ngrxStore
+      .select(MEASURE, this.measureName) //selects the measure from the measure catalog
+      .pipe(filter((data) => !!data));
+
     this.measure$
-      .pipe(filter((data) => !!data))
       .subscribe((measure: Measure) => {
         const visualization = measure.visualization as ChartVisualization;
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);
+        
         query = this.applyVariableReplacements(query, this.service);
         query =
           BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
@@ -86,37 +86,6 @@ export class ChartVisualizerComponent
             }
           });
         }
-      });
-
-    // this.graph.config.locale = this.translate.currentLang;
-    // const visualization = this.measure.visualization as ChartVisualization;
-    // let query = this.measure.queries[0].sql;
-    // const queryParams = this.getParamsForQuery(query);
-    // query = this.applyVariableReplacements(query, this.service);
-    // query =
-    //   BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-    //     query
-    //   );
-    // super.fetchVisualizationData(query, queryParams);
-
-    // this.data$ = this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query);
-    // this.data$.pipe(filter((data) => !!data)).subscribe((data) => {
-    //   const dataTable = data;
-    //   if (dataTable instanceof Array && dataTable.length >= 2) {
-    //     let labelTypes = dataTable[1];
-    //     const rows = dataTable.slice(2) as any[][];
-    //     this.chart = new GoogleChart(
-    //       '',
-    //       visualization.chartType,
-    //       rows,
-    //       dataTable[0],
-    //       {
-    //         colors: ['#00a895', '#9500a8', '#a89500', '#ff5252', '#ffd600'],
-    //         animation: { startup: true },
-    //       }
-    //     );
-    //     if (this.chart) this.visualizationInitialized = true;
-    //   }
-    // });
+      });}
   }
 }

@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { MeasureCatalog, MeasureMap } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
-import { AppState } from '../models/state.model';
+import { AppState, StoreState } from '../models/state.model';
 import {
   DimensionMap,
   SuccessFactor,
@@ -14,9 +14,7 @@ export const initialState: AppState = {
   services: {},
   groups: undefined,
   user: undefined,
-
   selectedGroupId: undefined,
-  selectedService: undefined,
   selectedServiceName: undefined,
   editMode: false,
   questionnaires: [],
@@ -69,7 +67,6 @@ const _Reducer = createReducer(
     service
       ? {
           ...state,
-          selectedService: service,
           selectedServiceName: service?.name,
           successModelInitialized: false,
         }
@@ -119,9 +116,9 @@ const _Reducer = createReducer(
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModel:
-      xml !== null
-        ? parseModel(xml)
-        : SuccessModel.emptySuccessModel(state.selectedService),
+      xml === null
+        ? SuccessModel.emptySuccessModel(getSelectedService(state))
+        : parseModel(xml),
     successModelInitialized: true,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -465,4 +462,9 @@ function updateMeasureInFactor(
 ) {
   let copy = [...factor.measures];
   return copy.map((m) => (measure.name === oldMeasureName ? measure : m));
+}
+
+function getSelectedService(state: AppState) {
+  if (!state.services || !state.selectedServiceName) return undefined;
+  return state.services[state.selectedServiceName];
 }

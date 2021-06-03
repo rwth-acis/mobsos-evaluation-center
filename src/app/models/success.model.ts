@@ -30,6 +30,11 @@ export class SuccessModel {
     public reqBazProject: ReqbazProject
   ) {}
 
+  /**
+   * Initializes a new instance of a success model which is empty.
+   * @param service service for which an empty success model should be created
+   * @returns an empty model (success model with each dimension being []) or undefined if no service is specified
+   */
   public static emptySuccessModel(service: ServiceInformation) {
     if (!service) return undefined;
 
