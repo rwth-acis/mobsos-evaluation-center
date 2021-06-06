@@ -108,7 +108,7 @@ export function localStorageSyncReducer(
           'services',
           'groups',
           'selectedGroupId',
-          'selectedService',
+          'selectedServiceName',
           'questionnaires',
           'expertMode',
           'measureCatalog',

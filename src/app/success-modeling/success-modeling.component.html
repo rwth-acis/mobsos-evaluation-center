@@ -71,7 +71,7 @@
             <mat-card class="popover-content">
               <mat-card-content>
                 <app-requirements-list
-                  [successModel]="getSuccessModel()"
+                  [successModel]="successModel$ | async"
                   (successModelChange)="persistWorkspaceChanges()"
                   (numberOfRequirements)="
                     numberOfRequirements = $event.valueOf()
@@ -261,7 +261,7 @@
     >
       <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
         <ng-container
-          *ngIf="successModel$ | async as successModel; else noSuccessModel"
+          *ngIf="successModel; else noSuccessModel"
         >
           <h3 *ngIf="group?.name">
             {{

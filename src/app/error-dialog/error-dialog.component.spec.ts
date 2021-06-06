@@ -1,10 +1,11 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ErrorDialogComponent} from './error-dialog.component';
-import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {createTranslateLoader} from '../app.module';
-import {MAT_DIALOG_DATA} from '@angular/material';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+import { ErrorDialogComponent } from './error-dialog.component';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { createTranslateLoader } from '../app.module';
+
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 describe('ErrorDialogComponent', () => {
   let component: ErrorDialogComponent;
@@ -17,19 +18,20 @@ describe('ErrorDialogComponent', () => {
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
-            useFactory: (createTranslateLoader)
-          }
+            useFactory: createTranslateLoader,
+          },
         }),
-        HttpClientTestingModule
+        HttpClientTestingModule,
       ],
-      providers: [{
-        provide: MAT_DIALOG_DATA,
-        useValue: {
-          error: 'some error',
-        }
-      }]
-    })
-      .compileComponents();
+      providers: [
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            error: 'some error',
+          },
+        },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

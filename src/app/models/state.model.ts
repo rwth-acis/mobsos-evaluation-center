@@ -19,16 +19,13 @@ export interface AppState {
   user: object;
   selectedGroupId: string;
   selectedServiceName: string;
-  selectedService: ServiceInformation;
   editMode: boolean;
   questionnaires: Questionnaire[];
   messageDescriptions: object;
   visualizationData: VisualizationData;
   successModel: SuccessModel;
-
   successModelInitialized: boolean;
   measureCatalog: MeasureCatalog;
-
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;
   expertMode: boolean;
