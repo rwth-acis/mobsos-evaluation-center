@@ -115,12 +115,10 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
-    successModel:
-      xml === null
-        ? SuccessModel.emptySuccessModel(getSelectedService(state))
-        : parseModel(xml),
+    successModel: xml === null ? null : parseModel(xml),
     successModelInitialized: true,
   })),
+
   on(Actions.incrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls + 1,
