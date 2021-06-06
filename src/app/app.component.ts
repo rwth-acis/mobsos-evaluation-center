@@ -93,8 +93,12 @@ export class AppComponent implements OnInit, OnDestroy {
   groupsAreLoaded$: Observable<boolean> = combineLatest([
     this.userGroups$,
     this.foreignGroups$,
+    this.user$,
   ]).pipe(
-    map(([userGroups, foreignGroups]) => !!userGroups || !!foreignGroups)
+    map(
+      ([userGroups, foreignGroups, user]) =>
+        user && (!!userGroups || !!foreignGroups)
+    )
   );
   otherGroups: GroupInformation[] = [];
   groups = [];
