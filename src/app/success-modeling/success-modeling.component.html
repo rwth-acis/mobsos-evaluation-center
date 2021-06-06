@@ -261,7 +261,7 @@
     >
       <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
         <ng-container
-          *ngIf="successModel$ | async as successModel; else noSuccessModel"
+          *ngIf="successModel; else noSuccessModel"
         >
           <h3 *ngIf="group?.name">
             {{

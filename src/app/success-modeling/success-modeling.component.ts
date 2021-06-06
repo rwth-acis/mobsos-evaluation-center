@@ -8,7 +8,6 @@ import {
 } from '../store.service';
 import { Questionnaire } from '../las2peer.service';
 
-import { NGXLogger } from 'ngx-logger';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -20,7 +19,6 @@ import {
   PostActions,
   saveModelAndCatalog,
   setService,
-  successResponse,
   toggleEdit,
 } from '../services/store.actions';
 import {
@@ -36,7 +34,6 @@ import {
 } from '../services/store.selectors';
 import {
   catchError,
-  distinctUntilChanged,
   filter,
   map,
   timeout,
@@ -87,7 +84,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   selectedServiceName: string;
   editMode = false;
 
-  successModel: SuccessModel;
+  successModel: SuccessModel; //we use a copy of the success model, which will contain changes the user made. If the user does not save the changes then we reset it to the value from the store
   dimensions = Object.keys(translationMap);
 
   translationMap = translationMap; //maps dimensions to their translation keys
@@ -125,18 +122,23 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
 
-    sub = this.successModel$
-      .pipe(distinctUntilChanged(), withLatestFrom(this.selectedService$))
-      .subscribe(([successModel, selectedService]) => {
-        if (successModel === null) {
-          //success model is null iif no success model exists yet
-          this.successModel = SuccessModel.emptySuccessModel(selectedService); //note that this will return undefined if no service is selected
-        } else {
-          this.successModel = successModel;
+    sub = this.successModel$.subscribe((successModel) => {
+      this.successModel = successModel;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.editMode$
+      .pipe(withLatestFrom(this.successModel$, this.selectedService$))
+      .subscribe(([editMode, model, service]) => {
+        if (editMode && model === null) {
+          //we add a new model so we create an empty one first
+          this.successModel = SuccessModel.emptySuccessModel(service);
+        } else if (!editMode && model == null) {
+          //we disable edit mode without creating any new model
+          this.successModel = model;
         }
       });
     this.subscriptions$.push(sub);
-
     sub = this.store.communityWorkspace //this is not working currently
       .pipe(filter((workspace) => !!workspace))
       .subscribe(async (workspace) => {
@@ -322,7 +324,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         )
         .subscribe((result) => {
           this.saveInProgress = false;
-
           if (result.type === PostActions.SAVE_CATALOG_SUCCESS) {
             let message = this.translate.instant(
               'success-modeling.snackbar-save-success'
