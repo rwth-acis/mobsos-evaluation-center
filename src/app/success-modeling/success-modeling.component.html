@@ -260,10 +260,7 @@
       *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
     >
       <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
-        <ng-container
-          *ngIf="successModel; else noSuccessModel"
-        >
-          <h3 *ngIf="group?.name">
+        <h3 *ngIf="group?.name">
             {{
               'success-modeling.community-success-model'
                 | translate
@@ -274,6 +271,10 @@
                     }
             }}
           </h3>
+        <ng-container
+          *ngIf="successModel; else noSuccessModel"
+        >
+          
           <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
             <!-- <app-questionnaires
             [availableQuestionnaires]="availableQuestionnaires"
