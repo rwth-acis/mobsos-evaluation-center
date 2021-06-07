@@ -115,7 +115,6 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private logger: NGXLogger,
     public languageService: LanguageService,
-    private store: StoreService,
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher,
     private elementRef: ElementRef,
@@ -143,7 +142,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.store.stopPolling();
     this.mobileQuery.removeEventListener(
       'change',
       this.mobileQueryListener,
@@ -164,7 +162,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   setUser(user) {
     this.ngrxStore.dispatch(storeUser({ user }));
-    this.store.setUser(user);
   }
 
   onGroupSelected(groupId: string) {
@@ -281,7 +278,7 @@ export class AppComponent implements OnInit, OnDestroy {
     };
     silentLoginFunc();
 
-    sub = this.store.user.subscribe((user) => {
+    sub = this.user$.subscribe((user) => {
       this.user = user;
       this.signedIn = !!user;
       clearInterval(this.silentSigninIntervalHandle);
