@@ -3,7 +3,11 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { NGXLogger } from 'ngx-logger';
 import { Las2peerService, Questionnaire } from './las2peer.service';
 import { find, isEmpty, throttle } from 'lodash-es';
-import { distinctUntilChanged, filter, pairwise } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  filter,
+  pairwise,
+} from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { SuccessModel } from '../success-model/success-model';
 import { MeasureCatalog } from '../success-model/measure-catalog';
@@ -74,7 +78,7 @@ export interface CommunityWorkspace {
 }
 /**
  *
- * @param groupID
+ * @param groupID id of the group
  * @deprecated use ngrxstore instead
  */
 @Injectable({
@@ -111,10 +115,15 @@ export class StoreService {
   public editMode: Observable<boolean>;
   private messageDescriptionSubject: BehaviorSubject<{}>;
 
-  communityWorkspaceSubject = new BehaviorSubject<CommunityWorkspace>({});
-  public communityWorkspace = this.communityWorkspaceSubject.asObservable();
+  communityWorkspaceSubject = new BehaviorSubject<CommunityWorkspace>(
+    {},
+  );
+  public communityWorkspace =
+    this.communityWorkspaceSubject.asObservable();
 
-  communityWorkspaceInitializedSubject = new BehaviorSubject<boolean>(false);
+  communityWorkspaceInitializedSubject = new BehaviorSubject<boolean>(
+    false,
+  );
   public communityWorkspaceInitialized =
     this.communityWorkspaceInitializedSubject
       .asObservable()
@@ -122,7 +131,10 @@ export class StoreService {
 
   public yjsConnected: Observable<boolean>;
 
-  constructor(private logger: NGXLogger, private las2peer: Las2peerService) {
+  constructor(
+    private logger: NGXLogger,
+    private las2peer: Las2peerService,
+  ) {
     // init subjects and observables
     this.initState();
 
@@ -139,7 +151,10 @@ export class StoreService {
         this.editModeSubject.next(false);
       }
     });
-    const throtteledSaveStateFunc = throttle(() => this.saveState(), 1000);
+    const throtteledSaveStateFunc = throttle(
+      () => this.saveState(),
+      1000,
+    );
     this.services
       .pipe(distinctUntilChanged())
       .subscribe(() => throtteledSaveStateFunc());
@@ -154,7 +169,7 @@ export class StoreService {
         this.las2peer.setCredentials(
           'OIDC_SUB-' + user.profile.sub,
           user.profile.sub,
-          user.access_token
+          user.access_token,
         );
       } else {
         this.las2peer.resetCredentials();
@@ -182,7 +197,7 @@ export class StoreService {
       .subscribe(() => this.mergeServiceData());
     // check if the group data from mobsos is in sync with the group data from the contact service
     this.groupsFromMobSOSSubject.subscribe(() =>
-      this.transferGroupDataToMobSOS()
+      this.transferGroupDataToMobSOS(),
     );
     // update message descriptions when a service is selected
     this.selectedService
@@ -198,17 +213,20 @@ export class StoreService {
 
   startPolling() {
     if (!this.pollingEnabled) {
-      this.logger.debug('Enabling service discovery and group polling...');
+      this.logger.debug(
+        'Enabling service discovery and group polling...',
+      );
       if (environment.useLas2peerServiceDiscovery) {
-        this.serviceL2PPollingHandle = this.las2peer.pollL2PServiceDiscovery(
-          (services) => {
-            if (services === undefined) {
-              services = [];
-            }
-            this.servicesFromDiscoverySubject.next(services);
-          },
-          () => {}
-        );
+        this.serviceL2PPollingHandle =
+          this.las2peer.pollL2PServiceDiscovery(
+            (services) => {
+              if (services === undefined) {
+                services = [];
+              }
+              this.servicesFromDiscoverySubject.next(services);
+            },
+            () => {},
+          );
       }
       this.serviceMobSOSPollingHandle =
         this.las2peer.pollMobSOSServiceDiscovery(
@@ -218,7 +236,7 @@ export class StoreService {
             }
             this.servicesFromMobSOSSubject.next(services);
           },
-          () => {}
+          () => {},
         );
       this.groupContactServicePollingHandle =
         this.las2peer.pollContactServiceGroups(
@@ -228,7 +246,7 @@ export class StoreService {
             }
             this.groupsFromContactServiceSubject.next(groups);
           },
-          () => {}
+          () => {},
         );
       this.groupMobSOSPollingHandle = this.las2peer.pollMobSOSGroups(
         (groups) => {
@@ -237,20 +255,21 @@ export class StoreService {
           }
           this.groupsFromMobSOSSubject.next(groups);
         },
-        () => {}
+        () => {},
       );
-      this.questionnairePollingHandle = this.las2peer.pollMobSOSQuestionnaires(
-        (questionnaires) => {
-          if (questionnaires === undefined) {
-            questionnaires = [];
-          }
-          this.questionnairesSubject.next(questionnaires);
-        },
-        () => {}
-      );
+      this.questionnairePollingHandle =
+        this.las2peer.pollMobSOSQuestionnaires(
+          (questionnaires) => {
+            if (questionnaires === undefined) {
+              questionnaires = [];
+            }
+            this.questionnairesSubject.next(questionnaires);
+          },
+          () => {},
+        );
       this.messageDescriptionPollingHandle = setInterval(
         () => this.updateMessageDescriptionsForCurrentService(),
-        environment.servicePollingInterval * 1000
+        environment.servicePollingInterval * 1000,
       );
       this.pollingEnabled = true;
     } else {
@@ -259,7 +278,9 @@ export class StoreService {
   }
 
   stopPolling() {
-    this.logger.debug('Disabling service discovery and group polling...');
+    this.logger.debug(
+      'Disabling service discovery and group polling...',
+    );
     clearInterval(this.serviceL2PPollingHandle);
     clearInterval(this.serviceMobSOSPollingHandle);
     clearInterval(this.groupContactServicePollingHandle);
@@ -278,7 +299,8 @@ export class StoreService {
   saveState() {
     try {
       const state = {
-        servicesFromDiscovery: this.servicesFromDiscoverySubject.getValue(),
+        servicesFromDiscovery:
+          this.servicesFromDiscoverySubject.getValue(),
         servicesFromMobSOS: this.servicesFromMobSOSSubject.getValue(),
         services: this.servicesSubject.getValue(),
         groupsFromContactService:
@@ -290,7 +312,8 @@ export class StoreService {
         selectedService: this.selectedServiceSubject.getValue(),
         editMode: this.editModeSubject.getValue(),
         questionnaires: this.questionnairesSubject.getValue(),
-        messageDescriptions: this.messageDescriptionSubject.getValue(),
+        messageDescriptions:
+          this.messageDescriptionSubject.getValue(),
       };
       const serializedState = JSON.stringify(state);
       this.logger.debug('Save state to local storage:');
@@ -316,7 +339,9 @@ export class StoreService {
     // });
   }
 
-  startSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
+  startSynchronizingWorkspace(
+    name = this.selectedGroupSubject.getValue(),
+  ) {
     // if (name) {
     //   this.logger.debug('Synchronizing community workspace via y-js...');
     //   this.yjs.syncObject(
@@ -327,7 +352,9 @@ export class StoreService {
     // }
   }
 
-  stopSynchronizingWorkspace(name = this.selectedGroupSubject.getValue()) {
+  stopSynchronizingWorkspace(
+    name = this.selectedGroupSubject.getValue(),
+  ) {
     // if (name) {
     //   this.logger.debug('Stopping community workspace synchronization...');
     //   this.yjs.stopSync(name);
@@ -344,14 +371,15 @@ export class StoreService {
         .then((messageDescriptions) => {
           const allMessageDescriptions =
             this.messageDescriptionSubject.getValue();
-          allMessageDescriptions[serviceInformation] = messageDescriptions;
+          allMessageDescriptions[serviceInformation] =
+            messageDescriptions;
           this.messageDescriptionSubject.next(allMessageDescriptions);
         });
     }
   }
   /**
    *
-   * @param groupID
+   * @param groupID id of the group
    * @deprecated use ngrxstore instead
    */
   setGroup(groupID: string) {
@@ -359,7 +387,7 @@ export class StoreService {
   }
   /**
    *
-   * @param groupID
+   * @param groupID id of the group
    * @deprecated use ngrxstore instead
    */
   setEditMode(editMode: boolean) {
@@ -371,7 +399,7 @@ export class StoreService {
   }
   /**
    *
-   * @param groupID
+   * @param groupID id of the group
    * @deprecated use ngrxstore instead
    */
   getGroupById(groupId: string): GroupInformation {
@@ -405,7 +433,8 @@ export class StoreService {
 
     if (previousState !== null) {
       if (previousState.servicesFromDiscovery) {
-        initialServicesFromDiscovery = previousState.servicesFromDiscovery;
+        initialServicesFromDiscovery =
+          previousState.servicesFromDiscovery;
       }
       if (previousState.servicesFromMobSOS) {
         initialServicesFromMobSOS = previousState.servicesFromMobSOS;
@@ -439,39 +468,44 @@ export class StoreService {
         initalQuestionnaires = previousState.questionnaires;
       }
       if (previousState.messageDescriptions) {
-        initialMessageDescriptions = previousState.messageDescriptions;
+        initialMessageDescriptions =
+          previousState.messageDescriptions;
       }
     }
 
     this.servicesFromDiscoverySubject = new BehaviorSubject<any[]>(
-      initialServicesFromDiscovery
+      initialServicesFromDiscovery,
     );
     this.servicesFromMobSOSSubject = new BehaviorSubject<any>(
-      initialServicesFromMobSOS
+      initialServicesFromMobSOS,
     );
     this.groupsFromContactServiceSubject = new BehaviorSubject<any>(
-      initialGroupsFromContactService
+      initialGroupsFromContactService,
     );
     this.groupsFromMobSOSSubject = new BehaviorSubject<any[]>(
-      initialGroupsFromMobSOS
+      initialGroupsFromMobSOS,
     );
     this.servicesSubject = new BehaviorSubject<ServiceCollection>(
-      initalServices
+      initalServices,
     );
-    this.groupsSubject = new BehaviorSubject<GroupCollection>(initialGroups);
+    this.groupsSubject = new BehaviorSubject<GroupCollection>(
+      initialGroups,
+    );
     this.userSubject = new BehaviorSubject<User>(initialUser);
     this.selectedGroupSubject = new BehaviorSubject<string>(
-      initalSelectedGroup
+      initalSelectedGroup,
     );
     this.selectedServiceSubject = new BehaviorSubject<string>(
-      initalSelectedService
+      initalSelectedService,
     );
-    this.editModeSubject = new BehaviorSubject<boolean>(initialEditMode);
+    this.editModeSubject = new BehaviorSubject<boolean>(
+      initialEditMode,
+    );
     this.questionnairesSubject = new BehaviorSubject<Questionnaire[]>(
-      initalQuestionnaires
+      initalQuestionnaires,
     );
     this.messageDescriptionSubject = new BehaviorSubject<{}>(
-      initialMessageDescriptions
+      initialMessageDescriptions,
     );
 
     this.services = this.servicesSubject.asObservable();
@@ -493,16 +527,20 @@ export class StoreService {
    *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
    */
   private mergeServiceData() {
-    const servicesFromL2P = this.servicesFromDiscoverySubject.getValue();
+    const servicesFromL2P =
+      this.servicesFromDiscoverySubject.getValue();
     const serviceCollection: ServiceCollection = {};
-    const messageDescriptions = this.messageDescriptionSubject.getValue();
+    const messageDescriptions =
+      this.messageDescriptionSubject.getValue();
     for (const service of servicesFromL2P) {
       // use most recent release and extract the human readable name
       const releases = Object.keys(service.releases).sort();
       const latestRelease = service.releases[releases.slice(-1)[0]];
       const serviceIdentifier =
         service.name + '.' + latestRelease?.supplement?.class;
-      const serviceMessageDescriptions = messageDescriptions[serviceIdentifier]
+      const serviceMessageDescriptions = messageDescriptions[
+        serviceIdentifier
+      ]
         ? messageDescriptions[serviceIdentifier]
         : {};
       serviceCollection[serviceIdentifier] = {
@@ -512,19 +550,22 @@ export class StoreService {
         serviceMessageDescriptions,
       };
     }
-    const servicesFromMobSOS = this.servicesFromMobSOSSubject.getValue();
+    const servicesFromMobSOS =
+      this.servicesFromMobSOSSubject.getValue();
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
-      const serviceName = servicesFromMobSOS[serviceAgentID].serviceName.split(
-        '@',
-        2
-      )[0];
-      let serviceAlias = servicesFromMobSOS[serviceAgentID].serviceAlias;
+      const serviceName = servicesFromMobSOS[
+        serviceAgentID
+      ].serviceName.split('@', 2)[0];
+      let serviceAlias =
+        servicesFromMobSOS[serviceAgentID].serviceAlias;
       const registrationTime =
         servicesFromMobSOS[serviceAgentID].registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
-      const serviceMessageDescriptions = messageDescriptions[serviceName]
+      const serviceMessageDescriptions = messageDescriptions[
+        serviceName
+      ]
         ? messageDescriptions[serviceName]
         : {};
       // only add mobsos service data if the data from the discovery is missing
@@ -542,7 +583,7 @@ export class StoreService {
         registrationTime,
       });
       serviceCollection[serviceName].mobsosIDs.sort(
-        (a, b) => a.registrationTime - b.registrationTime
+        (a, b) => a.registrationTime - b.registrationTime,
       );
       serviceCollection[serviceName].serviceMessageDescriptions =
         serviceMessageDescriptions;
@@ -564,7 +605,11 @@ export class StoreService {
     // mark all these groups as groups the current user is a member of
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
-      groups[groupID] = { id: groupID, name: groupName, member: true };
+      groups[groupID] = {
+        id: groupID,
+        name: groupName,
+        member: true,
+      };
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
@@ -589,7 +634,10 @@ export class StoreService {
     const groupsFromMobSOS = this.groupsFromMobSOSSubject.getValue();
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
-      const sameGroupInMobSOS = find(groupsFromMobSOS, ['groupID', groupID]);
+      const sameGroupInMobSOS = find(groupsFromMobSOS, [
+        'groupID',
+        groupID,
+      ]);
       if (sameGroupInMobSOS && sameGroupInMobSOS.name === groupName) {
         continue;
       }

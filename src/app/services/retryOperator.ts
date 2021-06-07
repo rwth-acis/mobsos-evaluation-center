@@ -13,12 +13,12 @@ const DEFAULT_BACKOFF = 700;
  * @param delayMs the initial delay between each call
  * @param maxRetry the maximum number of retries
  * @param backoffMs parameter to increase backoff
- * @returns
+ * @returns response or error if maxretry is reached
  */
 export function delayedRetry(
   delayMs: number,
   maxRetry = DEFAULT_MAX_RETRIES,
-  backoffMs = DEFAULT_BACKOFF
+  backoffMs = DEFAULT_BACKOFF,
 ) {
   let retries = maxRetry;
 
@@ -29,13 +29,14 @@ export function delayedRetry(
           delay(delayMs),
           mergeMap((error: HttpErrorResponse) => {
             if (retries-- > 0) {
-              const backofftime = delayMs + (maxRetry - retries) * backoffMs;
+              const backofftime =
+                delayMs + (maxRetry - retries) * backoffMs;
               return of(error).pipe(delay(backofftime));
             }
 
             return of(getErrorMessage(maxRetry));
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 }

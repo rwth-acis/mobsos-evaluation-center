@@ -28,7 +28,9 @@ import { Observable } from 'rxjs';
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
+export class SuccessMeasureComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
   @Input() editMode = false;
@@ -50,7 +52,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
     private translate: TranslateService,
 
     private dialog: MatDialog,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   ngOnInit() {
@@ -59,7 +61,10 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
     //   ? (JSON.parse(JSON.stringify(this.measure)) as Measure)
     //   : this.measure;
 
-    this.measure$ = this.ngrxStore.select(MEASURE, this.measure?.name);
+    this.measure$ = this.ngrxStore.select(
+      MEASURE,
+      this.measure?.name,
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {}
@@ -86,7 +91,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
             factorName: this.factorName,
             oldMeasureName: this.measure.name,
             dimensionName: this.dimensionName,
-          })
+          }),
         );
         this.measure.name = result.name;
         this.measure.queries = result.queries;
@@ -126,6 +131,6 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
         this.measureDelete.emit();
       }
     });
-    event.stopPropagation();
+    $event.stopPropagation();
   }
 }
