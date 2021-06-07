@@ -23,6 +23,7 @@ import {
   toggleEdit,
 } from '../services/store.actions';
 import {
+  DIMENSIONS_IN_MODEL,
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
@@ -35,8 +36,10 @@ import {
 } from '../services/store.selectors';
 import {
   catchError,
+  distinctUntilChanged,
   filter,
   map,
+  tap,
   timeout,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -70,6 +73,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   services$ = this.ngrxStore.select(SERVICES);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+  showSuccessModelEmpty$ = this.ngrxStore.select(DIMENSIONS_IN_MODEL).pipe(
+    map(
+      (dimensions) =>
+        dimensions.find((dimension) => dimension.length > 0) === undefined
+    ),
+    withLatestFrom(this.editMode$),
+    map(([empty, editMode]) => empty && !editMode)
+  );
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
@@ -111,6 +122,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    // this.successModelEmpty$.subscribe((data) => console.log(data));
     let sub = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {

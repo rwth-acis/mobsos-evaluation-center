@@ -35,7 +35,7 @@ export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer.services && state.Reducer.selectedServiceName
     ? state.Reducer.services[state.Reducer.selectedServiceName]
     : undefined;
-    
+
 export const EDIT_MODE = (state: StoreState) => state.Reducer.editMode;
 
 export const EXPERT_MODE = (state: StoreState) => state.Reducer.expertMode;
@@ -72,6 +72,11 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
 );
 
 export const SUCCESS_MODEL = (state: StoreState) => state.Reducer.successModel;
+
+export const DIMENSIONS_IN_MODEL = (state: StoreState) =>
+  state.Reducer.successModel
+    ? Object.values(state.Reducer.successModel.dimensions)
+    : [];
 
 export const SUCCESS_MODEL_XML = (state: StoreState) =>
   state.Reducer.successModel

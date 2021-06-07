@@ -173,7 +173,7 @@
               view_carousel
             </mat-icon>
           </mat-button-toggle>
-          <mde-popover
+          <div
             #workspacesPopover="mdePopover"
             [mdePopoverOverlapTrigger]="false"
             [mdePopoverCloseOnClick]="false"
@@ -231,7 +231,7 @@
                 </div>
               </mat-card-content>
             </mat-card>
-          </mde-popover>
+          </div>
         </mat-button-toggle-group>
       </mat-toolbar-row>
     </mat-card>
@@ -261,22 +261,24 @@
     >
       <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
         <h3 *ngIf="group?.name">
-            {{
-              'success-modeling.community-success-model'
-                | translate
-                  : {
-                      service: selectedService.alias
-                        ? selectedService.alias
-                        : selectedService.name
-                    }
-            }}
-          </h3>
+          {{
+            'success-modeling.community-success-model'
+              | translate
+                : {
+                    service: selectedService.alias
+                      ? selectedService.alias
+                      : selectedService.name
+                  }
+          }}
+        </h3>
         <ng-container
-          *ngIf="successModel; else noSuccessModel"
+          *ngIf="!(showSuccessModelEmpty$ | async); else successModelEmpty"
         >
-          
-          <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-            <!-- <app-questionnaires
+          <ng-container
+            *ngIf="successModel$ | async as successModel; else noSuccessModel"
+          >
+            <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+              <!-- <app-questionnaires
             [availableQuestionnaires]="availableQuestionnaires"
             [model]="successModel"
             [measures]="measureCatalog.measures"
@@ -286,40 +288,45 @@
             (modelChange)="persistWorkspaceChanges()"
             (measuresChange)="persistWorkspaceChanges()"
           ></app-questionnaires> -->
-            <div id="dimensions">
-              <app-success-dimension
-                [@slideInOut]
-                *ngFor="let dimension of dimensions"
-                [factors]="successModel.dimensions[dimension]"
-                (sendFactorsToSuccessModel)="onFactorsChange($event)"
-                (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
-                [measures]="measureCatalog.measures"
-                [service]="selectedService"
-                name="{{
-                  'success-modeling.dimensions.name.' +
-                    translationMap[dimension] | translate
-                }}"
-                description="{{
-                  'success-modeling.dimensions.description.' +
-                    translationMap[dimension] | translate
-                }}"
-                icon="{{ iconMap[dimension] }}"
-              ></app-success-dimension>
-            </div>
-            <button
-              id="save-model-button"
-              mat-raised-button
-              *ngIf="editMode$ | async"
-              color="primary"
-              [disabled]="saveInProgress"
-              (click)="onSaveClicked()"
-            >
-              <mat-spinner *ngIf="saveInProgress" color="warn" [diameter]="25">
-              </mat-spinner>
-              {{ 'success-modeling.save-model-button' | translate }}
-            </button>
-          </ng-container>
-        </ng-container>
+              <div id="dimensions">
+                <app-success-dimension
+                  [@slideInOut]
+                  *ngFor="let dimension of dimensions"
+                  [factors]="successModel.dimensions[dimension]"
+                  (sendFactorsToSuccessModel)="onFactorsChange($event)"
+                  (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
+                  [measures]="measureCatalog.measures"
+                  [service]="selectedService"
+                  name="{{
+                    'success-modeling.dimensions.name.' +
+                      translationMap[dimension] | translate
+                  }}"
+                  description="{{
+                    'success-modeling.dimensions.description.' +
+                      translationMap[dimension] | translate
+                  }}"
+                  icon="{{ iconMap[dimension] }}"
+                ></app-success-dimension>
+              </div>
+              <button
+                id="save-model-button"
+                mat-raised-button
+                *ngIf="editMode$ | async"
+                color="primary"
+                [disabled]="saveInProgress"
+                (click)="onSaveClicked()"
+              >
+                <mat-spinner
+                  *ngIf="saveInProgress"
+                  color="warn"
+                  [diameter]="25"
+                >
+                </mat-spinner>
+                {{ 'success-modeling.save-model-button' | translate }}
+              </button>
+            </ng-container>
+          </ng-container></ng-container
+        >
       </ng-container>
     </ng-container>
   </ng-container>
@@ -337,20 +344,11 @@
   }}</mat-card>
 </ng-template>
 
-<ng-template #noSuccessModel>
+<ng-template #successModelEmpty>
   <!-- success model non existant -->
   <mat-card *ngIf="memberOfGroup$ | async; else notMemberOfSelectedGroup">
     {{ 'success-modeling.message-no-success-model-found' | translate }}
   </mat-card>
-
-  <ng-template #notMemberOfSelectedGroup>
-    <!-- success model non existant -->
-    <mat-card>
-      {{
-        'success-modeling.message-no-success-model-found-not-member' | translate
-      }}
-    </mat-card>
-  </ng-template>
 </ng-template>
 
 <ng-template #notInitialized>
