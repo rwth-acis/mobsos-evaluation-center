@@ -22,7 +22,13 @@ import {
   SERVICES,
   SUCCESS_MODEL,
 } from '../services/store.selectors';
-import { catchError, filter, first, map, timeout } from 'rxjs/operators';
+import {
+  catchError,
+  filter,
+  first,
+  map,
+  timeout,
+} from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
 import { of } from 'rxjs';
 
@@ -37,7 +43,11 @@ export class RawEditComponent implements OnInit, OnDestroy {
   serviceMap = {};
   selectedService: string;
 
-  editorOptions = { theme: 'vs', language: 'xml', automaticLayout: true };
+  editorOptions = {
+    theme: 'vs',
+    language: 'xml',
+    automaticLayout: true,
+  };
   measureCatalogXml: string;
   successModelXml: string;
   measureCatalogEditor;
@@ -45,14 +55,18 @@ export class RawEditComponent implements OnInit, OnDestroy {
   saveInProgress = false;
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
-  measureCatalogInitialized$ = this.ngrxStore.select(MEASURE_CATALOG).pipe(
-    filter((catalog) => catalog !== undefined),
-    first()
-  );
-  successModelInitialized$ = this.ngrxStore.select(SUCCESS_MODEL).pipe(
-    filter((model) => model !== undefined),
-    first()
-  );
+  measureCatalogInitialized$ = this.ngrxStore
+    .select(MEASURE_CATALOG)
+    .pipe(
+      filter((catalog) => catalog !== undefined),
+      first(),
+    );
+  successModelInitialized$ = this.ngrxStore
+    .select(SUCCESS_MODEL)
+    .pipe(
+      filter((model) => model !== undefined),
+      first(),
+    );
   services$ = this.ngrxStore.select(SERVICES);
 
   constructor(
@@ -61,7 +75,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private translate: TranslateService,
     private ngrxStore: Store,
-    private actionState: StateEffects
+    private actionState: StateEffects,
   ) {}
 
   static prettifyXml(xml) {
@@ -78,7 +92,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.selectedService$
       .pipe(
         filter((service) => !!service),
-        map((service) => service.name)
+        map((service) => service.name),
       )
 
       .subscribe((serviceName) => {
@@ -104,7 +118,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   }
 
   onServiceSelected(service: ServiceInformation) {
-    this.ngrxStore.dispatch(setService({ service: service }));
+    this.ngrxStore.dispatch(setService({ service }));
   }
 
   fetchXml() {
@@ -133,32 +147,36 @@ export class RawEditComponent implements OnInit, OnDestroy {
 
   _onCatalogSaveClicked() {
     this.saveInProgress = true;
-    this.ngrxStore.dispatch(saveCatalog({ xml: this.measureCatalogXml }));
+    this.ngrxStore.dispatch(
+      saveCatalog({ xml: this.measureCatalogXml }),
+    );
     if (this.saveInProgress) {
-      let sub = this.actionState.saveCatalog$
+      const sub = this.actionState.saveCatalog$
         .pipe(
           timeout(300000),
           catchError(() => {
             return of(
               failureResponse({
-                reason: new Error('The request took too long and was aborted'),
-              })
+                reason: new Error(
+                  'The request took too long and was aborted',
+                ),
+              }),
             );
-          })
+          }),
         )
         .subscribe((result) => {
           this.saveInProgress = false;
 
           if (result?.type === PostActions.SUCCESS_RESPONSE) {
-            let message = this.translate.instant(
-              'raw-edit.measures.snackbar-success'
+            const message = this.translate.instant(
+              'raw-edit.measures.snackbar-success',
             );
             this.snackBar.open(message, null, {
               duration: 2000,
             });
           } else {
             let message = this.translate.instant(
-              'raw-edit.measures.snackbar-failure'
+              'raw-edit.measures.snackbar-failure',
             );
             if (result && result instanceof failureResponse) {
               message += (result as { reason: Error }).reason.message;
@@ -176,36 +194,43 @@ export class RawEditComponent implements OnInit, OnDestroy {
 
     this.ngrxStore.dispatch(saveModel({ xml: this.successModelXml }));
     if (this.saveInProgress) {
-      let sub = this.actionState.saveModel$
+      const sub = this.actionState.saveModel$
         .pipe(
           timeout(300000),
           catchError(() => {
             return of(
               failureResponse({
-                reason: new Error('The request took too long and was aborted'),
-              })
+                reason: new Error(
+                  'The request took too long and was aborted',
+                ),
+              }),
             );
-          })
+          }),
         )
-        .subscribe((result: { type: PostActions } | typeof failureResponse) => {
-          this.saveInProgress = false;
-          if (result?.type === PostActions.SUCCESS_RESPONSE) {
-            let message = this.translate.instant(
-              'raw-edit.success-models.snackbar-success'
-            );
-            this.snackBar.open(message, null, {
-              duration: 2000,
-            });
-          } else {
-            let message = this.translate.instant(
-              'raw-edit.success-models.snackbar-failure'
-            );
-            if (result && result instanceof failureResponse)
-              message += (result as { type; reason }).reason.message;
-            this.snackBar.open(message, 'Ok');
-          }
-          sub.unsubscribe();
-        });
+        .subscribe(
+          (
+            result: { type: PostActions } | typeof failureResponse,
+          ) => {
+            this.saveInProgress = false;
+            if (result?.type === PostActions.SUCCESS_RESPONSE) {
+              const message = this.translate.instant(
+                'raw-edit.success-models.snackbar-success',
+              );
+              this.snackBar.open(message, null, {
+                duration: 2000,
+              });
+            } else {
+              let message = this.translate.instant(
+                'raw-edit.success-models.snackbar-failure',
+              );
+              if (result && result instanceof failureResponse)
+                message += (result as { type; reason }).reason
+                  .message;
+              this.snackBar.open(message, 'Ok');
+            }
+            sub.unsubscribe();
+          },
+        );
     }
   }
 }

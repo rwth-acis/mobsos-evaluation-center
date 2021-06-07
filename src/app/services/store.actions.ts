@@ -56,30 +56,32 @@ enum StateActions {
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
 }
 
-//fetching
-export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
+// fetching
+export const fetchServices = createAction(
+  FetchActions.FETCH_SERVICES,
+);
 export const fetchGroups = createAction(FetchActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ query: string; queryParams: string[] }>()
+  props<{ query: string; queryParams: string[] }>(),
 );
 export const fetchMeasureCatalog = createAction(
   FetchActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
-  props<{ groupId: string }>()
+  props<{ groupId: string }>(),
 );
 export const fetchSuccessModel = createAction(
   FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
-  props<{ groupId; serviceName }>()
+  props<{ groupId; serviceName }>(),
 );
 
-//storing
+// storing
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ servicesFromL2P; servicesFromMobSOS }>()
+  props<{ servicesFromL2P; servicesFromMobSOS }>(),
 );
 export const addFactorToDimension = createAction(
   StoreActions.ADD_FACTOR_TO_DIMENSION,
-  props<{ factor: SuccessFactor; dimensionName: string }>()
+  props<{ factor: SuccessFactor; dimensionName: string }>(),
 );
 export const editFactorInDimension = createAction(
   StoreActions.EDIT_FACTOR_IN_DIMENSION,
@@ -87,15 +89,19 @@ export const editFactorInDimension = createAction(
     factor: SuccessFactor;
     oldFactorName: string;
     dimensionName: string;
-  }>()
+  }>(),
 );
 export const addMeasureToCatalog = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
-  props<{ measure: Measure }>()
+  props<{ measure: Measure }>(),
 );
 export const addMeasureToFactor = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
-  props<{ measure: Measure; factorName: string; dimensionName: string }>()
+  props<{
+    measure: Measure;
+    factorName: string;
+    dimensionName: string;
+  }>(),
 );
 
 export const editMeasure = createAction(
@@ -105,86 +111,96 @@ export const editMeasure = createAction(
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
-  }>()
+  }>(),
 );
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ groupsFromContactService; groupsFromMobSOS }>()
+  props<{ groupsFromContactService; groupsFromMobSOS }>(),
 );
 
 export const saveModelAndCatalog = createAction(
-  PostActions.SAVE_MODEL_AND_CATALOG
+  PostActions.SAVE_MODEL_AND_CATALOG,
 );
 
 export const saveModel = createAction(
   PostActions.SAVE_MODEL,
-  props<{ xml: string }>()
+  props<{ xml: string }>(),
 );
 
 export const transferMissingGroupsToMobSOS = createAction(
   StateActions.TRANSFER_MISSING_GROUPS_TO_MOBSOS,
-  props<{ groupsFromContactService; groupsFromMobSOS }>()
+  props<{ groupsFromContactService; groupsFromMobSOS }>(),
 );
 
 export const saveCatalog = createAction(
   PostActions.SAVE_CATALOG,
-  props<{ xml: string }>()
+  props<{ xml: string }>(),
 );
 
 export const setGroup = createAction(
   StateActions.SET_GROUP,
-  props<{ groupId: string }>()
+  props<{ groupId: string }>(),
 );
 
 export const setService = createAction(
   StateActions.SET_SERVICE,
-  props<{ service: ServiceInformation }>()
+  props<{ service: ServiceInformation }>(),
 );
 
 export const storeUser = createAction(
   StoreActions.STORE_USER,
-  props<{ user: User }>()
+  props<{ user: User }>(),
 );
 
 export const storeVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ data: any; query: string }>()
+  props<{ data: any; query: string }>(),
 );
 
 export const storeCatalog = createAction(
   StoreActions.STORE_MEASURE_CATALOG,
-  props<{ xml: string }>()
+  props<{ xml: string }>(),
 );
 
 export const storeSuccessModel = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
-  props<{ xml: string }>()
+  props<{ xml: string }>(),
 );
 export const updateAppWorkspace = createAction(
   StoreActions.UPDATE_APPLICATION_WORKSPACE,
-  props<{ workspace: ApplicationWorkspace }>()
+  props<{ workspace: ApplicationWorkspace }>(),
 );
 
 export const updateCommunityWorkspace = createAction(
   StoreActions.UPDATE_COMMUNITY_WORKSPACE,
-  props<{ workspace: CommunityWorkspace }>()
+  props<{ workspace: CommunityWorkspace }>(),
 );
 
 // modes
-export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
+export const incrementLoading = createAction(
+  StateActions.INCREMENT_LOADING,
+);
 export const initState = createAction(StateActions.INITIALIZE_STATE);
-export const decrementLoading = createAction(StateActions.DECREMENT_LOADING);
+export const decrementLoading = createAction(
+  StateActions.DECREMENT_LOADING,
+);
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 export const enableEdit = createAction(StateActions.ENABLE_EDIT);
 export const disableEdit = createAction(StateActions.DISABLE_EDIT);
-export const toggleExpertMode = createAction(StateActions.TOGGLE_EXPERT_MODE);
+export const toggleExpertMode = createAction(
+  StateActions.TOGGLE_EXPERT_MODE,
+);
 
 // http results
-export const successResponse = createAction(PostActions.SUCCESS_RESPONSE);
+export const successResponse = createAction(
+  PostActions.SUCCESS_RESPONSE,
+);
 export const saveCatalogSuccess = createAction(
-  PostActions.SAVE_CATALOG_SUCCESS
+  PostActions.SAVE_CATALOG_SUCCESS,
 );
 export const failureResponse = createAction(
   PostActions.FAILURE_RESPONSE,
-  props<{ reason: Error }>()
+  props<{ reason: Error }>(),
 );
+
+export const success = createAction('action was successful');

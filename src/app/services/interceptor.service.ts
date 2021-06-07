@@ -9,7 +9,13 @@ import {
   HttpUserEvent,
 } from '@angular/common/http';
 
-import { BehaviorSubject, EMPTY, Observable, of, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  EMPTY,
+  Observable,
+  of,
+  throwError,
+} from 'rxjs';
 import {
   catchError,
   filter,
@@ -34,7 +40,7 @@ export class Interceptor implements HttpInterceptor {
 
   intercept(
     req: HttpRequest<any>,
-    next: HttpHandler
+    next: HttpHandler,
   ): Observable<HttpEvent<any>> {
     if (req.url in this.unreachableServices) {
       return of(null);
@@ -46,16 +52,17 @@ export class Interceptor implements HttpInterceptor {
           console.log(err.status);
         }
       });
-      return this.cachedRequests[req.url]; //return an observable of the initial request instead of making a new call
+      return this.cachedRequests[req.url]; // return an observable of the initial request instead of making a new call
     } else {
       this.ngrxStore.dispatch(incrementLoading());
-      //make a new request, handle any errors
-      let observableRequest = next.handle(req).pipe(
+      // make a new request, handle any errors
+      const observableRequest = next.handle(req).pipe(
         filter(
           (res) =>
-            res instanceof HttpErrorResponse || res instanceof HttpResponse
+            res instanceof HttpErrorResponse ||
+            res instanceof HttpResponse,
         ),
-        timeoutWith(300000, throwError("Timeout")),
+        timeoutWith(300000, throwError('Timeout')),
         tap((res) => {
           if (res instanceof HttpResponse) {
             this.handleResponse(res, req);
@@ -72,10 +79,11 @@ export class Interceptor implements HttpInterceptor {
           }
           return throwError(err);
         }),
-        shareReplay(1) // need to use shareReplay to prevent observable from terminating
+        shareReplay(1), // need to use shareReplay to prevent observable from terminating
       );
       if (req.method === 'GET') {
-        this.cachedRequests[req.url] = observableRequest; // put the observable request into the request map so further requests can subscribe to it
+        this.cachedRequests[req.url] = observableRequest;
+        // put the observable request into the request map so further requests can subscribe to it
         this.cachedRequests[req.url].subscribe();
       }
       return observableRequest;
