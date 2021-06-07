@@ -133,7 +133,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   subscriptions$: Subscription[] = [];
 
   constructor(
-    private store: StoreService,
     private dialog: MatDialog,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
@@ -175,27 +174,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
-    sub = this.store.communityWorkspace // this is not working currently
-      .pipe(filter((workspace) => !!workspace))
-      .subscribe(async (workspace) => {
-        this.communityWorkspace = workspace;
-        if (
-          this.workspaceUser &&
-          this.workspaceUser !== this.getMyUsername() &&
-          this.getCurrentWorkspace() === null
-        ) {
-          this.initWorkspace().then(() =>
-            this.switchWorkspace(this.getMyUsername()),
-          );
-          const message = await this.translate
-            .get('success-modeling.workspace-closed-message')
-            .toPromise();
-          this.snackBar.open('Owner closed workspace', null, {
-            duration: 3000,
-          });
-        }
-      });
-    this.subscriptions$.push(sub);
 
     sub = this.editMode$.subscribe((editMode) => {
       if (editMode && this.user) {
@@ -210,20 +188,16 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.store.stopPolling();
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   onServiceSelected(service: ServiceInformation) {
-    this.store.setEditMode(false);
-
     this.ngrxStore.dispatch(disableEdit());
     this.ngrxStore.dispatch(setService({ service }));
   }
 
   onEditModeChanged() {
     this.ngrxStore.dispatch(toggleEdit());
-    this.store.setEditMode(!this.editMode);
   }
 
   getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
@@ -425,56 +399,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     return this.user.profile.preferred_username;
   }
 
-  private async initWorkspace() {
-    // this.store.waitUntilWorkspaceIsSynchronized().then(() => {
-    //   const myUsername = this.getMyUsername();
-    //   this.workspaceUser = myUsername;
-    //   if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-    //     this.communityWorkspace[myUsername] = {};
-    //   }
-    //   const userWorkspace = this.communityWorkspace[myUsername];
-    //   if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
-    //     if (!this.measureCatalog) {
-    //       this.measureCatalog = new MeasureCatalog({});
-    //     }
-    //     if (!this.successModel) {
-    //       this.successModel = new SuccessModel(
-    //         this.selectedService.alias,
-    //         this.selectedService.name,
-    //         {
-    //           'System Quality': [],
-    //           'Information Quality': [],
-    //           Use: [],
-    //           'User Satisfaction': [],
-    //           'Individual Impact': [],
-    //           'Community Impact': [],
-    //         },
-    //         [],
-    //         null
-    //       );
-    //     }
-    //     const appworkspace = {
-    //       createdAt: new Date().toISOString(),
-    //       createdBy: myUsername,
-    //       visitors: [],
-    //       catalog: this.measureCatalog,
-    //       model: this.successModel,
-    //     };
-    //     userWorkspace[this.selectedServiceName] = appworkspace;
-    //     this.ngrxStore.dispatch(
-    //       updateAppWorkspace({ workspace: appworkspace })
-    //     );
-    //   }
-    //   this.persistWorkspaceChanges();
-    // });
-  }
+  private async initWorkspace() {}
 
-  private persistWorkspaceChanges() {
-    // this.logger.debug(
-    //   'Workspace changed: ' + JSON.stringify(this.communityWorkspace)
-    // );
-    // this.store.setCommunityWorkspace(this.communityWorkspace);
-  }
+  private persistWorkspaceChanges() {}
 
   private async openClearWorkspaceDialog() {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway

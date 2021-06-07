@@ -19,6 +19,8 @@ import { Las2peerService } from '../../las2peer.service';
 import { isNumber } from 'util';
 import { StoreService, User } from '../../store.service';
 import { MatDialog } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
+import { USER } from 'src/app/services/store.selectors';
 
 @Component({
   selector: 'app-requirements-list',
@@ -32,6 +34,7 @@ export class RequirementsListComponent
   @Output() successModelChange = new EventEmitter<SuccessModel>();
   @Output() numberOfRequirements = new EventEmitter<number>();
 
+  user$ = this.ngrxStore.select(USER);
   requirements;
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
@@ -42,7 +45,7 @@ export class RequirementsListComponent
     private dialog: MatDialog,
     private translate: TranslateService,
     private las2peer: Las2peerService,
-    private store: StoreService,
+    private ngrxStore: Store,
   ) {}
 
   static joinAbsoluteUrlPath(...args) {
@@ -62,7 +65,7 @@ export class RequirementsListComponent
       () => this.refreshRequirements(),
       environment.servicePollingInterval * 1000,
     );
-    this.store.user.subscribe((user) => (this.user = user));
+    this.user$.subscribe((user) => (this.user = user));
   }
 
   ngOnChanges(changes: SimpleChanges): void {

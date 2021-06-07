@@ -70,7 +70,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
   services$ = this.ngrxStore.select(SERVICES);
 
   constructor(
-    private store: StoreService,
     private las2peer: Las2peerService,
     private snackBar: MatSnackBar,
     private translate: TranslateService,
@@ -99,15 +98,12 @@ export class RawEditComponent implements OnInit, OnDestroy {
         this.selectedService = serviceName;
         this.fetchXml();
       });
-    //  this.store.startPolling();
     this.services$.subscribe((services) => {
       this.serviceMap = services;
     });
   }
 
-  ngOnDestroy(): void {
-    this.store.stopPolling();
-  }
+  ngOnDestroy(): void {}
 
   registerMeasureEditor(editor) {
     this.measureCatalogEditor = editor;
