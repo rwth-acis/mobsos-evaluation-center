@@ -6,7 +6,10 @@ import {
 } from '@angular/core/testing';
 
 import { EditMeasureDialogComponent } from './edit-measure-dialog.component';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
 import { createTranslateLoader } from '../../app.module';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -80,7 +83,7 @@ describe('EditMeasureDialogComponent', () => {
                 'MeasureName',
                 [],
                 new ValueVisualization(''),
-                []
+                [],
               ),
               service: {
                 name: 'TestName',
@@ -103,7 +106,7 @@ describe('EditMeasureDialogComponent', () => {
           },
         })
         .compileComponents();
-    })
+    }),
   );
 
   beforeEach(() => {

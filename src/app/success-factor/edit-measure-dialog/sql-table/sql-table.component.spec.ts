@@ -2,6 +2,7 @@ import {
   async,
   ComponentFixture,
   TestBed,
+  waitForAsync,
 } from '@angular/core/testing';
 
 import { SqlTableComponent } from './sql-table.component';

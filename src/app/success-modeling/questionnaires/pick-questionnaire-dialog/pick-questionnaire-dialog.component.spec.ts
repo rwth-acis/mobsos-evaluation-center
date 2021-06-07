@@ -2,6 +2,7 @@ import {
   async,
   ComponentFixture,
   TestBed,
+  waitForAsync,
 } from '@angular/core/testing';
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog.component';

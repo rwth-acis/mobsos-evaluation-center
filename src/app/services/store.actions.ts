@@ -202,3 +202,5 @@ export const failureResponse = createAction(
   PostActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
 );
+
+export const success = createAction('action was successful');

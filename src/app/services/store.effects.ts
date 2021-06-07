@@ -151,6 +151,19 @@ export class StateEffects {
     ),
   );
 
+  storeUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeUser),
+      filter(({ user }) => !!user),
+      tap(({ user }) => {
+        localStorage.setItem('id_token', user.id_token);
+        localStorage.setItem('access_token', user.access_token);
+        localStorage.setItem('profile', JSON.stringify(user.profile));
+      }),
+      switchMap(({ user }) => of(Action.success())),
+    ),
+  );
+
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),

@@ -2,7 +2,10 @@ import { async, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { createTranslateLoader } from './app.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -17,6 +20,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { Store } from '@ngrx/store';
 
 describe('AppComponent', () => {
   beforeEach(
@@ -41,6 +45,7 @@ describe('AppComponent', () => {
           MatButtonModule,
           MatSlideToggleModule,
           MatFormFieldModule,
+          Store,
           MatSelectModule,
           MatSnackBarModule,
           HttpClientTestingModule,
@@ -49,7 +54,7 @@ describe('AppComponent', () => {
         declarations: [AppComponent],
         schemas: [CUSTOM_ELEMENTS_SCHEMA],
       }).compileComponents();
-    })
+    }),
   );
 
   it('should create the app', () => {
@@ -69,7 +74,8 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     expect(
-      compiled.querySelector('las2peer-frontend-statusbar h2').textContent
+      compiled.querySelector('las2peer-frontend-statusbar h2')
+        .textContent,
     ).toContain('MobSOS Evaluation Center');
   });
 });
