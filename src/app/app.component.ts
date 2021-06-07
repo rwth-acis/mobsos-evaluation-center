@@ -37,19 +37,10 @@ import {
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   SELECTED_GROUP,
-  SELECTED_SERVICE,
   USER,
   USER_GROUPS,
 } from './services/store.selectors';
-import {
-  distinctUntilKeyChanged,
-  filter,
-  first,
-  map,
-  startWith,
-  tap,
-} from 'rxjs/operators';
-import { StateEffects } from './services/store.effects';
+import { distinctUntilKeyChanged, filter, first, map } from 'rxjs/operators';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';

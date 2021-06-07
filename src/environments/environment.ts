@@ -29,7 +29,7 @@ export const environment = {
   servicePollingInterval: 120,
   visualizationRefreshInterval: 120,
   // enable to use the blockchain based service discovery of las2peer
-  useLas2peerServiceDiscovery: true,
+  useLas2peerServiceDiscovery: false,
   // useLas2peerServiceDiscovery: false,
 
   // yJsWebsocketUrl: 'ws://localhost:1234',

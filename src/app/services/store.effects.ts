@@ -313,7 +313,11 @@ export class StateEffects {
             return of(Action.storeSuccessModel({ xml: null }));
           })
         )
-      )
+      ),
+      catchError((err) => {
+        return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share()
     )
   );
 }
