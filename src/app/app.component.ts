@@ -40,7 +40,12 @@ import {
   USER,
   USER_GROUPS,
 } from './services/store.selectors';
-import { distinctUntilKeyChanged, filter, first, map } from 'rxjs/operators';
+import {
+  distinctUntilKeyChanged,
+  filter,
+  first,
+  map,
+} from 'rxjs/operators';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -88,8 +93,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ]).pipe(
     map(
       ([userGroups, foreignGroups, user]) =>
-        user && (!!userGroups || !!foreignGroups)
-    )
+        user && (!!userGroups || !!foreignGroups),
+    ),
   );
   otherGroups: GroupInformation[] = [];
   groups = [];
@@ -119,20 +124,21 @@ export class AppComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        'assets/icons/reqbaz-logo.svg'
-      )
+        'assets/icons/reqbaz-logo.svg',
+      ),
     );
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
-    this.mobileQueryListener = () => changeDetectorRef.detectChanges();
+    this.mobileQueryListener = () =>
+      changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
       'change',
       this.mobileQueryListener,
-      false
+      false,
     );
   }
 
@@ -141,7 +147,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.mobileQuery.removeEventListener(
       'change',
       this.mobileQueryListener,
-      false
+      false,
     );
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
@@ -178,7 +184,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let sub = this.user$
       .pipe(
         filter((user) => !!user),
-        distinctUntilKeyChanged('signedIn')
+        distinctUntilKeyChanged('signedIn'),
       )
       .subscribe((user) => {
         if (user?.signedIn) {
@@ -192,11 +198,13 @@ export class AppComponent implements OnInit, OnDestroy {
     sub = this.selectedGroup$
       .pipe(
         filter((group) => !!group && !!group.name),
-        first()
+        first(),
       )
       .subscribe((group) => {
-        if (this.selectedGroupForm.value == !group.name) {
-          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId: group.id })); //initial fetch of measure catalog
+        if (this.selectedGroupForm.value !== group.name) {
+          this.ngrxStore.dispatch(
+            fetchMeasureCatalog({ groupId: group.id }),
+          ); // initial fetch of measure catalog
           this.selectedGroupForm.reset(group.name);
         }
       });
@@ -230,26 +238,32 @@ export class AppComponent implements OnInit, OnDestroy {
         const reloadAction = await this.translate
           .get('app.update.reload')
           .toPromise();
-        const snackBarRef = this.snackBar.open(message, reloadAction, null);
+        const snackBarRef = this.snackBar.open(
+          message,
+          reloadAction,
+          null,
+        );
         snackBarRef.onAction().subscribe(() => {
           window.location.reload();
         });
       });
     }
-    this.expertMode = !!localStorage.getItem(this.LOCAL_STORAGE_EXPERT_MODE);
+    this.expertMode = !!localStorage.getItem(
+      this.LOCAL_STORAGE_EXPERT_MODE,
+    );
 
-    sub = this.store.groups.subscribe((groups) => {
-      const allGroups = Object.values(groups);
-      this.myGroups = allGroups.filter((group) => group.member).sort();
-      this.otherGroups = allGroups.filter((group) => !group.member).sort();
-      this.groupMap = groups;
-    });
-    this.subscriptions$.push(sub);
+    // sub = this.store.groups.subscribe((groups) => {
+    //   const allGroups = Object.values(groups);
+    //   this.myGroups = allGroups.filter((group) => group.member).sort();
+    //   this.otherGroups = allGroups.filter((group) => !group.member).sort();
+    //   this.groupMap = groups;
+    // });
+    // this.subscriptions$.push(sub);
     sub = this.selectedGroup$.subscribe((selectedGroup) => {
       this.selectedGroup = selectedGroup.id;
       if (selectedGroup) {
         this.ngrxStore.dispatch(
-          fetchMeasureCatalog({ groupId: selectedGroup.id })
+          fetchMeasureCatalog({ groupId: selectedGroup.id }),
         );
         this.selectedGroupForm.setValue(selectedGroup.id);
       }
@@ -274,7 +288,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (this.signedIn) {
         this.silentSigninIntervalHandle = setInterval(
           silentLoginFunc,
-          environment.openIdSilentLoginInterval * 1000
+          environment.openIdSilentLoginInterval * 1000,
         );
       }
     });

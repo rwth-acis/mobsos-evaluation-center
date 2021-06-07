@@ -62,12 +62,7 @@
             >
             </mat-icon>
           </mat-button-toggle>
-          <mde-popover
-            #reqBazPopover="mdePopover"
-            [mdePopoverOverlapTrigger]="false"
-            [mdePopoverCloseOnClick]="false"
-            (close)="reqBazToggle.checked = false"
-          >
+          
             <mat-card class="popover-content">
               <mat-card-content>
                 <app-requirements-list
@@ -80,7 +75,7 @@
                 </app-requirements-list>
               </mat-card-content>
             </mat-card>
-          </mde-popover>
+      
           <mat-button-toggle
             aria-label="Spectators"
             [mdePopoverTriggerFor]="spectatorPopover"

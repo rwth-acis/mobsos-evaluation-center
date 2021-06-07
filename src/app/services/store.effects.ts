@@ -31,7 +31,7 @@ export class StateEffects {
     private actions$: Actions,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private logger: NGXLogger
+    private logger: NGXLogger,
   ) {}
 
   fetchServices$ = createEffect(() =>
@@ -43,36 +43,36 @@ export class StateEffects {
             catchError((err) => {
               this.logger.error(
                 'Could not fetch services from service discovery:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
             catchError((err) => {
               this.logger.error(
                 'Could not fetch services from service MobSOS:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
 
               return of(undefined);
-            })
+            }),
           ),
         ]).pipe(
           map(([servicesFromL2P, servicesFromMobSOS]) =>
             Action.storeServices({
               servicesFromL2P,
               servicesFromMobSOS,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   fetchGroups$ = createEffect(() =>
@@ -84,53 +84,55 @@ export class StateEffects {
             catchError((err) => {
               this.logger.error(
                 'Could not groups services from Contact service:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
           this.l2p.fetchMobSOSGroupsAndObserve().pipe(
             catchError((err) => {
               this.logger.error(
                 'Could not fetch groups from service MobSOS:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
         ]).pipe(
           filter(
             ([groupsFromContactService, groupsFromMobSOS]) =>
-              !!groupsFromContactService || !!groupsFromMobSOS
+              !!groupsFromContactService || !!groupsFromMobSOS,
           ),
           tap(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.transferMissingGroupsToMobSOS({
               groupsFromContactService,
               groupsFromMobSOS,
-            })
+            }),
           ),
           map(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.storeGroups({
               groupsFromContactService,
               groupsFromMobSOS,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
-      switchMap(({ groupId }) => of(Action.fetchMeasureCatalog({ groupId })))
-    )
+      switchMap(({ groupId }) =>
+        of(Action.fetchMeasureCatalog({ groupId })),
+      ),
+    ),
   );
 
   setService$ = createEffect(() =>
@@ -139,9 +141,14 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
       filter(([{ service }, groupId]) => !!service),
       switchMap(([{ service }, groupId]) =>
-        of(Action.fetchSuccessModel({ groupId, serviceName: service.name }))
-      )
-    )
+        of(
+          Action.fetchSuccessModel({
+            groupId,
+            serviceName: service.name,
+          }),
+        ),
+      ),
+    ),
   );
 
   fetchMeasureCatalog$ = createEffect(() =>
@@ -149,17 +156,17 @@ export class StateEffects {
       ofType(Action.fetchMeasureCatalog),
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
-          map((MeasureCatalogXML) =>
+          map((xml) =>
             Action.storeCatalog({
-              xml: MeasureCatalogXML,
-            })
+              xml,
+            }),
           ),
           catchError((err) => {
             return of(Action.storeCatalog({ xml: null }));
-          })
-        )
-      )
-    )
+          }),
+        ),
+      ),
+    ),
   );
 
   saveModelAndCatalog$ = createEffect(() =>
@@ -169,19 +176,19 @@ export class StateEffects {
         combineLatest([
           this.ngrxStore.select(MEASURE_CATALOG_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
-        ])
+        ]),
       ),
       switchMap(([action, [measureCatalogXML, groupId]]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
-          .pipe(map(() => Action.saveCatalogSuccess()))
+          .pipe(map(() => Action.saveCatalogSuccess())),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   saveModelAndCatalogResult$ = createEffect(() =>
@@ -192,27 +199,34 @@ export class StateEffects {
           this.ngrxStore.select(SUCCESS_MODEL_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ])
+        ]),
       ),
       switchMap(([action, [successModelXML, groupId, serviceName]]) =>
         this.l2p
-          .saveSuccessModelAndObserve(groupId, serviceName, successModelXML)
-          .pipe(map(() => Action.successResponse()))
+          .saveSuccessModelAndObserve(
+            groupId,
+            serviceName,
+            successModelXML,
+          )
+          .pipe(map(() => Action.successResponse())),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   transferMissingGroupsToMobSOS$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.transferMissingGroupsToMobSOS),
       switchMap((action) => {
-        let missingGroups = action.groupsFromContactService.filter(
-          (group) => !action.groupsFromMobSOS.find((g) => g.name === group.name)
+        const missingGroups = action.groupsFromContactService.filter(
+          (group) =>
+            !action.groupsFromMobSOS.find(
+              (g) => g.name === group.name,
+            ),
         );
         return this.l2p
           .saveGroupsToMobSOS(missingGroups)
@@ -222,8 +236,8 @@ export class StateEffects {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   saveModel$ = createEffect(() =>
@@ -233,24 +247,28 @@ export class StateEffects {
         combineLatest([
           this.ngrxStore.select(SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ])
+        ]),
       ),
       switchMap(([action, [groupId, serviceName]]) =>
         this.l2p
-          .saveSuccessModelAndObserve(groupId, serviceName, action.xml)
+          .saveSuccessModelAndObserve(
+            groupId,
+            serviceName,
+            action.xml,
+          )
           .pipe(
             tap(() => {
               Action.storeSuccessModel({ xml: action.xml });
             }),
-            map(() => Action.successResponse())
-          )
+            map(() => Action.successResponse()),
+          ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   saveCatalog$ = createEffect(() =>
@@ -258,19 +276,21 @@ export class StateEffects {
       ofType(Action.saveCatalog),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
       switchMap(([action, groupId]) =>
-        this.l2p.saveMeasureCatalogAndObserve(groupId, action.xml).pipe(
-          tap((res) => {
-            Action.storeCatalog({ xml: action.xml });
-          }),
-          map(() => Action.successResponse())
-        )
+        this.l2p
+          .saveMeasureCatalogAndObserve(groupId, action.xml)
+          .pipe(
+            tap((res) => {
+              Action.storeCatalog({ xml: action.xml });
+            }),
+            map(() => Action.successResponse()),
+          ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   fetchVisualizationData$ = createEffect(() =>
@@ -284,40 +304,44 @@ export class StateEffects {
           dataForQuery.fetchDate.getTime() < Date.now() - 300000
         ) {
           // no data yet or last fetch time more than 5min ago
-          return this.l2p.fetchVisualizationData(query, queryParams).pipe(
-            map((data) =>
-              Action.storeVisualizationData({
-                data,
-                query,
-              })
-            )
-          );
+          return this.l2p
+            .fetchVisualizationData(query, queryParams)
+            .pipe(
+              map((vdata) =>
+                Action.storeVisualizationData({
+                  data: vdata,
+                  query,
+                }),
+              ),
+            );
         }
         return of(Action.failureResponse(undefined));
       }),
-      catchError((err) => of(Action.failureResponse(err)))
-    )
+      catchError((err) => of(Action.failureResponse(err))),
+    ),
   );
 
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
       mergeMap(({ groupId, serviceName }) =>
-        this.l2p.fetchSuccessModelAsObservable(groupId, serviceName).pipe(
-          map((SuccessModelXML) =>
-            Action.storeSuccessModel({
-              xml: SuccessModelXML,
-            })
+        this.l2p
+          .fetchSuccessModelAsObservable(groupId, serviceName)
+          .pipe(
+            map((xml) =>
+              Action.storeSuccessModel({
+                xml,
+              }),
+            ),
+            catchError((err) => {
+              return of(Action.storeSuccessModel({ xml: null }));
+            }),
           ),
-          catchError((err) => {
-            return of(Action.storeSuccessModel({ xml: null }));
-          })
-        )
       ),
       catchError((err) => {
         return of(Action.storeSuccessModel({ xml: null }));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 }
