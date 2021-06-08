@@ -165,7 +165,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onGroupSelected(groupId: string) {
-    // this.store.setGroup(groupId);
     if (groupId) {
       this.ngrxStore.dispatch(setGroup({ groupId }));
     }
@@ -249,16 +248,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.LOCAL_STORAGE_EXPERT_MODE,
     );
 
-    // sub = this.store.groups.subscribe((groups) => {
-    //   const allGroups = Object.values(groups);
-    //   this.myGroups = allGroups.filter((group) => group.member).sort();
-    //   this.otherGroups = allGroups.filter((group) => !group.member).sort();
-    //   this.groupMap = groups;
-    // });
-    // this.subscriptions$.push(sub);
     sub = this.selectedGroup$.subscribe((selectedGroup) => {
-      this.selectedGroup = selectedGroup.id;
-      if (selectedGroup) {
+      this.selectedGroup = selectedGroup?.id;
+      if (selectedGroup?.id) {
         this.ngrxStore.dispatch(
           fetchMeasureCatalog({ groupId: selectedGroup.id }),
         );

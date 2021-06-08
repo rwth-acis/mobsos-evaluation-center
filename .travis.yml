@@ -24,4 +24,3 @@ script:
   - npm run lint
   - npm run test -- --no-progress --watch=false --browsers=ChromeHeadless
   - npm run e2e -- --protractor-config='e2e/ci.protractor.conf.js'
-

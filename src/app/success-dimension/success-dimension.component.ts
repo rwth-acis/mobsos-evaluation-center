@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { SuccessFactor } from '../../success-model/success-factor';
 import { MeasureMap } from '../../success-model/measure-catalog';
 import { ServiceInformation } from '../store.service';
@@ -8,7 +14,10 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
-import { addFactorToDimension } from '../services/store.actions';
+import {
+  addFactorToDimension,
+  removeFactor,
+} from '../services/store.actions';
 
 @Component({
   selector: 'app-success-dimension',
@@ -27,12 +36,13 @@ export class SuccessDimensionComponent implements OnInit {
     factors: SuccessFactor[];
     dimensionName: string;
   }>();
-  @Output() sendMeasuresToSuccessModel = new EventEmitter<MeasureMap>();
+  @Output() sendMeasuresToSuccessModel =
+    new EventEmitter<MeasureMap>();
 
   constructor(
     private dialog: MatDialog,
     private translate: TranslateService,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   private _factors: SuccessFactor[];
@@ -57,7 +67,10 @@ export class SuccessDimensionComponent implements OnInit {
       if (result) {
         this._factors.push(result);
         this.ngrxStore.dispatch(
-          addFactorToDimension({ factor: result, dimensionName: this.name })
+          addFactorToDimension({
+            factor: result,
+            dimensionName: this.name,
+          }),
         );
         // this.sendFactorsToSuccessModel.emit({
         //   factors: this._factors,
@@ -92,10 +105,13 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   private removeFactor(factorIndex: number) {
-    this._factors.splice(factorIndex, 1);
-    this.sendFactorsToSuccessModel.emit({
-      factors: this._factors,
-      dimensionName: this.name,
-    });
+    this.ngrxStore.dispatch(
+      removeFactor({ name: this._factors[factorIndex].name }),
+    );
+    // this._factors.splice(factorIndex, 1);
+    // this.sendFactorsToSuccessModel.emit({
+    //   factors: this._factors,
+    //   dimensionName: this.name,
+    // });
   }
 }

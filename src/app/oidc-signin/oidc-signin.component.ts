@@ -12,13 +12,8 @@ import { User as UserInfo } from '../models/user.model';
   styleUrls: ['./oidc-signin.component.scss'],
 })
 export class OidcSigninComponent implements OnInit {
-  constructor(
-    private store: StoreService,
-    private router: Router,
-    private ngrxStore: Store
-  ) {
+  constructor(private router: Router, private ngrxStore: Store) {
     new UserManager({}).signinRedirectCallback().then((user) => {
-      this.store.setUser(user);
       this.ngrxStore.dispatch(storeUser({ user: user as UserInfo }));
       this.router.navigateByUrl('/');
     });

@@ -19,7 +19,10 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE, MEASURE } from '../services/store.selectors';
-import { editMeasure } from '../services/store.actions';
+import {
+  editMeasure,
+  removeMeasure,
+} from '../services/store.actions';
 import { Measure } from '../models/measure.model';
 import { Observable } from 'rxjs';
 
@@ -126,9 +129,13 @@ export class SuccessMeasureComponent
       minWidth: 300,
       data: message,
     });
+    const measure = this.measure;
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.measureDelete.emit();
+        this.ngrxStore.dispatch(
+          removeMeasure({ name: measure.name }),
+        );
+        // this.measureDelete.emit();
       }
     });
     $event.stopPropagation();

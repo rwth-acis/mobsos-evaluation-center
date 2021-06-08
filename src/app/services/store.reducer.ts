@@ -82,14 +82,6 @@ const _Reducer = createReducer(
     ...state,
     editMode: !state.editMode,
   })),
-  // on(Actions.initState, (state) => ({
-  //   ...state,
-  //   measureCatalogInitialized: !!state.measureCatalog,
-  //   successModel: state.measureCatalog
-  //     ? state.successModel
-  //     : initialState.successModel,
-  //   successModelInitialized: !!state.measureCatalog,
-  // })),
   on(Actions.enableEdit, (state) => ({
     ...state,
     editMode: true,
@@ -147,6 +139,14 @@ const _Reducer = createReducer(
       props.dimensionName,
       state.successModel,
     ),
+  })),
+  on(Actions.removeFactor, (state, props) => ({
+    ...state,
+    successModel: removeFactor(state.successModel, props.name),
+  })),
+  on(Actions.removeMeasure, (state, props) => ({
+    ...state,
+    successModel: removeMeasure(state.successModel, props.name),
   })),
   on(Actions.editFactorInDimension, (state, props) => ({
     ...state,
@@ -401,6 +401,43 @@ function addFactorToDimension(
   factorsList = [...factorsList];
   factorsList.push(factor);
   copy[dimensionName] = factorsList;
+
+  return { ...successModel, dimensions: copy } as SuccessModel;
+}
+
+function removeFactor(
+  successModel: SuccessModel,
+  factorName: string,
+) {
+  if (!successModel) return;
+  const copy = { ...successModel.dimensions };
+  for (const [dimensionName, dimension] of Object.entries(copy)) {
+    copy[dimensionName] = dimension.filter(
+      (factor) => factor.name !== factorName,
+    );
+  }
+  console.log(copy);
+  return { ...successModel, dimensions: copy } as SuccessModel;
+}
+
+function removeMeasure(
+  successModel: SuccessModel,
+  measureName: string,
+) {
+  if (!successModel) return;
+  const copy = { ...successModel.dimensions };
+  for (const [dimensionName, dimension] of Object.entries(copy)) {
+    const factorsCopy = [];
+    for (const factor of dimension) {
+      factorsCopy.push({
+        ...factor,
+        measures: factor.measures.filter(
+          (measure) => measure !== measureName,
+        ),
+      });
+    }
+    copy[dimensionName] = factorsCopy;
+  }
 
   return { ...successModel, dimensions: copy } as SuccessModel;
 }
