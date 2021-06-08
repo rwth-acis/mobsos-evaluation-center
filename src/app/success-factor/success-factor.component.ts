@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ServiceInformation } from '../store.service';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -9,7 +15,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import { EDIT_MODE } from '../services/store.selectors';
-import { editFactorInDimension } from '../services/store.actions';
+import {
+  editFactorInDimension,
+  removeFactor,
+  removeMeasure,
+} from '../services/store.actions';
 import { SuccessFactor } from '../models/success.model';
 import { MeasureMap } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
@@ -32,7 +42,7 @@ export class SuccessFactorComponent implements OnInit {
   constructor(
     private translate: TranslateService,
     private dialog: MatDialog,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   ngOnInit() {}
@@ -71,25 +81,27 @@ export class SuccessFactorComponent implements OnInit {
             factor: this.factor,
             oldFactorName: this.factor.name,
             dimensionName: this.dimensionName,
-          })
+          }),
         );
       }
     });
-    dialogRef.componentInstance.measuresChanged.subscribe((measures) => {
-      const existingMeasures = [];
-      for (const measure of measures) {
-        this.measures[measure.name] = measure;
-        existingMeasures.push(measure.name);
-      }
-      // remove measures that have been deleted
-      for (const measureName of Object.keys(this.measures)) {
-        if (!existingMeasures.includes(measureName)) {
-          delete this.measures[measureName];
+    dialogRef.componentInstance.measuresChanged.subscribe(
+      (measures) => {
+        const existingMeasures = [];
+        for (const measure of measures) {
+          this.measures[measure.name] = measure;
+          existingMeasures.push(measure.name);
         }
-      }
-      // console.error(this.measures);
-      this.sendMeasuresToDimension.emit(this.measures);
-    });
+        // remove measures that have been deleted
+        for (const measureName of Object.keys(this.measures)) {
+          if (!existingMeasures.includes(measureName)) {
+            delete this.measures[measureName];
+          }
+        }
+        // console.error(this.measures);
+        this.sendMeasuresToDimension.emit(this.measures);
+      },
+    );
   }
 
   onEditClicked() {
@@ -105,7 +117,7 @@ export class SuccessFactorComponent implements OnInit {
             factor: result,
             oldFactorName: this.factor.name,
             dimensionName: this.dimensionName,
-          })
+          }),
         );
         this.factor = result;
       }
@@ -113,7 +125,10 @@ export class SuccessFactorComponent implements OnInit {
   }
 
   private removeMeasure(measureIndex: number) {
-    this.factor.measures.splice(measureIndex, 1);
-    this.sendFactorToDimension.emit(this.factor);
+    this.ngrxStore.dispatch(
+      removeMeasure({ name: this.factor.measures[measureIndex] }),
+    );
+    // this.factor.measures.splice(measureIndex, 1);
+    // this.sendFactorToDimension.emit(this.factor);
   }
 }

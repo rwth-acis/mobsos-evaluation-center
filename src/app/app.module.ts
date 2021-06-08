@@ -194,7 +194,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     FormsModule,
     MatToolbarModule,
     MatCardModule,
-    // PlotlyModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
     }),
@@ -202,7 +201,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatBadgeModule,
-
     MatTooltipModule,
     MatInputModule,
     MatRippleModule,

@@ -3,7 +3,6 @@ import {
   ApplicationWorkspace,
   CommunityWorkspace,
   ServiceInformation,
-  StoreService,
   Visitor,
 } from '../store.service';
 import { Questionnaire } from '../las2peer.service';
@@ -11,7 +10,7 @@ import { Questionnaire } from '../las2peer.service';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 
 import { TranslateService } from '@ngx-translate/core';
-import { cloneDeep } from 'lodash';
+
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
@@ -19,7 +18,6 @@ import {
   PostActions,
   saveModelAndCatalog,
   setService,
-  successResponse,
   toggleEdit,
 } from '../services/store.actions';
 import {
@@ -36,10 +34,8 @@ import {
 } from '../services/store.selectors';
 import {
   catchError,
-  distinctUntilChanged,
   filter,
   map,
-  tap,
   timeout,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -438,24 +434,24 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   private copyWorkspace(owner: string) {
-    const myUsername = this.getMyUsername();
-    if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-      return;
-    }
-    const myWorkspace = this.getWorkspaceByUserAndService(
-      myUsername,
-      this.selectedServiceName,
-    );
-    const ownerWorkspace = this.getWorkspaceByUserAndService(
-      owner,
-      this.selectedServiceName,
-    );
-    if (!myWorkspace || !ownerWorkspace) {
-      return;
-    }
-    myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
-    myWorkspace.model = cloneDeep(ownerWorkspace.model);
-    this.persistWorkspaceChanges();
+    // const myUsername = this.getMyUsername();
+    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
+    //   return;
+    // }
+    // const myWorkspace = this.getWorkspaceByUserAndService(
+    //   myUsername,
+    //   this.selectedServiceName,
+    // );
+    // const ownerWorkspace = this.getWorkspaceByUserAndService(
+    //   owner,
+    //   this.selectedServiceName,
+    // );
+    // if (!myWorkspace || !ownerWorkspace) {
+    //   return;
+    // }
+    // myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
+    // myWorkspace.model = cloneDeep(ownerWorkspace.model);
+    // this.persistWorkspaceChanges();
   }
 }
 function TypedAction<T>() {

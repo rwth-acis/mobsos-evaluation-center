@@ -37,6 +37,8 @@ enum StoreActions {
   UPDATE_APPLICATION_WORKSPACE = 'updates the current application workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
+  REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
+  REMOVE_MEASURE_FROM_FACTOR = 'remove a measure from a success factor',
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
@@ -116,6 +118,16 @@ export const editMeasure = createAction(
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
   props<{ groupsFromContactService; groupsFromMobSOS }>(),
+);
+
+export const removeFactor = createAction(
+  StoreActions.REMOVE_FACTOR_FROM_DIMENSION,
+  props<{ name: string }>(),
+);
+
+export const removeMeasure = createAction(
+  StoreActions.REMOVE_MEASURE_FROM_FACTOR,
+  props<{ name: string }>(),
 );
 
 export const saveModelAndCatalog = createAction(

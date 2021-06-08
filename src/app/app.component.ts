@@ -249,8 +249,8 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
     sub = this.selectedGroup$.subscribe((selectedGroup) => {
-      this.selectedGroup = selectedGroup.id;
-      if (selectedGroup) {
+      this.selectedGroup = selectedGroup?.id;
+      if (selectedGroup?.id) {
         this.ngrxStore.dispatch(
           fetchMeasureCatalog({ groupId: selectedGroup.id }),
         );
