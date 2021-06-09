@@ -3,17 +3,18 @@ import { SuccessModel } from 'src/success-model/success-model';
 import { Visitor } from './user.model';
 
 export interface ApplicationWorkspace {
-  // This is the workspace for a given application. It is shared with other members of the community and is unique for each service
-  createdBy: string; // original author
-  visitors: Visitor[]; // visitors of the room
+  createdAt: string;
+  createdBy: string;
+  visitors: Visitor[];
   model: SuccessModel;
+  catalog: MeasureCatalog;
 }
-export interface ServiceWorkspaces {
-  // each service has its own application workspace
-  [serviceName: string]: ApplicationWorkspace;
+
+export interface UserWorkspace {
+  // service name is key
+  [key: string]: ApplicationWorkspace;
 }
 export interface CommunityWorkspace {
-  members?: string[]; // username of members
-  catalog: MeasureCatalog; // measure Catalog is shared by the whole community
-  workspaces: ServiceWorkspaces;
+  // user ID is key
+  [key: string]: UserWorkspace;
 }
