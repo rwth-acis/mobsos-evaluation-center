@@ -12,7 +12,7 @@ import {
 } from '../services/store.actions';
 
 import { cloneDeep } from 'lodash';
-import { UserRole, Visitor } from '../models/user.model';
+import { User, UserRole, Visitor } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
   EDIT_MODE,
@@ -22,6 +22,7 @@ import {
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
+  USER,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
@@ -30,7 +31,11 @@ import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
-import { ApplicationWorkspace } from '../models/workspace.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from '../models/workspace.model';
+import { NGXLogger } from 'ngx-logger';
 
 @Component({
   selector: 'app-workspace-management',
@@ -40,9 +45,8 @@ import { ApplicationWorkspace } from '../models/workspace.model';
 export class WorkspaceManagementComponent
   implements OnInit, OnDestroy
 {
-  communityWorkspace: any;
+  communityWorkspace: CommunityWorkspace = {};
   workspaceUser: string;
-  user: any;
   numberOfRequirements = 0;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   successModel: SuccessModel;
@@ -53,6 +57,8 @@ export class WorkspaceManagementComponent
   selectedServiceName: string;
   services$ = this.ngrxStore.select(SERVICES);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
+  user$ = this.ngrxStore.select(USER);
+  user: User;
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   workspaceInitialized$ = this.ngrxStore.select(
     WORKSPACE_INITIALIZED,
@@ -73,6 +79,7 @@ export class WorkspaceManagementComponent
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
     private ngrxStore: Store,
+    private logger: NGXLogger,
   ) {}
 
   ngOnInit(): void {
@@ -87,10 +94,11 @@ export class WorkspaceManagementComponent
         subscription.unsubscribe();
       });
     let sub = this.editMode$.subscribe((editMode) => {
-      if (editMode && this.user) {
+      if (editMode) {
+        const parent = this;
         this.initWorkspace().then(() =>
           // this is not working currently
-          this.switchWorkspace(this.getMyUsername()),
+          parent.switchWorkspace(parent.getMyUsername()),
         );
       }
     });
@@ -103,31 +111,44 @@ export class WorkspaceManagementComponent
       this.measureCatalog = measureCatalog;
     });
     this.subscriptions$.push(sub);
+    sub = this.user$.subscribe((user) => {
+      this.user = user;
+    });
+    this.subscriptions$.push(sub);
+  }
+
+  setWorkspaceUser(user: string) {
+    this.workspaceUser = user;
+  }
+
+  setWorkspace(workspace: CommunityWorkspace) {
+    this.communityWorkspace = workspace;
   }
 
   private async initWorkspace() {
+    const parent = this;
     await this.workspaceService
       .waitUntilWorkspaceIsSynchronized()
       .then(() => {
-        const myUsername = this.getMyUsername();
-        this.workspaceUser = myUsername;
+        const myUsername = parent.getMyUsername();
+        parent.setWorkspaceUser(myUsername);
         if (
-          !Object.keys(this.communityWorkspace).includes(myUsername)
+          !Object.keys(parent.communityWorkspace).includes(myUsername)
         ) {
-          this.communityWorkspace[myUsername] = {};
+          parent.communityWorkspace[myUsername] = {};
         }
-        const userWorkspace = this.communityWorkspace[myUsername];
+        const userWorkspace = parent.communityWorkspace[myUsername];
         if (
           !Object.keys(userWorkspace).includes(
-            this.selectedServiceName,
+            parent.selectedServiceName,
           )
         ) {
-          if (!this.measureCatalog) {
-            this.measureCatalog = new MeasureCatalog({});
+          if (!parent.measureCatalog) {
+            parent.measureCatalog = new MeasureCatalog({});
           }
-          if (!this.successModel) {
-            this.successModel = SuccessModel.emptySuccessModel(
-              this.selectedService,
+          if (!parent.successModel) {
+            parent.successModel = SuccessModel.emptySuccessModel(
+              parent.selectedService,
             );
           }
           userWorkspace[this.selectedServiceName] = {
@@ -138,7 +159,7 @@ export class WorkspaceManagementComponent
             model: this.successModel,
           };
         }
-        this.persistWorkspaceChanges();
+        parent.persistWorkspaceChanges();
       });
   }
 
@@ -238,8 +259,11 @@ export class WorkspaceManagementComponent
       this.persistWorkspaceChanges();
     }
   }
-  persistWorkspaceChanges() {
-    throw new Error('Method not implemented.');
+
+  private persistWorkspaceChanges() {
+    this.workspaceService.setCommunityWorkspace(
+      this.communityWorkspace,
+    );
   }
 
   changeVisitorRole(visitorName: string, role: string) {

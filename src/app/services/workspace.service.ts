@@ -6,12 +6,10 @@ import {
   CommunityWorkspace,
 } from '../models/workspace.model';
 // import { YJsService } from '../y-js.service';
-import {
-  updateAppWorkspace,
-  updateCommunityWorkspace,
-} from './store.actions';
+
 import { cloneDeep } from 'lodash';
 import { YjsService } from './yjs.service';
+import { updateCommunityWorkspace } from './store.actions';
 @Injectable({
   providedIn: 'root',
 })
@@ -24,6 +22,7 @@ export class WorkspaceService {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
   }
   setCommunityWorkspace(workspace: CommunityWorkspace) {
+    // this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
     this.communityWorkspace$.next(workspace);
   }
 

@@ -32,7 +32,7 @@ export const initialState: AppState = {
   successModelInitialized: false,
   currentNumberOfHttpCalls: 0,
   expertMode: false,
-  currentApplicationWorkspace: undefined,
+  communityWorkspace: undefined,
 };
 
 const _Reducer = createReducer(
@@ -128,9 +128,9 @@ const _Reducer = createReducer(
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls - 1,
   })),
-  on(Actions.updateAppWorkspace, (state, { workspace }) => ({
+  on(Actions.updateCommunityWorkspace, (state, { workspace }) => ({
     ...state,
-    currentApplicationWorkspace: workspace,
+    communityWorkspace: workspace,
   })),
   on(Actions.addFactorToDimension, (state, props) => ({
     ...state,

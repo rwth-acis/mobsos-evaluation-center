@@ -8,7 +8,10 @@ import {
 import { MeasureCatalog } from './measure.catalog';
 import { SuccessModel } from './success.model';
 import { VisualizationData } from './visualization.model';
-import { ApplicationWorkspace } from './workspace.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from './workspace.model';
 
 /**
  * state of the app
@@ -29,7 +32,7 @@ export interface AppState {
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;
   expertMode: boolean;
-  currentApplicationWorkspace: ApplicationWorkspace;
+  communityWorkspace: CommunityWorkspace;
 }
 /**
  * What the store looks like

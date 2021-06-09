@@ -10,11 +10,10 @@ import { environment } from 'src/environments/environment';
 // import { Injectable } from '@angular/core';
 // import { BehaviorSubject } from 'rxjs';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash';
-import { Doc } from 'yjs';
+import { Doc, Map } from 'yjs';
 // import { NGXLogger } from 'ngx-logger';
 
 import { WebsocketProvider } from 'y-websocket';
-import { YMap } from 'yjs/dist/src/types/YMap';
 
 @Injectable({
   providedIn: 'root',
@@ -103,7 +102,7 @@ export class YjsService {
     }
   }
 
-  private _syncObjectToMap(obj: object, map: YMap<any>) {
+  private _syncObjectToMap(obj: object, map: Map<any>) {
     const mapAsObj = map.toJSON();
     if (isEqual(obj, mapAsObj)) {
       return;
@@ -122,8 +121,8 @@ export class YjsService {
       }
       // use YMap if value is an object and use the value itself otherwise
       if (isPlainObject(objValue)) {
-        if (!(mapValue instanceof YMap)) {
-          map.set(key, new YMap());
+        if (!(mapValue instanceof Map)) {
+          map.set(key, new Map());
           mapValue = map.get(key);
         }
         this._syncObjectToMap(objValue, mapValue);

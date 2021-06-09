@@ -1,5 +1,5 @@
-import { MeasureCatalog } from 'src/success-model/measure-catalog';
-import { SuccessModel } from 'src/success-model/success-model';
+import { MeasureCatalog } from './measure.catalog';
+import { SuccessModel } from './success.model';
 import { Visitor } from './user.model';
 
 export interface ApplicationWorkspace {
