@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { User, UserManager } from 'oidc-client';
-import { StoreService } from '../store.service';
+import { UserManager } from 'oidc-client';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { storeUser } from '../services/store.actions';

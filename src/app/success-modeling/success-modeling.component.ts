@@ -192,7 +192,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  onEditModeChanged() {
+  onEditModeChanged(e) {
+    console.log(e);
     this.ngrxStore.dispatch(toggleEdit());
   }
 
