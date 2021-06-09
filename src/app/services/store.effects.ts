@@ -22,6 +22,7 @@ import {
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
   SUCCESS_MODEL_XML,
+  USER,
   VISUALIZATION_DATA,
 } from './store.selectors';
 
@@ -99,10 +100,6 @@ export class StateEffects {
             }),
           ),
         ]).pipe(
-          filter(
-            ([groupsFromContactService, groupsFromMobSOS]) =>
-              !!groupsFromContactService || !!groupsFromMobSOS,
-          ),
           tap(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.transferMissingGroupsToMobSOS({
               groupsFromContactService,
@@ -132,6 +129,21 @@ export class StateEffects {
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
+    ),
+  );
+
+  initState$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.initState),
+      withLatestFrom(this.ngrxStore.select(USER)),
+      tap(([action, user]) => {
+        this.l2p.setCredentials(
+          user.profile.preferred_username,
+          null,
+          user.access_token,
+        );
+      }),
+      switchMap(() => of(Action.success())),
     ),
   );
 

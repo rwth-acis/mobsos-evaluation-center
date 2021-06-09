@@ -9,6 +9,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -164,7 +165,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
-    MdePopoverModule,
+    MatMenuModule,
     GoogleChartsModule,
     BrowserAnimationsModule,
     TranslateModule.forRoot({

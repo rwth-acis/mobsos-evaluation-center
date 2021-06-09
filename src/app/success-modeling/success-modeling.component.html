@@ -1,5 +1,7 @@
 <!-- Only show component if group is selected -->
-<ng-container *ngIf="selectedGroup$ | async as group; else noGroupSelect">
+<ng-container
+  *ngIf="selectedGroup$ | async as group; else noGroupSelect"
+>
   <ng-container *ngIf="group.member; else notPartOfCommunity">
     <h2 *ngIf="group?.name">
       {{
@@ -28,7 +30,10 @@
         </mat-form-field>
       </mat-toolbar-row>
 
-      <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
+      <mat-toolbar-row
+        id="edit-controls"
+        *ngIf="showEditButton$ | async"
+      >
         <mat-slide-toggle
           labelPosition="before"
           [checked]="editMode$ | async"
@@ -43,44 +48,32 @@
           {{ 'success-modeling.edit-mode-toggle' | translate }}
         </mat-slide-toggle>
 
-        <mat-button-toggle-group *ngIf="editMode">
-          <mat-button-toggle
-            aria-label="Requirements Bazaar"
-            [mdePopoverTriggerFor]="reqBazPopover"
-            mdePopoverTriggerOn="click"
-            #reqBazToggle
-            matTooltip="{{ 'success-modeling.reqbaz.tooltip' | translate }}"
-          >
-            <mat-icon
-              color="primary"
-              svgIcon="reqbaz-logo"
-              [matBadge]="
-                numberOfRequirements === 0
-                  ? null
-                  : numberOfRequirements.toString()
-              "
+        <ng-container *ngIf="editMode$ | async">
+          <div style="display: flex; align-items: center">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              aria-label="Requirements Bazaar"
+              matTooltip="{{
+                'success-modeling.reqbaz.tooltip' | translate
+              }}"
             >
-            </mat-icon>
-          </mat-button-toggle>
-          
-            <mat-card class="popover-content">
-              <mat-card-content>
-                <app-requirements-list
-                  [successModel]="successModel$ | async"
-                  (successModelChange)="persistWorkspaceChanges()"
-                  (numberOfRequirements)="
-                    numberOfRequirements = $event.valueOf()
-                  "
-                >
-                </app-requirements-list>
-              </mat-card-content>
-            </mat-card>
-      
-          <mat-button-toggle
+              <mat-icon
+                color="primary"
+                svgIcon="reqbaz-logo"
+                [matBadge]="
+                  numberOfRequirements === 0
+                    ? null
+                    : numberOfRequirements.toString()
+                "
+              >
+              </mat-icon>
+            </button>
+
+            <button mat-icon-button
             aria-label="Spectators"
-            [mdePopoverTriggerFor]="spectatorPopover"
-            mdePopoverTriggerOn="click"
-            #spectatorToggle
+            
+            
             matTooltip="{{ 'success-modeling.visitors.tooltip' | translate }}"
           >
             <mat-icon
@@ -91,16 +84,11 @@
                   : getNumberOfOtherWorkspaceVisitors().toString()
               "
             >
-              supervisor_account
+              group
             </mat-icon>
-          </mat-button-toggle>
-          <mde-popover
-            #spectatorPopover="mdePopover"
-            [mdePopoverOverlapTrigger]="false"
-            [mdePopoverCloseOnClick]="false"
-            (close)="spectatorToggle.checked = false"
-          >
-            <mat-card class="popover-content">
+          </button>
+         
+            <!-- <mat-card class="popover-content">
               <mat-card-content>
                 <h3>{{ 'success-modeling.visitors.heading' | translate }}</h3>
                 <div
@@ -149,11 +137,10 @@
                 </div>
               </mat-card-content>
             </mat-card>
-          </mde-popover>
-          <mat-button-toggle
+        -->
+            <!-- <mat-button-toggle
             aria-label="Workspaces"
-            [mdePopoverTriggerFor]="workspacesPopover"
-            mdePopoverTriggerOn="click"
+           
             #workspacesToggle
             matTooltip="{{ 'success-modeling.workspaces.tooltip' | translate }}"
           >
@@ -168,12 +155,7 @@
               view_carousel
             </mat-icon>
           </mat-button-toggle>
-          <div
-            #workspacesPopover="mdePopover"
-            [mdePopoverOverlapTrigger]="false"
-            [mdePopoverCloseOnClick]="false"
-            (close)="workspacesToggle.checked = false"
-          >
+          
             <mat-card class="popover-content">
               <mat-card-content>
                 <h3>{{ 'success-modeling.workspaces.heading' | translate }}</h3>
@@ -226,8 +208,9 @@
                 </div>
               </mat-card-content>
             </mat-card>
+    -->
           </div>
-        </mat-button-toggle-group>
+        </ng-container>
       </mat-toolbar-row>
     </mat-card>
 
@@ -252,9 +235,14 @@
 
     <!-- Success model -->
     <ng-container
-      *ngIf="selectedService$ | async as selectedService; else noServiceSelect"
+      *ngIf="
+        selectedService$ | async as selectedService;
+        else noServiceSelect
+      "
     >
-      <ng-container *ngIf="workspaceInitialized$ | async; else notInitialized">
+      <ng-container
+        *ngIf="workspaceInitialized$ | async; else notInitialized"
+      >
         <h3 *ngIf="group?.name">
           {{
             'success-modeling.community-success-model'
@@ -267,29 +255,39 @@
           }}
         </h3>
         <ng-container
-          *ngIf="!(showSuccessModelEmpty$ | async); else successModelEmpty"
+          *ngIf="
+            !(showSuccessModelEmpty$ | async);
+            else successModelEmpty
+          "
         >
           <ng-container
-            *ngIf="successModel$ | async as successModel; else noSuccessModel"
+            *ngIf="
+              successModel$ | async as successModel;
+              else noSuccessModel
+            "
           >
-            <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-              <!-- <app-questionnaires
-            [availableQuestionnaires]="availableQuestionnaires"
-            [model]="successModel"
-            [measures]="measureCatalog.measures"
-            [service]="selectedService$ | async"
-            [editMode]="canEdit()"
-            [groupID]="(selectedGroup$ | async).id"
-            (modelChange)="persistWorkspaceChanges()"
-            (measuresChange)="persistWorkspaceChanges()"
-          ></app-questionnaires> -->
+            <ng-container
+              *ngIf="measureCatalog$ | async as measureCatalog"
+            >
+              <app-questionnaires
+                [availableQuestionnaires]="availableQuestionnaires"
+                [model]="successModel"
+                [measures]="measureCatalog.measures"
+                [service]="selectedService$ | async"
+                [editMode]="editMode$ | async"
+                [groupID]="(selectedGroup$ | async).id"
+              ></app-questionnaires>
               <div id="dimensions">
                 <app-success-dimension
                   [@slideInOut]
                   *ngFor="let dimension of dimensions"
                   [factors]="successModel.dimensions[dimension]"
-                  (sendFactorsToSuccessModel)="onFactorsChange($event)"
-                  (sendMeasuresToSuccessModel)="onMeasuresChange($event)"
+                  (sendFactorsToSuccessModel)="
+                    onFactorsChange($event)
+                  "
+                  (sendMeasuresToSuccessModel)="
+                    onMeasuresChange($event)
+                  "
                   [measures]="measureCatalog.measures"
                   [service]="selectedService"
                   name="{{
@@ -341,8 +339,12 @@
 
 <ng-template #successModelEmpty>
   <!-- success model non existant -->
-  <mat-card *ngIf="memberOfGroup$ | async; else notMemberOfSelectedGroup">
-    {{ 'success-modeling.message-no-success-model-found' | translate }}
+  <mat-card
+    *ngIf="memberOfGroup$ | async; else notMemberOfSelectedGroup"
+  >
+    {{
+      'success-modeling.message-no-success-model-found' | translate
+    }}
   </mat-card>
 </ng-template>
 
@@ -356,12 +358,16 @@
   <strong>{{ workspaceUser }}</strong
   >.
   <span *ngIf="getMyRole() === 'spectator'">
-    {{ 'success-modeling.info.workspace-rights-spectator' | translate }}
+    {{
+      'success-modeling.info.workspace-rights-spectator' | translate
+    }}
   </span>
   <span *ngIf="getMyRole() === 'editor'">
     {{ 'success-modeling.info.workspace-rights-editor' | translate }}
   </span>
-  {{ 'success-modeling.info.workspace-ask-owner-to-save' | translate }}
+  {{
+    'success-modeling.info.workspace-ask-owner-to-save' | translate
+  }}
 </ng-template>
 
 <ng-template #notPartOfCommunity>
@@ -372,3 +378,13 @@
     }}
   </mat-card>
 </ng-template>
+
+<mat-menu #menu="matMenu">
+  <mat-card-content class="card">
+    <app-requirements-list
+      [successModel]="successModel$ | async"
+      (numberOfRequirements)="numberOfRequirements = $event.valueOf()"
+    >
+    </app-requirements-list>
+  </mat-card-content>
+</mat-menu>
