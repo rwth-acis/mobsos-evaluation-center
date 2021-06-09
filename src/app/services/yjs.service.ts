@@ -12,20 +12,7 @@ import { YMap } from 'yjs/dist/src/internals';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash';
 import { Doc } from 'yjs';
 // import { NGXLogger } from 'ngx-logger';
-// import { registerStruct } from 'yjs/utils/structReferences';
-// import { YMap } from 'yjs/types/YMap';
-// import { GC } from 'yjs/structs/GC';
-// import { ItemJSON } from 'yjs/structs/ItemJSON';
-// import { ItemString } from 'yjs/structs/ItemString';
-// import { ItemFormat } from 'yjs/structs/ItemFormat';
-// import { Delete } from 'yjs/structs/Delete';
-// import { YArray } from 'yjs/types/YArray';
-// import { YText } from 'yjs/types/YText';
-// import { YXmlElement, YXmlFragment } from 'yjs/types/YXmlElement';
-// import { YXmlText } from 'yjs/types/YXmlText';
-// import { YXmlHook } from 'yjs/types/YXmlHook';
-// import { ItemEmbed } from 'yjs/structs/ItemEmbed';
-// import { ItemBinary } from 'yjs/structs/ItemBinary';
+
 import { WebsocketProvider } from 'y-websocket';
 
 @Injectable({
@@ -46,7 +33,7 @@ export class YjsService {
       this.sharedDocument,
     );
     this.sharedDocument.on('status', (event) => {
-      console.log('Y-JS: ' + event.status);
+      this.logger.debug('Y-JS: ' + event.status);
       if (event.status === 'connected') {
         this.connectedSubject.next(true);
       } else {
@@ -59,7 +46,7 @@ export class YjsService {
     subject: BehaviorSubject<object>,
     initializedSubject: BehaviorSubject<boolean>,
   ) {
-    // registerStruct(0, GC);
+    //  registerStruct(0, GC);
     // registerStruct(1, ItemJSON);
     // registerStruct(2, ItemString);
     // registerStruct(3, ItemFormat);
@@ -73,40 +60,39 @@ export class YjsService {
     // registerStruct(11, YXmlHook);
     // registerStruct(12, ItemEmbed);
     // registerStruct(13, ItemBinary);
-    // const type = this.sharedDocument.define(name, YMap);
-    // const subscription = subject.subscribe((obj) => {
-    //   this.logger.debug(
-    //     'Syncing local object with remote y-js map...',
-    //   );
-    //   this._syncObjectToMap(cloneDeep(obj), type);
-    // });
-    // const observeFn = () => {
-    //   this.logger.debug(
-    //     'Syncing remote y-js map with local object...',
-    //   );
-    //   const cloneObj = cloneDeep(type.toJSON());
-    //   subject.next(cloneObj);
-    //   initializedSubject.next(true);
-    // };
-    // type.observe(observeFn);
-    // type.observeDeep(observeFn);
-    // // initial yjs sync does not take place, when remote and local object are already equal
-    // // in this case we set the object to initialized as soon as the yjs connection is established
-    // this.connected.subscribe((connected) => {
-    //   if (!initializedSubject.getValue() && connected) {
-    //     const mapAsObj = type.toJSON();
-    //     if (isEqual(subject.getValue(), mapAsObj)) {
-    //       initializedSubject.next(true);
-    //     }
-    //   }
-    // });
-    // this.stopSync(name);
-    // // deposit cleanup function to be called when the type is no longer needed
-    // this.removeListenersCallbacks[name] = () => {
-    //   subscription.unsubscribe();
-    //   type.unobserve(observeFn);
-    //   type.unobserveDeep(observeFn);
-    // };
+    const type = this.sharedDocument.get(name);
+    const map = this.sharedDocument.getMap(name);
+    const subscription = subject.subscribe((obj) => {
+      this.logger.debug(
+        'Syncing local object with remote y-js map...',
+      );
+      this._syncObjectToMap(cloneDeep(obj), map);
+    });
+    const observeFn = () => {
+      console.log('Syncing remote y-js map with local object...');
+      const cloneObj = cloneDeep(type.toJSON());
+      subject.next(cloneObj);
+      initializedSubject.next(true);
+    };
+    type.observe(observeFn);
+    type.observeDeep(observeFn);
+    // initial yjs sync does not take place, when remote and local object are already equal
+    // in this case we set the object to initialized as soon as the yjs connection is established
+    this.connected$.subscribe((connected) => {
+      if (!initializedSubject.getValue() && connected) {
+        const mapAsObj = type.toJSON();
+        if (isEqual(subject.getValue(), mapAsObj)) {
+          initializedSubject.next(true);
+        }
+      }
+    });
+    this.stopSync(name);
+    // deposit cleanup function to be called when the type is no longer needed
+    this.removeListenersCallbacks[name] = () => {
+      subscription.unsubscribe();
+      type.unobserve(observeFn);
+      type.unobserveDeep(observeFn);
+    };
   }
 
   stopSync(name: string) {
@@ -118,9 +104,9 @@ export class YjsService {
 
   private _syncObjectToMap(obj: object, map: YMap<any>) {
     const mapAsObj = map.toJSON();
-    // if (isEqual(obj, mapAsObj)) {
-    //   return;
-    // }
+    if (isEqual(obj, mapAsObj)) {
+      return;
+    }
     // delete elements that are present in the map but not in the object
     const deletedKeys = Object.keys(mapAsObj).filter(
       (key) => !Object.keys(obj).includes(key),
