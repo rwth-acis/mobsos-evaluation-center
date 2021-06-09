@@ -416,7 +416,7 @@ function removeFactor(
       (factor) => factor.name !== factorName,
     );
   }
-  console.log(copy);
+  // console.log(copy);
   return { ...successModel, dimensions: copy } as SuccessModel;
 }
 

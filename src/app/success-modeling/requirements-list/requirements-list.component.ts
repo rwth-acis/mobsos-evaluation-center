@@ -16,11 +16,11 @@ import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmat
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { Las2peerService } from '../../las2peer.service';
-import { isNumber } from 'util';
-import { StoreService, User } from '../../store.service';
+import { User } from '../../store.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { USER } from 'src/app/services/store.selectors';
+import { storeSuccessModel } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-requirements-list',
@@ -31,7 +31,7 @@ export class RequirementsListComponent
   implements OnInit, OnChanges, OnDestroy
 {
   @Input() successModel: SuccessModel;
-  @Output() successModelChange = new EventEmitter<SuccessModel>();
+
   @Output() numberOfRequirements = new EventEmitter<number>();
 
   user$ = this.ngrxStore.select(USER);
@@ -88,7 +88,12 @@ export class RequirementsListComponent
           result.selectedProject.id,
           result.selectedCategory.id,
         );
-        this.successModelChange.emit(this.successModel);
+        this.ngrxStore.dispatch(
+          storeSuccessModel({
+            xml: this.successModel.toXml().outerHTML,
+          }),
+        );
+
         this.refreshRequirements();
       }
     });
@@ -107,7 +112,11 @@ export class RequirementsListComponent
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.successModel.reqBazProject = null;
-        this.successModelChange.emit(this.successModel);
+        this.ngrxStore.dispatch(
+          storeSuccessModel({
+            xml: this.successModel.toXml().outerHTML,
+          }),
+        );
         this.numberOfRequirements.emit(0);
       }
     });

@@ -82,7 +82,6 @@ export class StateEffects {
       switchMap(() =>
         forkJoin([
           this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-            tap((groups) => console.log(groups)),
             catchError((err) => {
               this.logger.error(
                 'Could not groups services from Contact service:' +
