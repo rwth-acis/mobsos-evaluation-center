@@ -15,7 +15,7 @@ import { YjsService } from './yjs.service';
 @Injectable({
   providedIn: 'root',
 })
-export class WorkspaceServiceService {
+export class WorkspaceService {
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
     false,
   );

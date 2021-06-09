@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { YMap } from 'yjs/dist/src/internals';
+
 // import {
 //   WebsocketProvider,
 //   WebsocketsSharedDocument,
@@ -14,6 +14,7 @@ import { Doc } from 'yjs';
 // import { NGXLogger } from 'ngx-logger';
 
 import { WebsocketProvider } from 'y-websocket';
+import { YMap } from 'yjs/dist/src/types/YMap';
 
 @Injectable({
   providedIn: 'root',

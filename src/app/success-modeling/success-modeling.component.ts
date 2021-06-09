@@ -75,10 +75,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
-  serviceSelectForm = new FormControl('');
-
   editMode$ = this.ngrxStore.select(EDIT_MODE);
-  services$ = this.ngrxStore.select(SERVICES);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore
     .select(DIMENSIONS_IN_MODEL)
@@ -146,7 +143,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           : service.name;
         // this is used so that the initial success model is fetched. We should rather use a new effect for this
         this.ngrxStore.dispatch(setService({ service }));
-        this.serviceSelectForm.setValue(this.selectedServiceName); // set the value in the selection
       });
     this.subscriptions$.push(sub);
 
@@ -172,12 +168,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     sub = this.editMode$.subscribe((editMode) => {
-      if (editMode && this.user) {
-        this.initWorkspace().then(() =>
-          // this is not working currently
-          this.switchWorkspace(this.getMyUsername()),
-        );
-      }
       this.editMode = editMode;
     });
     this.subscriptions$.push(sub);

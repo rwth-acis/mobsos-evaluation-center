@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -7,40 +7,50 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import {
   disableEdit,
   setService,
+  success,
   toggleEdit,
 } from '../services/store.actions';
-import {
-  ServiceInformation,
-  ApplicationWorkspace,
-} from '../store.service';
+
 import { cloneDeep } from 'lodash';
-import { Visitor } from '../models/user.model';
+import { UserRole, Visitor } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
+  MEASURE_CATALOG,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
-import { combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { combineLatest, Subscription } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { WorkspaceService } from '../services/workspace.service';
+import { SuccessModel } from '../models/success.model';
+import { MeasureCatalog } from '../models/measure.catalog';
+import { ServiceInformation } from '../models/service.model';
+import { ApplicationWorkspace } from '../models/workspace.model';
 
 @Component({
   selector: 'app-workspace-management',
   templateUrl: './workspace-management.component.html',
   styleUrls: ['./workspace-management.component.scss'],
 })
-export class WorkspaceManagementComponent implements OnInit {
+export class WorkspaceManagementComponent
+  implements OnInit, OnDestroy
+{
   communityWorkspace: any;
-  selectedServiceName: any;
   workspaceUser: string;
   user: any;
   numberOfRequirements = 0;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+  successModel: SuccessModel;
+  measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
+  measureCatalog: MeasureCatalog;
   serviceSelectForm = new FormControl('');
+  selectedService: ServiceInformation;
+  selectedServiceName: string;
   services$ = this.ngrxStore.select(SERVICES);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
@@ -56,14 +66,81 @@ export class WorkspaceManagementComponent implements OnInit {
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );
+
+  subscriptions$: Subscription[] = [];
   constructor(
     private dialog: MatDialog,
     private translate: TranslateService,
-
+    private workspaceService: WorkspaceService,
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const subscription = this.selectedService$
+      .pipe(filter((service) => service !== undefined))
+      .subscribe((service) => {
+        this.selectedServiceName = service.alias
+          ? service.alias
+          : service.name;
+        // this is used so that the initial success model is fetched. We should rather use a new effect for this
+        this.serviceSelectForm.setValue(this.selectedServiceName); // set the value in the selection
+        subscription.unsubscribe();
+      });
+    let sub = this.editMode$.subscribe((editMode) => {
+      if (editMode && this.user) {
+        this.initWorkspace().then(() =>
+          // this is not working currently
+          this.switchWorkspace(this.getMyUsername()),
+        );
+      }
+    });
+    this.subscriptions$.push(sub);
+    sub = this.successModel$.subscribe((successModel) => {
+      this.successModel = successModel;
+    });
+    this.subscriptions$.push(sub);
+    sub = this.measureCatalog$.subscribe((measureCatalog) => {
+      this.measureCatalog = measureCatalog;
+    });
+    this.subscriptions$.push(sub);
+  }
+
+  private async initWorkspace() {
+    await this.workspaceService
+      .waitUntilWorkspaceIsSynchronized()
+      .then(() => {
+        const myUsername = this.getMyUsername();
+        this.workspaceUser = myUsername;
+        if (
+          !Object.keys(this.communityWorkspace).includes(myUsername)
+        ) {
+          this.communityWorkspace[myUsername] = {};
+        }
+        const userWorkspace = this.communityWorkspace[myUsername];
+        if (
+          !Object.keys(userWorkspace).includes(
+            this.selectedServiceName,
+          )
+        ) {
+          if (!this.measureCatalog) {
+            this.measureCatalog = new MeasureCatalog({});
+          }
+          if (!this.successModel) {
+            this.successModel = SuccessModel.emptySuccessModel(
+              this.selectedService,
+            );
+          }
+          userWorkspace[this.selectedServiceName] = {
+            createdAt: new Date().toISOString(),
+            createdBy: myUsername,
+            visitors: [],
+            catalog: this.measureCatalog,
+            model: this.successModel,
+          };
+        }
+        this.persistWorkspaceChanges();
+      });
+  }
 
   onServiceSelected(service: ServiceInformation) {
     this.ngrxStore.dispatch(disableEdit());
@@ -153,7 +230,10 @@ export class WorkspaceManagementComponent implements OnInit {
       meAsVisitorArr.length === 0 &&
       this.workspaceUser !== myUsername
     ) {
-      visitors.push({ username: myUsername, role: 'spectator' });
+      visitors.push({
+        username: myUsername,
+        role: UserRole.SPECTATOR,
+      });
       visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
       this.persistWorkspaceChanges();
     }
@@ -168,7 +248,7 @@ export class WorkspaceManagementComponent implements OnInit {
       (visitor) => visitor.username === visitorName,
     );
     if (visitorSearchResult) {
-      visitorSearchResult[0].role = role;
+      visitorSearchResult[0].role = UserRole[role];
       this.persistWorkspaceChanges();
     }
   }
@@ -285,5 +365,11 @@ export class WorkspaceManagementComponent implements OnInit {
     myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
     myWorkspace.model = cloneDeep(ownerWorkspace.model);
     this.persistWorkspaceChanges();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions$.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
   }
 }
