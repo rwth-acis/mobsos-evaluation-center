@@ -19,12 +19,12 @@ export class WorkspaceServiceService {
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
     false,
   );
-  communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
+  // communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
   async waitUntilWorkspaceIsSynchronized() {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
   }
   setCommunityWorkspace(workspace: CommunityWorkspace) {
-    this.communityWorkspace$.next(workspace);
+    // this.communityWorkspace$.next(workspace);
   }
 
   stopSynchronizingWorkspace(groupId: string) {
@@ -36,26 +36,26 @@ export class WorkspaceServiceService {
   }
 
   startSynchronizingWorkspace(groupId: string) {
-    if (groupId) {
-      this.yjs.syncObject(
-        groupId,
-        this.communityWorkspace$,
-        this.communityWorkspaceInitialized$,
-      );
-    }
+    // if (groupId) {
+    //   this.yjs.syncObject(
+    //     groupId,
+    //     this.communityWorkspace$,
+    //     this.communityWorkspaceInitialized$,
+    //   );
+    // }
   }
 
   removeWorkspace(username: string, serviceName: string) {
-    const communityWorkspace = this.communityWorkspace$.getValue();
-    if (!Object.keys(communityWorkspace).includes(username)) {
-      return;
-    }
-    const userWorkspace = communityWorkspace[username];
-    if (!Object.keys(userWorkspace).includes(serviceName)) {
-      return;
-    }
-    delete userWorkspace[serviceName];
-    this.communityWorkspace$.next(communityWorkspace);
+    // const communityWorkspace = this.communityWorkspace$.getValue();
+    // if (!Object.keys(communityWorkspace).includes(username)) {
+    //   return;
+    // }
+    // const userWorkspace = communityWorkspace[username];
+    // if (!Object.keys(userWorkspace).includes(serviceName)) {
+    //   return;
+    // }
+    // delete userWorkspace[serviceName];
+    // this.communityWorkspace$.next(communityWorkspace);
   }
 
   private copyWorkspace(
@@ -63,50 +63,49 @@ export class WorkspaceServiceService {
     username: string,
     serviceName: string,
   ) {
-    const communityWorkspace = this.communityWorkspace$.getValue();
-    if (!Object.keys(communityWorkspace).includes(username)) {
-      return;
-    }
-
-    const userWorkspace = this.getWorkspaceByUserAndService(
-      username,
-      serviceName,
-    );
-    const ownerWorkspace = this.getWorkspaceByUserAndService(
-      owner,
-      serviceName,
-    );
-    if (!userWorkspace || !ownerWorkspace) {
-      return;
-    }
-    userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
-    userWorkspace.model = cloneDeep(ownerWorkspace.model);
-    return userWorkspace;
+    // const communityWorkspace = this.communityWorkspace$.getValue();
+    // if (!Object.keys(communityWorkspace).includes(username)) {
+    //   return;
+    // }
+    // const userWorkspace = this.getWorkspaceByUserAndService(
+    //   username,
+    //   serviceName,
+    // );
+    // const ownerWorkspace = this.getWorkspaceByUserAndService(
+    //   owner,
+    //   serviceName,
+    // );
+    // if (!userWorkspace || !ownerWorkspace) {
+    //   return;
+    // }
+    // // userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
+    // userWorkspace.model = cloneDeep(ownerWorkspace.model);
+    // return userWorkspace;
   }
 
   private getWorkspaceByUserAndService(
     user: string,
     service: string,
-  ): ApplicationWorkspace {
-    const communityWorkspace = this.communityWorkspace$.getValue();
-    if (!Object.keys(communityWorkspace).includes(user)) {
-      return null;
-    }
-    const userWorkspace = communityWorkspace[user];
-    if (!Object.keys(userWorkspace).includes(service)) {
-      return null;
-    }
-    return userWorkspace[service];
+  ) {
+    // const communityWorkspace = this.communityWorkspace$.getValue();
+    // if (!Object.keys(communityWorkspace).includes(user)) {
+    //   return null;
+    // }
+    // const userWorkspace = communityWorkspace[user];
+    // if (!Object.keys(userWorkspace).includes(service)) {
+    //   return null;
+    // }
+    // return userWorkspace[service];
   }
 
   private getWorkspaceByUser(
     workspaceUser: string,
     selectedServiceName: string,
-  ): ApplicationWorkspace {
-    return this.getWorkspaceByUserAndService(
-      workspaceUser,
-      selectedServiceName,
-    );
+  ) {
+    // return this.getWorkspaceByUserAndService(
+    //   workspaceUser,
+    //   selectedServiceName,
+    // );
   }
 
   constructor(private yjs: YjsService, private ngrxStore: Store) {
