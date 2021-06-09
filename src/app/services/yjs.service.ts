@@ -10,6 +10,7 @@ import { YMap } from 'yjs/dist/src/internals';
 // import { Injectable } from '@angular/core';
 // import { BehaviorSubject } from 'rxjs';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash';
+import { Doc } from 'yjs';
 // import { NGXLogger } from 'ngx-logger';
 // import { registerStruct } from 'yjs/utils/structReferences';
 // import { YMap } from 'yjs/types/YMap';
@@ -25,6 +26,7 @@ import { cloneDeep, isEqual, isPlainObject } from 'lodash';
 // import { YXmlHook } from 'yjs/types/YXmlHook';
 // import { ItemEmbed } from 'yjs/structs/ItemEmbed';
 // import { ItemBinary } from 'yjs/structs/ItemBinary';
+import { WebsocketProvider } from 'y-websocket';
 
 @Injectable({
   providedIn: 'root',
@@ -33,23 +35,24 @@ export class YjsService {
   // object containing cleanup functions to be invoked when the type is no longer needed
   private removeListenersCallbacks: { [key: string]: () => void } =
     {};
-  // private sharedDocument: WebsocketsSharedDocument;
-  // private connectedSubject = new BehaviorSubject<boolean>(false);
-  // public connected = this.connectedSubject.asObservable();
+  private sharedDocument = new Doc();
+  private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connected$ = this.connectedSubject.asObservable();
 
   constructor(private logger: NGXLogger) {
-    // const provider = new WebsocketProvider(
-    //   environment.yJsWebsocketUrl,
-    // );
-    // this.sharedDocument = provider.get('mobsos-ec');
-    // this.sharedDocument.on('status', (event) => {
-    //   this.logger.debug('Y-JS: ' + event.status);
-    //   if (event.status === 'connected') {
-    //     this.connectedSubject.next(true);
-    //   } else {
-    //     this.connectedSubject.next(false);
-    //   }
-    // });
+    const provider = new WebsocketProvider(
+      environment.yJsWebsocketUrl,
+      'mobsos-ec',
+      this.sharedDocument,
+    );
+    this.sharedDocument.on('status', (event) => {
+      console.log('Y-JS: ' + event.status);
+      if (event.status === 'connected') {
+        this.connectedSubject.next(true);
+      } else {
+        this.connectedSubject.next(false);
+      }
+    });
   }
   syncObject(
     name: string,
