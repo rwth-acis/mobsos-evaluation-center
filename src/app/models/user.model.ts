@@ -8,11 +8,10 @@ export interface User {
 
 export interface Visitor {
   username: string;
-  role: string;
+  role: UserRole;
 }
 
 export enum UserRole {
   SPECTATOR = 'spectator',
   EDITOR = 'editor',
-  OWNER = 'owner',
 }
