@@ -10,3 +10,8 @@ export interface Visitor {
   username: string;
   role: string;
 }
+
+export enum UserRole {
+  VISITOR = 'visitor',
+  OWNER = 'owner',
+}

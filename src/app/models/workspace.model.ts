@@ -1,21 +1,19 @@
 import { MeasureCatalog } from 'src/success-model/measure-catalog';
 import { SuccessModel } from 'src/success-model/success-model';
-import { Visitor } from 'typescript';
+import { Visitor } from './user.model';
 
 export interface ApplicationWorkspace {
-  createdAt: string;
-  createdBy: string;
+  // This is the workspace for a given application. It is shared with other members of the community and is unique for each service
+  createdBy: string; // original author
   visitors: Visitor[];
   model: SuccessModel;
-  catalog: MeasureCatalog;
 }
-
-export interface UserWorkspace {
-  // service name is key
-  [key: string]: ApplicationWorkspace;
+export interface ServiceWorkspaces {
+  // each service has its own application workspace
+  [serviceName: string]: ApplicationWorkspace;
 }
-
 export interface CommunityWorkspace {
-  // user ID is key
-  [key: string]: UserWorkspace;
+  members: string[]; // username of members
+  catalog: MeasureCatalog;
+  workspaces: ServiceWorkspaces;
 }
