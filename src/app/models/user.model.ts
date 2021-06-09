@@ -12,6 +12,7 @@ export interface Visitor {
 }
 
 export enum UserRole {
-  VISITOR = 'visitor',
+  SPECTATOR = 'spectator',
+  EDITOR = 'editor',
   OWNER = 'owner',
 }
