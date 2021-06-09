@@ -137,7 +137,7 @@ export class StateEffects {
       ofType(Action.initState),
       withLatestFrom(this.ngrxStore.select(USER)),
       tap(([action, user]) => {
-        if (user) {
+        if (user?.profile) {
           this.l2p.setCredentials(
             user.profile.preferred_username,
             null,
