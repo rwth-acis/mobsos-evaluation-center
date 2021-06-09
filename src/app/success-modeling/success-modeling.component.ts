@@ -193,11 +193,14 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onEditModeChanged(e) {
-    console.log(e);
+    this.editMode;
     this.ngrxStore.dispatch(toggleEdit());
   }
 
   getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
+    if (!this.communityWorkspace) {
+      return;
+    }
     const result = [];
     if (!this.selectedServiceName) {
       return [];
@@ -214,6 +217,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   getAllWorkspacesForCurrentServiceExceptActive() {
+    if (!this.getAllWorkspacesForCurrentService()) {
+      return;
+    }
     return this.getAllWorkspacesForCurrentService().filter(
       (workspace) => workspace.createdBy !== this.workspaceUser,
     );
@@ -221,7 +227,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   getNumberOfOpenWorkspacesFromOtherUsers(): number {
     const myUsername = this.getMyUsername();
-    return this.getAllWorkspacesForCurrentService().filter(
+    return this.getAllWorkspacesForCurrentService()?.filter(
       (workspace) => workspace.createdBy !== myUsername,
     ).length;
   }
@@ -250,17 +256,24 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   switchWorkspace(user: string) {
-    // this.workspaceUser = user;
-    // const visitors = this.getCurrentWorkspace().visitors;
-    // const myUsername = this.getMyUsername();
-    // const meAsVisitorArr = visitors.filter(
-    //   (visitor) => visitor.username === myUsername
-    // );
-    // if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
-    //   visitors.push({ username: myUsername, role: 'spectator' });
-    //   visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-    //   this.persistWorkspaceChanges();
-    // }
+    this.workspaceUser = user;
+    const workspace = this.getCurrentWorkspace();
+    if (!workspace) {
+      return;
+    }
+    const visitors = workspace.visitors;
+    const myUsername = this.getMyUsername();
+    const meAsVisitorArr = visitors.filter(
+      (visitor) => visitor.username === myUsername,
+    );
+    if (
+      meAsVisitorArr.length === 0 &&
+      this.workspaceUser !== myUsername
+    ) {
+      visitors.push({ username: myUsername, role: 'spectator' });
+      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
+      this.persistWorkspaceChanges();
+    }
   }
 
   changeVisitorRole(visitorName: string, role: string) {
@@ -291,14 +304,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
       return visitorSearchResult[0].role;
     }
     return 'spectator';
-  }
-
-  canEdit() {
-    if (this.editMode) {
-      const role = this.getMyRole();
-      return role === 'owner' || role === 'editor';
-    }
-    return false;
   }
 
   async openCopyWorkspaceDialog(owner: string) {
@@ -361,6 +366,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     user: string,
     service: string,
   ): ApplicationWorkspace {
+    if (!this.communityWorkspace) {
+      return;
+    }
     if (!Object.keys(this.communityWorkspace).includes(user)) {
       return null;
     }
