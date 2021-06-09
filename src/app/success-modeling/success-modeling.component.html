@@ -273,16 +273,14 @@
             *ngIf="successModel$ | async as successModel; else noSuccessModel"
           >
             <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-              <!-- <app-questionnaires
+              <app-questionnaires
             [availableQuestionnaires]="availableQuestionnaires"
             [model]="successModel"
             [measures]="measureCatalog.measures"
             [service]="selectedService$ | async"
-            [editMode]="canEdit()"
+            [editMode]="editMode$ | async"
             [groupID]="(selectedGroup$ | async).id"
-            (modelChange)="persistWorkspaceChanges()"
-            (measuresChange)="persistWorkspaceChanges()"
-          ></app-questionnaires> -->
+          ></app-questionnaires>
               <div id="dimensions">
                 <app-success-dimension
                   [@slideInOut]

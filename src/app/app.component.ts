@@ -183,7 +183,7 @@ export class AppComponent implements OnInit, OnDestroy {
         distinctUntilKeyChanged('signedIn'),
       )
       .subscribe((user) => {
-        if (user?.signedIn) {
+        if (user) {
           this.ngrxStore.dispatch(fetchGroups());
         }
         this.ngrxStore.dispatch(fetchServices());

@@ -399,7 +399,7 @@ function addFactorToDimension(
   let factorsList = copy[dimensionName];
   if (!factorsList) factorsList = [];
   factorsList = [...factorsList];
-  factorsList.push(factor);
+  factorsList.unshift(factor);
   copy[dimensionName] = factorsList;
 
   return { ...successModel, dimensions: copy } as SuccessModel;
@@ -491,7 +491,7 @@ function addMeasureToFactorInModel(
       ...factor,
       measures: [...factor.measures],
     } as SuccessFactor;
-    factor.measures.push(measure.name);
+    factor.measures.unshift(measure.name);
     copyFactorList.push(factor);
   }
 

@@ -17,6 +17,8 @@ import {
 } from 'rxjs/operators';
 import { merge } from 'lodash';
 import { delayedRetry } from './services/retryOperator';
+import { Store } from '@ngrx/store';
+import { USER } from './services/store.selectors';
 
 export interface SuccessModel {
   xml: string;
@@ -183,20 +185,23 @@ export class Las2peerService {
       },
       options,
     );
-    if (this.userCredentials) {
-      const username = this.userCredentials.user;
-      const password = this.userCredentials.password;
-      const token = this.userCredentials.token;
-      options = merge(
-        {
-          headers: {
-            Authorization: 'Basic ' + btoa(username + ':' + password),
-            access_token: token,
-          },
+
+    this.userCredentials = JSON.parse(
+      localStorage.getItem('profile'),
+    );
+    const username = this.userCredentials.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile')).sub;
+    const token = localStorage.getItem('access_token');
+    options = merge(
+      {
+        headers: {
+          Authorization: 'Basic ' + btoa(username + ':' + sub),
+          access_token: token,
         },
-        options,
-      );
-    }
+      },
+      options,
+    );
+
     // if (!environment.production) {
     //   this.logger.debug(
     //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
