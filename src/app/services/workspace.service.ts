@@ -17,11 +17,16 @@ export class WorkspaceService {
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
     false,
   );
+  currentGroupId: string;
   communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
   async waitUntilWorkspaceIsSynchronized() {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
   }
-  setCommunityWorkspace(workspace: CommunityWorkspace) {
+  setCommunityWorkspace(
+    workspace: CommunityWorkspace,
+    groupId?: string,
+  ) {
+    this.startSynchronizingWorkspace(groupId);
     // this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
     this.communityWorkspace$.next(workspace);
   }
@@ -35,7 +40,8 @@ export class WorkspaceService {
   }
 
   startSynchronizingWorkspace(groupId: string) {
-    if (groupId) {
+    if (groupId && groupId !== this.currentGroupId) {
+      this.stopSynchronizingWorkspace(this.currentGroupId);
       this.yjs.syncObject(
         groupId,
         this.communityWorkspace$,

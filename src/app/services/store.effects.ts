@@ -18,6 +18,7 @@ import { delayedRetry } from './retryOperator';
 import * as Action from './store.actions';
 import { transferMissingGroupsToMobSOS } from './store.actions';
 import {
+  EDIT_MODE,
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
@@ -25,6 +26,7 @@ import {
   USER,
   VISUALIZATION_DATA,
 } from './store.selectors';
+import { WorkspaceService } from './workspace.service';
 
 @Injectable()
 export class StateEffects {
@@ -33,6 +35,7 @@ export class StateEffects {
     private l2p: Las2peerService,
     private ngrxStore: Store,
     private logger: NGXLogger,
+    private workspaceService: WorkspaceService,
   ) {}
 
   fetchServices$ = createEffect(() =>
@@ -126,17 +129,40 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
+      tap(({ groupId }) => {
+        this.workspaceService.startSynchronizingWorkspace(groupId);
+      }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
     ),
   );
 
+  updateCommunityWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.updateCommunityWorkspace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+        this.ngrxStore.select(EDIT_MODE),
+      ),
+      filter(([action, groupId]) => !!groupId),
+      tap(([action, groupId, editMode]) => {
+        if (editMode && groupId) {
+          this.workspaceService.startSynchronizingWorkspace(groupId);
+        }
+      }),
+      switchMap(() => of(Action.success())),
+    ),
+  );
+
   initState$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.initState),
-      withLatestFrom(this.ngrxStore.select(USER)),
-      tap(([action, user]) => {
+      withLatestFrom(
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+      ),
+      tap(([action, user, groupId]) => {
         if (user?.profile) {
           this.l2p.setCredentials(
             user.profile.preferred_username,
