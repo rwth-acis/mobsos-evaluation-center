@@ -1,27 +1,27 @@
 import { Injectable } from '@angular/core';
-import {
-  WebsocketProvider,
-  WebsocketsSharedDocument,
-} from ;
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { environment } from '../environments/environment';
-import { cloneDeep, isEqual, isPlainObject } from 'lodash';
-import { NGXLogger } from 'ngx-logger';
-import { registerStruct } from 'yjs/utils/structReferences';
-import { YMap } from 'yjs/types/YMap';
-import { GC } from 'yjs/structs/GC';
-import { ItemJSON } from 'yjs/structs/ItemJSON';
-import { ItemString } from 'yjs/structs/ItemString';
-import { ItemFormat } from 'yjs/structs/ItemFormat';
-import { Delete } from 'yjs/structs/Delete';
-import { YArray } from 'yjs/types/YArray';
-import { YText } from 'yjs/types/YText';
-import { YXmlElement, YXmlFragment } from 'yjs/types/YXmlElement';
-import { YXmlText } from 'yjs/types/YXmlText';
-import { YXmlHook } from 'yjs/types/YXmlHook';
-import { ItemEmbed } from 'yjs/structs/ItemEmbed';
-import { ItemBinary } from 'yjs/structs/ItemBinary';
+import { environment } from 'src/environments/environment';
+// import {
+//   WebsocketProvider,
+//   WebsocketsSharedDocument,
+// } from ;
+// import { Injectable } from '@angular/core';
+// import { BehaviorSubject } from 'rxjs';
+// import { cloneDeep, isEqual, isPlainObject } from 'lodash';
+// import { NGXLogger } from 'ngx-logger';
+// import { registerStruct } from 'yjs/utils/structReferences';
+// import { YMap } from 'yjs/types/YMap';
+// import { GC } from 'yjs/structs/GC';
+// import { ItemJSON } from 'yjs/structs/ItemJSON';
+// import { ItemString } from 'yjs/structs/ItemString';
+// import { ItemFormat } from 'yjs/structs/ItemFormat';
+// import { Delete } from 'yjs/structs/Delete';
+// import { YArray } from 'yjs/types/YArray';
+// import { YText } from 'yjs/types/YText';
+// import { YXmlElement, YXmlFragment } from 'yjs/types/YXmlElement';
+// import { YXmlText } from 'yjs/types/YXmlText';
+// import { YXmlHook } from 'yjs/types/YXmlHook';
+// import { ItemEmbed } from 'yjs/structs/ItemEmbed';
+// import { ItemBinary } from 'yjs/structs/ItemBinary';
 
 @Injectable({
   providedIn: 'root',
@@ -30,9 +30,9 @@ export class YjsService {
   // object containing cleanup functions to be invoked when the type is no longer needed
   private removeListenersCallbacks: { [key: string]: () => void } =
     {};
-  private sharedDocument: WebsocketsSharedDocument;
-  private connectedSubject = new BehaviorSubject<boolean>(false);
-  public connected = this.connectedSubject.asObservable();
+  // private sharedDocument: WebsocketsSharedDocument;
+  // private connectedSubject = new BehaviorSubject<boolean>(false);
+  // public connected = this.connectedSubject.asObservable();
 
   constructor(private logger: NGXLogger) {
     const provider = new WebsocketProvider(
