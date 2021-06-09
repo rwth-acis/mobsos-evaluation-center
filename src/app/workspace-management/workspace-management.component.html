@@ -48,9 +48,7 @@
             color="primary"
             svgIcon="reqbaz-logo"
             [matBadge]="
-              numberOfRequirements === 0
-                ? null
-                : numberOfRequirements
+              numberOfRequirements === 0 ? null : numberOfRequirements
             "
           >
           </mat-icon>
@@ -120,40 +118,35 @@
     >
       {{ 'success-modeling.visitors.no-visitors' | translate }}
     </div>
+
     <div *ngFor="let visitor of getCurrentVisitorsExceptMe()">
       {{ visitor.username }}
-      <button
-        *ngIf="
-          getMyRole() === 'owner' &&
-          visitor &&
-          visitor.role !== 'editor'
-        "
-        mat-icon-button
-        matTooltip="{{
-          'success-modeling.visitors.edit-role-description'
-            | translate
-        }}"
-        matTooltipShowDelay="0"
-        (click)="changeVisitorRole(visitor.username, 'editor')"
-      >
-        <mat-icon>create</mat-icon>
-      </button>
-      <button
-        *ngIf="
-          getMyRole() === 'owner' &&
-          visitor &&
-          visitor.role !== 'spectator'
-        "
-        mat-icon-button
-        matTooltip="{{
-          'success-modeling.visitors.spectator-role-description'
-            | translate
-        }}"
-        matTooltipShowDelay="0"
-        (click)="changeVisitorRole(visitor.username, 'spectator')"
-      >
-        <mat-icon>remove_red_eye</mat-icon>
-      </button>
+      <ng-container *ngIf="userIsOwner$ | async">
+        <button
+          *ngIf="visitor.role !== 'editor'"
+          mat-icon-button
+          matTooltip="{{
+            'success-modeling.visitors.edit-role-description'
+              | translate
+          }}"
+          matTooltipShowDelay="0"
+          (click)="changeVisitorRole(visitor.username, 'editor')"
+        >
+          <mat-icon>create</mat-icon>
+        </button>
+        <button
+          *ngIf="visitor.role !== 'spectator'"
+          mat-icon-button
+          matTooltip="{{
+            'success-modeling.visitors.spectator-role-description'
+              | translate
+          }}"
+          matTooltipShowDelay="0"
+          (click)="changeVisitorRole(visitor.username, 'spectator')"
+        >
+          <mat-icon>remove_red_eye</mat-icon>
+        </button>
+      </ng-container>
     </div>
   </mat-card-content>
 </mat-menu>
@@ -185,7 +178,7 @@
       </span>
       <span>
         <button
-          *ngIf="getMyRole() === 'owner'"
+          *ngIf="userIsOwner$ | async"
           mat-icon-button
           matTooltip="{{
             'success-modeling.workspaces.copy-workspace' | translate

@@ -8,7 +8,7 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
-import { VisualizationData } from '../models/visualization.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
 
@@ -47,14 +47,6 @@ export const EDIT_MODE = (state: StoreState) =>
 export const EXPERT_MODE = (state: StoreState) =>
   state.Reducer.expertMode;
 
-export const USER_GROUPS = (state: StoreState) =>
-  _userGroups(state.Reducer.groups);
-
-export const FOREIGN_GROUPS = (state: StoreState) =>
-  _foreignGroups(state.Reducer.groups);
-
-export const USER = (state: StoreState) => state.Reducer.user as User;
-
 export const SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer.selectedServiceName;
 
@@ -65,6 +57,47 @@ export const SELECTED_GROUP = createSelector(
   SELECTED_GROUP_ID,
   _GROUPS,
   (groupId, groups) => (groups ? groups[groupId] : undefined),
+);
+
+export const USER_GROUPS = (state: StoreState) =>
+  _userGroups(state.Reducer.groups);
+
+export const FOREIGN_GROUPS = (state: StoreState) =>
+  _foreignGroups(state.Reducer.groups);
+
+export const USER = (state: StoreState) => state.Reducer.user as User;
+
+export const COMMUNITY_WORKSPACE = (state: StoreState) =>
+  state.Reducer.communityWorkspace;
+
+export const USER_WORKSPACE = createSelector(
+  COMMUNITY_WORKSPACE,
+  USER,
+  (communityWorkspace, user) =>
+    user && communityWorkspace
+      ? communityWorkspace[user.profile.preferred_username]
+      : undefined,
+);
+
+export const APPLICATION_WORKSPACE = createSelector(
+  USER_WORKSPACE,
+  SELECTED_SERVICE_NAME,
+  (userWorkspace, serviceName) =>
+    userWorkspace && serviceName
+      ? userWorkspace[serviceName]
+      : undefined,
+);
+
+export const ROLE_IN_CURRENT_WORKSPACE = (state: StoreState) =>
+  getUserRoleInWorkspace(
+    state.Reducer.communityWorkspace,
+    state.Reducer.user.profile.preferred_username,
+    state.Reducer.selectedServiceName,
+  );
+
+export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
+  ROLE_IN_CURRENT_WORKSPACE,
+  (role) => role === 'owner',
 );
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
@@ -78,8 +111,18 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   (group, user) => !!user && group?.member,
 );
 
-export const SUCCESS_MODEL = (state: StoreState) =>
+const _SUCCESS_MODEL = (state: StoreState) =>
   state.Reducer.successModel;
+
+export const SUCCESS_MODEL = createSelector(
+  EDIT_MODE,
+  _SUCCESS_MODEL,
+  APPLICATION_WORKSPACE,
+  (editMode, successModel, applicationWorkspace) =>
+    editMode && applicationWorkspace
+      ? applicationWorkspace.model
+      : successModel,
+);
 
 export const DIMENSIONS_IN_MODEL = (state: StoreState) =>
   state.Reducer.successModel
@@ -93,8 +136,18 @@ export const SUCCESS_MODEL_XML = (state: StoreState) =>
       )?.toXml()?.outerHTML
     : undefined;
 
-export const MEASURE_CATALOG = (state: StoreState) =>
+const _MEASURE_CATALOG = (state: StoreState) =>
   state.Reducer.measureCatalog;
+
+export const MEASURE_CATALOG = createSelector(
+  EDIT_MODE,
+  _MEASURE_CATALOG,
+  APPLICATION_WORKSPACE,
+  (editMode, measureCatalog, applicationWorkspace) =>
+    editMode && applicationWorkspace
+      ? applicationWorkspace.catalog
+      : measureCatalog,
+);
 
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
@@ -184,4 +237,30 @@ function sortServicesByName(
   if (a.name < b.name) {
     return -1;
   } else return 1;
+}
+
+function getUserRoleInWorkspace(
+  communityWorkspace: CommunityWorkspace,
+  userName: string,
+  serviceName: string,
+): string {
+  if (
+    !userName ||
+    !communityWorkspace[userName] ||
+    !communityWorkspace[userName][serviceName]
+  ) {
+    return null;
+  }
+  const workspace = communityWorkspace[userName][serviceName];
+  if (workspace.createdBy === userName) {
+    return 'owner';
+  }
+  const visitors = workspace.visitors;
+  const visitorSearchResult = visitors.find(
+    (visitor) => visitor.username === userName,
+  );
+  if (visitorSearchResult) {
+    return visitorSearchResult[0].role;
+  }
+  return 'spectator';
 }

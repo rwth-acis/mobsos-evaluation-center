@@ -19,12 +19,12 @@
         <div id="info-content">
           <mat-icon color="primary">info_outline</mat-icon>
           <span id="info-text">
-            <!-- <span *ngIf="workspaceUser === username; else notUserWorkspace">
-            {{ 'success-modeling.info.own-workspace' | translate }}
-          </span> -->
-            <span *ngIf="true; else notUserWorkspace">
+            <span *ngIf="userIsOwner$ | async; else notUserWorkspace">
               {{ 'success-modeling.info.own-workspace' | translate }}
             </span>
+            <!-- <span *ngIf="true; else notUserWorkspace">
+              {{ 'success-modeling.info.own-workspace' | translate }}
+            </span> -->
           </span>
         </div>
       </mat-card>

@@ -7,6 +7,7 @@ import {
 } from '../store.service';
 import { MeasureCatalog } from './measure.catalog';
 import { SuccessModel } from './success.model';
+import { User } from './user.model';
 import { VisualizationData } from './visualization.model';
 import {
   ApplicationWorkspace,
@@ -19,7 +20,7 @@ import {
 export interface AppState {
   services: ServiceCollection;
   groups: GroupCollection;
-  user: object;
+  user: User;
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;

@@ -30,6 +30,7 @@ import {
   SERVICES,
   SUCCESS_MODEL,
   USER,
+  USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import {
@@ -95,6 +96,9 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     WORKSPACE_INITIALIZED,
   );
   user$ = this.ngrxStore.select(USER);
+  userIsOwner$ = this.ngrxStore.select(
+    USER_IS_OWNER_IN_CURRENT_WORKSPACE,
+  );
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   showEditButton$ = combineLatest([
     this.selectedGroup$,

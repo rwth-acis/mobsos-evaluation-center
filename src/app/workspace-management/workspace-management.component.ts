@@ -18,11 +18,13 @@ import {
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SERVICES,
   SUCCESS_MODEL,
   USER,
+  USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
@@ -57,6 +59,10 @@ export class WorkspaceManagementComponent
   selectedServiceName: string;
   services$ = this.ngrxStore.select(SERVICES);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
+  roleInWorkspace$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
+  userIsOwner$ = this.ngrxStore.select(
+    USER_IS_OWNER_IN_CURRENT_WORKSPACE,
+  );
   user$ = this.ngrxStore.select(USER);
   user: User;
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
@@ -86,11 +92,11 @@ export class WorkspaceManagementComponent
     const subscription = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {
-        this.selectedServiceName = service.alias
-          ? service.alias
-          : service.name;
+        this.selectedServiceName = service.name;
         // this is used so that the initial success model is fetched. We should rather use a new effect for this
-        this.serviceSelectForm.setValue(this.selectedServiceName); // set the value in the selection
+        this.serviceSelectForm.setValue(
+          service.alias ? service.alias : this.selectedServiceName,
+        ); // set the value in the selection
         subscription.unsubscribe();
       });
     let sub = this.editMode$.subscribe((editMode) => {
@@ -125,6 +131,9 @@ export class WorkspaceManagementComponent
     this.communityWorkspace = workspace;
   }
 
+  /**
+   * Initializes the workspace for collaborative success modeling
+   */
   private async initWorkspace() {
     const parent = this;
     await this.workspaceService
@@ -277,24 +286,24 @@ export class WorkspaceManagementComponent
     }
   }
 
-  getMyRole(): string {
-    const myUsername = this.getMyUsername();
-    const workspace = this.getCurrentWorkspace();
-    if (!workspace) {
-      return null;
-    }
-    if (workspace.createdBy === myUsername) {
-      return 'owner';
-    }
-    const visitors = workspace.visitors;
-    const visitorSearchResult = visitors.filter(
-      (visitor) => visitor.username === myUsername,
-    );
-    if (visitorSearchResult) {
-      return visitorSearchResult[0].role;
-    }
-    return 'spectator';
-  }
+  // getMyRole(): string {
+  //   const myUsername = this.getMyUsername();
+  //   const workspace = this.getCurrentWorkspace();
+  //   if (!workspace) {
+  //     return null;
+  //   }
+  //   if (workspace.createdBy === myUsername) {
+  //     return 'owner';
+  //   }
+  //   const visitors = workspace.visitors;
+  //   const visitorSearchResult = visitors.find(
+  //     (visitor) => visitor.username === myUsername,
+  //   );
+  //   if (visitorSearchResult) {
+  //     return visitorSearchResult.role;
+  //   }
+  //   return 'spectator';
+  // }
 
   async openCopyWorkspaceDialog(owner: string) {
     const message = await this.translate
