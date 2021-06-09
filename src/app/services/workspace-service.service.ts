@@ -6,13 +6,19 @@ import {
   CommunityWorkspace,
 } from '../models/workspace.model';
 // import { YJsService } from '../y-js.service';
-import { updateAppWorkspace, updateCommunityWorkspace } from './store.actions';
+import {
+  updateAppWorkspace,
+  updateCommunityWorkspace,
+} from './store.actions';
 import { cloneDeep } from 'lodash';
+import { YjsService } from './yjs.service';
 @Injectable({
   providedIn: 'root',
 })
 export class WorkspaceServiceService {
-  communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(false);
+  communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
+    false,
+  );
   communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
   async waitUntilWorkspaceIsSynchronized() {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
@@ -30,13 +36,13 @@ export class WorkspaceServiceService {
   }
 
   startSynchronizingWorkspace(groupId: string) {
-    // if (groupId) {
-    //   this.yjs.syncObject(
-    //     groupId,
-    //     this.communityWorkspace$,
-    //     this.communityWorkspaceInitialized$
-    //   );
-    // }
+    if (groupId) {
+      this.yjs.syncObject(
+        groupId,
+        this.communityWorkspace$,
+        this.communityWorkspaceInitialized$,
+      );
+    }
   }
 
   removeWorkspace(username: string, serviceName: string) {
@@ -52,7 +58,11 @@ export class WorkspaceServiceService {
     this.communityWorkspace$.next(communityWorkspace);
   }
 
-  private copyWorkspace(owner: string, username: string, serviceName: string) {
+  private copyWorkspace(
+    owner: string,
+    username: string,
+    serviceName: string,
+  ) {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(username)) {
       return;
@@ -60,11 +70,11 @@ export class WorkspaceServiceService {
 
     const userWorkspace = this.getWorkspaceByUserAndService(
       username,
-      serviceName
+      serviceName,
     );
     const ownerWorkspace = this.getWorkspaceByUserAndService(
       owner,
-      serviceName
+      serviceName,
     );
     if (!userWorkspace || !ownerWorkspace) {
       return;
@@ -76,7 +86,7 @@ export class WorkspaceServiceService {
 
   private getWorkspaceByUserAndService(
     user: string,
-    service: string
+    service: string,
   ): ApplicationWorkspace {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(user)) {
@@ -91,18 +101,15 @@ export class WorkspaceServiceService {
 
   private getWorkspaceByUser(
     workspaceUser: string,
-    selectedServiceName: string
+    selectedServiceName: string,
   ): ApplicationWorkspace {
     return this.getWorkspaceByUserAndService(
       workspaceUser,
-      selectedServiceName
+      selectedServiceName,
     );
   }
 
-  constructor(
-    // private yjs: YJsService,
-    private ngrxStore: Store
-  ) {
+  constructor(private yjs: YjsService, private ngrxStore: Store) {
     // this.communityWorkspace$.subscribe((workspace) => {
     //   this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
     // });

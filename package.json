@@ -26,7 +26,6 @@
     "@angular/platform-browser-dynamic": "^11.0.0",
     "@angular/router": "^11.0.0",
     "@angular/service-worker": "^11.0.0",
-    "@material-extended/mde": "^3.0.3",
     "@ngrx/effects": "^11.1.1",
     "@ngrx/store": "^11.1.1",
     "@ngx-translate/core": "^11.0.1",
@@ -50,6 +49,7 @@
     "tslib": "^2.0.0",
     "vkbeautify": "^0.99.3",
     "xml-formatter": "^1.2.1",
+    "yjs": "^13.5.10",
     "zone.js": "^0.10.3"
   },
   "devDependencies": {
