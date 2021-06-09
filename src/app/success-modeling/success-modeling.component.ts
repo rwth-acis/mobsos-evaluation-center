@@ -463,6 +463,3 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     // this.persistWorkspaceChanges();
   }
 }
-function TypedAction<T>() {
-  throw new Error('Function not implemented.');
-}

@@ -1,0 +1,211 @@
+<!-- service selection and edit toggle -->
+<mat-card id="header-card">
+  <mat-toolbar-row>
+    <mat-form-field id="community-service-select">
+      <mat-label>{{
+        'success-modeling.select-application' | translate
+      }}</mat-label>
+      <mat-select
+        [formControl]="serviceSelectForm"
+        (selectionChange)="onServiceSelected($event.value)"
+      >
+        <mat-option
+          *ngFor="let service of services$ | async"
+          [value]="service"
+        >
+          {{ service.alias ? service.alias : service.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-toolbar-row>
+
+  <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
+    <mat-slide-toggle
+      labelPosition="before"
+      [checked]="editMode$ | async"
+      (toggleChange)="onEditModeChanged($event)"
+      [disabled]="!(memberOfGroup$ | async)"
+      [matTooltip]="
+        (memberOfGroup$ | async)
+          ? ('success-modeling.edit-tooltip' | translate)
+          : ('success-modeling.edit-disabled-tooltip' | translate)
+      "
+    >
+      {{ 'success-modeling.edit-mode-toggle' | translate }}
+    </mat-slide-toggle>
+
+    <ng-container *ngIf="editMode$ | async">
+      <div style="display: flex; align-items: center">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="reqMenu"
+          aria-label="Requirements Bazaar"
+          matTooltip="{{
+            'success-modeling.reqbaz.tooltip' | translate
+          }}"
+        >
+          <mat-icon
+            color="primary"
+            svgIcon="reqbaz-logo"
+            [matBadge]="
+              numberOfRequirements === 0
+                ? null
+                : numberOfRequirements.toString()
+            "
+          >
+          </mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          aria-label="Spectators"
+          [matMenuTriggerFor]="groupMenu"
+          matTooltip="{{
+            'success-modeling.visitors.tooltip' | translate
+          }}"
+        >
+          <mat-icon
+            color="primary"
+            [matBadge]="
+              getNumberOfOtherWorkspaceVisitors() === 0
+                ? null
+                : getNumberOfOtherWorkspaceVisitors()
+            "
+          >
+            group
+          </mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          aria-label="Workspaces"
+          [matMenuTriggerFor]="workspaceMenu"
+          matTooltip="{{
+            'success-modeling.workspaces.tooltip' | translate
+          }}"
+        >
+          <mat-icon
+            color="primary"
+            [matBadge]="
+              getNumberOfOpenWorkspacesFromOtherUsers() === 0
+                ? null
+                : getNumberOfOpenWorkspacesFromOtherUsers()
+            "
+          >
+            view_carousel
+          </mat-icon>
+        </button>
+      </div>
+    </ng-container>
+  </mat-toolbar-row>
+</mat-card>
+
+<!-- menu for Requirements Bazar -->
+<mat-menu #reqMenu="matMenu">
+  <mat-card-content class="card">
+    <app-requirements-list
+      [successModel]="successModel$ | async"
+      (numberOfRequirements)="numberOfRequirements = $event.valueOf()"
+    >
+    </app-requirements-list>
+  </mat-card-content>
+</mat-menu>
+<!-- menu for visitors -->
+<mat-menu #groupMenu>
+  <mat-card-content class="card">
+    <h3>{{ 'success-modeling.visitors.heading' | translate }}</h3>
+    <div
+      *ngIf="getCurrentVisitorsExceptMe()?.length === 0"
+      class="popover-row"
+    >
+      {{ 'success-modeling.visitors.no-visitors' | translate }}
+    </div>
+    <div *ngFor="let visitor of getCurrentVisitorsExceptMe()">
+      {{ visitor.username }}
+      <button
+        *ngIf="
+          getMyRole() === 'owner' &&
+          visitor &&
+          visitor.role !== 'editor'
+        "
+        mat-icon-button
+        matTooltip="{{
+          'success-modeling.visitors.edit-role-description'
+            | translate
+        }}"
+        matTooltipShowDelay="0"
+        (click)="changeVisitorRole(visitor.username, 'editor')"
+      >
+        <mat-icon>create</mat-icon>
+      </button>
+      <button
+        *ngIf="
+          getMyRole() === 'owner' &&
+          visitor &&
+          visitor.role !== 'spectator'
+        "
+        mat-icon-button
+        matTooltip="{{
+          'success-modeling.visitors.spectator-role-description'
+            | translate
+        }}"
+        matTooltipShowDelay="0"
+        (click)="changeVisitorRole(visitor.username, 'spectator')"
+      >
+        <mat-icon>remove_red_eye</mat-icon>
+      </button>
+    </div>
+  </mat-card-content>
+</mat-menu>
+<!-- menu for workspace -->
+<mat-menu #workspaceMenu>
+  <mat-card-content class="card">
+    <h3>{{ 'success-modeling.workspaces.heading' | translate }}</h3>
+    <div
+      *ngIf="
+        getAllWorkspacesForCurrentServiceExceptActive()?.length === 0
+      "
+      class="popover-row"
+    >
+      {{ 'success-modeling.workspaces.no-workspaces' | translate }}
+    </div>
+    <div
+      *ngFor="
+        let workspace of getAllWorkspacesForCurrentServiceExceptActive()
+      "
+      class="popover-row"
+    >
+      <span>
+        {{ workspace.createdBy }}
+        <strong *ngIf="workspace.createdBy === getMyUsername()">
+          ({{
+            'success-modeling.workspaces.your-workspace' | translate
+          }})
+        </strong>
+      </span>
+      <span>
+        <button
+          *ngIf="getMyRole() === 'owner'"
+          mat-icon-button
+          matTooltip="{{
+            'success-modeling.workspaces.copy-workspace' | translate
+          }}"
+          matTooltipShowDelay="0"
+          (click)="openCopyWorkspaceDialog(workspace.createdBy)"
+        >
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          matTooltip="{{
+            'success-modeling.workspaces.go-to' | translate
+          }}"
+          matTooltipShowDelay="0"
+          (click)="switchWorkspace(workspace.createdBy)"
+        >
+          <mat-icon>exit_to_app</mat-icon>
+        </button>
+      </span>
+    </div>
+  </mat-card-content>
+</mat-menu>

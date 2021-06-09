@@ -87,6 +87,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
+import { WorkspaceManagementComponent } from './workspace-management/workspace-management.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -157,6 +158,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     SqlTableComponent,
     RequirementsListComponent,
     PickReqbazProjectComponent,
+    WorkspaceManagementComponent,
   ],
   imports: [
     BrowserModule,
