@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ServiceInformation } from 'src/app/store.service';
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
@@ -12,6 +11,7 @@ import { Observable } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
   selector: 'app-chart-visualization',

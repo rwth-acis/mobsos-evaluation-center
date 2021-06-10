@@ -1,11 +1,8 @@
 import { Questionnaire } from '../las2peer.service';
-import {
-  GroupCollection,
-  GroupInformation,
-  ServiceCollection,
-  ServiceInformation,
-} from '../store.service';
+import { GroupCollection } from './community.model';
+
 import { MeasureCatalog } from './measure.catalog';
+import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
 import { VisualizationData } from './visualization.model';
@@ -35,6 +32,25 @@ export interface AppState {
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
 }
+
+export const INITIAL_STATE: AppState = {
+  services: {},
+  groups: undefined,
+  user: undefined,
+  selectedGroupId: undefined,
+  selectedServiceName: undefined,
+  editMode: false,
+  questionnaires: [],
+  messageDescriptions: undefined,
+  visualizationData: {},
+  measureCatalog: undefined,
+  measureCatalogInitialized: false,
+  successModel: undefined,
+  successModelInitialized: false,
+  currentNumberOfHttpCalls: 0,
+  expertMode: false,
+  communityWorkspace: undefined,
+};
 /**
  * What the store looks like
  */

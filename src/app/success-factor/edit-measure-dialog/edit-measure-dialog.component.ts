@@ -1,6 +1,9 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { Measure } from '../../../success-model/measure';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import {
   ChartVisualization,
   KpiVisualization,
@@ -8,9 +11,9 @@ import {
   KpiVisualizationOperator,
   ValueVisualization,
 } from '../../../success-model/visualization';
-import { ServiceInformation } from '../../store.service';
 
 import { Query } from '../../../success-model/query';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 export interface DialogData {
   measure: Measure;
@@ -33,10 +36,12 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   chartTypeChoices = {
-    LineChart: 'success-modeling.edit-measure-dialog.choice-linechart',
+    LineChart:
+      'success-modeling.edit-measure-dialog.choice-linechart',
     PieChart: 'success-modeling.edit-measure-dialog.choice-piechart',
     BarChart: 'success-modeling.edit-measure-dialog.choice-barchart',
-    RadarChart: 'success-modeling.edit-measure-dialog.choice-radarchart',
+    RadarChart:
+      'success-modeling.edit-measure-dialog.choice-radarchart',
   };
 
   visualizationBuffer = {
@@ -46,14 +51,14 @@ export class EditMeasureDialogComponent implements OnInit {
       'chartNode',
       'chart title',
       '300',
-      '300'
+      '300',
     ),
     KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
   };
 
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
 
   ngOnInit() {}
@@ -80,16 +85,22 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onKpiOperandChange(operandName: string, index: number) {
-    (this.data.measure.visualization as KpiVisualization).operationsElements[
-      index
-    ] = new KpiVisualizationOperand(operandName, index);
+    (
+      this.data.measure.visualization as KpiVisualization
+    ).operationsElements[index] = new KpiVisualizationOperand(
+      operandName,
+      index,
+    );
     this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onKpiOperatorChange(operatorName: string, index: number) {
-    (this.data.measure.visualization as KpiVisualization).operationsElements[
-      index
-    ] = new KpiVisualizationOperator(operatorName, index);
+    (
+      this.data.measure.visualization as KpiVisualization
+    ).operationsElements[index] = new KpiVisualizationOperator(
+      operatorName,
+      index,
+    );
     this.previewMeasure.rerenderVisualizationComponent();
   }
 
@@ -99,14 +110,14 @@ export class EditMeasureDialogComponent implements OnInit {
     kpiVisualization.operationsElements.push(
       new KpiVisualizationOperator(
         '',
-        kpiVisualization.operationsElements.length
-      )
+        kpiVisualization.operationsElements.length,
+      ),
     );
     kpiVisualization.operationsElements.push(
       new KpiVisualizationOperand(
         '',
-        kpiVisualization.operationsElements.length
-      )
+        kpiVisualization.operationsElements.length,
+      ),
     );
   }
 
@@ -124,7 +135,8 @@ export class EditMeasureDialogComponent implements OnInit {
     const currentName = this.data.measure.queries[i].name;
     const visualizationType = this.data.measure.visualization.type;
     if (visualizationType === 'KPI') {
-      const visualization = this.data.measure.visualization as KpiVisualization;
+      const visualization = this.data.measure
+        .visualization as KpiVisualization;
       visualization.operationsElements.forEach((opElement, index) => {
         if (index % 2 === 0 && opElement.name === currentName) {
           opElement.name = value;

@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { SuccessFactor } from '../../success-model/success-factor';
 import { MeasureMap } from '../../success-model/measure-catalog';
-import { ServiceInformation } from '../store.service';
+
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -18,6 +18,7 @@ import {
   addFactorToDimension,
   removeFactor,
 } from '../services/store.actions';
+import { ServiceInformation } from '../models/service.model';
 
 @Component({
   selector: 'app-success-dimension',

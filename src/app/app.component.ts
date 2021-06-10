@@ -13,7 +13,7 @@ import { MediaMatcher } from '@angular/cdk/layout';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import { LanguageService } from './language.service';
-import { GroupInformation, StoreService } from './store.service';
+
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
 import * as Hammer from 'hammerjs';
@@ -51,6 +51,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { User } from './models/user.model';
+import { GroupInformation } from './models/community.model';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"

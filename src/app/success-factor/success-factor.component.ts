@@ -5,7 +5,6 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { ServiceInformation } from '../store.service';
 
 import { MatDialog } from '@angular/material/dialog';
 import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-dialog.component';
@@ -23,6 +22,7 @@ import {
 import { SuccessFactor } from '../models/success.model';
 import { MeasureMap } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
+import { ServiceInformation } from '../models/service.model';
 
 @Component({
   selector: 'app-success-factor',

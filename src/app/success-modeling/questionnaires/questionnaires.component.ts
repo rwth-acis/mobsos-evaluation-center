@@ -6,10 +6,7 @@ import {
   Output,
 } from '@angular/core';
 import { MeasureMap } from '../../../success-model/measure-catalog';
-import {
-  ServiceInformation,
-  StoreService,
-} from '../../store.service';
+
 import { SuccessModel } from '../../../success-model/success-model';
 import {
   Las2peerService,
@@ -30,6 +27,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { SELECTED_GROUP } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
   selector: 'app-questionnaires',

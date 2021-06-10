@@ -60,12 +60,13 @@ export const SELECTED_GROUP = createSelector(
 );
 
 export const USER_GROUPS = (state: StoreState) =>
-  _userGroups(state.Reducer.groups);
+  _userGroups(state.Reducer?.groups);
 
 export const FOREIGN_GROUPS = (state: StoreState) =>
-  _foreignGroups(state.Reducer.groups);
+  _foreignGroups(state.Reducer?.groups);
 
-export const USER = (state: StoreState) => state.Reducer.user as User;
+export const USER = (state: StoreState) =>
+  state.Reducer?.user as User;
 
 export const COMMUNITY_WORKSPACE = (state: StoreState) =>
   state.Reducer.communityWorkspace;

@@ -1,10 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-  ServiceInformation,
-  Visitor,
-} from '../store.service';
+
 import { Questionnaire } from '../las2peer.service';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -53,6 +48,8 @@ import {
 } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ServiceInformation } from '../models/service.model';
+import { ApplicationWorkspace } from '../models/workspace.model';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -119,7 +116,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   translationMap = translationMap; // maps dimensions to their translation keys
   iconMap = iconMap; // maps dimensions to their icons
 
-  communityWorkspace: CommunityWorkspace;
+  // communityWorkspace: CommunityWorkspace;
   user;
   workspaceUser;
 
@@ -187,132 +184,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   }
 
   onEditModeChanged(e) {
-    this.editMode;
     this.ngrxStore.dispatch(toggleEdit());
-  }
-
-  getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
-    if (!this.communityWorkspace) {
-      return;
-    }
-    const result = [];
-    if (!this.selectedServiceName) {
-      return [];
-    }
-    const userWorkspaces = Object.values(this.communityWorkspace);
-    for (const userWorkspace of userWorkspaces) {
-      if (
-        Object.keys(userWorkspace).includes(this.selectedServiceName)
-      ) {
-        result.push(userWorkspace[this.selectedServiceName]);
-      }
-    }
-    return result;
-  }
-
-  getAllWorkspacesForCurrentServiceExceptActive() {
-    if (!this.getAllWorkspacesForCurrentService()) {
-      return;
-    }
-    return this.getAllWorkspacesForCurrentService().filter(
-      (workspace) => workspace.createdBy !== this.workspaceUser,
-    );
-  }
-
-  getNumberOfOpenWorkspacesFromOtherUsers(): number {
-    const myUsername = this.getMyUsername();
-    return this.getAllWorkspacesForCurrentService()?.filter(
-      (workspace) => workspace.createdBy !== myUsername,
-    ).length;
-  }
-
-  getNumberOfOtherWorkspaceVisitors(): number {
-    const visitors = this.getCurrentVisitorsExceptMe();
-    if (visitors == null) {
-      return 0;
-    }
-    return visitors.length;
-  }
-
-  getCurrentVisitors(): Visitor[] {
-    const workspace = this.getCurrentWorkspace();
-    if (workspace == null || workspace.visitors instanceof Array) {
-      return [];
-    }
-    return workspace.visitors;
-  }
-
-  getCurrentVisitorsExceptMe(): Visitor[] {
-    const visitors = this.getCurrentVisitors();
-    return visitors.filter(
-      (visitor) => visitor.username !== this.getMyUsername(),
-    );
-  }
-
-  switchWorkspace(user: string) {
-    this.workspaceUser = user;
-    const workspace = this.getCurrentWorkspace();
-    if (!workspace) {
-      return;
-    }
-    const visitors = workspace.visitors;
-    const myUsername = this.getMyUsername();
-    const meAsVisitorArr = visitors.filter(
-      (visitor) => visitor.username === myUsername,
-    );
-    if (
-      meAsVisitorArr.length === 0 &&
-      this.workspaceUser !== myUsername
-    ) {
-      visitors.push({ username: myUsername, role: 'spectator' });
-      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-      this.persistWorkspaceChanges();
-    }
-  }
-
-  changeVisitorRole(visitorName: string, role: string) {
-    const visitors = this.getCurrentWorkspace().visitors;
-    const visitorSearchResult = visitors.filter(
-      (visitor) => visitor.username === visitorName,
-    );
-    if (visitorSearchResult) {
-      visitorSearchResult[0].role = role;
-      this.persistWorkspaceChanges();
-    }
-  }
-
-  getMyRole(): string {
-    const myUsername = this.getMyUsername();
-    const workspace = this.getCurrentWorkspace();
-    if (!workspace) {
-      return null;
-    }
-    if (workspace.createdBy === myUsername) {
-      return 'owner';
-    }
-    const visitors = workspace.visitors;
-    const visitorSearchResult = visitors.filter(
-      (visitor) => visitor.username === myUsername,
-    );
-    if (visitorSearchResult) {
-      return visitorSearchResult[0].role;
-    }
-    return 'spectator';
-  }
-
-  async openCopyWorkspaceDialog(owner: string) {
-    const message = await this.translate
-      .get('success-modeling.copy-workspace-prompt')
-      .toPromise();
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      minWidth: 300,
-      data: message,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.copyWorkspace(owner);
-      }
-    });
   }
 
   onSaveClicked() {
@@ -354,106 +226,5 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           sub.unsubscribe();
         });
     }
-  }
-
-  private getWorkspaceByUserAndService(
-    user: string,
-    service: string,
-  ): ApplicationWorkspace {
-    if (!this.communityWorkspace) {
-      return;
-    }
-    if (!Object.keys(this.communityWorkspace).includes(user)) {
-      return null;
-    }
-    const userWorkspace = this.communityWorkspace[user];
-    if (!Object.keys(userWorkspace).includes(service)) {
-      return null;
-    }
-    return userWorkspace[service];
-  }
-
-  private getCurrentWorkspace(): ApplicationWorkspace {
-    return this.getWorkspaceByUserAndService(
-      this.workspaceUser,
-      this.selectedServiceName,
-    );
-  }
-
-  onMeasuresChange(event) {
-    // console.log(event);
-  }
-  onFactorsChange({ factors, dimensionName }) {
-    // console.log(factors);
-    // // this.successModel.dimensions[dimensionName] = factors;
-    // // this.ngrxStore.dispatch(
-    // //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
-    // // );
-  }
-
-  private getMyUsername() {
-    if (!this.user) {
-      return null;
-    }
-    return this.user.profile.preferred_username;
-  }
-
-  private async initWorkspace() {}
-
-  private persistWorkspaceChanges() {}
-
-  private async openClearWorkspaceDialog() {
-    // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
-    if (this.user) {
-      const message = await this.translate
-        .get('success-modeling.discard-changes-prompt')
-        .toPromise();
-      const dialogRef = this.dialog.open(
-        ConfirmationDialogComponent,
-        {
-          minWidth: 300,
-          data: message,
-        },
-      );
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.removeWorkspace();
-        }
-      });
-    }
-  }
-
-  private removeWorkspace() {
-    // const myUsername = this.user.profile.preferred_username;
-    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-    //   return;
-    // }
-    // const userWorkspace = this.communityWorkspace[myUsername];
-    // if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
-    //   return;
-    // }
-    // delete userWorkspace[this.selectedServiceName];
-    // this.persistWorkspaceChanges();
-  }
-
-  private copyWorkspace(owner: string) {
-    // const myUsername = this.getMyUsername();
-    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-    //   return;
-    // }
-    // const myWorkspace = this.getWorkspaceByUserAndService(
-    //   myUsername,
-    //   this.selectedServiceName,
-    // );
-    // const ownerWorkspace = this.getWorkspaceByUserAndService(
-    //   owner,
-    //   this.selectedServiceName,
-    // );
-    // if (!myWorkspace || !ownerWorkspace) {
-    //   return;
-    // }
-    // myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
-    // myWorkspace.model = cloneDeep(ownerWorkspace.model);
-    // this.persistWorkspaceChanges();
   }
 }

@@ -1,5 +1,5 @@
 import { Measure } from '../../success-model/measure';
-import { ServiceInformation } from '../store.service';
+
 import { Las2peerService } from '../las2peer.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,6 +13,7 @@ import {
 import { environment } from '../../environments/environment';
 import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
+import { ServiceInformation } from '../models/service.model';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -28,7 +29,10 @@ export interface VisualizationComponent {
 export class BaseVisualizationComponent
   implements VisualizationComponent, OnInit, OnChanges, OnDestroy
 {
-  constructor(protected ngrxStore: Store, protected dialog: MatDialog) {}
+  constructor(
+    protected ngrxStore: Store,
+    protected dialog: MatDialog,
+  ) {}
   measure: Measure;
   service: ServiceInformation;
   visualizationInitialized = false;
@@ -41,7 +45,9 @@ export class BaseVisualizationComponent
     return doc.documentElement.textContent;
   }
 
-  protected static applyCompatibilityFixForVisualizationService(query: string) {
+  protected static applyCompatibilityFixForVisualizationService(
+    query: string,
+  ) {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = BaseVisualizationComponent.htmlDecode(query);
@@ -50,7 +56,7 @@ export class BaseVisualizationComponent
 
   protected applyVariableReplacements(
     query: string,
-    service: ServiceInformation
+    service: ServiceInformation,
   ) {
     let servicesString = '(';
     const services = [];
@@ -75,7 +81,11 @@ export class BaseVisualizationComponent
     if (this.error.body) {
       const { value } = await this.error.body.getReader().read();
       const responseBody = new TextDecoder('utf-8').decode(value);
-      errorText = (this.error.statusText + ': ' + responseBody).trim();
+      errorText = (
+        this.error.statusText +
+        ': ' +
+        responseBody
+      ).trim();
     } else {
       errorText = this.error;
     }
@@ -105,7 +115,12 @@ export class BaseVisualizationComponent
     return params;
   }
 
-  protected fetchVisualizationData(query: string, queryParams: string[]) {
-    this.ngrxStore.dispatch(fetchVisualizationData({ query, queryParams }));
+  protected fetchVisualizationData(
+    query: string,
+    queryParams: string[],
+  ) {
+    this.ngrxStore.dispatch(
+      fetchVisualizationData({ query, queryParams }),
+    );
   }
 }

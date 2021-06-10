@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ServiceInformation, StoreService } from '../store.service';
+
 import { Las2peerService } from '../las2peer.service';
 import vkbeautify from 'vkbeautify';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,6 +31,7 @@ import {
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
 import { of } from 'rxjs';
+import { ServiceInformation } from '../models/service.model';
 
 @Component({
   selector: 'app-raw-edit',

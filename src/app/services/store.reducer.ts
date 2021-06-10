@@ -4,7 +4,7 @@ import {
   MeasureMap,
 } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
-import { AppState, StoreState } from '../models/state.model';
+import { AppState, INITIAL_STATE } from '../models/state.model';
 import {
   DimensionMap,
   SuccessFactor,
@@ -16,24 +16,7 @@ import {
 } from '../models/visualization.model';
 import * as Actions from './store.actions';
 
-export const initialState: AppState = {
-  services: {},
-  groups: undefined,
-  user: undefined,
-  selectedGroupId: undefined,
-  selectedServiceName: undefined,
-  editMode: false,
-  questionnaires: [],
-  messageDescriptions: undefined,
-  visualizationData: {},
-  measureCatalog: undefined,
-  measureCatalogInitialized: false,
-  successModel: undefined,
-  successModelInitialized: false,
-  currentNumberOfHttpCalls: 0,
-  expertMode: false,
-  communityWorkspace: undefined,
-};
+export const initialState: AppState = INITIAL_STATE;
 
 const _Reducer = createReducer(
   initialState,

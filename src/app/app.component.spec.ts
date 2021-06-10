@@ -1,7 +1,7 @@
 import { async, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-
+import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import {
   TranslateLoader,
   TranslateModule,
@@ -20,9 +20,11 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { Store } from '@ngrx/store';
+import { INITIAL_STATE } from './models/state.model';
 
 describe('AppComponent', () => {
+  const initialState = INITIAL_STATE;
+  let store: MockStore;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -45,13 +47,13 @@ describe('AppComponent', () => {
           MatButtonModule,
           MatSlideToggleModule,
           MatFormFieldModule,
-          Store,
           MatSelectModule,
           MatSnackBarModule,
           HttpClientTestingModule,
           ServiceWorkerModule.register('', { enabled: false }),
         ],
         declarations: [AppComponent],
+        providers: [provideMockStore({ initialState })],
         schemas: [CUSTOM_ELEMENTS_SCHEMA],
       }).compileComponents();
     }),
@@ -59,6 +61,8 @@ describe('AppComponent', () => {
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
+    store.refreshState();
+    fixture.detectChanges();
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   });

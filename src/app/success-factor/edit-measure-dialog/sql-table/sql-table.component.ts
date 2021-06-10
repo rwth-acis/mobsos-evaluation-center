@@ -6,8 +6,8 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { ServiceInformation } from 'src/app/models/service.model';
 import { Las2peerService } from '../../../las2peer.service';
-import { ServiceInformation } from '../../../store.service';
 
 @Component({
   selector: 'app-sql-table',

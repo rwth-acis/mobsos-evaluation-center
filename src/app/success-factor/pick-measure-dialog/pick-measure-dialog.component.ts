@@ -10,7 +10,6 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 
-import { ServiceInformation } from '../../store.service';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { Query } from '../../../success-model/query';
 
@@ -21,6 +20,7 @@ import {
 } from 'src/app/services/store.actions';
 import { Measure } from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 export interface DialogData {
   measures: Measure[];

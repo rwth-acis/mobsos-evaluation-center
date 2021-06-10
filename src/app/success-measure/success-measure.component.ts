@@ -10,7 +10,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { cloneDeep } from 'lodash';
-import { ServiceInformation } from '../store.service';
 
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,6 +24,7 @@ import {
 } from '../services/store.actions';
 import { Measure } from '../models/measure.model';
 import { Observable } from 'rxjs';
+import { ServiceInformation } from '../models/service.model';
 
 @Component({
   selector: 'app-success-measure',
