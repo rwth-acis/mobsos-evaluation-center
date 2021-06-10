@@ -8,7 +8,10 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
-import { CommunityWorkspace } from '../models/workspace.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from '../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
 
@@ -87,6 +90,48 @@ export const APPLICATION_WORKSPACE = createSelector(
     userWorkspace && serviceName
       ? userWorkspace[serviceName]
       : undefined,
+);
+
+export const ALL_WORKSPACES_FOR_SELECTED_SERVICE = createSelector(
+  COMMUNITY_WORKSPACE,
+  SELECTED_SERVICE_NAME,
+  (workspace, selectedServiceName) =>
+    getAllWorkspacesForService(workspace, selectedServiceName),
+);
+
+export const WORKSPACE_OWNER = createSelector(
+  APPLICATION_WORKSPACE,
+  (appworkspace) => appworkspace?.createdBy,
+);
+
+export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
+  createSelector(
+    COMMUNITY_WORKSPACE,
+    SELECTED_SERVICE_NAME,
+    WORKSPACE_OWNER,
+    (communityWorkspace, selectedServiceName, owner) =>
+      getAllWorkspacesForService(
+        communityWorkspace,
+        selectedServiceName,
+      )?.filter(
+        (workspace: ApplicationWorkspace) =>
+          workspace.createdBy !== owner,
+      ),
+  );
+
+export const VISITORS = createSelector(
+  APPLICATION_WORKSPACE,
+  (workspace) => workspace.visitors,
+);
+
+export const VISITORS_EXCEPT_USER = createSelector(
+  APPLICATION_WORKSPACE,
+  USER,
+  (workspace, user) =>
+    workspace.visitors.filter(
+      (visitor) =>
+        user.profile.preferred_username !== visitor.username,
+    ),
 );
 
 export const ROLE_IN_CURRENT_WORKSPACE = (state: StoreState) =>
@@ -264,4 +309,24 @@ function getUserRoleInWorkspace(
     return visitorSearchResult[0].role;
   }
   return 'spectator';
+}
+
+function getAllWorkspacesForService(
+  workspace: CommunityWorkspace,
+  serviceName: string,
+): ApplicationWorkspace[] {
+  if (!workspace) {
+    return;
+  }
+  const result = [];
+  if (!serviceName) {
+    return [];
+  }
+  const userWorkspaces = Object.values(workspace);
+  for (const userWorkspace of userWorkspaces) {
+    if (Object.keys(userWorkspace).includes(serviceName)) {
+      result.push(userWorkspace[serviceName] as ApplicationWorkspace);
+    }
+  }
+  return result as ApplicationWorkspace[];
 }

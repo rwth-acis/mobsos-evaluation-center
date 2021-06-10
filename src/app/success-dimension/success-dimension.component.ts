@@ -73,10 +73,6 @@ export class SuccessDimensionComponent implements OnInit {
             dimensionName: this.name,
           }),
         );
-        // this.sendFactorsToSuccessModel.emit({
-        //   factors: this._factors,
-        //   dimensionName: this.name,
-        // });
       }
     });
   }

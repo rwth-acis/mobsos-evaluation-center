@@ -15,6 +15,8 @@ import { cloneDeep } from 'lodash';
 import { User, UserRole, Visitor } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
+  ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
+  VISITORS_EXCEPT_USER,
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
@@ -26,6 +28,8 @@ import {
   USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   WORKSPACE_INITIALIZED,
+  VISITORS,
+  APPLICATION_WORKSPACE,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -53,6 +57,16 @@ export class WorkspaceManagementComponent
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   successModel: SuccessModel;
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
+  workspacesForServiceExceptActive$ = this.ngrxStore.select(
+    ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
+  );
+  visitorsExcpetUser$ = this.ngrxStore.select(VISITORS_EXCEPT_USER);
+  visitors$ = this.ngrxStore.select(VISITORS);
+  visitors: Visitor[] = [];
+  currentApplicationWorkspace$ = this.ngrxStore.select(
+    APPLICATION_WORKSPACE,
+  );
+  currentApplicationWorkspace: ApplicationWorkspace;
   measureCatalog: MeasureCatalog;
   serviceSelectForm = new FormControl('');
   selectedService: ServiceInformation;
@@ -121,6 +135,17 @@ export class WorkspaceManagementComponent
       this.user = user;
     });
     this.subscriptions$.push(sub);
+    sub = this.visitors$.subscribe((visitors) => {
+      this.visitors = visitors;
+    });
+    this.subscriptions$.push(sub);
+    sub = this.currentApplicationWorkspace$.subscribe(
+      (currentApplicationWorkspace) => {
+        this.currentApplicationWorkspace =
+          currentApplicationWorkspace;
+      },
+    );
+    this.subscriptions$.push(sub);
   }
 
   setWorkspaceUser(user: string) {
@@ -181,77 +206,77 @@ export class WorkspaceManagementComponent
     this.ngrxStore.dispatch(toggleEdit());
   }
 
-  getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
-    if (!this.communityWorkspace) {
-      return;
-    }
-    const result = [];
-    if (!this.selectedServiceName) {
-      return [];
-    }
-    const userWorkspaces = Object.values(this.communityWorkspace);
-    for (const userWorkspace of userWorkspaces) {
-      if (
-        Object.keys(userWorkspace).includes(this.selectedServiceName)
-      ) {
-        result.push(userWorkspace[this.selectedServiceName]);
-      }
-    }
-    return result;
-  }
+  // getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
+  //   if (!this.communityWorkspace) {
+  //     return;
+  //   }
+  //   const result = [];
+  //   if (!this.selectedServiceName) {
+  //     return [];
+  //   }
+  //   const userWorkspaces = Object.values(this.communityWorkspace);
+  //   for (const userWorkspace of userWorkspaces) {
+  //     if (
+  //       Object.keys(userWorkspace).includes(this.selectedServiceName)
+  //     ) {
+  //       result.push(userWorkspace[this.selectedServiceName]);
+  //     }
+  //   }
+  //   return result;
+  // }
 
-  getAllWorkspacesForCurrentServiceExceptActive() {
-    if (!this.getAllWorkspacesForCurrentService()) {
-      return;
-    }
-    return this.getAllWorkspacesForCurrentService().filter(
-      (workspace) => workspace.createdBy !== this.workspaceUser,
-    );
-  }
+  // getAllWorkspacesForCurrentServiceExceptActive() {
+  //   if (!this.getAllWorkspacesForCurrentService()) {
+  //     return;
+  //   }
+  //   return this.getAllWorkspacesForCurrentService().filter(
+  //     (workspace) => workspace.createdBy !== this.workspaceUser,
+  //   );
+  // }
 
-  getNumberOfOpenWorkspacesFromOtherUsers(): number {
-    const myUsername = this.getMyUsername();
-    return this.getAllWorkspacesForCurrentService()?.filter(
-      (workspace) => workspace.createdBy !== myUsername,
-    ).length;
-  }
+  // getNumberOfOpenWorkspacesFromOtherUsers(): number {
+  //   const myUsername = this.getMyUsername();
+  //   return this.getAllWorkspacesForCurrentService()?.filter(
+  //     (workspace) => workspace.createdBy !== myUsername,
+  //   ).length;
+  // }
 
-  getNumberOfOtherWorkspaceVisitors(): number {
-    const visitors = this.getCurrentVisitorsExceptMe();
-    if (visitors == null) {
-      return 0;
-    }
-    return visitors.length;
-  }
+  // getNumberOfOtherWorkspaceVisitors(): number {
+  //   const visitors = this.getCurrentVisitorsExceptMe();
+  //   if (visitors == null) {
+  //     return 0;
+  //   }
+  //   return visitors.length;
+  // }
 
-  getCurrentVisitors(): Visitor[] {
-    const workspace = this.getCurrentWorkspace();
-    if (workspace == null || workspace.visitors instanceof Array) {
-      return [];
-    }
-    return workspace.visitors;
-  }
+  // getCurrentVisitors(): Visitor[] {
+  //   const workspace = this.getCurrentWorkspace();
+  //   if (workspace == null || workspace.visitors instanceof Array) {
+  //     return [];
+  //   }
+  //   return workspace.visitors;
+  // }
 
-  getCurrentVisitorsExceptMe(): Visitor[] {
-    const visitors = this.getCurrentVisitors();
-    return visitors.filter(
-      (visitor) => visitor.username !== this.getMyUsername(),
-    );
-  }
+  // getCurrentVisitorsExceptMe(): Visitor[] {
+  //   const visitors = this.getCurrentVisitors();
+  //   return visitors.filter(
+  //     (visitor) => visitor.username !== this.getMyUsername(),
+  //   );
+  // }
 
-  private getCurrentWorkspace(): ApplicationWorkspace {
-    return this.getWorkspaceByUserAndService(
-      this.workspaceUser,
-      this.selectedServiceName,
-    );
-  }
+  // private getCurrentWorkspace(): ApplicationWorkspace {
+  //   return this.getWorkspaceByUserAndService(
+  //     this.workspaceUser,
+  //     this.selectedServiceName,
+  //   );
+  // }
   switchWorkspace(user: string) {
     this.workspaceUser = user;
-    const workspace = this.getCurrentWorkspace();
-    if (!workspace) {
+
+    if (!this.currentApplicationWorkspace) {
       return;
     }
-    const visitors = workspace.visitors;
+    const visitors = this.currentApplicationWorkspace.visitors;
     const myUsername = this.getMyUsername();
     const meAsVisitorArr = visitors.filter(
       (visitor) => visitor.username === myUsername,
@@ -276,8 +301,7 @@ export class WorkspaceManagementComponent
   }
 
   changeVisitorRole(visitorName: string, role: string) {
-    const visitors = this.getCurrentWorkspace().visitors;
-    const visitorSearchResult = visitors.filter(
+    const visitorSearchResult = this.visitors.filter(
       (visitor) => visitor.username === visitorName,
     );
     if (visitorSearchResult) {
