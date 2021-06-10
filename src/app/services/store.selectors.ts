@@ -272,7 +272,7 @@ function sortGroupsByName(
   a: GroupInformation,
   b: GroupInformation,
 ): number {
-  if (a.name < b.name) {
+  if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase()) {
     return -1;
   } else return 1;
 }
