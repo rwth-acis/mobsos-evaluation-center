@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start-yjs": "node ./node_modules/y-websocket/bin/server.js PORT=1234",
     "build": "ng build",
     "build:prod": "node --max_old_space_size=5048 ./node_modules/@angular/cli/bin/ng build --prod",
     "build:prod-sbf-dev": "node --max_old_space_size=5048 ./node_modules/@angular/cli/bin/ng build --prod --base-href /monitor/ ",
