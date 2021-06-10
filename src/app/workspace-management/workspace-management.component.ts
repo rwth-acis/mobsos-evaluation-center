@@ -310,25 +310,6 @@ export class WorkspaceManagementComponent
     }
   }
 
-  // getMyRole(): string {
-  //   const myUsername = this.getMyUsername();
-  //   const workspace = this.getCurrentWorkspace();
-  //   if (!workspace) {
-  //     return null;
-  //   }
-  //   if (workspace.createdBy === myUsername) {
-  //     return 'owner';
-  //   }
-  //   const visitors = workspace.visitors;
-  //   const visitorSearchResult = visitors.find(
-  //     (visitor) => visitor.username === myUsername,
-  //   );
-  //   if (visitorSearchResult) {
-  //     return visitorSearchResult.role;
-  //   }
-  //   return 'spectator';
-  // }
-
   async openCopyWorkspaceDialog(owner: string) {
     const message = await this.translate
       .get('success-modeling.copy-workspace-prompt')
