@@ -121,14 +121,14 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
 
 export const VISITORS = createSelector(
   APPLICATION_WORKSPACE,
-  (workspace) => workspace.visitors,
+  (workspace) => workspace?.visitors,
 );
 
 export const VISITORS_EXCEPT_USER = createSelector(
-  APPLICATION_WORKSPACE,
+  VISITORS,
   USER,
-  (workspace, user) =>
-    workspace.visitors.filter(
+  (visitors, user) =>
+    visitors?.filter(
       (visitor) =>
         user.profile.preferred_username !== visitor.username,
     ),
