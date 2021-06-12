@@ -165,7 +165,7 @@ export const storeUser = createAction(
 
 export const storeVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ data: any; query: string }>(),
+  props<{ data?: any; query?: string; error?: any }>(),
 );
 
 export const storeCatalog = createAction(

@@ -8,6 +8,7 @@ export interface VisualizationData {
 export interface VData {
   fetchDate: Date;
   data: any[][];
+  error?: Response;
 }
 
 export class Visualization {
@@ -24,7 +25,9 @@ export class Visualization {
       case 'Value':
         return ValueVisualization.fromXml(xml);
       default:
-        throw Error('Unknown visualization type: ' + visualizationType);
+        throw Error(
+          'Unknown visualization type: ' + visualizationType,
+        );
     }
   }
 
@@ -33,13 +36,21 @@ export class Visualization {
     const visualizationType = obj.type;
     switch (visualizationType) {
       case 'KPI':
-        return KpiVisualization.fromPlainObject(obj as KpiVisualization);
+        return KpiVisualization.fromPlainObject(
+          obj as KpiVisualization,
+        );
       case 'Chart':
-        return ChartVisualization.fromPlainObject(obj as ChartVisualization);
+        return ChartVisualization.fromPlainObject(
+          obj as ChartVisualization,
+        );
       case 'Value':
-        return ValueVisualization.fromPlainObject(obj as ValueVisualization);
+        return ValueVisualization.fromPlainObject(
+          obj as ValueVisualization,
+        );
       default:
-        throw Error('Unknown visualization type: ' + visualizationType);
+        throw Error(
+          'Unknown visualization type: ' + visualizationType,
+        );
     }
   }
 
@@ -63,7 +74,9 @@ export class ValueVisualization extends Visualization {
     super();
   }
 
-  public static fromPlainObject(obj: ValueVisualization): ValueVisualization {
+  public static fromPlainObject(
+    obj: ValueVisualization,
+  ): ValueVisualization {
     return new ValueVisualization(obj.unit);
   }
 
@@ -89,29 +102,42 @@ export class ChartVisualization extends Visualization {
     public nodeId: string,
     public title: string,
     public height: string,
-    public width: string
+    public width: string,
   ) {
     super();
   }
 
-  public static fromPlainObject(obj: ChartVisualization): ChartVisualization {
+  public static fromPlainObject(
+    obj: ChartVisualization,
+  ): ChartVisualization {
     return new ChartVisualization(
       obj.chartType,
       obj.nodeId,
       obj.title,
       obj.height,
-      obj.width
+      obj.width,
     );
   }
 
   static fromXml(xml: Element): ChartVisualization {
-    const chartType = Array.from(xml.getElementsByTagName('chartType'))[0]
+    const chartType = Array.from(
+      xml.getElementsByTagName('chartType'),
+    )[0].innerHTML;
+    const nodeId = Array.from(xml.getElementsByTagName('nodeId'))[0]
       .innerHTML;
-    const nodeId = Array.from(xml.getElementsByTagName('nodeId'))[0].innerHTML;
-    const title = Array.from(xml.getElementsByTagName('title'))[0].innerHTML;
-    const height = Array.from(xml.getElementsByTagName('height'))[0].innerHTML;
-    const width = Array.from(xml.getElementsByTagName('width'))[0].innerHTML;
-    return new ChartVisualization(chartType, nodeId, title, height, width);
+    const title = Array.from(xml.getElementsByTagName('title'))[0]
+      .innerHTML;
+    const height = Array.from(xml.getElementsByTagName('height'))[0]
+      .innerHTML;
+    const width = Array.from(xml.getElementsByTagName('width'))[0]
+      .innerHTML;
+    return new ChartVisualization(
+      chartType,
+      nodeId,
+      title,
+      height,
+      width,
+    );
   }
 
   protected _toXml(visualizationNode: Element) {
@@ -148,23 +174,25 @@ export class KpiVisualization extends Visualization {
   constructor(
     public operationsElements:
       | KpiVisualizationOperand[]
-      | KpiVisualizationOperator[]
+      | KpiVisualizationOperator[],
   ) {
     super();
   }
 
-  public static fromPlainObject(obj: KpiVisualization): KpiVisualization {
+  public static fromPlainObject(
+    obj: KpiVisualization,
+  ): KpiVisualization {
     const operationsElements:
       | KpiVisualizationOperand[]
       | KpiVisualizationOperator[] = [];
     obj.operationsElements.forEach((value, index) => {
       if (index % 2 === 0) {
         operationsElements.push(
-          new KpiVisualizationOperand(value.name, value.index)
+          new KpiVisualizationOperand(value.name, value.index),
         );
       } else {
         operationsElements.push(
-          new KpiVisualizationOperator(value.name, value.index)
+          new KpiVisualizationOperator(value.name, value.index),
         );
       }
     });
@@ -188,8 +216,12 @@ export class KpiVisualization extends Visualization {
   }
 
   static fromXml(xml: Element): KpiVisualization {
-    const operandNodes = Array.from(xml.getElementsByTagName('operand'));
-    const operatorNodes = Array.from(xml.getElementsByTagName('operator'));
+    const operandNodes = Array.from(
+      xml.getElementsByTagName('operand'),
+    );
+    const operatorNodes = Array.from(
+      xml.getElementsByTagName('operator'),
+    );
     const elements = [];
     for (const operandNode of operandNodes) {
       elements.push(KpiVisualizationOperand.fromXml(operandNode));
@@ -212,9 +244,12 @@ export class KpiVisualization extends Visualization {
     let result;
     term.forEach((termPart, index) => {
       if (operatorSigns.includes(termPart)) {
-        const operatorFunc: CallableFunction = this.operators[termPart];
+        const operatorFunc: CallableFunction =
+          this.operators[termPart];
         const leftHandSide = this.evaluateTerm(term.slice(0, index));
-        const rightHandSide = this.evaluateTerm(term.slice(index + 1));
+        const rightHandSide = this.evaluateTerm(
+          term.slice(index + 1),
+        );
         result = operatorFunc(leftHandSide, rightHandSide);
       }
     });

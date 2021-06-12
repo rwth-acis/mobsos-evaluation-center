@@ -9,7 +9,10 @@ import {
 import { filter } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
-import { ChartVisualization } from 'src/app/models/visualization.model';
+import {
+  ChartVisualization,
+  VData,
+} from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 
@@ -25,7 +28,7 @@ export class ChartVisualizerComponent
   @Input() measureName: string;
   @Input() service: ServiceInformation;
 
-  data$: Observable<any[][]>;
+  data$: Observable<VData>;
   measure$: Observable<Measure>;
   query: string; // local copy of the sql query
   chart: GoogleChart;
@@ -42,57 +45,60 @@ export class ChartVisualizerComponent
       this.measure$ = this.ngrxStore
         .select(MEASURE, this.measureName) // selects the measure from the measure catalog
         .pipe(filter((data) => !!data));
-
       this.measure$.subscribe((measure: Measure) => {
-        const visualization =
-          measure.visualization as ChartVisualization;
-        let query = measure.queries[0].sql;
-        const queryParams = this.getParamsForQuery(query);
+        this.prepareChart(measure);
+      });
+    }
+  }
 
-        query = this.applyVariableReplacements(query, this.service);
-        query =
-          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-            query,
-          );
+  /**
+   * Prepares chart for given measure
+   * @param measure
+   */
+  private prepareChart(measure: Measure) {
+    const visualization = measure.visualization as ChartVisualization;
+    let query = measure.queries[0].sql;
+    const queryParams = this.getParamsForQuery(query);
 
-        if (this.query !== query) {
-          // this.chart = null;
-          this.visualizationInitialized = false;
-          this.query = query;
-          super.fetchVisualizationData(query, queryParams);
-          this.data$ = this.ngrxStore.select(
-            VISUALIZATION_DATA_FOR_QUERY,
-            query,
+    query = this.applyVariableReplacements(query, this.service);
+    query =
+      BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+        query,
+      );
+
+    if (this.query !== query) {
+      this.visualizationInitialized = false;
+      this.query = query;
+      super.fetchVisualizationData(query, queryParams);
+      this.data$ = this.ngrxStore.select(
+        VISUALIZATION_DATA_FOR_QUERY,
+        query,
+      );
+      this.data$.pipe(filter((data) => !!data)).subscribe((vdata) => {
+        if (vdata.error) {
+          this.error = vdata.error;
+        }
+        const dataTable = vdata.data;
+        if (dataTable instanceof Array && dataTable.length >= 2) {
+          const labelTypes = dataTable[1];
+          const rows = dataTable.slice(2) as any[][];
+          this.chart = new GoogleChart(
+            '',
+            visualization.chartType,
+            rows,
+            dataTable[0],
+            {
+              colors: [
+                '#00a895',
+                '#9500a8',
+                '#a89500',
+                '#ff5252',
+                '#ffd600',
+              ],
+              animation: { startup: true },
+            },
           );
-          this.data$
-            .pipe(filter((data) => !!data))
-            .subscribe((data) => {
-              const dataTable = data;
-              if (
-                dataTable instanceof Array &&
-                dataTable.length >= 2
-              ) {
-                const labelTypes = dataTable[1];
-                const rows = dataTable.slice(2) as any[][];
-                this.chart = new GoogleChart(
-                  '',
-                  visualization.chartType,
-                  rows,
-                  dataTable[0],
-                  {
-                    colors: [
-                      '#00a895',
-                      '#9500a8',
-                      '#a89500',
-                      '#ff5252',
-                      '#ffd600',
-                    ],
-                    animation: { startup: true },
-                  },
-                );
-                if (this.chart) this.visualizationInitialized = true;
-              }
-            });
+          if (this.chart) this.visualizationInitialized = true;
         }
       });
     }

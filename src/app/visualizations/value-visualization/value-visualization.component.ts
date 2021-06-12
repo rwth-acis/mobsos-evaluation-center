@@ -37,7 +37,7 @@ export class ValueVisualizationComponent
   @Input() measureName: string;
 
   @Input() service: ServiceInformation;
-  value$: Observable<any[][]>;
+  value$: Observable<VData>;
   measure$;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
@@ -59,9 +59,9 @@ export class ValueVisualizationComponent
       VISUALIZATION_DATA_FOR_QUERY,
       query,
     );
-    this.value$.pipe(filter((data) => !!data)).subscribe((data) => {
+    this.value$.pipe(filter((data) => !!data)).subscribe((v) => {
       this.value =
-        data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
+        v.data.slice(-1)[0].length === 0 ? 0 : v.data.slice(-1)[0][0];
       this.visualizationInitialized = true;
     });
   }

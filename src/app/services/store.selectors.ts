@@ -8,6 +8,7 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
+import { VData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
@@ -207,8 +208,8 @@ export const VISUALIZATION_DATA_FOR_QUERY = (
   queryString: string,
 ) =>
   state.Reducer.visualizationData &&
-  state.Reducer.visualizationData[queryString]?.data
-    ? state.Reducer.visualizationData[queryString].data
+  state.Reducer.visualizationData[queryString]
+    ? state.Reducer.visualizationData[queryString]
     : undefined;
 
 function parseXml(xml: string) {

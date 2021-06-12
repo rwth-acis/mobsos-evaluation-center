@@ -353,18 +353,22 @@ export class StateEffects {
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (
+          dataForQuery.error ||
           !dataForQuery?.data ||
           dataForQuery.fetchDate.getTime() < Date.now() - 300000
         ) {
-          // no data yet or last fetch time more than 5min ago
+          // error or no data yet or last fetch time more than 5min ago
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              map((vdata) =>
+              map((res) =>
                 Action.storeVisualizationData({
-                  data: vdata,
+                  data: res.vdata,
                   query,
                 }),
+              ),
+              catchError((err) =>
+                of(Action.storeVisualizationData({ error: err })),
               ),
             );
         }
