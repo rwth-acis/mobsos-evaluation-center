@@ -16,7 +16,10 @@ import {
 import { Las2peerService } from '../las2peer.service';
 import { delayedRetry } from './retryOperator';
 import * as Action from './store.actions';
-import { transferMissingGroupsToMobSOS } from './store.actions';
+import {
+  disableEdit,
+  transferMissingGroupsToMobSOS,
+} from './store.actions';
 import {
   EDIT_MODE,
   MEASURE_CATALOG_XML,
@@ -131,6 +134,7 @@ export class StateEffects {
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
         this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),

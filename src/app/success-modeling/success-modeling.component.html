@@ -151,20 +151,24 @@
 </ng-template>
 
 <ng-template #notUserWorkspace>
-  {{ 'success-modeling.info.workspace-of' | translate }}
-  <strong>{{ workspaceUser }}</strong
-  >.
-  <span *ngIf="getMyRole() === 'spectator'">
+  <ng-contiainer *ngIf="userRole$ | async as role">
+    {{ 'success-modeling.info.workspace-of' | translate }}
+    <strong>{{ workspaceUser }}</strong
+    >.
+    <span *ngIf="role === 'spectator'">
+      {{
+        'success-modeling.info.workspace-rights-spectator' | translate
+      }}
+    </span>
+    <span *ngIf="role === 'editor'">
+      {{
+        'success-modeling.info.workspace-rights-editor' | translate
+      }}
+    </span>
     {{
-      'success-modeling.info.workspace-rights-spectator' | translate
+      'success-modeling.info.workspace-ask-owner-to-save' | translate
     }}
-  </span>
-  <span *ngIf="getMyRole() === 'editor'">
-    {{ 'success-modeling.info.workspace-rights-editor' | translate }}
-  </span>
-  {{
-    'success-modeling.info.workspace-ask-owner-to-save' | translate
-  }}
+  </ng-contiainer>
 </ng-template>
 
 <ng-template #notPartOfCommunity>

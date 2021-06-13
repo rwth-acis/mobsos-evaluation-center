@@ -20,6 +20,7 @@ import {
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SERVICES,
@@ -96,6 +97,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
+  userRole$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   showEditButton$ = combineLatest([
     this.selectedGroup$,

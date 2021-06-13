@@ -310,12 +310,12 @@ function getUserRoleInWorkspace(
   if (workspace.createdBy === userName) {
     return 'owner';
   }
-  const visitors = workspace.visitors;
+  const visitors = workspace.visitors || [];
   const visitorSearchResult = visitors.find(
     (visitor) => visitor.username === userName,
   );
   if (visitorSearchResult) {
-    return visitorSearchResult[0].role;
+    return visitorSearchResult.role;
   }
   return 'spectator';
 }

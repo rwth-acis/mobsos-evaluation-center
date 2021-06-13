@@ -141,8 +141,9 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
     sub = this.currentApplicationWorkspace$.subscribe(
       (currentApplicationWorkspace) => {
-        this.currentApplicationWorkspace =
-          currentApplicationWorkspace;
+        this.currentApplicationWorkspace = cloneDeep(
+          currentApplicationWorkspace,
+        );
       },
     );
     this.subscriptions$.push(sub);
