@@ -45,7 +45,7 @@ export class YjsService {
       this.connectedSubject.next(true);
     });
 
-    const observeFn = (event: YEvent) => {
+    const observeFn = () => {
       console.log('Syncing remote y-js map with local object...');
       const cloneObj = cloneDeep(map.toJSON());
       if (!isEqual(subject.getValue(), cloneObj)) {

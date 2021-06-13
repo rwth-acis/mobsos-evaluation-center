@@ -7,7 +7,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 import { VData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
@@ -69,23 +69,29 @@ export const USER_GROUPS = (state: StoreState) =>
 export const FOREIGN_GROUPS = (state: StoreState) =>
   _foreignGroups(state.Reducer?.groups);
 
+const CURRENT_WORKSPACE_OWNER = (state: StoreState) =>
+  state.Reducer.currentWorkSpaceOwner;
+
 export const USER = (state: StoreState) =>
   state.Reducer?.user as User;
 
 export const COMMUNITY_WORKSPACE = (state: StoreState) =>
   state.Reducer.communityWorkspace;
 
-export const USER_WORKSPACE = createSelector(
+export const CURRENT_USER_WORKSPACE = createSelector(
   COMMUNITY_WORKSPACE,
+  CURRENT_WORKSPACE_OWNER,
   USER,
-  (communityWorkspace, user) =>
-    user && communityWorkspace
-      ? communityWorkspace[user.profile.preferred_username]
-      : undefined,
+  (communityWorkspace, owner, user) =>
+    getUserWorkspace(
+      owner,
+      communityWorkspace,
+      user.profile.preferred_username,
+    ),
 );
 
 export const APPLICATION_WORKSPACE = createSelector(
-  USER_WORKSPACE,
+  CURRENT_USER_WORKSPACE,
   SELECTED_SERVICE_NAME,
   (userWorkspace, serviceName) =>
     userWorkspace && serviceName
@@ -315,7 +321,7 @@ function getUserRoleInWorkspace(
     (visitor) => visitor.username === userName,
   );
   if (visitorSearchResult) {
-    return visitorSearchResult.role;
+    return UserRole[visitorSearchResult.role];
   }
   return 'spectator';
 }
@@ -338,4 +344,15 @@ function getAllWorkspacesForService(
     }
   }
   return result as ApplicationWorkspace[];
+}
+
+function getUserWorkspace(
+  owner: string,
+  communityWorkspace: CommunityWorkspace,
+  user: string,
+) {
+  if (!communityWorkspace) return;
+  if (owner) return communityWorkspace[owner];
+  if (!user) return;
+  return communityWorkspace[user];
 }

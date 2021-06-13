@@ -101,7 +101,7 @@
               <button
                 id="save-model-button"
                 mat-raised-button
-                *ngIf="editMode$ | async"
+                *ngIf="saveEnabled$ | async"
                 color="primary"
                 [disabled]="saveInProgress"
                 (click)="onSaveClicked()"

@@ -31,6 +31,7 @@ export interface AppState {
   currentNumberOfHttpCalls: number;
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
+  currentWorkSpaceOwner: string;
 }
 
 export const INITIAL_STATE: AppState = {
@@ -50,6 +51,7 @@ export const INITIAL_STATE: AppState = {
   currentNumberOfHttpCalls: 0,
   expertMode: false,
   communityWorkspace: undefined,
+  currentWorkSpaceOwner: undefined,
 };
 /**
  * What the store looks like

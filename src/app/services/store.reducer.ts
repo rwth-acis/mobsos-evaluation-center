@@ -131,6 +131,10 @@ const _Reducer = createReducer(
     ...state,
     successModel: removeMeasure(state.successModel, props.name),
   })),
+  on(Actions.switchWorkspace, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.username,
+  })),
   on(Actions.editFactorInDimension, (state, props) => ({
     ...state,
     successModel: editFactorInDimension(

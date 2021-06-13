@@ -90,6 +90,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+
   workspaceInitialized$ = this.ngrxStore.select(
     WORKSPACE_INITIALIZED,
   );
@@ -106,6 +107,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );
+
+  saveEnabled$ = combineLatest([
+    this.editMode$,
+    this.userIsOwner$,
+  ]).pipe(map(([editMode, isOwner]) => editMode && isOwner));
 
   selectedServiceName: string;
   editMode = false;

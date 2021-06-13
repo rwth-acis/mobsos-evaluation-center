@@ -8,6 +8,7 @@ import {
   disableEdit,
   setService,
   success,
+  switchWorkspace,
   toggleEdit,
 } from '../services/store.actions';
 
@@ -208,27 +209,31 @@ export class WorkspaceManagementComponent
   }
 
   switchWorkspace(user: string) {
-    this.workspaceUser = user;
-
-    if (!this.currentApplicationWorkspace) {
+    if (!user) {
       return;
     }
-    const visitors = this.currentApplicationWorkspace.visitors;
-    const myUsername = this.getMyUsername();
-    const meAsVisitorArr = visitors.filter(
-      (visitor) => visitor.username === myUsername,
-    );
-    if (
-      meAsVisitorArr.length === 0 &&
-      this.workspaceUser !== myUsername
-    ) {
-      visitors.push({
-        username: myUsername,
-        role: UserRole.SPECTATOR,
-      });
-      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-      this.persistWorkspaceChanges();
-    }
+    this.workspaceUser = user;
+
+    // if (!this.currentApplicationWorkspace) {
+    //   return;
+    // }
+    // const visitors = this.currentApplicationWorkspace.visitors;
+    // const myUsername = this.getMyUsername();
+    // const meAsVisitorArr = visitors.filter(
+    //   (visitor) => visitor.username === myUsername,
+    // );
+    // if (
+    //   meAsVisitorArr.length === 0 &&
+    //   this.workspaceUser !== myUsername
+    // ) {
+    //   visitors.push({
+    //     username: myUsername,
+    //     role: UserRole.SPECTATOR,
+    //   });
+    //   visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
+    //   // this.persistWorkspaceChanges();
+    // }
+    this.ngrxStore.dispatch(switchWorkspace({ username: user }));
   }
 
   private persistWorkspaceChanges() {

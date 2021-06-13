@@ -42,6 +42,7 @@ enum StoreActions {
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
+  SWITCH_WORKSPACE = 'switch the application workspace to that of another [user]',
 }
 
 enum StateActions {
@@ -181,6 +182,11 @@ export const storeSuccessModel = createAction(
 export const updateCommunityWorkspace = createAction(
   StoreActions.UPDATE_COMMUNITY_WORKSPACE,
   props<{ workspace: CommunityWorkspace }>(),
+);
+
+export const switchWorkspace = createAction(
+  StoreActions.SWITCH_WORKSPACE,
+  props<{ username: string }>(),
 );
 
 // modes
