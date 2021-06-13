@@ -3,7 +3,7 @@ import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash';
-import { Doc, Map } from 'yjs';
+import { Doc, Map, YEvent } from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 
 @Injectable({
@@ -16,6 +16,7 @@ export class YjsService {
   private sharedDocument = new Doc();
   private connectedSubject = new BehaviorSubject<boolean>(false);
   public connected$ = this.connectedSubject.asObservable();
+  subscription$;
 
   constructor(private logger: NGXLogger) {
     const provider = new WebsocketProvider(
@@ -23,14 +24,6 @@ export class YjsService {
       'mobsos-ec', // room name
       this.sharedDocument, // collection of properties which will be synced
     );
-    this.sharedDocument.on('status', (event) => {
-      this.logger.debug('Y-JS: ' + event.status);
-      if (event.status === 'connected') {
-        this.connectedSubject.next(true);
-      } else {
-        this.connectedSubject.next(false);
-      }
-    });
   }
   syncObject(
     name: string,
@@ -39,7 +32,7 @@ export class YjsService {
   ) {
     const type = this.sharedDocument.get(name);
     const map = this.sharedDocument.getMap(name);
-    const subscription = subject.subscribe((obj) => {
+    this.subscription$ = subject.subscribe((obj) => {
       // if the subject changes the object will be synced with yjs
       this.logger.debug(
         'Syncing local object with remote y-js map...',
@@ -49,17 +42,19 @@ export class YjsService {
         map,
         initializedSubject.getValue(),
       );
+      this.connectedSubject.next(true);
     });
-    const observeFn = () => {
+
+    const observeFn = (event: YEvent) => {
       console.log('Syncing remote y-js map with local object...');
-      const cloneObj = cloneDeep(type.toJSON());
-      subject.next(cloneObj);
-      initializedSubject.next(true);
+      const cloneObj = cloneDeep(map.toJSON());
+      if (!isEqual(subject.getValue(), cloneObj)) {
+        subject.next(cloneObj);
+        initializedSubject.next(true);
+      }
     };
-    type.observe(observeFn);
-    type.observeDeep(observeFn);
-    // initial yjs sync does not take place, when remote and local object are already equal
-    // in this case we set the object to initialized as soon as the yjs connection is established
+    this.sharedDocument.on('update', observeFn);
+
     this.connected$.subscribe((connected) => {
       if (!initializedSubject.getValue() && connected) {
         const mapAsObj = type.toJSON();
@@ -71,9 +66,9 @@ export class YjsService {
     this.stopSync(name);
     // deposit cleanup function to be called when the type is no longer needed
     this.removeListenersCallbacks[name] = () => {
-      subscription.unsubscribe();
+      this.subscription$?.unsubscribe();
       type.unobserve(observeFn);
-      type.unobserveDeep(observeFn);
+      // type.unobserveDeep(observeFn);
     };
   }
 
@@ -101,9 +96,9 @@ export class YjsService {
       if (isEqual(obj, mapAsObj)) {
         return true;
       }
-      if (!init) {
+      if (init) {
         // delete elements that are present in the map but not in the object.
-        // Dont delete them on first sync to prevent deleting other workspaces
+        // only delete them on if initialized before to prevent deleting other workspaces
         const deletedKeys = Object.keys(mapAsObj).filter(
           (key) => !Object.keys(obj).includes(key),
         );

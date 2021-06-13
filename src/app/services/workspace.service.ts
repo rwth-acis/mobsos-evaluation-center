@@ -15,10 +15,11 @@ import { updateCommunityWorkspace } from './store.actions';
 })
 export class WorkspaceService {
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
-    false,
+    undefined,
   );
   currentGroupId: string;
   communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
+
   async waitUntilWorkspaceIsSynchronized() {
     this.communityWorkspaceInitialized$.asObservable().toPromise();
   }
@@ -36,6 +37,7 @@ export class WorkspaceService {
       this.yjs.stopSync(groupId);
       this.communityWorkspaceInitialized$.next(false);
       this.communityWorkspace$.next({});
+      this.currentGroupId = null;
     }
   }
 
@@ -47,6 +49,7 @@ export class WorkspaceService {
         this.communityWorkspace$,
         this.communityWorkspaceInitialized$,
       );
+      this.currentGroupId = groupId;
     }
   }
 
