@@ -35,7 +35,7 @@
     </mat-slide-toggle>
 
     <ng-container *ngIf="editMode$ | async">
-      <div style="display: flex; align-items: center">
+      <div id="workspace-controls">
         <button
           mat-icon-button
           [matMenuTriggerFor]="reqMenu"
@@ -99,6 +99,24 @@
     </ng-container>
   </mat-toolbar-row>
 </mat-card>
+
+<ng-container
+  *ngIf="(user$ | async)?.profile?.preferred_username as username"
+>
+  <mat-card *ngIf="editMode$ | async" id="workspace-info">
+    <div id="info-content">
+      <mat-icon color="primary">info_outline</mat-icon>
+      <span id="info-text">
+        <span *ngIf="userIsOwner$ | async; else notUserWorkspace">
+          {{ 'success-modeling.info.own-workspace' | translate }}
+        </span>
+        <!-- <span *ngIf="true; else notUserWorkspace">
+              {{ 'success-modeling.info.own-workspace' | translate }}
+            </span> -->
+      </span>
+    </div>
+  </mat-card>
+</ng-container>
 
 <!-- menu for Requirements Bazar -->
 <mat-menu #reqMenu="matMenu">
@@ -210,3 +228,24 @@
     </mat-card-content>
   </ng-container>
 </mat-menu>
+
+<ng-template #notUserWorkspace>
+  <ng-contiainer *ngIf="roleInWorkspace$ | async as role">
+    {{ 'success-modeling.info.workspace-of' | translate }}
+    <strong>{{ workspaceUser }}</strong
+    >.
+    <span *ngIf="role === 'spectator'">
+      {{
+        'success-modeling.info.workspace-rights-spectator' | translate
+      }}
+    </span>
+    <span *ngIf="role === 'editor'">
+      {{
+        'success-modeling.info.workspace-rights-editor' | translate
+      }}
+    </span>
+    {{
+      'success-modeling.info.workspace-ask-owner-to-save' | translate
+    }}
+  </ng-contiainer>
+</ng-template>

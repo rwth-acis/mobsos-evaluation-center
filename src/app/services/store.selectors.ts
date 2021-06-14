@@ -141,12 +141,15 @@ export const VISITORS_EXCEPT_USER = createSelector(
     ),
 );
 
-export const ROLE_IN_CURRENT_WORKSPACE = (state: StoreState) =>
-  getUserRoleInWorkspace(
-    state.Reducer.communityWorkspace,
-    state.Reducer.user.profile.preferred_username,
-    state.Reducer.selectedServiceName,
-  );
+export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
+  APPLICATION_WORKSPACE,
+  USER,
+  (appWorkspace, user) =>
+    getUserRoleInWorkspace(
+      appWorkspace,
+      user?.profile?.preferred_username,
+    ),
+);
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
   ROLE_IN_CURRENT_WORKSPACE,
@@ -301,22 +304,16 @@ function sortServicesByName(
 }
 
 function getUserRoleInWorkspace(
-  communityWorkspace: CommunityWorkspace,
+  applicationWorkspace: ApplicationWorkspace,
   userName: string,
-  serviceName: string,
 ): string {
-  if (
-    !userName ||
-    !communityWorkspace[userName] ||
-    !communityWorkspace[userName][serviceName]
-  ) {
-    return null;
+  if (!userName || !applicationWorkspace) {
+    return;
   }
-  const workspace = communityWorkspace[userName][serviceName];
-  if (workspace.createdBy === userName) {
+  if (applicationWorkspace.createdBy === userName) {
     return 'owner';
   }
-  const visitors = workspace.visitors || [];
+  const visitors = applicationWorkspace.visitors || [];
   const visitorSearchResult = visitors.find(
     (visitor) => visitor.username === userName,
   );

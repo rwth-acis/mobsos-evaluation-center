@@ -9,26 +9,8 @@
           | translate: { community: group.name }
       }}
     </h2>
-    <!-- service selection and edit toggle -->
+    <!-- workspace management -->
     <app-workspace-management></app-workspace-management>
-    <!-- workspace info -->
-    <ng-container
-      *ngIf="(user$ | async)?.profile?.preferred_username as username"
-    >
-      <mat-card *ngIf="editMode$ | async" id="workspace-info">
-        <div id="info-content">
-          <mat-icon color="primary">info_outline</mat-icon>
-          <span id="info-text">
-            <span *ngIf="userIsOwner$ | async; else notUserWorkspace">
-              {{ 'success-modeling.info.own-workspace' | translate }}
-            </span>
-            <!-- <span *ngIf="true; else notUserWorkspace">
-              {{ 'success-modeling.info.own-workspace' | translate }}
-            </span> -->
-          </span>
-        </div>
-      </mat-card>
-    </ng-container>
 
     <!-- Success model -->
     <ng-container
@@ -150,26 +132,7 @@
   <mat-spinner style="margin: auto"> </mat-spinner>
 </ng-template>
 
-<ng-template #notUserWorkspace>
-  <ng-contiainer *ngIf="userRole$ | async as role">
-    {{ 'success-modeling.info.workspace-of' | translate }}
-    <strong>{{ workspaceUser }}</strong
-    >.
-    <span *ngIf="role === 'spectator'">
-      {{
-        'success-modeling.info.workspace-rights-spectator' | translate
-      }}
-    </span>
-    <span *ngIf="role === 'editor'">
-      {{
-        'success-modeling.info.workspace-rights-editor' | translate
-      }}
-    </span>
-    {{
-      'success-modeling.info.workspace-ask-owner-to-save' | translate
-    }}
-  </ng-contiainer>
-</ng-template>
+
 
 <ng-template #notPartOfCommunity>
   <mat-card>

@@ -33,9 +33,11 @@ import {
   toggleExpertMode,
 } from './services/store.actions';
 import {
+  APPLICATION_WORKSPACE,
   EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   USER,
   USER_GROUPS,
@@ -52,6 +54,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
+import { StoreState } from './models/state.model';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -210,6 +213,12 @@ export class AppComponent implements OnInit, OnDestroy {
       sub = this.ngrxStore.subscribe((state) => {
         console.log(state);
       });
+      this.subscriptions$.push(sub);
+      sub = this.ngrxStore
+        .select(ROLE_IN_CURRENT_WORKSPACE)
+        .subscribe((workspace) => {
+          console.log(workspace);
+        });
       this.subscriptions$.push(sub);
     }
 

@@ -6,10 +6,7 @@ import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
 import { VisualizationData } from './visualization.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from './workspace.model';
+import { CommunityWorkspace } from './workspace.model';
 
 /**
  * state of the app

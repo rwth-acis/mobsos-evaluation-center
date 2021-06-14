@@ -14,33 +14,71 @@ import { updateCommunityWorkspace } from './store.actions';
   providedIn: 'root',
 })
 export class WorkspaceService {
+  /*****
+   * if we need to swith community. We need to reinitilize the workspace
+   */
   communityWorkspaceInitialized$ = new BehaviorSubject<boolean>(
-    undefined,
+    false,
   );
-  currentGroupId: string;
+  currentGroupId: string; // copy of the last group id. This will be used to stop synchronizing the old workspace if a new one is created
+
+  /*******************************
+   * This subject should always contain the current community workspace state
+   */
   communityWorkspace$ = new BehaviorSubject<CommunityWorkspace>({});
 
-  async waitUntilWorkspaceIsSynchronized() {
-    this.communityWorkspaceInitialized$.asObservable().toPromise();
+  constructor(private yjs: YjsService, private ngrxStore: Store) {
+    // updates the workspace in store
+    this.communityWorkspace$.subscribe((workspace) => {
+      this.ngrxStore.dispatch(
+        updateCommunityWorkspace({ workspace }),
+      );
+    });
   }
+
+  /**
+   * This function returns a Promise which will be resolved when the workspace is is synchronized successfully.
+   */
+  waitUntilWorkspaceIsSynchronized() {
+    return this.communityWorkspaceInitialized$
+      .asObservable()
+      .toPromise();
+  }
+
+  /**
+   * This initially sets the workspace
+   * @param workspace Current local workspace object
+   * @param groupId The id of the community. It is used as the name of the yjs room
+   */
   setCommunityWorkspace(
     workspace: CommunityWorkspace,
     groupId?: string,
   ) {
     this.startSynchronizingWorkspace(groupId);
-    // this.ngrxStore.dispatch(updateCommunityWorkspace({ workspace }));
     this.communityWorkspace$.next(workspace);
   }
 
+  getCurrentCommunityWorkspace(groupId: string) {
+    return this.yjs.getSyncedDocument(groupId);
+  }
+
+  /**
+   * This fucntion stops synchronizing the workspace
+   * @param groupId id of the current community
+   */
   stopSynchronizingWorkspace(groupId: string) {
     if (groupId) {
       this.yjs.stopSync(groupId);
       this.communityWorkspaceInitialized$.next(false);
       this.communityWorkspace$.next({});
-      this.currentGroupId = null;
+      this.currentGroupId = undefined;
     }
   }
 
+  /**
+   * This function start synchronizing the workspace for the current community
+   * @param groupId groupid for the community
+   */
   startSynchronizingWorkspace(groupId: string) {
     if (groupId && groupId !== this.currentGroupId) {
       this.stopSynchronizingWorkspace(this.currentGroupId);
@@ -53,6 +91,11 @@ export class WorkspaceService {
     }
   }
 
+  /**
+   * This function is used to remove the application workspace of the current user from the community workspace
+   * @param username username of the current user
+   * @param serviceName name of the application
+   */
   removeWorkspace(username: string, serviceName: string) {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(username)) {
@@ -66,6 +109,13 @@ export class WorkspaceService {
     this.communityWorkspace$.next(communityWorkspace);
   }
 
+  /**
+   * This function is used to copy the application workspace of someone else in the community
+   * @param owner the owner of the workspace wich we want to copy
+   * @param username the username of the current user
+   * @param serviceName the name of the application
+   * @returns the newly copied workspace. If either userWorkspace or ownerWorkspace are undefined then this will return undefined
+   */
   private copyWorkspace(
     owner: string,
     username: string,
@@ -86,7 +136,7 @@ export class WorkspaceService {
     if (!userWorkspace || !ownerWorkspace) {
       return;
     }
-    // userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
+    userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
     userWorkspace.model = cloneDeep(ownerWorkspace.model);
     return userWorkspace;
   }
@@ -97,30 +147,12 @@ export class WorkspaceService {
   ) {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(user)) {
-      return null;
+      return;
     }
     const userWorkspace = communityWorkspace[user];
     if (!Object.keys(userWorkspace).includes(service)) {
-      return null;
+      return;
     }
     return userWorkspace[service];
-  }
-
-  private getWorkspaceByUser(
-    workspaceUser: string,
-    selectedServiceName: string,
-  ) {
-    return this.getWorkspaceByUserAndService(
-      workspaceUser,
-      selectedServiceName,
-    );
-  }
-
-  constructor(private yjs: YjsService, private ngrxStore: Store) {
-    this.communityWorkspace$.subscribe((workspace) => {
-      this.ngrxStore.dispatch(
-        updateCommunityWorkspace({ workspace }),
-      );
-    });
   }
 }

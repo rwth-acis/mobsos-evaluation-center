@@ -7,7 +7,6 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import {
   disableEdit,
   setService,
-  success,
   switchWorkspace,
   toggleEdit,
 } from '../services/store.actions';
@@ -33,7 +32,7 @@ import {
   APPLICATION_WORKSPACE,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, withLatestFrom } from 'rxjs/operators';
 import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -114,15 +113,17 @@ export class WorkspaceManagementComponent
         ); // set the value in the selection
         subscription.unsubscribe();
       });
-    let sub = this.editMode$.subscribe((editMode) => {
-      if (editMode) {
-        const parent = this;
-        this.initWorkspace().then(() =>
-          // this is not working currently
-          parent.switchWorkspace(parent.getMyUsername()),
-        );
-      }
-    });
+    let sub = this.editMode$
+      .pipe(withLatestFrom(this.selectedGroup$))
+      .subscribe(([editMode, group]) => {
+        if (editMode) {
+          const ctx = this;
+          this.initWorkspace(group.id).then((res) =>
+            // this is not working currently
+            ctx.switchWorkspace(ctx.getMyUsername()),
+          );
+        }
+      });
     this.subscriptions$.push(sub);
     sub = this.successModel$.subscribe((successModel) => {
       this.successModel = successModel;
@@ -161,42 +162,40 @@ export class WorkspaceManagementComponent
   /**
    * Initializes the workspace for collaborative success modeling
    */
-  private async initWorkspace() {
-    const parent = this;
-    await this.workspaceService
-      .waitUntilWorkspaceIsSynchronized()
-      .then(() => {
-        const myUsername = parent.getMyUsername();
-        parent.setWorkspaceUser(myUsername);
-        if (
-          !Object.keys(parent.communityWorkspace).includes(myUsername)
-        ) {
-          parent.communityWorkspace[myUsername] = {};
-        }
-        const userWorkspace = parent.communityWorkspace[myUsername];
-        if (
-          !Object.keys(userWorkspace).includes(
-            parent.selectedServiceName,
-          )
-        ) {
-          if (!parent.measureCatalog) {
-            parent.measureCatalog = new MeasureCatalog({});
-          }
-          if (!parent.successModel) {
-            parent.successModel = SuccessModel.emptySuccessModel(
-              parent.selectedService,
-            );
-          }
-          userWorkspace[this.selectedServiceName] = {
-            createdAt: new Date().toISOString(),
-            createdBy: myUsername,
-            visitors: [],
-            catalog: this.measureCatalog,
-            model: this.successModel,
-          };
-        }
-        parent.persistWorkspaceChanges();
-      });
+  private async initWorkspace(groupID: string) {
+    const ctx = this;
+    const currentCommunityWorkspace =
+      this.workspaceService.getCurrentCommunityWorkspace(groupID);
+    this.communityWorkspace = currentCommunityWorkspace;
+
+    const myUsername = ctx.getMyUsername();
+    ctx.setWorkspaceUser(myUsername);
+    if (!Object.keys(ctx.communityWorkspace).includes(myUsername)) {
+      ctx.communityWorkspace[myUsername] = {};
+    }
+    const userWorkspace = ctx.communityWorkspace[myUsername];
+    if (
+      !Object.keys(userWorkspace).includes(ctx.selectedServiceName)
+    ) {
+      if (!ctx.measureCatalog) {
+        ctx.measureCatalog = new MeasureCatalog({});
+      }
+      if (!ctx.successModel) {
+        ctx.successModel = SuccessModel.emptySuccessModel(
+          ctx.selectedService,
+        );
+      }
+      userWorkspace[this.selectedServiceName] = {
+        createdAt: new Date().toISOString(),
+        createdBy: myUsername,
+        visitors: [],
+        catalog: this.measureCatalog,
+        model: this.successModel,
+      };
+    }
+    ctx.persistWorkspaceChanges();
+    await this.workspaceService.waitUntilWorkspaceIsSynchronized();
+    return;
   }
 
   onServiceSelected(service: ServiceInformation) {
@@ -351,5 +350,9 @@ export class WorkspaceManagementComponent
     this.subscriptions$.forEach((subscription) => {
       subscription.unsubscribe();
     });
+    this.workspaceService.removeWorkspace(
+      this.getMyUsername(),
+      this.selectedServiceName,
+    );
   }
 }

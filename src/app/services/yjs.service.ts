@@ -25,6 +25,11 @@ export class YjsService {
       this.sharedDocument, // collection of properties which will be synced
     );
   }
+
+  getSyncedDocument(name: string) {
+    return this.sharedDocument.getMap(name).toJSON();
+  }
+
   syncObject(
     name: string,
     subject: BehaviorSubject<object>,
