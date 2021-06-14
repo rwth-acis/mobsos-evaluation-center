@@ -137,7 +137,7 @@
         {{ 'success-modeling.visitors.no-visitors' | translate }}
       </div>
 
-      <div *ngFor="let visitor of foreign_visitors">
+      <div *ngFor="let visitor of foreign_visitors" id="visitors">
         {{ visitor.username }}
         <ng-container *ngIf="userIsOwner$ | async">
           <button

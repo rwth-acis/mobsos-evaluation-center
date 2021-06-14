@@ -111,17 +111,15 @@ export class WorkspaceManagementComponent
         this.serviceSelectForm.setValue(
           service.alias ? service.alias : this.selectedServiceName,
         ); // set the value in the selection
-        subscription.unsubscribe();
       });
+    this.subscriptions$.push(subscription);
     let sub = this.editMode$
       .pipe(withLatestFrom(this.selectedGroup$))
-      .subscribe(([editMode, group]) => {
+      .subscribe(async ([editMode, group]) => {
         if (editMode) {
           const ctx = this;
-          this.initWorkspace(group.id).then((res) =>
-            // this is not working currently
-            ctx.switchWorkspace(ctx.getMyUsername()),
-          );
+          await this.initWorkspace(group.id);
+          ctx.switchWorkspace(ctx.getMyUsername());
         }
       });
     this.subscriptions$.push(sub);
@@ -156,7 +154,7 @@ export class WorkspaceManagementComponent
   }
 
   setWorkspace(workspace: CommunityWorkspace) {
-    this.communityWorkspace = workspace;
+    this.communityWorkspace = cloneDeep(workspace);
   }
 
   /**
@@ -166,7 +164,7 @@ export class WorkspaceManagementComponent
     const ctx = this;
     const currentCommunityWorkspace =
       this.workspaceService.getCurrentCommunityWorkspace(groupID);
-    this.communityWorkspace = currentCommunityWorkspace;
+    this.communityWorkspace = cloneDeep(currentCommunityWorkspace);
 
     const myUsername = ctx.getMyUsername();
     ctx.setWorkspaceUser(myUsername);
@@ -195,7 +193,7 @@ export class WorkspaceManagementComponent
     }
     ctx.persistWorkspaceChanges();
     await this.workspaceService.waitUntilWorkspaceIsSynchronized();
-    return;
+    return true;
   }
 
   onServiceSelected(service: ServiceInformation) {
@@ -213,18 +211,16 @@ export class WorkspaceManagementComponent
     }
     this.workspaceUser = user;
 
-    if (!this.currentApplicationWorkspace) {
-      return;
-    }
+    if (!this.communityWorkspace[user]) return;
+    this.currentApplicationWorkspace =
+      this.communityWorkspace[user][this.selectedServiceName];
+    if (!this.currentApplicationWorkspace) return;
     const visitors = this.currentApplicationWorkspace.visitors;
     const myUsername = this.getMyUsername();
-    const meAsVisitorArr = visitors.filter(
+    const containedInVisitors = visitors.find(
       (visitor) => visitor.username === myUsername,
     );
-    if (
-      meAsVisitorArr.length === 0 &&
-      this.workspaceUser !== myUsername
-    ) {
+    if (this.workspaceUser !== myUsername && !containedInVisitors) {
       visitors.push({
         username: myUsername,
         role: UserRole.SPECTATOR,
@@ -246,14 +242,27 @@ export class WorkspaceManagementComponent
     );
   }
 
-  changeVisitorRole(visitorName: string, role: string) {
-    const visitorSearchResult = this.visitors.filter(
-      (visitor) => visitor.username === visitorName,
+  changeVisitorRole(visitorName: string, role?: string) {
+    console.log(role, UserRole[role], visitorName);
+    this.communityWorkspace = cloneDeep(this.communityWorkspace);
+    const visitors = this.communityWorkspace[this.workspaceUser][
+      this.selectedServiceName
+    ].visitors.map((visitor) =>
+      visitor.username === visitorName
+        ? {
+            ...visitor,
+            role:
+              role === 'editor'
+                ? UserRole.EDITOR
+                : UserRole.SPECTATOR,
+          }
+        : visitor,
     );
-    if (visitorSearchResult) {
-      visitorSearchResult[0].role = UserRole[role];
-      this.persistWorkspaceChanges();
-    }
+    this.communityWorkspace[this.workspaceUser][
+      this.selectedServiceName
+    ].visitors = visitors;
+    console.log(this.communityWorkspace);
+    this.persistWorkspaceChanges();
   }
 
   async openCopyWorkspaceDialog(owner: string) {
@@ -302,6 +311,7 @@ export class WorkspaceManagementComponent
     user: string,
     service: string,
   ): ApplicationWorkspace {
+    this.communityWorkspace = cloneDeep(this.communityWorkspace);
     if (!this.communityWorkspace) {
       return;
     }
@@ -317,6 +327,7 @@ export class WorkspaceManagementComponent
 
   private removeWorkspace() {
     const myUsername = this.user.profile.preferred_username;
+    this.communityWorkspace = cloneDeep(this.communityWorkspace);
     if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
       return;
     }
@@ -348,6 +359,8 @@ export class WorkspaceManagementComponent
     }
     myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
     myWorkspace.model = cloneDeep(ownerWorkspace.model);
+    this.communityWorkspace[myUsername][this.selectedServiceName] =
+      myWorkspace;
     this.persistWorkspaceChanges();
   }
 
