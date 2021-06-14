@@ -23,6 +23,7 @@
     <mat-slide-toggle
       labelPosition="before"
       [checked]="editMode$ | async"
+      [(ngModel)]="checked"
       (toggleChange)="onEditModeChanged($event)"
       [disabled]="!(memberOfGroup$ | async)"
       [matTooltip]="
@@ -34,70 +35,67 @@
       {{ 'success-modeling.edit-mode-toggle' | translate }}
     </mat-slide-toggle>
 
-    <ng-container *ngIf="editMode$ | async">
-      <div id="workspace-controls">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="reqMenu"
-          aria-label="Requirements Bazaar"
-          matTooltip="{{
-            'success-modeling.reqbaz.tooltip' | translate
-          }}"
+    <div id="workspace-controls" *ngIf="editMode$ | async">
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="reqMenu"
+        aria-label="Requirements Bazaar"
+        matTooltip="{{
+          'success-modeling.reqbaz.tooltip' | translate
+        }}"
+      >
+        <mat-icon
+          color="primary"
+          svgIcon="reqbaz-logo"
+          [matBadge]="
+            numberOfRequirements === 0 ? null : numberOfRequirements
+          "
         >
-          <mat-icon
-            color="primary"
-            svgIcon="reqbaz-logo"
-            [matBadge]="
-              numberOfRequirements === 0 ? null : numberOfRequirements
-            "
-          >
-          </mat-icon>
-        </button>
+        </mat-icon>
+      </button>
 
-        <button
-          mat-icon-button
-          aria-label="Spectators"
-          [matMenuTriggerFor]="groupMenu"
-          matTooltip="{{
-            'success-modeling.visitors.tooltip' | translate
-          }}"
+      <button
+        mat-icon-button
+        aria-label="Spectators"
+        [matMenuTriggerFor]="groupMenu"
+        matTooltip="{{
+          'success-modeling.visitors.tooltip' | translate
+        }}"
+      >
+        <mat-icon
+          color="primary"
+          [matBadge]="
+            (visitorsExcpetUser$ | async)?.length === 0
+              ? null
+              : (visitorsExcpetUser$ | async)?.length
+          "
+          matBadgeColor="accent"
         >
-          <mat-icon
-            color="primary"
-            [matBadge]="
-              (visitorsExcpetUser$ | async)?.length === 0
-                ? null
-                : (visitorsExcpetUser$ | async)?.length
-            "
-            matBadgeColor="accent"
-          >
-            group
-          </mat-icon>
-        </button>
+          group
+        </mat-icon>
+      </button>
 
-        <button
-          mat-icon-button
-          aria-label="Workspaces"
-          [matMenuTriggerFor]="workspaceMenu"
-          matTooltip="{{
-            'success-modeling.workspaces.tooltip' | translate
-          }}"
+      <button
+        mat-icon-button
+        aria-label="Workspaces"
+        [matMenuTriggerFor]="workspaceMenu"
+        matTooltip="{{
+          'success-modeling.workspaces.tooltip' | translate
+        }}"
+      >
+        <mat-icon
+          color="primary"
+          [matBadge]="
+            (workspacesForServiceExceptActive$ | async)?.length === 0
+              ? null
+              : (workspacesForServiceExceptActive$ | async)?.length
+          "
+          matBadgeColor="accent"
         >
-          <mat-icon
-            color="primary"
-            [matBadge]="
-              (workspacesForServiceExceptActive$ | async)?.length ===
-              0
-                ? null
-                : (workspacesForServiceExceptActive$ | async)?.length
-            "
-            matBadgeColor="accent"
-          >
-            view_carousel
-          </mat-icon>
-        </button>
-      </div>
-    </ng-container>
+          view_carousel
+        </mat-icon>
+      </button>
+    </div>
   </mat-toolbar-row>
 </mat-card>
 
@@ -148,7 +146,7 @@
                 | translate
             }}"
             matTooltipShowDelay="0"
-            (click)="changeVisitorRole(visitor.username, 'editor')"
+            (click)="onChangeRole(visitor.username, 'editor')"
           >
             <mat-icon>create</mat-icon>
           </button>
@@ -160,7 +158,7 @@
                 | translate
             }}"
             matTooltipShowDelay="0"
-            (click)="changeVisitorRole(visitor.username, 'spectator')"
+            (click)="onChangeRole(visitor.username, 'spectator')"
           >
             <mat-icon>remove_red_eye</mat-icon>
           </button>
@@ -217,7 +215,7 @@
               'success-modeling.workspaces.go-to' | translate
             }}"
             matTooltipShowDelay="0"
-            (click)="switchWorkspace(workspace.createdBy)"
+            (click)="onSwitchWorkspace(workspace.createdBy)"
           >
             <mat-icon>exit_to_app</mat-icon>
           </button>
