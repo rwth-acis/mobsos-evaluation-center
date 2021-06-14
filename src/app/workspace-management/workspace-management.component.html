@@ -228,7 +228,7 @@
 <ng-template #notUserWorkspace>
   <ng-contiainer *ngIf="roleInWorkspace$ | async as role">
     {{ 'success-modeling.info.workspace-of' | translate }}
-    <strong>{{ workspaceUser }}</strong
+    <strong>{{ applicationWorkspaceOwner$ | async }}</strong
     >.
     <span *ngIf="role === 'spectator'">
       {{

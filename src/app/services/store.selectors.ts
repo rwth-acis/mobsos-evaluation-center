@@ -7,8 +7,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
-import { User, UserRole } from '../models/user.model';
-import { VData } from '../models/visualization.model';
+import { User } from '../models/user.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,

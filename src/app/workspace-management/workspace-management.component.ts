@@ -29,6 +29,7 @@ import {
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   APPLICATION_WORKSPACE,
   ASSETS_LOADED,
+  WORKSPACE_OWNER,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter, map, withLatestFrom } from 'rxjs/operators';
@@ -65,6 +66,7 @@ export class WorkspaceManagementComponent
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
+  applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
   user$ = this.ngrxStore.select(USER);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   workspaceInitialized$ = this.ngrxStore.select(ASSETS_LOADED);
@@ -90,7 +92,6 @@ export class WorkspaceManagementComponent
   workspaceOwner: string;
   numberOfRequirements = 0;
   checked: boolean;
-
   serviceSelectForm = new FormControl('');
 
   constructor(
