@@ -42,7 +42,7 @@ enum StoreActions {
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
-  SWITCH_WORKSPACE = 'switch the application workspace to that of another [user]',
+  SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
 }
 
 enum StateActions {
@@ -184,8 +184,8 @@ export const updateCommunityWorkspace = createAction(
   props<{ workspace: CommunityWorkspace }>(),
 );
 
-export const switchWorkspace = createAction(
-  StoreActions.SWITCH_WORKSPACE,
+export const setWorkSpaceOwner = createAction(
+  StoreActions.SET_WORKSPACE_OWNER,
   props<{ username: string }>(),
 );
 

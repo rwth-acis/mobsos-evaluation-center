@@ -1,11 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-
 import { Questionnaire } from '../las2peer.service';
-
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-
 import { TranslateService } from '@ngx-translate/core';
-
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
@@ -16,6 +11,7 @@ import {
   toggleEdit,
 } from '../services/store.actions';
 import {
+  ASSETS_LOADED,
   DIMENSIONS_IN_MODEL,
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
@@ -23,11 +19,9 @@ import {
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
-  SERVICES,
   SUCCESS_MODEL,
   USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
-  WORKSPACE_INITIALIZED,
 } from '../services/store.selectors';
 import {
   catchError,
@@ -40,7 +34,6 @@ import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
 import { combineLatest, of, Subscription } from 'rxjs';
-import { FormControl } from '@angular/forms';
 import {
   animate,
   style,
@@ -50,7 +43,6 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../models/service.model';
-import { ApplicationWorkspace } from '../models/workspace.model';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -91,9 +83,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
 
-  workspaceInitialized$ = this.ngrxStore.select(
-    WORKSPACE_INITIALIZED,
-  );
+  assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
   user$ = this.ngrxStore.select(USER);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
@@ -103,7 +93,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   showEditButton$ = combineLatest([
     this.selectedGroup$,
     this.selectedService$,
-    this.workspaceInitialized$,
+    this.assetsLoaded$,
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );

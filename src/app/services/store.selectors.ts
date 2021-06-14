@@ -36,7 +36,7 @@ const _GROUPS = (state: StoreState) => state.Reducer.groups;
 export const VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer.visualizationData;
 
-export const WORKSPACE_INITIALIZED = (state: StoreState) =>
+export const ASSETS_LOADED = (state: StoreState) =>
   state.Reducer.successModelInitialized &&
   state.Reducer.measureCatalogInitialized;
 

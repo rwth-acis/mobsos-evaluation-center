@@ -20,7 +20,7 @@
       "
     >
       <ng-container
-        *ngIf="workspaceInitialized$ | async; else notInitialized"
+        *ngIf="assetsLoaded$ | async; else notInitialized"
       >
         <h3 *ngIf="group?.name">
           {{
@@ -131,8 +131,6 @@
   <!-- success model still loading -->
   <mat-spinner style="margin: auto"> </mat-spinner>
 </ng-template>
-
-
 
 <ng-template #notPartOfCommunity>
   <mat-card>

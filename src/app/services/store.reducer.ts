@@ -134,7 +134,7 @@ const _Reducer = createReducer(
     ...state,
     successModel: removeMeasure(state.successModel, props.name),
   })),
-  on(Actions.switchWorkspace, (state, props) => ({
+  on(Actions.setWorkSpaceOwner, (state, props) => ({
     ...state,
     currentWorkSpaceOwner: props.username,
     communityWorkspace: addVisitor(
