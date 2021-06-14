@@ -209,17 +209,20 @@ export class WorkspaceManagementComponent
     if (!user) {
       return;
     }
-    this.workspaceUser = user;
 
     if (!this.communityWorkspace[user]) return;
     this.currentApplicationWorkspace =
       this.communityWorkspace[user][this.selectedServiceName];
     if (!this.currentApplicationWorkspace) return;
+    this.workspaceUser = user;
+
     const visitors = this.currentApplicationWorkspace.visitors;
     const myUsername = this.getMyUsername();
+
     const containedInVisitors = visitors.find(
       (visitor) => visitor.username === myUsername,
     );
+    // we add ourselves as spectators  if we are not a visitor yet
     if (this.workspaceUser !== myUsername && !containedInVisitors) {
       visitors.push({
         username: myUsername,
@@ -230,7 +233,7 @@ export class WorkspaceManagementComponent
 
       const service = this.currentApplicationWorkspace.model.service;
       this.communityWorkspace = cloneDeep(this.communityWorkspace); // need to clone to assign
-      this.communityWorkspace[user][service].visitors = visitors;
+      this.communityWorkspace[user][service].visitors = visitors; // update the communityWorkspace
       this.persistWorkspaceChanges();
     }
     this.ngrxStore.dispatch(switchWorkspace({ username: user }));
