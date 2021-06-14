@@ -1,9 +1,8 @@
-import {Injectable} from '@angular/core';
-import {NGXLogger} from 'ngx-logger';
-import {TranslateService} from '@ngx-translate/core';
+import { Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LanguageService {
   SUPPORTED_LANGUAGES = ['en', 'de'];
@@ -11,7 +10,7 @@ export class LanguageService {
 
   private currentLanguage = 'en';
 
-  constructor(private logger: NGXLogger, private translate: TranslateService) {
+  constructor(private translate: TranslateService) {
     this.currentLanguage = this.getInitialLanguage();
     this.translate.use(this.currentLanguage);
   }
@@ -24,10 +23,14 @@ export class LanguageService {
    */
   getInitialLanguage() {
     let selectedLanguage = 'en';
-    const localStorageLang = localStorage.getItem((this.LOCAL_STORAGE_LANGUAGE));
-    if (localStorageLang && this.SUPPORTED_LANGUAGES.includes(localStorageLang)) {
+    const localStorageLang = localStorage.getItem(
+      this.LOCAL_STORAGE_LANGUAGE,
+    );
+    if (
+      localStorageLang &&
+      this.SUPPORTED_LANGUAGES.includes(localStorageLang)
+    ) {
       selectedLanguage = localStorageLang;
-      this.logger.debug('Stored language: ' + localStorageLang);
     }
     return selectedLanguage;
   }
