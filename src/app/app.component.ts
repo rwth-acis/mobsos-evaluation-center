@@ -216,8 +216,8 @@ export class AppComponent implements OnInit, OnDestroy {
       this.subscriptions$.push(sub);
       sub = this.ngrxStore
         .select(ROLE_IN_CURRENT_WORKSPACE)
-        .subscribe((workspace) => {
-          console.log(workspace);
+        .subscribe((role) => {
+          console.log(role);
         });
       this.subscriptions$.push(sub);
     }

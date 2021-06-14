@@ -727,7 +727,7 @@ export class Las2peerService {
           btoa(profile.preferred_username + ':' + profile.sub),
       };
     }
-    // console.log(profile, authorHeader);
+
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
@@ -766,7 +766,7 @@ export class Las2peerService {
           btoa(profile.preferred_username + ':' + profile.sub),
       };
     }
-    // console.log(profile, authorHeader);
+
     return this.makeRequestAndObserve(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
