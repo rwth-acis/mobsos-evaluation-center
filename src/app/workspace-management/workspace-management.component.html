@@ -1,5 +1,5 @@
-<!-- service selection and edit toggle -->
 <mat-card id="header-card">
+  <!-- service selection -->
   <mat-toolbar-row>
     <mat-form-field id="community-service-select">
       <mat-label>{{
@@ -18,7 +18,7 @@
       </mat-select>
     </mat-form-field>
   </mat-toolbar-row>
-
+  <!-- workspace management -->
   <mat-toolbar-row id="edit-controls" *ngIf="showEditButton$ | async">
     <mat-slide-toggle
       labelPosition="before"
@@ -69,6 +69,7 @@
                 ? null
                 : (visitorsExcpetUser$ | async)?.length
             "
+            matBadgeColor="accent"
           >
             group
           </mat-icon>
@@ -90,7 +91,7 @@
                 ? null
                 : (workspacesForServiceExceptActive$ | async)?.length
             "
-            matBadgeColor="warn"
+            matBadgeColor="accent"
           >
             view_carousel
           </mat-icon>
@@ -105,14 +106,11 @@
 >
   <mat-card *ngIf="editMode$ | async" id="workspace-info">
     <div id="info-content">
-      <mat-icon color="primary">info_outline</mat-icon>
+      <mat-icon color="accent">info_outline</mat-icon>
       <span id="info-text">
         <span *ngIf="userIsOwner$ | async; else notUserWorkspace">
           {{ 'success-modeling.info.own-workspace' | translate }}
         </span>
-        <!-- <span *ngIf="true; else notUserWorkspace">
-              {{ 'success-modeling.info.own-workspace' | translate }}
-            </span> -->
       </span>
     </div>
   </mat-card>

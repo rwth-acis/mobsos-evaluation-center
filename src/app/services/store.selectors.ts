@@ -318,7 +318,7 @@ function getUserRoleInWorkspace(
     (visitor) => visitor.username === userName,
   );
   if (visitorSearchResult) {
-    return UserRole[visitorSearchResult.role];
+    return visitorSearchResult.role;
   }
   return 'spectator';
 }

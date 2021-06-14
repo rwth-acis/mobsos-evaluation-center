@@ -6,9 +6,8 @@ export interface User {
   signedIn?: boolean;
 }
 
-export interface Visitor {
-  username: string;
-  role: UserRole;
+export class Visitor {
+  constructor(public username: string, public role: UserRole) {}
 }
 
 export enum UserRole {

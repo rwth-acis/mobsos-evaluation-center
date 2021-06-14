@@ -10,11 +10,14 @@ import {
   SuccessFactor,
   SuccessModel,
 } from '../models/success.model';
+import { VisualizationData } from '../models/visualization.model';
 import {
-  VData,
-  VisualizationData,
-} from '../models/visualization.model';
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from '../models/workspace.model';
 import * as Actions from './store.actions';
+import { cloneDeep } from 'lodash';
+import { UserRole, Visitor } from '../models/user.model';
 
 export const initialState: AppState = INITIAL_STATE;
 
@@ -134,6 +137,12 @@ const _Reducer = createReducer(
   on(Actions.switchWorkspace, (state, props) => ({
     ...state,
     currentWorkSpaceOwner: props.username,
+    communityWorkspace: addVisitor(
+      state.communityWorkspace,
+      props.username,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
   })),
   on(Actions.editFactorInDimension, (state, props) => ({
     ...state,
@@ -534,4 +543,21 @@ function updateMeasureInFactor(
 function getSelectedService(state: AppState) {
   if (!state.services || !state.selectedServiceName) return undefined;
   return state.services[state.selectedServiceName];
+}
+function addVisitor(
+  communityWorkspace: CommunityWorkspace,
+  username: string,
+  owner: string,
+  serviceName: string,
+): CommunityWorkspace {
+  const copy = cloneDeep(communityWorkspace); // copy workspace first
+  const userWorkspace = copy[owner];
+  if (!userWorkspace) return communityWorkspace;
+  const appWorkspace: ApplicationWorkspace =
+    userWorkspace[serviceName];
+  if (!appWorkspace) return communityWorkspace;
+  appWorkspace.visitors.push(
+    new Visitor(username, UserRole.SPECTATOR),
+  );
+  return copy;
 }
