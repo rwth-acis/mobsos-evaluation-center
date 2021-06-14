@@ -87,7 +87,6 @@ export class WorkspaceManagementComponent
   selectedService: ServiceInformation;
   selectedServiceName: string;
   successModel: SuccessModel;
-  communityWorkspace: CommunityWorkspace = {};
   workspaceOwner: string;
   numberOfRequirements = 0;
   checked: boolean;
@@ -117,7 +116,7 @@ export class WorkspaceManagementComponent
       .pipe(withLatestFrom(this.selectedGroup$))
       .subscribe(async ([editMode, group]) => {
         if (editMode) {
-          await this.initWorkspace(group.id);
+          this.initWorkspace(group.id);
           this.onSwitchWorkspace(
             this.user?.profile.preferred_username,
           );
@@ -146,13 +145,16 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
   }
 
-  onServiceSelected(service: ServiceInformation) {
-    this.workspaceService.removeWorkspace(
-      this.user?.profile.preferred_username,
-      this.selectedServiceName,
-    );
-    this.ngrxStore.dispatch(disableEdit());
-    this.ngrxStore.dispatch(setService({ service }));
+  async onServiceSelected(service: ServiceInformation) {
+    const confirmation = await this.openClearWorkspaceDialog();
+    if (confirmation) {
+      this.workspaceService.removeWorkspace(
+        this.user?.profile.preferred_username,
+        this.selectedServiceName,
+      );
+      this.ngrxStore.dispatch(disableEdit());
+      this.ngrxStore.dispatch(setService({ service }));
+    }
   }
 
   async onEditModeChanged() {
@@ -171,7 +173,7 @@ export class WorkspaceManagementComponent
   /**
    * Initializes the workspace for collaborative success modeling
    */
-  private async initWorkspace(groupID: string) {
+  private initWorkspace(groupID: string) {
     if (!this.user) return console.error('user cannot be null');
     this.workspaceOwner = this.user?.profile.preferred_username;
     // get the current workspace state from yjs
@@ -185,7 +187,7 @@ export class WorkspaceManagementComponent
     }
 
     this.currentApplicationWorkspace =
-      await this.workspaceService.initWorkspace(
+      this.workspaceService.initWorkspace(
         groupID,
         this.workspaceOwner,
         this.selectedService,
@@ -254,14 +256,14 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.workspaceService.removeWorkspace(
-            this.user?.profile.preferred_username,
-            this.selectedServiceName,
-          );
-        }
-      });
+      // dialogRef.afterClosed().subscribe((result) => {
+      //   if (result) {
+      //     this.workspaceService.removeWorkspace(
+      //       this.user?.profile.preferred_username,
+      //       this.selectedServiceName,
+      //     );
+      //   }
+      // });
       return dialogRef.afterClosed().toPromise();
     }
   }
