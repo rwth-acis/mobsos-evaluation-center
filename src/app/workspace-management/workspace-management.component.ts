@@ -232,7 +232,7 @@ export class WorkspaceManagementComponent
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe((result) => {
+    const sub = dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.currentApplicationWorkspace =
           this.workspaceService.copyWorkspace(
@@ -241,6 +241,7 @@ export class WorkspaceManagementComponent
             this.selectedServiceName,
           );
       }
+      sub.unsubscribe();
     });
   }
 
@@ -257,14 +258,6 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      // dialogRef.afterClosed().subscribe((result) => {
-      //   if (result) {
-      //     this.workspaceService.removeWorkspace(
-      //       this.user?.profile.preferred_username,
-      //       this.selectedServiceName,
-      //     );
-      //   }
-      // });
       return dialogRef.afterClosed().toPromise();
     }
   }

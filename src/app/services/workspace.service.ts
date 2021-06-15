@@ -132,7 +132,10 @@ export class WorkspaceService {
    */
   startSynchronizingWorkspace(groupId: string) {
     if (groupId && groupId !== this.currentGroupId) {
-      this.stopSynchronizingWorkspace(this.currentGroupId);
+      if (this.currentGroupId) {
+        this.stopSynchronizingWorkspace(this.currentGroupId);
+      }
+
       this.syncObject(groupId, this.communityWorkspace$);
       this.currentGroupId = groupId;
     }
@@ -275,6 +278,7 @@ export class WorkspaceService {
     };
     this.sharedDocument.on('update', observeFn);
     const mapAsObj = type.toJSON();
+    console.log(mapAsObj);
     // this.stopSync(name);
     // deposit cleanup function to be called when the type is no longer needed
     this.removeListenersCallbacks[name] = () => {
@@ -297,24 +301,19 @@ export class WorkspaceService {
    * @param init true if the local object has been initialized yet
    * @returns true if successfull
    */
-  private _syncObjectToMap(
-    obj: object,
-    map: Map<any>,
-    init?: boolean,
-  ) {
+  private _syncObjectToMap(obj: object, map: Map<any>) {
     try {
       const mapAsObj = map.toJSON();
       if (isEqual(obj, mapAsObj)) {
         return true;
       }
-      if (init) {
-        // delete elements that are present in the map but not in the object.
-        // only delete them on if initialized before to prevent deleting other workspaces
-        const deletedKeys = Object.keys(mapAsObj).filter(
-          (key) => !Object.keys(obj).includes(key),
-        );
-        deletedKeys.map((deletedKey) => map.delete(deletedKey));
-      }
+      // delete elements that are present in the map but not in the object.
+      // only delete them on if initialized before to prevent deleting other workspaces
+      const deletedKeys = Object.keys(mapAsObj).filter(
+        (key) => !Object.keys(obj).includes(key),
+      );
+      deletedKeys.map((deletedKey) => map.delete(deletedKey));
+
       // sync elements from object to map
       for (const key of Object.keys(obj)) {
         const objValue = obj[key];
@@ -328,7 +327,7 @@ export class WorkspaceService {
             map.set(key, new Map());
             mapValue = map.get(key);
           }
-          return this._syncObjectToMap(objValue, mapValue);
+          this._syncObjectToMap(objValue, mapValue);
         } else {
           if (objValue !== null) {
             map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
