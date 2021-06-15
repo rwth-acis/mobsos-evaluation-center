@@ -236,8 +236,8 @@ export class WorkspaceService {
 
       communityWorkspace[owner][currentServiceName].visitors =
         visitors;
-      this.communityWorkspace$.next(communityWorkspace);
     }
+    this.communityWorkspace$.next(communityWorkspace);
     return currentApplicationWorkspace;
   }
 
