@@ -432,9 +432,9 @@ function removeFactor(
   const successModel = appWorkspace.model;
   if (!successModel) return communityWorkspace;
   for (const [dimensionName, dimension] of Object.entries(
-    successModel,
+    successModel.dimensions,
   )) {
-    successModel.dimensions[dimensionName] = dimension.filter(
+    successModel.dimensions[dimensionName] = dimension?.filter(
       (factor: SuccessFactor) => factor.name !== factorName,
     );
   }
