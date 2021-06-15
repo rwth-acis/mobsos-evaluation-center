@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+
 export interface VisualizationCollection {
   [key: string]: Visualization;
 }
@@ -8,7 +10,7 @@ export interface VisualizationData {
 export interface VData {
   fetchDate: Date;
   data: any[][];
-  error?: Response;
+  error?: HttpErrorResponse;
 }
 
 export class Visualization {

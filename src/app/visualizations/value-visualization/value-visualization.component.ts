@@ -44,7 +44,7 @@ export class ValueVisualizationComponent
     super(ngrxStore, dialog);
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
     let query = this.measure.queries[0].sql;
 
@@ -59,10 +59,14 @@ export class ValueVisualizationComponent
       VISUALIZATION_DATA_FOR_QUERY,
       query,
     );
-    this.value$.pipe(filter((data) => !!data)).subscribe((v) => {
-      this.value =
-        v.data.slice(-1)[0].length === 0 ? 0 : v.data.slice(-1)[0][0];
-      this.visualizationInitialized = true;
-    });
+    this.value$
+      .pipe(filter((data) => !!data && !data.error))
+      .subscribe((v) => {
+        this.value =
+          v.data?.slice(-1)[0].length === 0
+            ? 0
+            : v.data.slice(-1)[0][0];
+        this.visualizationInitialized = true;
+      });
   }
 }

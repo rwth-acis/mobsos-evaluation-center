@@ -14,17 +14,16 @@ import {
   tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
-import { delayedRetry } from './retryOperator';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
 import * as Action from './store.actions';
+import { disableEdit } from './store.actions';
 import {
-  disableEdit,
-  transferMissingGroupsToMobSOS,
-} from './store.actions';
-import {
+  APPLICATION_WORKSPACE,
   EDIT_MODE,
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
   USER,
   VISUALIZATION_DATA,
@@ -357,22 +356,29 @@ export class StateEffects {
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (
-          dataForQuery.error ||
-          !dataForQuery?.data ||
-          dataForQuery.fetchDate.getTime() < Date.now() - 300000
+          !dataForQuery?.error &&
+          (!dataForQuery?.fetchDate ||
+            dataForQuery.fetchDate.getTime() < Date.now() - 300000)
         ) {
           // error or no data yet or last fetch time more than 5min ago
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              map((res) =>
+              map((vdata) =>
                 Action.storeVisualizationData({
-                  data: res.vdata,
+                  data: vdata,
                   query,
+                  error: null,
                 }),
               ),
               catchError((err) =>
-                of(Action.storeVisualizationData({ error: err })),
+                of(
+                  Action.storeVisualizationData({
+                    data: null,
+                    query,
+                    error: err,
+                  }),
+                ),
               ),
             );
         }

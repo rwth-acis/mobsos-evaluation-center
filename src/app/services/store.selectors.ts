@@ -220,6 +220,12 @@ export const VISUALIZATION_DATA_FOR_QUERY = (
     ? state.Reducer.visualizationData[queryString]
     : undefined;
 
+export const USER_HAS_EDIT_RIGHTS = createSelector(
+  EDIT_MODE,
+  ROLE_IN_CURRENT_WORKSPACE,
+  (editMode, role) =>
+    editMode && (role === 'owner' || role === 'editor'),
+);
 function parseXml(xml: string) {
   const parser = new DOMParser();
   return parser.parseFromString(xml, 'text/xml');

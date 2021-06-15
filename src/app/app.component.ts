@@ -203,21 +203,21 @@ export class AppComponent implements OnInit, OnDestroy {
           this.ngrxStore.dispatch(
             fetchMeasureCatalog({ groupId: group.id }),
           ); // initial fetch of measure catalog
-          this.selectedGroupForm.reset(group.name);
+          if (group?.name) this.selectedGroupForm.reset(group.name);
         }
       });
     this.subscriptions$.push(sub);
     if (isDevMode()) {
-      // sub = this.ngrxStore.subscribe((state) => {
-      //   console.log(state);
-      // });
-      // this.subscriptions$.push(sub);
-      sub = this.ngrxStore
-        .select(COMMUNITY_WORKSPACE)
-        .subscribe((a) => {
-          console.log(a);
-        });
+      sub = this.ngrxStore.subscribe((state) => {
+        console.log(state);
+      });
       this.subscriptions$.push(sub);
+      // sub = this.ngrxStore
+      //   .select(COMMUNITY_WORKSPACE)
+      //   .subscribe((a) => {
+      //     console.log(a);
+      //   });
+      // this.subscriptions$.push(sub);
     }
 
     // swipe navigation

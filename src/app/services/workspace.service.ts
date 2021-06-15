@@ -14,6 +14,12 @@ import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
+import { COMMUNITY_WORKSPACE } from './store.selectors';
+import {
+  distinctUntilChanged,
+  throttle,
+  throttleTime,
+} from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
@@ -43,6 +49,16 @@ export class WorkspaceService {
         updateCommunityWorkspace({ workspace }),
       );
     });
+    this.ngrxStore
+      .select(COMMUNITY_WORKSPACE)
+      .pipe(distinctUntilChanged(), throttleTime(20))
+      .subscribe((workspace) => {
+        if (
+          !isEqual(workspace, this.communityWorkspace$.getValue())
+        ) {
+          this.communityWorkspace$.next(workspace);
+        }
+      });
     const provider = new WebsocketProvider(
       environment.yJsWebsocketUrl,
       'mobsos-ec', // room name

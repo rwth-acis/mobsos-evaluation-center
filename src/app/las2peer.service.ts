@@ -234,6 +234,7 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
+
     return this.http
       .request(options.method, url, ngHttpOptions)
       .pipe(share());
@@ -267,6 +268,8 @@ export class Las2peerService {
   }
 
   fetchServicesFromDiscoveryAndObserve() {
+    if (!environment.useLas2peerServiceDiscovery)
+      return of(undefined);
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
@@ -770,7 +773,6 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
-      observe: 'response',
       headers: {
         ...authorHeader,
       },

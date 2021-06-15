@@ -6,7 +6,7 @@ import {
   MEASURE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
-import { filter } from 'rxjs/operators';
+import { distinctUntilChanged, filter, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
@@ -44,7 +44,10 @@ export class ChartVisualizerComponent
     if (this.service) {
       this.measure$ = this.ngrxStore
         .select(MEASURE, this.measureName) // selects the measure from the measure catalog
-        .pipe(filter((data) => !!data));
+        .pipe(
+          filter((data) => !!data),
+          distinctUntilChanged(),
+        );
       this.measure$.subscribe((measure: Measure) => {
         this.prepareChart(measure);
       });
@@ -74,33 +77,39 @@ export class ChartVisualizerComponent
         VISUALIZATION_DATA_FOR_QUERY,
         query,
       );
-      this.data$.pipe(filter((data) => !!data)).subscribe((vdata) => {
-        if (vdata.error) {
-          this.error = vdata.error;
-        }
-        const dataTable = vdata.data;
-        if (dataTable instanceof Array && dataTable.length >= 2) {
-          const labelTypes = dataTable[1];
-          const rows = dataTable.slice(2) as any[][];
-          this.chart = new GoogleChart(
-            '',
-            visualization.chartType,
-            rows,
-            dataTable[0],
-            {
-              colors: [
-                '#00a895',
-                '#9500a8',
-                '#a89500',
-                '#ff5252',
-                '#ffd600',
-              ],
-              animation: { startup: true },
-            },
-          );
-          if (this.chart) this.visualizationInitialized = true;
-        }
-      });
+      this.data$
+        .pipe(
+          tap((data) => (this.error = data?.error)),
+          filter((data) => !!data && !data.error),
+        )
+        .subscribe((vdata) => {
+          if (vdata.error) {
+            this.error = vdata.error;
+            return;
+          }
+          const dataTable = vdata.data;
+          if (dataTable instanceof Array && dataTable.length >= 2) {
+            const labelTypes = dataTable[1];
+            const rows = dataTable.slice(2) as any[][];
+            this.chart = new GoogleChart(
+              '',
+              visualization.chartType,
+              rows,
+              dataTable[0],
+              {
+                colors: [
+                  '#00a895',
+                  '#9500a8',
+                  '#a89500',
+                  '#ff5252',
+                  '#ffd600',
+                ],
+                animation: { startup: true },
+              },
+            );
+            if (this.chart) this.visualizationInitialized = true;
+          }
+        });
     }
   }
 }

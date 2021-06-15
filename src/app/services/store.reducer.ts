@@ -18,6 +18,7 @@ import {
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash';
 import { UserRole, Visitor } from '../models/user.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export const initialState: AppState = INITIAL_STATE;
 
@@ -118,22 +119,6 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
-  on(Actions.addFactorToDimension, (state, props) => ({
-    ...state,
-    successModel: addFactorToDimension(
-      props.factor,
-      props.dimensionName,
-      state.successModel,
-    ),
-  })),
-  on(Actions.removeFactor, (state, props) => ({
-    ...state,
-    successModel: removeFactor(state.successModel, props.name),
-  })),
-  on(Actions.removeMeasure, (state, props) => ({
-    ...state,
-    successModel: removeMeasure(state.successModel, props.name),
-  })),
   on(Actions.setWorkSpaceOwner, (state, props) => ({
     ...state,
     currentWorkSpaceOwner: props.username,
@@ -144,61 +129,77 @@ const _Reducer = createReducer(
       state.selectedServiceName,
     ),
   })),
+  on(Actions.storeVisualizationData, (state, props) => ({
+    ...state,
+    visualizationData: updateVisualizationData(
+      { ...state.visualizationData },
+      props,
+    ),
+  })),
   on(Actions.editFactorInDimension, (state, props) => ({
     ...state,
-    successModel: editFactorInDimension(
+    communityWorkspace: editFactorInDimension(
       props.factor,
       props.oldFactorName,
       props.dimensionName,
-      state.successModel,
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
     ),
   })),
   on(Actions.addMeasureToCatalog, (state, props) => ({
     ...state,
-    measureCatalog: {
-      ...state.measureCatalog,
-      measures: addMeasureToMeasures(
-        state.measureCatalog.measures,
-        props.measure,
-      ),
-    } as MeasureCatalog,
+    communityWorkspace: addMeasureToMeasures(
+      props.measure,
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
   })),
   on(Actions.editMeasure, (state, props) => ({
     ...state,
-    measureCatalog: {
-      ...state.measureCatalog,
-      measures: updateMeasureInCatalog(
-        state.measureCatalog.measures,
-        props.measure,
-        props.oldMeasureName,
-      ),
-    } as MeasureCatalog,
-    successModel: {
-      ...state.successModel,
-      dimensions: updateMeasureInSuccessModel(
-        state.successModel.dimensions,
-        props,
-      ),
-    } as SuccessModel,
+    communityWorkspace: updateMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+    ),
   })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,
-    successModel: addMeasureToFactorInModel(
-      state.successModel,
-      props.dimensionName,
-      props.factorName,
-      props.measure,
+    communityWorkspace: addMeasureToFactorInModel(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
     ),
   })),
-  on(Actions.storeVisualizationData, (state, { data, query }) => ({
+  on(Actions.removeMeasure, (state, { name }) => ({
     ...state,
-    visualizationData: data
-      ? updateVisualizationData(
-          { ...state.visualizationData },
-          data,
-          query,
-        )
-      : state.visualizationData,
+    communityWorkspace: removeMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      name,
+    ),
+  })),
+  on(Actions.addFactorToDimension, (state, props) => ({
+    ...state,
+    communityWorkspace: addFactorToDimension(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+    ),
+  })),
+  on(Actions.removeFactor, (state, { name }) => ({
+    ...state,
+    communityWorkspace: removeFactor(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      name,
+    ),
   })),
 );
 
@@ -208,10 +209,15 @@ export function Reducer(state, action) {
 
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
-  data: any[][],
-  query: string,
+  props: { data: any[][]; query: string; error: HttpErrorResponse },
 ) {
-  currentVisualizationData[query] = { data, fetchDate: new Date() };
+  if (!props.query || (!props.data && !props.error))
+    return currentVisualizationData;
+  currentVisualizationData[props.query] = {
+    data: props.data,
+    fetchDate: new Date(),
+    error: props.error,
+  };
   return currentVisualizationData;
 }
 
@@ -386,99 +392,160 @@ function parseModel(xml: string): SuccessModel {
   }
 }
 function addFactorToDimension(
-  factor: SuccessFactor,
-  dimensionName: string,
-  successModel: SuccessModel,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  props: {
+    factor: SuccessFactor;
+    dimensionName: string;
+  },
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  let factorsList = copy[dimensionName];
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+  if (!successModel) return communityWorkspace;
+  let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
-  factorsList = [...factorsList];
-  factorsList.unshift(factor);
-  copy[dimensionName] = factorsList;
-
-  return { ...successModel, dimensions: copy } as SuccessModel;
+  factorsList.unshift(props.factor);
+  successModel.dimensions[props.dimensionName] = factorsList;
+  return copy;
 }
 
 function removeFactor(
-  successModel: SuccessModel,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
   factorName: string,
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  for (const [dimensionName, dimension] of Object.entries(copy)) {
-    copy[dimensionName] = dimension.filter(
-      (factor) => factor.name !== factorName,
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+  if (!successModel) return communityWorkspace;
+  for (const [dimensionName, dimension] of Object.entries(
+    successModel,
+  )) {
+    successModel.dimensions[dimensionName] = dimension.filter(
+      (factor: SuccessFactor) => factor.name !== factorName,
     );
   }
-  return { ...successModel, dimensions: copy } as SuccessModel;
+  return copy;
 }
 
 function removeMeasure(
-  successModel: SuccessModel,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
   measureName: string,
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  for (const [dimensionName, dimension] of Object.entries(copy)) {
+  if (!measureName) return communityWorkspace;
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+
+  // delete all occurences of the measure in the successModel
+  for (const [dimensionName, dimension] of Object.entries(
+    successModel.dimensions,
+  )) {
     const factorsCopy = [];
     for (const factor of dimension) {
       factorsCopy.push({
         ...factor,
-        measures: factor.measures.filter(
+        measures: factor.measures?.filter(
           (measure) => measure !== measureName,
         ),
       });
     }
-    copy[dimensionName] = factorsCopy;
+    successModel.dimensions[dimensionName] = factorsCopy;
   }
 
-  return { ...successModel, dimensions: copy } as SuccessModel;
+  return copy;
 }
 function editFactorInDimension(
   factor: SuccessFactor,
   oldFactorName: string,
   dimensionName: string,
-  successModel: SuccessModel,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  let factorsList = copy[dimensionName];
-  if (!factorsList) return successModel;
-  factorsList = [...factorsList];
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const successModel = appWorkspace?.model;
+  if (!successModel) return communityWorkspace;
+  const factorsList = successModel.dimensions[dimensionName];
+  if (!factorsList) return communityWorkspace;
   for (let i = 0; i < factorsList.length; i++) {
     const f = factorsList[i];
     if (f.name === oldFactorName) {
       factorsList[i] = factor;
     }
   }
-  copy[dimensionName] = factorsList;
-  return { ...successModel, dimensions: copy } as SuccessModel;
+  successModel.dimensions[dimensionName] = factorsList;
+  appWorkspace.model = successModel;
+  copy[owner][serviceName] = appWorkspace;
+  return copy;
 }
 
 function addMeasureToMeasures(
-  measureMap: MeasureMap,
   measure: Measure,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
 ) {
-  const copy = { ...measureMap } as MeasureMap;
-  copy[measure.name] = measure;
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const measureMap = appWorkspace.catalog;
+  measureMap[measure.name] = measure;
   return copy;
 }
 
 function addMeasureToFactorInModel(
-  successModel: SuccessModel,
-  dimensionName: string,
-  factorName: string,
-  measure: Measure,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  props: {
+    measure: Measure;
+    factorName: string;
+    dimensionName: string;
+  },
 ) {
-  if (!dimensionName) return successModel;
-  const dimensions = { ...successModel.dimensions };
-  const factorsForDimension = [
-    ...dimensions[dimensionName],
-  ] as SuccessFactor[];
-  const factorList = factorsForDimension.filter(
-    (factor) => factor.name === factorName,
+  if (!props.dimensionName) return communityWorkspace;
+
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  const successModel = appWorkspace.model;
+
+  const factorList = successModel.dimensions[
+    props.dimensionName
+  ].filter(
+    (factor: SuccessFactor) => factor.name === props.factorName,
   );
   const copyFactorList = [];
   for (let factor of factorList) {
@@ -486,26 +553,17 @@ function addMeasureToFactorInModel(
       ...factor,
       measures: [...factor.measures],
     } as SuccessFactor;
-    factor.measures.unshift(measure.name);
+    factor.measures.unshift(props.measure.name);
     copyFactorList.push(factor);
   }
-
-  dimensions[dimensionName] = copyFactorList;
-  return { ...successModel, dimensions } as SuccessModel;
-}
-
-function updateMeasureInCatalog(
-  measures: MeasureMap,
-  measure: Measure,
-  oldMeasureName: string,
-) {
-  const copy = { ...measures };
-  copy[oldMeasureName] = measure;
+  successModel.dimensions[props.dimensionName] = copyFactorList;
   return copy;
 }
 
-function updateMeasureInSuccessModel(
-  dimensions: DimensionMap,
+function updateMeasure(
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
   props: {
     measure: Measure;
     oldMeasureName: string;
@@ -513,9 +571,23 @@ function updateMeasureInSuccessModel(
     dimensionName: string;
   },
 ) {
-  const copyDimensions = { ...dimensions };
-  let copyFactors = [...copyDimensions[props.dimensionName]];
-  copyFactors = copyFactors.map((factor) =>
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+
+  const measureCatalog = appWorkspace.catalog;
+  const successModel = appWorkspace.model;
+  // update the measure catalog
+  measureCatalog[props.measure.name] = props.measure;
+  delete measureCatalog[props.oldMeasureName];
+
+  // update the success model
+  let factors = successModel.dimensions[props.dimensionName];
+  factors = factors.map((factor) =>
     factor.name === props.factorName
       ? updateMeasureInFactor(
           factor,
@@ -524,9 +596,33 @@ function updateMeasureInSuccessModel(
         )
       : factor,
   );
-  copyDimensions[props.dimensionName] = copyFactors;
-  return copyDimensions;
+  successModel.dimensions[props.dimensionName] = factors;
+  return copy;
 }
+
+// function updateMeasureInSuccessModel(
+//   dimensions: DimensionMap,
+//   props: {
+//     measure: Measure;
+//     oldMeasureName: string;
+//     factorName: string;
+//     dimensionName: string;
+//   },
+// ) {
+//   const copyDimensions = { ...dimensions };
+//   let copyFactors = [...copyDimensions[props.dimensionName]];
+//   copyFactors = copyFactors.map((factor) =>
+//     factor.name === props.factorName
+//       ? updateMeasureInFactor(
+//           factor,
+//           props.measure,
+//           props.oldMeasureName,
+//         )
+//       : factor,
+//   );
+//   copyDimensions[props.dimensionName] = copyFactors;
+//   return copyDimensions;
+// }
 
 function updateMeasureInFactor(
   factor: SuccessFactor,
@@ -559,4 +655,19 @@ function addVisitor(
     new Visitor(username, UserRole.SPECTATOR),
   );
   return copy;
+}
+
+function getWorkspaceByUserAndService(
+  communityWorkspace: CommunityWorkspace,
+  user: string,
+  service: string,
+) {
+  if (!Object.keys(communityWorkspace).includes(user)) {
+    return;
+  }
+  const userWorkspace = communityWorkspace[user];
+  if (!Object.keys(userWorkspace).includes(service)) {
+    return;
+  }
+  return userWorkspace[service];
 }

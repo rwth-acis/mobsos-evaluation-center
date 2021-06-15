@@ -61,12 +61,6 @@
                   [@slideInOut]
                   *ngFor="let dimension of dimensions"
                   [factors]="successModel.dimensions[dimension]"
-                  (sendFactorsToSuccessModel)="
-                    onFactorsChange($event)
-                  "
-                  (sendMeasuresToSuccessModel)="
-                    onMeasuresChange($event)
-                  "
                   [measures]="measureCatalog.measures"
                   [service]="selectedService"
                   name="{{

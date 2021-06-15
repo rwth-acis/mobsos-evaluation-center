@@ -14,12 +14,13 @@ import { environment } from '../../environments/environment';
 import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
   measure: Measure;
   visualizationInitialized: boolean;
-  error: Response;
+  error: HttpErrorResponse;
 }
 
 @Component({
@@ -37,7 +38,7 @@ export class BaseVisualizationComponent
   service: ServiceInformation;
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
-  error: Response;
+  error: HttpErrorResponse;
   refreshVisualizationHandle;
 
   static htmlDecode(input) {
@@ -76,15 +77,13 @@ export class BaseVisualizationComponent
 
   ngOnDestroy(): void {}
 
-  async openErrorDialog() {
+  openErrorDialog() {
     let errorText;
-    if (this.error.body) {
-      const { value } = await this.error.body.getReader().read();
-      const responseBody = new TextDecoder('utf-8').decode(value);
+    if (this.error.error) {
       errorText = (
         this.error.statusText +
         ': ' +
-        responseBody
+        this.error.error
       ).trim();
     } else {
       errorText = this.error;
