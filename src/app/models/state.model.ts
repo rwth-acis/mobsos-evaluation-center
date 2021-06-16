@@ -1,7 +1,6 @@
-import { Questionnaire } from '../las2peer.service';
 import { GroupCollection } from './community.model';
-
 import { MeasureCatalog } from './measure.catalog';
+import { IQuestionnaire } from './questionnaire.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
@@ -18,7 +17,7 @@ export interface AppState {
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
-  questionnaires: Questionnaire[];
+  questionnaires: IQuestionnaire[];
   messageDescriptions: object;
   visualizationData: VisualizationData;
   successModel: SuccessModel;

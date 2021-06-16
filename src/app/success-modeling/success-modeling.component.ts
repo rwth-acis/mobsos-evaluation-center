@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Questionnaire } from '../las2peer.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
@@ -43,6 +42,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../models/service.model';
+import { IQuestionnaire } from '../models/questionnaire.model';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -119,7 +119,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   workspaceUser;
 
   saveInProgress = false;
-  availableQuestionnaires: Questionnaire[];
+  availableQuestionnaires: IQuestionnaire[];
   numberOfRequirements = 0;
 
   subscriptions$: Subscription[] = [];

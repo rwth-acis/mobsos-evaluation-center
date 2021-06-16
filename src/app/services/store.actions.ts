@@ -1,7 +1,8 @@
 import { createAction, props } from '@ngrx/store';
-import { SuccessFactor } from 'src/success-model/success-factor';
+
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
+import { SuccessFactor } from '../models/success.model';
 import { User } from '../models/user.model';
 import { CommunityWorkspace } from '../models/workspace.model';
 

@@ -8,10 +8,8 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { SuccessModel } from '../../../success-model/success-model';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
-import { ReqbazProject } from '../../../success-model/reqbaz-project';
 import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
@@ -21,6 +19,8 @@ import { Store } from '@ngrx/store';
 import { USER } from 'src/app/services/store.selectors';
 import { storeSuccessModel } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
+import { SuccessModel } from 'src/app/models/success.model';
+import { ReqbazProject } from 'src/app/models/reqbaz.model';
 
 @Component({
   selector: 'app-requirements-list',

@@ -13,11 +13,11 @@ import { createTranslateLoader } from '../../app.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
-import { SuccessModel } from '../../../success-model/success-model';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+import { SuccessModel } from 'src/app/models/success.model';
 
 describe('RequirementsListComponent', () => {
   let component: RequirementsListComponent;
@@ -51,20 +51,9 @@ describe('RequirementsListComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(RequirementsListComponent);
     component = fixture.componentInstance;
-    component.successModel = new SuccessModel(
-      'TestModel',
-      'TestService',
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null,
-    );
+    component.successModel =
+      SuccessModel.emptySuccessModel(undefined);
+
     fixture.detectChanges();
   });
 

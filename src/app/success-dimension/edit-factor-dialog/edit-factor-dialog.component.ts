@@ -1,7 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-
-import { SuccessFactor } from '../../../success-model/success-factor';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import { SuccessFactor } from 'src/app/models/success.model';
 
 export interface DialogData {
   factor: SuccessFactor;
@@ -15,7 +17,7 @@ export interface DialogData {
 export class EditFactorDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<EditFactorDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
 
   ngOnInit() {}

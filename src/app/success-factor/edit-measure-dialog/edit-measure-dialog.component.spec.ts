@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -25,18 +24,16 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Measure } from '../../../success-model/measure';
-import { ValueVisualization } from '../../../success-model/visualization';
+
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ValueVisualizationComponent } from '../../visualizations/value-visualization/value-visualization.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { KpiVisualizationComponent } from '../../visualizations/kpi-visualization/kpi-visualization.component';
-import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import { MatInputModule } from '@angular/material/input';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
-import { provideMockStore } from '@ngrx/store/testing';
-import { StateEffects } from 'src/app/services/store.effects';
+import { Measure } from 'src/app/models/measure.model';
+import { ValueVisualization } from 'src/app/models/visualization.model';
 
 describe('EditMeasureDialogComponent', () => {
   let component: EditMeasureDialogComponent;

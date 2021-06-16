@@ -5,9 +5,9 @@ import {
   OnInit,
 } from '@angular/core';
 
-import { Questionnaire } from '../../../las2peer.service';
 import { environment } from '../../../../environments/environment';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { IQuestionnaire } from 'src/app/models/questionnaire.model';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -18,10 +18,10 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class PickQuestionnaireDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public availableQuestionnaires: Questionnaire[],
+    public availableQuestionnaires: IQuestionnaire[],
   ) {}
 
-  selectedQuestionnaire: Questionnaire;
+  selectedQuestionnaire: IQuestionnaire;
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;

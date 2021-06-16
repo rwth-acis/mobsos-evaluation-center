@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 import {
@@ -6,29 +6,19 @@ import {
   HttpHeaders,
   HttpParams,
 } from '@angular/common/http';
-import { forkJoin, Observable, of, throwError } from 'rxjs';
-import {
-  catchError,
-  map,
-  share,
-  shareReplay,
-  tap,
-  timeout,
-} from 'rxjs/operators';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map, share } from 'rxjs/operators';
 import { merge } from 'lodash';
-import { delayedRetry } from './services/retryOperator';
-import { Store } from '@ngrx/store';
-import { USER } from './services/store.selectors';
 
-export interface SuccessModel {
+interface SuccessModel {
   xml: string;
 }
 
-export interface MeasureCatalog {
+interface MeasureCatalog {
   xml: string;
 }
 
-export interface Questionnaire {
+interface Questionnaire {
   id: number;
   description: string;
   lang: string;

@@ -18,9 +18,9 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { SuccessFactor } from '../../../success-model/success-factor';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { SuccessFactor } from 'src/app/models/success.model';
 
 describe('EditFactorDialogComponent', () => {
   let component: EditFactorDialogComponent;

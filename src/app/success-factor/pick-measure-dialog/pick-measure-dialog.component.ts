@@ -11,7 +11,6 @@ import {
 } from '@angular/material/dialog';
 
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
-import { Query } from '../../../success-model/query';
 
 import { Store } from '@ngrx/store';
 import {
@@ -21,6 +20,7 @@ import {
 import { Measure } from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
 import { ServiceInformation } from 'src/app/models/service.model';
+import { Query } from 'src/app/models/query.model';
 
 export interface DialogData {
   measures: Measure[];
