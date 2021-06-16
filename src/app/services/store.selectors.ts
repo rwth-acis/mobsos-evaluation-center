@@ -16,45 +16,47 @@ import {
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
 
 export const SERVICES = (state: StoreState) =>
-  Object.values(state.Reducer.services).sort((a, b) =>
-    sortServicesByName(a, b),
-  );
+  state.Reducer?.services
+    ? Object.values(state.Reducer.services).sort((a, b) =>
+        sortServicesByName(a, b),
+      )
+    : undefined;
 
 export const MEASURE = (state: StoreState, name: string) =>
   state.Reducer.measureCatalog.measures[name];
 
 export const GROUPS = (state: StoreState) =>
-  state.Reducer.groups
+  state.Reducer?.groups
     ? Object.values(state.Reducer.groups).sort((a, b) =>
         sortGroupsByName(a, b),
       )
     : undefined;
 
-const _GROUPS = (state: StoreState) => state.Reducer.groups;
+const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
 export const VISUALIZATION_DATA = (state: StoreState) =>
-  state.Reducer.visualizationData;
+  state.Reducer?.visualizationData;
 
 export const ASSETS_LOADED = (state: StoreState) =>
-  state.Reducer.successModelInitialized &&
-  state.Reducer.measureCatalogInitialized;
+  state.Reducer?.successModelInitialized &&
+  state.Reducer?.measureCatalogInitialized;
 
 export const SELECTED_SERVICE = (state: StoreState) =>
-  state.Reducer.services && state.Reducer.selectedServiceName
+  state.Reducer?.services && state.Reducer.selectedServiceName
     ? state.Reducer.services[state.Reducer.selectedServiceName]
     : undefined;
 
 export const EDIT_MODE = (state: StoreState) =>
-  state.Reducer.editMode;
+  state.Reducer?.editMode;
 
 export const EXPERT_MODE = (state: StoreState) =>
-  state.Reducer.expertMode;
+  state.Reducer?.expertMode;
 
 export const SELECTED_SERVICE_NAME = (state: StoreState) =>
-  state.Reducer.selectedServiceName;
+  state.Reducer?.selectedServiceName;
 
 export const SELECTED_GROUP_ID = (state: StoreState) =>
-  state.Reducer.selectedGroupId;
+  state.Reducer?.selectedGroupId;
 
 export const SELECTED_GROUP = createSelector(
   SELECTED_GROUP_ID,
@@ -69,13 +71,13 @@ export const FOREIGN_GROUPS = (state: StoreState) =>
   _foreignGroups(state.Reducer?.groups);
 
 const CURRENT_WORKSPACE_OWNER = (state: StoreState) =>
-  state.Reducer.currentWorkSpaceOwner;
+  state.Reducer?.currentWorkSpaceOwner;
 
 export const USER = (state: StoreState) =>
   state.Reducer?.user as User;
 
 export const COMMUNITY_WORKSPACE = (state: StoreState) =>
-  state.Reducer.communityWorkspace;
+  state.Reducer?.communityWorkspace;
 
 export const CURRENT_USER_WORKSPACE = createSelector(
   COMMUNITY_WORKSPACE,
@@ -156,7 +158,7 @@ export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
 );
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
-  state.Reducer.currentNumberOfHttpCalls > 0;
+  state.Reducer?.currentNumberOfHttpCalls > 0;
 
 // export const SUCCESS_MODEL = (state: StoreState) =>
 //   parseModel(state.Reducer.successModelXML);
@@ -167,7 +169,7 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
 );
 
 const _SUCCESS_MODEL = (state: StoreState) =>
-  state.Reducer.successModel;
+  state.Reducer?.successModel;
 
 export const SUCCESS_MODEL = createSelector(
   EDIT_MODE,
@@ -192,7 +194,7 @@ export const SUCCESS_MODEL_XML = (state: StoreState) =>
     : undefined;
 
 const _MEASURE_CATALOG = (state: StoreState) =>
-  state.Reducer.measureCatalog;
+  state.Reducer?.measureCatalog;
 
 export const MEASURE_CATALOG = createSelector(
   EDIT_MODE,
@@ -215,7 +217,7 @@ export const VISUALIZATION_DATA_FOR_QUERY = (
   state: StoreState,
   queryString: string,
 ) =>
-  state.Reducer.visualizationData &&
+  state.Reducer?.visualizationData &&
   state.Reducer.visualizationData[queryString]
     ? state.Reducer.visualizationData[queryString]
     : undefined;

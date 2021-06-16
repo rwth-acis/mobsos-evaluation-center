@@ -63,7 +63,7 @@ export class ValueVisualizationComponent
       .pipe(filter((data) => !!data && !data.error))
       .subscribe((v) => {
         this.value =
-          v.data?.slice(-1)[0]?.length === 0
+          v?.data?.slice(-1)[0]?.length === 0
             ? 0
             : v.data.slice(-1)[0][0];
         this.visualizationInitialized = true;

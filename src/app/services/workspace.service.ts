@@ -165,6 +165,7 @@ export class WorkspaceService {
    */
   removeWorkspace(username: string, serviceName: string) {
     const communityWorkspace = this.communityWorkspace$.getValue();
+    if (!communityWorkspace) return;
     if (!Object.keys(communityWorkspace).includes(username)) {
       return;
     }

@@ -29,6 +29,13 @@ export interface DialogData {
 export class EditMeasureDialogComponent implements OnInit {
   @ViewChild('previewMeasure') public previewMeasure;
 
+  constructor(
+    private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+  ) {}
+
+  ngOnInit() {}
+
   visualizationChoices = {
     Value: 'success-modeling.edit-measure-dialog.choice-value',
     Chart: 'success-modeling.edit-measure-dialog.choice-chart',
@@ -56,12 +63,7 @@ export class EditMeasureDialogComponent implements OnInit {
     KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
   };
 
-  constructor(
-    private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-  ) {}
-
-  ngOnInit() {}
+  
 
   onVisualizationChange(visualizationType: string) {
     if (

@@ -13,7 +13,7 @@ import { createTranslateLoader } from '../app.module';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-
+import { MatMenuModule } from '@angular/material/menu';
 import { WorkspaceManagementComponent } from './workspace-management.component';
 
 describe('WorkspaceManagementComponent', () => {
@@ -28,6 +28,7 @@ describe('WorkspaceManagementComponent', () => {
       declarations: [WorkspaceManagementComponent],
       imports: [
         MatDialogModule,
+        MatMenuModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,

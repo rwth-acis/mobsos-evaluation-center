@@ -13,7 +13,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,6 +26,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatExpansionModule} from '@angular/material/expansion';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
@@ -164,8 +164,10 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
+    MatExpansionModule,
     GoogleChartsModule,
     BrowserAnimationsModule,
     TranslateModule.forRoot({

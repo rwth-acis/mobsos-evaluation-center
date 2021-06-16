@@ -73,7 +73,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
   protected applyVariableReplacements(query: string) {
     let servicesString = '(';
     const services = [];
-    for (const mobsosID of this.service.mobsosIDs) {
+    for (const mobsosID of this.service?.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';

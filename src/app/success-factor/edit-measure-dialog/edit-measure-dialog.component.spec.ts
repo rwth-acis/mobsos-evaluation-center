@@ -96,20 +96,10 @@ describe('EditMeasureDialogComponent', () => {
               create: false,
             },
           },
-          provideMockStore({ initialState }),
-          StateEffects,
+          // provideMockStore({ initialState }),
+          // StateEffects,
         ],
-      })
-        .overrideModule(BrowserDynamicTestingModule, {
-          set: {
-            entryComponents: [
-              ValueVisualizationComponent,
-
-              KpiVisualizationComponent,
-            ],
-          },
-        })
-        .compileComponents();
+      }).compileComponents();
     }),
   );
 

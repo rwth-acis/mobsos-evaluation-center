@@ -24,6 +24,7 @@ export interface VisualizationComponent {
 
 @Component({
   selector: 'app-base-visualization',
+  styleUrls: ['./visualization.component.scss'],
   template: '',
 })
 export class BaseVisualizationComponent
@@ -49,6 +50,7 @@ export class BaseVisualizationComponent
     query: string,
   ) {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
+    if (!query) return;
     query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = BaseVisualizationComponent.htmlDecode(query);
     return query;
@@ -63,7 +65,11 @@ export class BaseVisualizationComponent
     if (!this.service) {
       this.service = service;
     }
-    for (const mobsosID of this.service?.mobsosIDs) {
+    if (!this.service?.mobsosIDs) {
+      console.error('Service cannot be null');
+      return;
+    }
+    for (const mobsosID of this.service.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';

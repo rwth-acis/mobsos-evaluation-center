@@ -81,7 +81,8 @@ export class RawEditComponent implements OnInit, OnDestroy {
   ) {}
 
   static prettifyXml(xml) {
-    return vkbeautify.xml(xml);
+    if (xml) return vkbeautify.xml(xml);
+    return xml;
   }
 
   ngOnInit() {
@@ -107,14 +108,14 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .pipe(distinctUntilChanged())
       .subscribe((model) => {
         this.successModelXml = RawEditComponent.prettifyXml(
-          (model as SuccessModel).toXml().outerHTML,
+          (model as SuccessModel)?.toXml().outerHTML,
         );
       });
     this.measureCatalog$
       .pipe(distinctUntilChanged())
       .subscribe((catalog) => {
         this.measureCatalogXml = RawEditComponent.prettifyXml(
-          (catalog as MeasureCatalog).toXml().outerHTML,
+          (catalog as MeasureCatalog)?.toXml().outerHTML,
         );
       });
   }
@@ -245,7 +246,4 @@ export class RawEditComponent implements OnInit, OnDestroy {
         );
     }
   }
-}
-function storeMeasureCatalog(arg0: { xml: string }): any {
-  throw new Error('Function not implemented.');
 }

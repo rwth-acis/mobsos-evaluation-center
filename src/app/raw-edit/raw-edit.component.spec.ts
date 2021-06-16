@@ -24,6 +24,8 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
 import { Observable } from 'rxjs';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { COMMUNITY_WORKSPACE } from '../services/store.selectors';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -61,10 +63,12 @@ describe('RawEditComponent', () => {
           provideMockActions(() => actions$),
         ],
       }).compileComponents();
+      store = TestBed.inject(MockStore);
     }),
   );
 
   beforeEach(() => {
+    // store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(RawEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -74,6 +78,3 @@ describe('RawEditComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-function provideMockActions(arg0: () => any): any {
-  throw new Error('Function not implemented.');
-}

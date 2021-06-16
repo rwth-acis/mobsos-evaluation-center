@@ -88,6 +88,7 @@ describe('SuccessModelingComponent', () => {
   );
 
   beforeEach(() => {
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(SuccessModelingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

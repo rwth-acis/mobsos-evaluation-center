@@ -31,7 +31,7 @@
               {
                 "glob": "**/*",
                 "input": "node_modules/ngx-monaco-editor/assets/monaco",
-                "output": "./assets/monaco/"
+                "output": "./assets/monaco-editor/"
               },
               "src/manifest.json"
             ],
