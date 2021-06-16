@@ -20,9 +20,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { provideMockStore } from '@ngrx/store/testing';
-import { INITIAL_APP_STATE } from '../models/state.model';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
+import { Observable } from 'rxjs';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;

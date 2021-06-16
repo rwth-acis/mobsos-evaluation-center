@@ -3,21 +3,18 @@ import {
   TestBed,
   waitForAsync,
 } from '@angular/core/testing';
-
 import { SuccessModelingComponent } from './success-modeling.component';
 import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
 import { createTranslateLoader } from '../app.module';
-
 import { SuccessDimensionComponent } from '../success-dimension/success-dimension.component';
 import { SuccessFactorComponent } from '../success-factor/success-factor.component';
 import { SuccessMeasureComponent } from '../success-measure/success-measure.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-
 import { RequirementsListComponent } from './requirements-list/requirements-list.component';
 import { QuestionnairesComponent } from './questionnaires/questionnaires.component';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -35,6 +32,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
 import { Observable } from 'rxjs';
+import { provideMockActions } from '@ngrx/effects/testing';
 
 describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
@@ -99,6 +97,3 @@ describe('SuccessModelingComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-function provideMockActions(arg0: () => Observable<any>): any {
-  throw new Error('Function not implemented.');
-}
