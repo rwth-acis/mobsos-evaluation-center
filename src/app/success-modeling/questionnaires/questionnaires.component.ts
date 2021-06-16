@@ -6,10 +6,7 @@ import {
   Output,
 } from '@angular/core';
 import { MeasureMap } from '../../../success-model/measure-catalog';
-import {
-  ServiceInformation,
-  StoreService,
-} from '../../store.service';
+
 import { SuccessModel } from '../../../success-model/success-model';
 import {
   Las2peerService,
@@ -28,8 +25,13 @@ import { ChartVisualization } from '../../../success-model/visualization';
 import { Query } from '../../../success-model/query';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { SELECTED_GROUP } from 'src/app/services/store.selectors';
+import {
+  ROLE_IN_CURRENT_WORKSPACE,
+  SELECTED_GROUP,
+  USER_HAS_EDIT_RIGHTS,
+} from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
   selector: 'app-questionnaires',
@@ -48,6 +50,7 @@ export class QuestionnairesComponent implements OnInit {
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   group$ = this.ngrxStore.select(SELECTED_GROUP);
   group: GroupInformation;
+  canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   constructor(
     private dialog: MatDialog,

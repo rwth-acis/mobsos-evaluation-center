@@ -1,14 +1,12 @@
 import { Questionnaire } from '../las2peer.service';
-import {
-  GroupCollection,
-  GroupInformation,
-  ServiceCollection,
-  ServiceInformation,
-} from '../store.service';
+import { GroupCollection } from './community.model';
+
 import { MeasureCatalog } from './measure.catalog';
+import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
+import { User } from './user.model';
 import { VisualizationData } from './visualization.model';
-import { ApplicationWorkspace } from './workspace.model';
+import { CommunityWorkspace } from './workspace.model';
 
 /**
  * state of the app
@@ -16,7 +14,7 @@ import { ApplicationWorkspace } from './workspace.model';
 export interface AppState {
   services: ServiceCollection;
   groups: GroupCollection;
-  user: object;
+  user: User;
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
@@ -29,8 +27,29 @@ export interface AppState {
   measureCatalogInitialized: boolean;
   currentNumberOfHttpCalls: number;
   expertMode: boolean;
-  currentApplicationWorkspace: ApplicationWorkspace;
+  communityWorkspace: CommunityWorkspace;
+  currentWorkSpaceOwner: string;
 }
+
+export const INITIAL_STATE: AppState = {
+  services: {},
+  groups: undefined,
+  user: undefined,
+  selectedGroupId: undefined,
+  selectedServiceName: undefined,
+  editMode: false,
+  questionnaires: [],
+  messageDescriptions: undefined,
+  visualizationData: {},
+  measureCatalog: undefined,
+  measureCatalogInitialized: false,
+  successModel: undefined,
+  successModelInitialized: false,
+  currentNumberOfHttpCalls: 0,
+  expertMode: false,
+  communityWorkspace: undefined,
+  currentWorkSpaceOwner: undefined,
+};
 /**
  * What the store looks like
  */

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ServiceInformation, StoreService } from '../store.service';
+
 import { Las2peerService } from '../las2peer.service';
 import vkbeautify from 'vkbeautify';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,12 +11,9 @@ import {
   saveCatalog,
   saveModel,
   setService,
-  storeSuccessModel,
-  successResponse,
 } from '../services/store.actions';
 import {
   MEASURE_CATALOG,
-  SELECTED_GROUP,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   SERVICES,
@@ -24,6 +21,7 @@ import {
 } from '../services/store.selectors';
 import {
   catchError,
+  distinctUntilChanged,
   filter,
   first,
   map,
@@ -31,6 +29,9 @@ import {
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
 import { of } from 'rxjs';
+import { ServiceInformation } from '../models/service.model';
+import { SuccessModel } from '../models/success.model';
+import { MeasureCatalog } from '../models/measure.catalog';
 
 @Component({
   selector: 'app-raw-edit',
@@ -49,7 +50,9 @@ export class RawEditComponent implements OnInit, OnDestroy {
     automaticLayout: true,
   };
   measureCatalogXml: string;
+  measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   successModelXml: string;
+  successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalogEditor;
   successModelEditor;
   saveInProgress = false;
@@ -86,21 +89,34 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .pipe(filter((groupId) => !!groupId))
       .subscribe((groupID) => {
         this.groupID = groupID;
-        this.fetchXml();
+        // this.fetchXml();
       });
     this.selectedService$
       .pipe(
         filter((service) => !!service),
         map((service) => service.name),
       )
-
       .subscribe((serviceName) => {
         this.selectedService = serviceName;
-        this.fetchXml();
+        // this.fetchXml();
       });
     this.services$.subscribe((services) => {
       this.serviceMap = services;
     });
+    this.successModel$
+      .pipe(distinctUntilChanged())
+      .subscribe((model) => {
+        this.successModelXml = RawEditComponent.prettifyXml(
+          (model as SuccessModel).toXml().outerHTML,
+        );
+      });
+    this.measureCatalog$
+      .pipe(distinctUntilChanged())
+      .subscribe((catalog) => {
+        this.measureCatalogXml = RawEditComponent.prettifyXml(
+          (catalog as MeasureCatalog).toXml().outerHTML,
+        );
+      });
   }
 
   ngOnDestroy(): void {}
@@ -118,27 +134,27 @@ export class RawEditComponent implements OnInit, OnDestroy {
   }
 
   fetchXml() {
-    if (this.groupID) {
-      this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
-        if (!xml) {
-          xml = '';
-        }
-        xml = RawEditComponent.prettifyXml(xml);
-        this.measureCatalogXml = xml;
-      });
-      if (this.selectedService) {
-        const setServiceXml = (xml) => {
-          if (!xml) {
-            xml = '';
-          }
-          this.successModelXml = RawEditComponent.prettifyXml(xml);
-        };
-        this.las2peer
-          .fetchSuccessModel(this.groupID, this.selectedService)
-          .then(setServiceXml)
-          .catch(() => setServiceXml(null));
-      }
-    }
+    // if (this.groupID) {
+    //   this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
+    //     if (!xml) {
+    //       xml = '';
+    //     }
+    //     xml = RawEditComponent.prettifyXml(xml);
+    //     this.measureCatalogXml = xml;
+    //   });
+    //   if (this.selectedService) {
+    //     const setServiceXml = (xml) => {
+    //       if (!xml) {
+    //         xml = '';
+    //       }
+    //       this.successModelXml = RawEditComponent.prettifyXml(xml);
+    //     };
+    //     this.las2peer
+    //       .fetchSuccessModel(this.groupID, this.selectedService)
+    //       .then(setServiceXml)
+    //       .catch(() => setServiceXml(null));
+    //   }
+    // }
   }
 
   _onCatalogSaveClicked() {

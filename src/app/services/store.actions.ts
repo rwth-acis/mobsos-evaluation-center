@@ -3,10 +3,7 @@ import { SuccessFactor } from 'src/success-model/success-factor';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 
 enum FetchActions {
   FETCH_SERVICES = 'Fetch services from the network',
@@ -34,7 +31,6 @@ enum StoreActions {
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
-  UPDATE_APPLICATION_WORKSPACE = 'updates the current application workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
   REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
@@ -43,6 +39,8 @@ enum StoreActions {
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
+  SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
+  REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
 
 enum StateActions {
@@ -85,6 +83,10 @@ export const addFactorToDimension = createAction(
   StoreActions.ADD_FACTOR_TO_DIMENSION,
   props<{ factor: SuccessFactor; dimensionName: string }>(),
 );
+export const removeVisualizationDataForQuery = createAction(
+  StoreActions.REMOVE_VISUALIZATION_DATA,
+  props<{ query: string }>(),
+);
 export const editFactorInDimension = createAction(
   StoreActions.EDIT_FACTOR_IN_DIMENSION,
   props<{
@@ -93,6 +95,7 @@ export const editFactorInDimension = createAction(
     dimensionName: string;
   }>(),
 );
+
 export const addMeasureToCatalog = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
   props<{ measure: Measure }>(),
@@ -165,8 +168,8 @@ export const storeUser = createAction(
 );
 
 export const storeVisualizationData = createAction(
-  FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ data: any; query: string }>(),
+  StoreActions.STORE_VISUALIZATION_DATA,
+  props<{ data: any; query: string; error: any }>(),
 );
 
 export const storeCatalog = createAction(
@@ -178,14 +181,15 @@ export const storeSuccessModel = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
   props<{ xml: string }>(),
 );
-export const updateAppWorkspace = createAction(
-  StoreActions.UPDATE_APPLICATION_WORKSPACE,
-  props<{ workspace: ApplicationWorkspace }>(),
-);
 
 export const updateCommunityWorkspace = createAction(
   StoreActions.UPDATE_COMMUNITY_WORKSPACE,
   props<{ workspace: CommunityWorkspace }>(),
+);
+
+export const setWorkSpaceOwner = createAction(
+  StoreActions.SET_WORKSPACE_OWNER,
+  props<{ username: string }>(),
 );
 
 // modes

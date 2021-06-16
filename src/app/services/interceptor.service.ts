@@ -47,11 +47,7 @@ export class Interceptor implements HttpInterceptor {
     }
     if (req.method === 'GET' && req.url in this.cachedRequests) {
       // a request is already being made to this url
-      this.cachedRequests[req.url].subscribe((err) => {
-        if (err.status !== 200) {
-          console.log(err.status);
-        }
-      });
+      this.cachedRequests[req.url].subscribe();
       return this.cachedRequests[req.url]; // return an observable of the initial request instead of making a new call
     } else {
       this.ngrxStore.dispatch(incrementLoading());

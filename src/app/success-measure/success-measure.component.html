@@ -1,16 +1,16 @@
 <div id="measure-header">
-  <button
+  <!-- <button
     mat-icon-button
-    *ngIf="editMode$ | async"
+    *ngIf="canEdit$ | async"
     color="warn"
     (click)="onDeleteClicked($event)"
     id="delete-button"
   >
     <mat-icon>remove_circle_outline</mat-icon>
-  </button>
+  </button> -->
   <button
     mat-icon-button
-    *ngIf="editMode$ | async"
+    *ngIf="canEdit$ | async"
     color="primary"
     (click)="onEditClicked($event)"
     id="edit-button"
@@ -23,7 +23,10 @@
 </div>
 
 <span
-  *ngIf="visualizationError || !measure?.visualization; else visualizationBlock"
+  *ngIf="
+    visualizationError || !measure?.visualization;
+    else visualizationBlock
+  "
   >{{ visualizationError }}</span
 >
 

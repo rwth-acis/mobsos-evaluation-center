@@ -48,14 +48,13 @@ app-success-dimension {
   }
 }
 
-#save-model-button {
-  margin-top: 20px;
+#edit-controls{
+  display: flex; align-items: center
+}
+
+#visitors{
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
   width: 100%;
-  position: relative;
-  mat-spinner {
-    top: 5px;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-  }
 }

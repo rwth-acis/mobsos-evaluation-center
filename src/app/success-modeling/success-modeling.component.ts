@@ -1,16 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-  ServiceInformation,
-  Visitor,
-} from '../store.service';
 import { Questionnaire } from '../las2peer.service';
-
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-
 import { TranslateService } from '@ngx-translate/core';
-
 import { Store } from '@ngrx/store';
 import {
   disableEdit,
@@ -21,16 +11,17 @@ import {
   toggleEdit,
 } from '../services/store.actions';
 import {
+  ASSETS_LOADED,
   DIMENSIONS_IN_MODEL,
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
-  SERVICES,
   SUCCESS_MODEL,
   USER,
-  WORKSPACE_INITIALIZED,
+  USER_IS_OWNER_IN_CURRENT_WORKSPACE,
 } from '../services/store.selectors';
 import {
   catchError,
@@ -43,7 +34,6 @@ import { iconMap, translationMap } from './config';
 import { SuccessModel } from '../models/success.model';
 import { StateEffects } from '../services/store.effects';
 import { combineLatest, of, Subscription } from 'rxjs';
-import { FormControl } from '@angular/forms';
 import {
   animate,
   style,
@@ -52,6 +42,7 @@ import {
 } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ServiceInformation } from '../models/service.model';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -75,10 +66,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
-  serviceSelectForm = new FormControl('');
-
   editMode$ = this.ngrxStore.select(EDIT_MODE);
-  services$ = this.ngrxStore.select(SERVICES);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore
     .select(DIMENSIONS_IN_MODEL)
@@ -94,18 +82,26 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
-  workspaceInitialized$ = this.ngrxStore.select(
-    WORKSPACE_INITIALIZED,
-  );
+
+  assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
   user$ = this.ngrxStore.select(USER);
+  userIsOwner$ = this.ngrxStore.select(
+    USER_IS_OWNER_IN_CURRENT_WORKSPACE,
+  );
+  userRole$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   showEditButton$ = combineLatest([
     this.selectedGroup$,
     this.selectedService$,
-    this.workspaceInitialized$,
+    this.assetsLoaded$,
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );
+
+  saveEnabled$ = combineLatest([
+    this.editMode$,
+    this.userIsOwner$,
+  ]).pipe(map(([editMode, isOwner]) => editMode && isOwner));
 
   selectedServiceName: string;
   editMode = false;
@@ -118,7 +114,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   translationMap = translationMap; // maps dimensions to their translation keys
   iconMap = iconMap; // maps dimensions to their icons
 
-  communityWorkspace: CommunityWorkspace;
+  // communityWorkspace: CommunityWorkspace;
   user;
   workspaceUser;
 
@@ -146,7 +142,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
           : service.name;
         // this is used so that the initial success model is fetched. We should rather use a new effect for this
         this.ngrxStore.dispatch(setService({ service }));
-        this.serviceSelectForm.setValue(this.selectedServiceName); // set the value in the selection
       });
     this.subscriptions$.push(sub);
 
@@ -172,12 +167,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     sub = this.editMode$.subscribe((editMode) => {
-      if (editMode && this.user) {
-        this.initWorkspace().then(() =>
-          // this is not working currently
-          this.switchWorkspace(this.getMyUsername()),
-        );
-      }
       this.editMode = editMode;
     });
     this.subscriptions$.push(sub);
@@ -192,127 +181,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  onEditModeChanged() {
+  onEditModeChanged(e) {
     this.ngrxStore.dispatch(toggleEdit());
-  }
-
-  getAllWorkspacesForCurrentService(): ApplicationWorkspace[] {
-    const result = [];
-    if (!this.selectedServiceName) {
-      return [];
-    }
-    const userWorkspaces = Object.values(this.communityWorkspace);
-    for (const userWorkspace of userWorkspaces) {
-      if (
-        Object.keys(userWorkspace).includes(this.selectedServiceName)
-      ) {
-        result.push(userWorkspace[this.selectedServiceName]);
-      }
-    }
-    return result;
-  }
-
-  getAllWorkspacesForCurrentServiceExceptActive() {
-    return this.getAllWorkspacesForCurrentService().filter(
-      (workspace) => workspace.createdBy !== this.workspaceUser,
-    );
-  }
-
-  getNumberOfOpenWorkspacesFromOtherUsers(): number {
-    const myUsername = this.getMyUsername();
-    return this.getAllWorkspacesForCurrentService().filter(
-      (workspace) => workspace.createdBy !== myUsername,
-    ).length;
-  }
-
-  getNumberOfOtherWorkspaceVisitors(): number {
-    const visitors = this.getCurrentVisitorsExceptMe();
-    if (visitors == null) {
-      return 0;
-    }
-    return visitors.length;
-  }
-
-  getCurrentVisitors(): Visitor[] {
-    const workspace = this.getCurrentWorkspace();
-    if (workspace == null || workspace.visitors instanceof Array) {
-      return [];
-    }
-    return workspace.visitors;
-  }
-
-  getCurrentVisitorsExceptMe(): Visitor[] {
-    const visitors = this.getCurrentVisitors();
-    return visitors.filter(
-      (visitor) => visitor.username !== this.getMyUsername(),
-    );
-  }
-
-  switchWorkspace(user: string) {
-    // this.workspaceUser = user;
-    // const visitors = this.getCurrentWorkspace().visitors;
-    // const myUsername = this.getMyUsername();
-    // const meAsVisitorArr = visitors.filter(
-    //   (visitor) => visitor.username === myUsername
-    // );
-    // if (meAsVisitorArr.length === 0 && this.workspaceUser !== myUsername) {
-    //   visitors.push({ username: myUsername, role: 'spectator' });
-    //   visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-    //   this.persistWorkspaceChanges();
-    // }
-  }
-
-  changeVisitorRole(visitorName: string, role: string) {
-    const visitors = this.getCurrentWorkspace().visitors;
-    const visitorSearchResult = visitors.filter(
-      (visitor) => visitor.username === visitorName,
-    );
-    if (visitorSearchResult) {
-      visitorSearchResult[0].role = role;
-      this.persistWorkspaceChanges();
-    }
-  }
-
-  getMyRole(): string {
-    const myUsername = this.getMyUsername();
-    const workspace = this.getCurrentWorkspace();
-    if (!workspace) {
-      return null;
-    }
-    if (workspace.createdBy === myUsername) {
-      return 'owner';
-    }
-    const visitors = workspace.visitors;
-    const visitorSearchResult = visitors.filter(
-      (visitor) => visitor.username === myUsername,
-    );
-    if (visitorSearchResult) {
-      return visitorSearchResult[0].role;
-    }
-    return 'spectator';
-  }
-
-  canEdit() {
-    if (this.editMode) {
-      const role = this.getMyRole();
-      return role === 'owner' || role === 'editor';
-    }
-    return false;
-  }
-
-  async openCopyWorkspaceDialog(owner: string) {
-    const message = await this.translate
-      .get('success-modeling.copy-workspace-prompt')
-      .toPromise();
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      minWidth: 300,
-      data: message,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.copyWorkspace(owner);
-      }
-    });
   }
 
   onSaveClicked() {
@@ -355,105 +225,4 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         });
     }
   }
-
-  private getWorkspaceByUserAndService(
-    user: string,
-    service: string,
-  ): ApplicationWorkspace {
-    if (!Object.keys(this.communityWorkspace).includes(user)) {
-      return null;
-    }
-    const userWorkspace = this.communityWorkspace[user];
-    if (!Object.keys(userWorkspace).includes(service)) {
-      return null;
-    }
-    return userWorkspace[service];
-  }
-
-  private getCurrentWorkspace(): ApplicationWorkspace {
-    return this.getWorkspaceByUserAndService(
-      this.workspaceUser,
-      this.selectedServiceName,
-    );
-  }
-
-  onMeasuresChange(event) {
-    // console.log(event);
-  }
-  onFactorsChange({ factors, dimensionName }) {
-    // console.log(factors);
-    // // this.successModel.dimensions[dimensionName] = factors;
-    // // this.ngrxStore.dispatch(
-    // //   storeSuccessModel({ xml: this.successModel.toXml().outerHTML })
-    // // );
-  }
-
-  private getMyUsername() {
-    if (!this.user) {
-      return null;
-    }
-    return this.user.profile.preferred_username;
-  }
-
-  private async initWorkspace() {}
-
-  private persistWorkspaceChanges() {}
-
-  private async openClearWorkspaceDialog() {
-    // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
-    if (this.user) {
-      const message = await this.translate
-        .get('success-modeling.discard-changes-prompt')
-        .toPromise();
-      const dialogRef = this.dialog.open(
-        ConfirmationDialogComponent,
-        {
-          minWidth: 300,
-          data: message,
-        },
-      );
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.removeWorkspace();
-        }
-      });
-    }
-  }
-
-  private removeWorkspace() {
-    // const myUsername = this.user.profile.preferred_username;
-    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-    //   return;
-    // }
-    // const userWorkspace = this.communityWorkspace[myUsername];
-    // if (!Object.keys(userWorkspace).includes(this.selectedServiceName)) {
-    //   return;
-    // }
-    // delete userWorkspace[this.selectedServiceName];
-    // this.persistWorkspaceChanges();
-  }
-
-  private copyWorkspace(owner: string) {
-    // const myUsername = this.getMyUsername();
-    // if (!Object.keys(this.communityWorkspace).includes(myUsername)) {
-    //   return;
-    // }
-    // const myWorkspace = this.getWorkspaceByUserAndService(
-    //   myUsername,
-    //   this.selectedServiceName,
-    // );
-    // const ownerWorkspace = this.getWorkspaceByUserAndService(
-    //   owner,
-    //   this.selectedServiceName,
-    // );
-    // if (!myWorkspace || !ownerWorkspace) {
-    //   return;
-    // }
-    // myWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
-    // myWorkspace.model = cloneDeep(ownerWorkspace.model);
-    // this.persistWorkspaceChanges();
-  }
-}
-function TypedAction<T>() {
-  throw new Error('Function not implemented.');
 }

@@ -1,25 +1,31 @@
-<span *ngIf="!(data$ | async)" class="loading-placeholder">
-  <mat-spinner></mat-spinner>
-</span>
-<span *ngIf="error" class="loading-placeholder" (click)="openErrorDialog()">
-  <button mat-button>
-    <mat-icon>error_outline</mat-icon>
-  </button>
-</span>
-<span *ngIf="serviceNotFoundInMobSOS; else elseBlock">
-  This service has not generated any data yet. A visualization should be shown
-  as soon as you interact with it.
-</span>
-<ng-template #elseBlock>
-  <google-chart
-    *ngIf="data$ | async"
-    [title]="this.chart.title"
-    [type]="this.chart.chartType"
-    [data]="this.chart.data"
-    [options]="this.chart.options"
-    class="content"
-    style="width:100%"
-    [columns]="columnNames"
-    [dynamicResize]="true"
-  ></google-chart>
+<ng-container *ngIf="data$ | async; else stillLoading">
+  <ng-container *ngIf="!error; else Error">
+    <ng-container *ngIf="data$ | async">
+      <google-chart
+        *ngIf="chart"
+        [title]="this.chart.title"
+        [type]="this.chart.chartType"
+        [data]="this.chart.data"
+        [options]="this.chart.options"
+        class="content"
+        style="width: 100%"
+        [columns]="columnNames"
+        [dynamicResize]="true"
+      ></google-chart>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #Error>
+  <span (click)="openErrorDialog()">
+    <button mat-button id="error">
+      <mat-icon>error_outline</mat-icon>
+    </button>
+  </span>
+</ng-template>
+
+<ng-template #stillLoading>
+  <span class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </span>
 </ng-template>

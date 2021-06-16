@@ -5,12 +5,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { KpiVisualization } from '../../../success-model/visualization';
 
 import { Measure } from 'src/success-model/measure';
-import { ServiceInformation } from 'src/app/store.service';
+
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -39,7 +40,7 @@ export class KpiVisualizationComponent
       .visualization as KpiVisualization;
     if (!(visualization instanceof KpiVisualization)) {
       visualization = new KpiVisualization(
-        (visualization as KpiVisualization).operationsElements
+        (visualization as KpiVisualization).operationsElements,
       );
     }
     const abstractTerm = [];
@@ -50,14 +51,14 @@ export class KpiVisualizationComponent
       // even index means, that this must be an operand since we only support binary operators
       if (operationElement.index % 2 === 0) {
         const query = queries.find(
-          (value) => value.name === operationElement.name
+          (value) => value.name === operationElement.name,
         );
         let sql = query.sql;
         const queryParams = this.getParamsForQuery(sql);
         sql = this.applyVariableReplacements(sql, this.service);
         sql =
           KpiVisualizationComponent.applyCompatibilityFixForVisualizationService(
-            sql
+            sql,
           );
         let response;
         try {

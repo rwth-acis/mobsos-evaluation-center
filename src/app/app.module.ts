@@ -46,7 +46,7 @@ import {
   NGX_MONACO_EDITOR_CONFIG,
   NgxMonacoEditorConfig,
 } from 'ngx-monaco-editor';
-import { MdePopoverModule } from '@material-extended/mde';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SuccessDimensionComponent } from './success-dimension/success-dimension.component';
 import { Location, PlatformLocation } from '@angular/common';
@@ -87,8 +87,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
-
-// PlotlyModule.plotlyjs = PlotlyJS;
+import { WorkspaceManagementComponent } from './workspace-management/workspace-management.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -159,6 +158,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     SqlTableComponent,
     RequirementsListComponent,
     PickReqbazProjectComponent,
+    WorkspaceManagementComponent,
   ],
   imports: [
     BrowserModule,

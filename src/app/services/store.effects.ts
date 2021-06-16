@@ -14,17 +14,22 @@ import {
   tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
-import { delayedRetry } from './retryOperator';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { VData } from '../models/visualization.model';
 import * as Action from './store.actions';
-import { transferMissingGroupsToMobSOS } from './store.actions';
+import { disableEdit } from './store.actions';
 import {
+  APPLICATION_WORKSPACE,
+  EDIT_MODE,
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
   USER,
   VISUALIZATION_DATA,
 } from './store.selectors';
+import { WorkspaceService } from './workspace.service';
 
 @Injectable()
 export class StateEffects {
@@ -33,6 +38,7 @@ export class StateEffects {
     private l2p: Las2peerService,
     private ngrxStore: Store,
     private logger: NGXLogger,
+    private workspaceService: WorkspaceService,
   ) {}
 
   fetchServices$ = createEffect(() =>
@@ -126,22 +132,48 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
+      tap(({ groupId }) => {
+        this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.ngrxStore.dispatch(disableEdit());
+      }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
     ),
   );
 
+  updateCommunityWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.updateCommunityWorkspace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+        this.ngrxStore.select(EDIT_MODE),
+      ),
+      filter(([action, groupId]) => !!groupId),
+      tap(([action, groupId, editMode]) => {
+        if (editMode && groupId) {
+          this.workspaceService.startSynchronizingWorkspace(groupId);
+        }
+      }),
+      switchMap(() => of(Action.success())),
+    ),
+  );
+
   initState$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.initState),
-      withLatestFrom(this.ngrxStore.select(USER)),
-      tap(([action, user]) => {
-        this.l2p.setCredentials(
-          user.profile.preferred_username,
-          null,
-          user.access_token,
-        );
+      withLatestFrom(
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+      ),
+      tap(([action, user, groupId]) => {
+        if (user?.profile) {
+          this.l2p.setCredentials(
+            user.profile.preferred_username,
+            null,
+            user.access_token,
+          );
+        }
       }),
       switchMap(() => of(Action.success())),
     ),
@@ -324,11 +356,10 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
-        if (
-          !dataForQuery?.data ||
-          dataForQuery.fetchDate.getTime() < Date.now() - 300000
-        ) {
-          // no data yet or last fetch time more than 5min ago
+        if (shouldFetch(dataForQuery)) {
+          if (dataForQuery?.error) {
+            Action.removeVisualizationDataForQuery({ query });
+          }
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
@@ -336,7 +367,17 @@ export class StateEffects {
                 Action.storeVisualizationData({
                   data: vdata,
                   query,
+                  error: null,
                 }),
+              ),
+              catchError((err) =>
+                of(
+                  Action.storeVisualizationData({
+                    data: null,
+                    query,
+                    error: err,
+                  }),
+                ),
               ),
             );
         }
@@ -369,4 +410,30 @@ export class StateEffects {
       share(),
     ),
   );
+}
+
+/**
+ * Determines whether a new visualization data request should be made
+ * @param dataForQuery the current data from the store
+ * @returns true if we should make a new request
+ */
+function shouldFetch(dataForQuery: VData): boolean {
+  if (!dataForQuery) return true;
+  if (dataForQuery.error) {
+    const status = dataForQuery.error.status;
+    if (!status) {
+      // Unknown error
+      return true;
+    } else if (status === 400) {
+      // SQL query error
+      return false;
+    } else if (status >= 500) {
+      // Server error
+      if (dataForQuery?.fetchDate.getTime() < Date.now() - 300000)
+        return true;
+    }
+  } else if (dataForQuery.fetchDate.getTime() < Date.now() - 300000) {
+    return true;
+  }
+  return false;
 }
