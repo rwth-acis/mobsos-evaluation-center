@@ -1,15 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
-import {
-  MeasureCatalog,
-  MeasureMap,
-} from '../models/measure.catalog';
+import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
-import { AppState, INITIAL_STATE } from '../models/state.model';
-import {
-  DimensionMap,
-  SuccessFactor,
-  SuccessModel,
-} from '../models/success.model';
+import { AppState, INITIAL_APP_STATE } from '../models/state.model';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VisualizationData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
@@ -19,9 +12,8 @@ import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { removeVisualizationDataForQuery } from './store.actions';
 
-export const initialState: AppState = INITIAL_STATE;
+export const initialState: AppState = INITIAL_APP_STATE;
 
 const _Reducer = createReducer(
   initialState,

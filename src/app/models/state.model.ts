@@ -31,7 +31,7 @@ export interface AppState {
   currentWorkSpaceOwner: string;
 }
 
-export const INITIAL_STATE: AppState = {
+export const INITIAL_APP_STATE: AppState = {
   services: {},
   groups: undefined,
   user: undefined,
