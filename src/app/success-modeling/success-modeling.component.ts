@@ -133,7 +133,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // this.successModelEmpty$.subscribe((data) => console.log(data));
     let sub = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {

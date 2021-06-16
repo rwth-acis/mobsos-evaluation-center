@@ -4,7 +4,7 @@ import {
   CommunityWorkspace,
 } from '../models/workspace.model';
 import { updateCommunityWorkspace } from './store.actions';
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash';
 import { Doc, Map } from 'yjs';
@@ -306,12 +306,16 @@ export class WorkspaceService {
     const map = this.sharedDocument.getMap(name);
     this.subscription$ = subject.subscribe((obj) => {
       // if the subject changes the object will be synced with yjs
-      console.log('Pushing local changes to remote y-js map...');
+      if (isDevMode()) {
+        console.log('Pushing local changes to remote y-js map...');
+      }
       this._syncObjectToMap(cloneDeep(obj), map);
     });
 
     const observeFn = () => {
-      console.log('Applying remote changes to local object...');
+      if (isDevMode()) {
+        console.log('Applying remote changes to local object...');
+      }
       const cloneObj = cloneDeep(map.toJSON());
       if (!isEqual(subject.getValue(), cloneObj)) {
         subject.next(cloneObj);
@@ -319,7 +323,7 @@ export class WorkspaceService {
     };
     this.sharedDocument.on('update', observeFn);
     const mapAsObj = type.toJSON();
-    console.log(mapAsObj);
+
     // this.stopSync(name);
     // deposit cleanup function to be called when the type is no longer needed
     this.removeListenersCallbacks[name] = () => {

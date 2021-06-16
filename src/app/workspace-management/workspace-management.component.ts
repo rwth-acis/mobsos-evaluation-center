@@ -212,7 +212,6 @@ export class WorkspaceManagementComponent
   }
 
   onChangeRole(visitorName: string, role?: string) {
-    console.log(role, UserRole[role], visitorName);
     this.currentApplicationWorkspace =
       this.workspaceService.changeVisitorRole(
         visitorName,
