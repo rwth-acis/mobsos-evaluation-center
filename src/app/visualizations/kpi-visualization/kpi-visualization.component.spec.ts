@@ -13,13 +13,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { INITIAL_STATE } from 'src/app/models/state.model';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('KpiVisualizationComponent', () => {
   let component: KpiVisualizationComponent;
   let fixture: ComponentFixture<KpiVisualizationComponent>;
   let store: MockStore;
-  let initialState = INITIAL_STATE;
+  let initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({

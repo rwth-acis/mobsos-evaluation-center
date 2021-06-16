@@ -20,10 +20,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { INITIAL_STATE } from './models/state.model';
+import { INITIAL_APP_STATE } from './models/state.model';
 
 describe('AppComponent', () => {
-  const initialState = INITIAL_STATE;
+  const initialState = INITIAL_APP_STATE;
   let store: MockStore;
   beforeEach(
     waitForAsync(() => {

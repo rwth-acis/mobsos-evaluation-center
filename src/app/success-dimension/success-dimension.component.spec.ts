@@ -19,10 +19,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
-import { INITIAL_STATE } from '../models/state.model';
+import { INITIAL_APP_STATE } from '../models/state.model';
 
 describe('SuccessDimensionComponent', () => {
-  const initialState = INITIAL_STATE;
+  const initialState = INITIAL_APP_STATE;
   let component: SuccessDimensionComponent;
   let fixture: ComponentFixture<SuccessDimensionComponent>;
   let store: MockStore;

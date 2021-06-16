@@ -20,11 +20,13 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('PickMeasureDialogComponent', () => {
   let component: PickMeasureDialogComponent;
   let fixture: ComponentFixture<PickMeasureDialogComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -53,6 +55,7 @@ describe('PickMeasureDialogComponent', () => {
               service: {},
             },
           },
+          provideMockStore({ initialState }),
         ],
       }).compileComponents();
     }),
