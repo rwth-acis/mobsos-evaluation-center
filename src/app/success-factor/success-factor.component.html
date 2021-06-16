@@ -1,7 +1,7 @@
 <div id="factor-header">
   <button
     mat-icon-button
-    *ngIf="editMode$ | async"
+    *ngIf="canEdit$ | async"
     color="primary"
     (click)="onEditClicked()"
     id="edit-button"
@@ -11,31 +11,34 @@
   <h3 *ngIf="factor">{{ factor.name }}</h3>
 </div>
 
-<div *ngIf="factor && factor.measures.length > 0">
+<div *ngIf="factor && factor.measures?.length > 0">
   <div
     *ngFor="let measure of factor.measures; let i = index"
     class="measure-row"
   >
-    <button
-      *ngIf="measure && editMode"
-      mat-icon-button
-      matTooltipShowDelay="0"
-      matTooltip="{{ 'success-factor.remove-measure-tooltip' | translate }}"
-      (click)="openRemoveMeasureDialog(i)"
-    >
-      <mat-icon color="warn">remove_circle_outline</mat-icon>
-    </button>
+    <ng-container *ngIf="canEdit$ | async">
+      <button
+        *ngIf="measure"
+        mat-icon-button
+        matTooltipShowDelay="0"
+        matTooltip="{{
+          'success-factor.remove-measure-tooltip' | translate
+        }}"
+        (click)="openRemoveMeasureDialog(i)"
+      >
+        <mat-icon color="warn">remove_circle_outline</mat-icon>
+      </button>
+    </ng-container>
     <app-success-measure
       *ngIf="measure"
       [measure]="measures[measure]"
       [dimensionName]="this.dimensionName"
       (measureChange)="this.measuresChange.emit(measures)"
       [service]="service"
-      [editMode]="editMode"
     ></app-success-measure>
   </div>
 </div>
-<div *ngIf="editMode$ | async as editMode">
+<div *ngIf="canEdit$ | async as editMode">
   <button
     id="add-measure-button"
     mat-raised-button

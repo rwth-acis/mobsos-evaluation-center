@@ -6,8 +6,8 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { ServiceInformation } from 'src/app/models/service.model';
 import { Las2peerService } from '../../../las2peer.service';
-import { ServiceInformation } from '../../../store.service';
 
 @Component({
   selector: 'app-sql-table',
@@ -19,14 +19,16 @@ export class SqlTableComponent implements OnInit, OnChanges {
   @Input() service: ServiceInformation;
   results: any[][];
 
-  constructor(private las2peer: Las2peerService) {}
+  constructor() {}
 
   static htmlDecode(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
   }
 
-  protected static applyCompatibilityFixForVisualizationService(query: string) {
+  protected static applyCompatibilityFixForVisualizationService(
+    query: string,
+  ) {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = SqlTableComponent.htmlDecode(query);
@@ -39,10 +41,9 @@ export class SqlTableComponent implements OnInit, OnChanges {
     const queryParams = this.getParamsForQuery(query);
     query = this.applyVariableReplacements(query);
     query =
-      SqlTableComponent.applyCompatibilityFixForVisualizationService(query);
-    this.fetchData(query, queryParams, 'JSON').then(
-      (results) => (this.results = results as any[][])
-    );
+      SqlTableComponent.applyCompatibilityFixForVisualizationService(
+        query,
+      );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -77,9 +78,5 @@ export class SqlTableComponent implements OnInit, OnChanges {
     }
     servicesString += services.join(',') + ')';
     return query.replace('$SERVICES$', servicesString);
-  }
-
-  protected fetchData(query, queryParams, format: string) {
-    return this.las2peer.visualizeQuery(query, queryParams, format);
   }
 }

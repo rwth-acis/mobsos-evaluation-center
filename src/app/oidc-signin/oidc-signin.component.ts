@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { UserManager } from 'oidc-client';
-import { StoreService } from '../store.service';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { storeUser } from '../services/store.actions';
+import { User as UserInfo } from '../models/user.model';
 
 @Component({
   selector: 'app-oidc-signin',
@@ -9,10 +11,10 @@ import { Router } from '@angular/router';
   styleUrls: ['./oidc-signin.component.scss'],
 })
 export class OidcSigninComponent implements OnInit {
-  constructor(private store: StoreService, private router: Router) {
+  constructor(private router: Router, private ngrxStore: Store) {
     new UserManager({}).signinRedirectCallback().then((user) => {
-      this.store.setUser(user);
-      this.router.navigate(['/']);
+      this.ngrxStore.dispatch(storeUser({ user: user as UserInfo }));
+      this.router.navigateByUrl('/');
     });
   }
 

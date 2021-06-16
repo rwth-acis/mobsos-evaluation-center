@@ -29,10 +29,13 @@ mat-sidenav-container {
     }
 
     #community-selection {
-      margin-top: 10px;
-      margin-bottom: 10px;
+  
+      position: relative;
     }
 
+    #groupsLoadingIndicator {
+      margin: auto;
+    }
     .mat-list-item,
     mat-label,
     mat-form-field,

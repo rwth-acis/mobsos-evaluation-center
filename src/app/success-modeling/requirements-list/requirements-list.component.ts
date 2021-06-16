@@ -16,20 +16,25 @@ import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmat
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { Las2peerService } from '../../las2peer.service';
-import { isNumber } from 'util';
-import { StoreService, User } from '../../store.service';
 import { MatDialog } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
+import { USER } from 'src/app/services/store.selectors';
+import { storeSuccessModel } from 'src/app/services/store.actions';
+import { User } from 'src/app/models/user.model';
 
 @Component({
   selector: 'app-requirements-list',
   templateUrl: './requirements-list.component.html',
   styleUrls: ['./requirements-list.component.scss'],
 })
-export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
+export class RequirementsListComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() successModel: SuccessModel;
-  @Output() successModelChange = new EventEmitter<SuccessModel>();
+
   @Output() numberOfRequirements = new EventEmitter<number>();
 
+  user$ = this.ngrxStore.select(USER);
   requirements;
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
@@ -40,13 +45,13 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     private dialog: MatDialog,
     private translate: TranslateService,
     private las2peer: Las2peerService,
-    private store: StoreService
+    private ngrxStore: Store,
   ) {}
 
   static joinAbsoluteUrlPath(...args) {
     return args
       .map((pathPart) => {
-        if (isNumber(pathPart)) {
+        if (typeof pathPart === 'number') {
           pathPart = pathPart.toString();
         }
         return pathPart.replace(/(^\/|\/$)/g, '');
@@ -58,9 +63,9 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     this.refreshRequirements();
     this.refreshRequirementsHandle = setInterval(
       () => this.refreshRequirements(),
-      environment.servicePollingInterval * 1000
+      environment.servicePollingInterval * 1000,
     );
-    this.store.user.subscribe((user) => (this.user = user));
+    this.user$.subscribe((user) => (this.user = user));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -81,9 +86,14 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
         this.successModel.reqBazProject = new ReqbazProject(
           result.selectedProject.name,
           result.selectedProject.id,
-          result.selectedCategory.id
+          result.selectedCategory.id,
         );
-        this.successModelChange.emit(this.successModel);
+        this.ngrxStore.dispatch(
+          storeSuccessModel({
+            xml: this.successModel.toXml().outerHTML,
+          }),
+        );
+
         this.refreshRequirements();
       }
     });
@@ -91,7 +101,9 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
 
   async openDisconnectProjectDialog() {
     const message = await this.translate
-      .get('success-modeling.requirements-list.disconnect-project-prompt')
+      .get(
+        'success-modeling.requirements-list.disconnect-project-prompt',
+      )
       .toPromise();
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
@@ -100,7 +112,11 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.successModel.reqBazProject = null;
-        this.successModelChange.emit(this.successModel);
+        this.ngrxStore.dispatch(
+          storeSuccessModel({
+            xml: this.successModel.toXml().outerHTML,
+          }),
+        );
         this.numberOfRequirements.emit(0);
       }
     });
@@ -112,7 +128,9 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     this.las2peer
-      .fetchRequirementsOnReqBaz(this.successModel.reqBazProject.categoryId)
+      .fetchRequirementsOnReqBaz(
+        this.successModel.reqBazProject.categoryId,
+      )
       .then((requirements) => {
         this.requirements = requirements;
         this.numberOfRequirements.emit((requirements as []).length);
@@ -153,7 +171,8 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getFrontendUrlForRequirement(requirement: any) {
-    const reqBazProject: ReqbazProject = this.successModel.reqBazProject;
+    const reqBazProject: ReqbazProject =
+      this.successModel.reqBazProject;
     if (!reqBazProject) {
       return '';
     }
@@ -164,7 +183,7 @@ export class RequirementsListComponent implements OnInit, OnChanges, OnDestroy {
       'categories',
       reqBazProject.categoryId,
       'requirements',
-      requirement.id
+      requirement.id,
     );
   }
 }

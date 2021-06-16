@@ -1,60 +1,68 @@
-import {async, TestBed} from '@angular/core/testing';
-import {RouterTestingModule} from '@angular/router/testing';
-import {AppComponent} from './app.component';
+import { async, TestBed, waitForAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { AppComponent } from './app.component';
+import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import {
-  MatButtonModule,
-  MatFormFieldModule,
-  MatIconModule,
-  MatListModule, MatSelectModule,
-  MatSidenavModule,
-  MatSlideToggleModule, MatSnackBarModule
-} from '@angular/material';
-import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
-import {createTranslateLoader} from './app.module';
-import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {ServiceWorkerModule} from '@angular/service-worker';
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { createTranslateLoader } from './app.module';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { INITIAL_STATE } from './models/state.model';
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        BrowserAnimationsModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: (createTranslateLoader)
-          }
-        }),
-        LoggerModule.forRoot({
-          level: NgxLoggerLevel.TRACE,
-          serverLogLevel: NgxLoggerLevel.OFF
-        }),
-        MatSidenavModule,
-        MatIconModule,
-        MatListModule,
-        MatButtonModule,
-        MatSlideToggleModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        MatSnackBarModule,
-        HttpClientTestingModule,
-        ServiceWorkerModule.register('', {enabled: false}),
-      ],
-      declarations: [
-        AppComponent
-      ],
-      schemas: [
-        CUSTOM_ELEMENTS_SCHEMA
-      ],
-    }).compileComponents();
-  }));
+  const initialState = INITIAL_STATE;
+  let store: MockStore;
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        imports: [
+          RouterTestingModule,
+          BrowserAnimationsModule,
+          TranslateModule.forRoot({
+            loader: {
+              provide: TranslateLoader,
+              useFactory: createTranslateLoader,
+            },
+          }),
+          LoggerModule.forRoot({
+            level: NgxLoggerLevel.TRACE,
+            serverLogLevel: NgxLoggerLevel.OFF,
+          }),
+          MatSidenavModule,
+          MatIconModule,
+          MatListModule,
+          MatButtonModule,
+          MatSlideToggleModule,
+          MatFormFieldModule,
+          MatSelectModule,
+          MatSnackBarModule,
+          HttpClientTestingModule,
+          ServiceWorkerModule.register('', { enabled: false }),
+        ],
+        declarations: [AppComponent],
+        providers: [provideMockStore({ initialState })],
+        schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      }).compileComponents();
+    }),
+  );
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
+    store.refreshState();
+    fixture.detectChanges();
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   });
@@ -69,6 +77,9 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('las2peer-frontend-statusbar h2').textContent).toContain('MobSOS Evaluation Center');
+    expect(
+      compiled.querySelector('las2peer-frontend-statusbar h2')
+        .textContent,
+    ).toContain('MobSOS Evaluation Center');
   });
 });

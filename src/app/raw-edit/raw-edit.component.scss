@@ -16,13 +16,19 @@
   height: calc(100vh - 250px);
 }
 
+
 .send-button {
   width: 100%;
   position: relative;
-}
-mat-spinner {
+  mat-spinner {
   top: 5px;
   margin: 0;
   padding: 0;
   position: absolute;
+}
+}
+
+#notinit {
+  margin-top: 20px !important;
+  margin: auto;
 }

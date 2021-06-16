@@ -3,10 +3,7 @@ import { SuccessFactor } from 'src/success-model/success-factor';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 
 enum FetchActions {
   FETCH_SERVICES = 'Fetch services from the network',
@@ -18,7 +15,9 @@ enum FetchActions {
 }
 
 export enum PostActions {
-  SAVE_MODEL_AND_CATALOG = 'send an update to the server',
+  SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
+  SAVE_CATALOG = 'save catalog on the server',
+  SAVE_MODEL = 'save model on the server',
   SUCCESS_RESPONSE = 'response was successfully',
   FAILURE_RESPONSE = 'response was not successfully',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
@@ -32,17 +31,21 @@ enum StoreActions {
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
-  UPDATE_APPLICATION_WORKSPACE = 'updates the current application workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
+  REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
+  REMOVE_MEASURE_FROM_FACTOR = 'remove a measure from a success factor',
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
+  SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
+  REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
 
 enum StateActions {
   SET_GROUP = 'set current group',
+  TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
@@ -53,30 +56,36 @@ enum StateActions {
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
 }
 
-//fetching
-export const fetchServices = createAction(FetchActions.FETCH_SERVICES);
+// fetching
+export const fetchServices = createAction(
+  FetchActions.FETCH_SERVICES,
+);
 export const fetchGroups = createAction(FetchActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
   FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ query: string; queryParams: string[] }>()
+  props<{ query: string; queryParams: string[] }>(),
 );
 export const fetchMeasureCatalog = createAction(
   FetchActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
-  props<{ groupId: string }>()
+  props<{ groupId: string }>(),
 );
 export const fetchSuccessModel = createAction(
   FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
-  props<{ groupId; serviceName }>()
+  props<{ groupId; serviceName }>(),
 );
 
-//storing
+// storing
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ servicesFromL2P; servicesFromMobSOS }>()
+  props<{ servicesFromL2P; servicesFromMobSOS }>(),
 );
 export const addFactorToDimension = createAction(
   StoreActions.ADD_FACTOR_TO_DIMENSION,
-  props<{ factor: SuccessFactor; dimensionName: string }>()
+  props<{ factor: SuccessFactor; dimensionName: string }>(),
+);
+export const removeVisualizationDataForQuery = createAction(
+  StoreActions.REMOVE_VISUALIZATION_DATA,
+  props<{ query: string }>(),
 );
 export const editFactorInDimension = createAction(
   StoreActions.EDIT_FACTOR_IN_DIMENSION,
@@ -84,15 +93,20 @@ export const editFactorInDimension = createAction(
     factor: SuccessFactor;
     oldFactorName: string;
     dimensionName: string;
-  }>()
+  }>(),
 );
+
 export const addMeasureToCatalog = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
-  props<{ measure: Measure }>()
+  props<{ measure: Measure }>(),
 );
 export const addMeasureToFactor = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
-  props<{ measure: Measure; factorName: string; dimensionName: string }>()
+  props<{
+    measure: Measure;
+    factorName: string;
+    dimensionName: string;
+  }>(),
 );
 
 export const editMeasure = createAction(
@@ -102,71 +116,107 @@ export const editMeasure = createAction(
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
-  }>()
+  }>(),
 );
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ groupsFromContactService; groupsFromMobSOS }>()
+  props<{ groupsFromContactService; groupsFromMobSOS }>(),
+);
+
+export const removeFactor = createAction(
+  StoreActions.REMOVE_FACTOR_FROM_DIMENSION,
+  props<{ name: string }>(),
+);
+
+export const removeMeasure = createAction(
+  StoreActions.REMOVE_MEASURE_FROM_FACTOR,
+  props<{ name: string }>(),
 );
 
 export const saveModelAndCatalog = createAction(
-  PostActions.SAVE_MODEL_AND_CATALOG
+  PostActions.SAVE_MODEL_AND_CATALOG,
+);
+
+export const saveModel = createAction(
+  PostActions.SAVE_MODEL,
+  props<{ xml: string }>(),
+);
+
+export const transferMissingGroupsToMobSOS = createAction(
+  StateActions.TRANSFER_MISSING_GROUPS_TO_MOBSOS,
+  props<{ groupsFromContactService; groupsFromMobSOS }>(),
+);
+
+export const saveCatalog = createAction(
+  PostActions.SAVE_CATALOG,
+  props<{ xml: string }>(),
 );
 
 export const setGroup = createAction(
   StateActions.SET_GROUP,
-  props<{ groupId: string }>()
+  props<{ groupId: string }>(),
 );
 
 export const setService = createAction(
   StateActions.SET_SERVICE,
-  props<{ service: ServiceInformation }>()
+  props<{ service: ServiceInformation }>(),
 );
 
 export const storeUser = createAction(
   StoreActions.STORE_USER,
-  props<{ user: User }>()
+  props<{ user: User }>(),
 );
 
 export const storeVisualizationData = createAction(
-  FetchActions.FETCH_VISUALIZATION_DATA,
-  props<{ data: any; query: string }>()
+  StoreActions.STORE_VISUALIZATION_DATA,
+  props<{ data: any; query: string; error: any }>(),
 );
 
 export const storeCatalog = createAction(
   StoreActions.STORE_MEASURE_CATALOG,
-  props<{ xml: string }>()
+  props<{ xml: string }>(),
 );
 
 export const storeSuccessModel = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
-  props<{ xml: string }>()
-);
-export const updateAppWorkspace = createAction(
-  StoreActions.UPDATE_APPLICATION_WORKSPACE,
-  props<{ workspace: ApplicationWorkspace }>()
+  props<{ xml: string }>(),
 );
 
 export const updateCommunityWorkspace = createAction(
   StoreActions.UPDATE_COMMUNITY_WORKSPACE,
-  props<{ workspace: CommunityWorkspace }>()
+  props<{ workspace: CommunityWorkspace }>(),
+);
+
+export const setWorkSpaceOwner = createAction(
+  StoreActions.SET_WORKSPACE_OWNER,
+  props<{ username: string }>(),
 );
 
 // modes
-export const incrementLoading = createAction(StateActions.INCREMENT_LOADING);
+export const incrementLoading = createAction(
+  StateActions.INCREMENT_LOADING,
+);
 export const initState = createAction(StateActions.INITIALIZE_STATE);
-export const decrementLoading = createAction(StateActions.DECREMENT_LOADING);
+export const decrementLoading = createAction(
+  StateActions.DECREMENT_LOADING,
+);
 export const toggleEdit = createAction(StateActions.TOGGLE_EDIT);
 export const enableEdit = createAction(StateActions.ENABLE_EDIT);
 export const disableEdit = createAction(StateActions.DISABLE_EDIT);
-export const toggleExpertMode = createAction(StateActions.TOGGLE_EXPERT_MODE);
+export const toggleExpertMode = createAction(
+  StateActions.TOGGLE_EXPERT_MODE,
+);
 
 // http results
-export const successResponse = createAction(PostActions.SUCCESS_RESPONSE);
+export const successResponse = createAction(
+  PostActions.SUCCESS_RESPONSE,
+);
 export const saveCatalogSuccess = createAction(
-  PostActions.SAVE_CATALOG_SUCCESS
+  PostActions.SAVE_CATALOG_SUCCESS,
 );
 export const failureResponse = createAction(
   PostActions.FAILURE_RESPONSE,
-  props<{ reason: Error }>()
+  props<{ reason: Error }>(),
 );
+
+export const success = createAction('action was successful');

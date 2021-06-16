@@ -1,18 +1,33 @@
 {
     "cSpell.words": [
+        "Deutsch",
         "LEADDEV",
+        "Plotly",
         "apiv",
         "appworkspace",
         "contactservice",
         "dbkey",
+        "devkit",
         "hammertime",
         "leaddevelopers",
+        "localstorage",
         "mobsos",
+        "modtypei",
+        "ngsw",
         "oidc",
+        "oidcclientid",
+        "oidcpopupsigninurl",
+        "oidcpopupsignouturl",
         "openidconned",
+        "panleft",
+        "panright",
         "peermon",
+        "plotlyjs",
+        "queryparams",
         "reqbaz",
-        "signin"
+        "signin",
+        "signout",
+        "snav"
     ],
     "angular.enable-strict-mode-prompt": false
 }

@@ -1,4 +1,4 @@
-//maps success dimensions to their translation keys
+// maps success dimensions to their translation keys
 export const translationMap = {
   'System Quality': 'system-quality',
   'Information Quality': 'information-quality',
@@ -7,7 +7,7 @@ export const translationMap = {
   'Individual Impact': 'individual-impact',
   'Community Impact': 'community-impact',
 };
-//maps success dimensions to their icon keys
+// maps success dimensions to their icon keys
 export const iconMap = {
   'System Quality': 'devices',
   'Information Quality': 'info_outline',

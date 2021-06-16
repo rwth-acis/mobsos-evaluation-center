@@ -10,7 +10,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { cloneDeep } from 'lodash';
-import { ServiceInformation } from '../store.service';
 
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -18,20 +17,29 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
-import { EDIT_MODE, MEASURE } from '../services/store.selectors';
-import { editMeasure } from '../services/store.actions';
+import {
+  EDIT_MODE,
+  MEASURE,
+  USER_HAS_EDIT_RIGHTS,
+} from '../services/store.selectors';
+import {
+  editMeasure,
+  removeMeasure,
+} from '../services/store.actions';
 import { Measure } from '../models/measure.model';
 import { Observable } from 'rxjs';
+import { ServiceInformation } from '../models/service.model';
 
 @Component({
   selector: 'app-success-measure',
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
+export class SuccessMeasureComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
-  @Input() editMode = false;
   @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
@@ -40,7 +48,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
   meaureName: string;
   measure$: Observable<Measure>;
 
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   public visualizationError: string;
   public error: Response;
@@ -50,7 +58,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
     private translate: TranslateService,
 
     private dialog: MatDialog,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   ngOnInit() {
@@ -59,7 +67,10 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
     //   ? (JSON.parse(JSON.stringify(this.measure)) as Measure)
     //   : this.measure;
 
-    this.measure$ = this.ngrxStore.select(MEASURE, this.measure?.name);
+    this.measure$ = this.ngrxStore.select(
+      MEASURE,
+      this.measure?.name,
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {}
@@ -86,7 +97,7 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
             factorName: this.factorName,
             oldMeasureName: this.measure.name,
             dimensionName: this.dimensionName,
-          })
+          }),
         );
         this.measure.name = result.name;
         this.measure.queries = result.queries;
@@ -121,11 +132,15 @@ export class SuccessMeasureComponent implements OnInit, OnChanges, OnDestroy {
       minWidth: 300,
       data: message,
     });
+    const measure = this.measure;
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.measureDelete.emit();
+        this.ngrxStore.dispatch(
+          removeMeasure({ name: measure.name }),
+        );
+        // this.measureDelete.emit();
       }
     });
-    event.stopPropagation();
+    $event.stopPropagation();
   }
 }

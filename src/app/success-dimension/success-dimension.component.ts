@@ -1,14 +1,30 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { SuccessFactor } from '../../success-model/success-factor';
 import { MeasureMap } from '../../success-model/measure-catalog';
-import { ServiceInformation } from '../store.service';
+
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
-import { EDIT_MODE } from '../services/store.selectors';
-import { addFactorToDimension } from '../services/store.actions';
+import {
+  EDIT_MODE,
+  ROLE_IN_CURRENT_WORKSPACE,
+  USER_HAS_EDIT_RIGHTS,
+} from '../services/store.selectors';
+import {
+  addFactorToDimension,
+  removeFactor,
+} from '../services/store.actions';
+import { ServiceInformation } from '../models/service.model';
+import { combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-success-dimension',
@@ -21,18 +37,20 @@ export class SuccessDimensionComponent implements OnInit {
   @Input() name: string;
   @Input() description: string;
   @Input() icon: string;
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+
+  canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   @Output() sendFactorsToSuccessModel = new EventEmitter<{
     factors: SuccessFactor[];
     dimensionName: string;
   }>();
-  @Output() sendMeasuresToSuccessModel = new EventEmitter<MeasureMap>();
+  @Output() sendMeasuresToSuccessModel =
+    new EventEmitter<MeasureMap>();
 
   constructor(
     private dialog: MatDialog,
     private translate: TranslateService,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   private _factors: SuccessFactor[];
@@ -57,23 +75,13 @@ export class SuccessDimensionComponent implements OnInit {
       if (result) {
         this._factors.push(result);
         this.ngrxStore.dispatch(
-          addFactorToDimension({ factor: result, dimensionName: this.name })
+          addFactorToDimension({
+            factor: result,
+            dimensionName: this.name,
+          }),
         );
-        // this.sendFactorsToSuccessModel.emit({
-        //   factors: this._factors,
-        //   dimensionName: this.name,
-        // });
       }
     });
-  }
-
-  _onMeasuresChange(event) {
-    this.sendMeasuresToSuccessModel.emit(event);
-  }
-
-  _onFactorsChange(event) {
-    console.log(event);
-    this.sendFactorsToSuccessModel.emit(event);
   }
 
   async openRemoveFactorDialog(factorIndex: number) {
@@ -92,10 +100,8 @@ export class SuccessDimensionComponent implements OnInit {
   }
 
   private removeFactor(factorIndex: number) {
-    this._factors.splice(factorIndex, 1);
-    this.sendFactorsToSuccessModel.emit({
-      factors: this._factors,
-      dimensionName: this.name,
-    });
+    this.ngrxStore.dispatch(
+      removeFactor({ name: this._factors[factorIndex].name }),
+    );
   }
 }

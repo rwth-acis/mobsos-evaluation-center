@@ -1,35 +1,27 @@
 import { createReducer, on } from '@ngrx/store';
-import { MeasureCatalog, MeasureMap } from '../models/measure.catalog';
+import {
+  MeasureCatalog,
+  MeasureMap,
+} from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
-import { AppState } from '../models/state.model';
+import { AppState, INITIAL_STATE } from '../models/state.model';
 import {
   DimensionMap,
   SuccessFactor,
   SuccessModel,
 } from '../models/success.model';
-import { VData, VisualizationData } from '../models/visualization.model';
+import { VisualizationData } from '../models/visualization.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+} from '../models/workspace.model';
 import * as Actions from './store.actions';
+import { cloneDeep } from 'lodash';
+import { UserRole, Visitor } from '../models/user.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { removeVisualizationDataForQuery } from './store.actions';
 
-export const initialState: AppState = {
-  services: {},
-  groups: {},
-  user: undefined,
-
-  selectedGroupId: undefined,
-  selectedService: undefined,
-  selectedServiceName: undefined,
-  editMode: false,
-  questionnaires: [],
-  messageDescriptions: undefined,
-  visualizationData: {},
-  measureCatalog: undefined,
-  measureCatalogInitialized: false,
-  successModel: undefined,
-  successModelInitialized: false,
-  currentNumberOfHttpCalls: 0,
-  expertMode: false,
-  currentApplicationWorkspace: undefined,
-};
+export const initialState: AppState = INITIAL_STATE;
 
 const _Reducer = createReducer(
   initialState,
@@ -41,9 +33,9 @@ const _Reducer = createReducer(
         { ...state.services },
         servicesFromL2P,
         { ...state.messageDescriptions },
-        servicesFromMobSOS
+        servicesFromMobSOS,
       ),
-    })
+    }),
   ),
   on(
     Actions.storeGroups,
@@ -52,9 +44,9 @@ const _Reducer = createReducer(
       groups: mergeGroupData(
         { ...state.groups },
         groupsFromContactService,
-        groupsFromMobSOS
+        groupsFromMobSOS,
       ),
-    })
+    }),
   ),
   on(Actions.setGroup, (state, { groupId }) =>
     groupId
@@ -63,29 +55,20 @@ const _Reducer = createReducer(
           selectedGroupId: groupId,
           measureCatalogInitialized: false,
         }
-      : state
+      : state,
   ),
   on(Actions.setService, (state, { service }) =>
     service
       ? {
           ...state,
-          selectedService: service,
           selectedServiceName: service?.name,
           successModelInitialized: false,
         }
-      : state
+      : state,
   ),
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,
-  })),
-  on(Actions.initState, (state) => ({
-    ...state,
-    measureCatalogInitialized: !!state.measureCatalog,
-    successModel: state.measureCatalog
-      ? state.successModel
-      : initialState.successModel,
-    successModelInitialized: !!state.measureCatalog,
   })),
   on(Actions.enableEdit, (state) => ({
     ...state,
@@ -101,7 +84,7 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
-    user: user,
+    user: { ...user, signedIn: !!user },
   })),
   on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,
@@ -112,18 +95,26 @@ const _Reducer = createReducer(
     ...state,
     successModelInitialized: false,
   })),
+  on(Actions.removeVisualizationDataForQuery, (state, { query }) => ({
+    ...state,
+    visualizationData: removeVisualizationData(
+      state.visualizationData,
+      query,
+    ),
+  })),
   on(Actions.fetchMeasureCatalog, (state) => ({
     ...state,
     measureCatalogInitialized: false,
   })),
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
-    successModel:
-      xml !== null
-        ? parseModel(xml)
-        : SuccessModel.emptySuccessModel(state.selectedService),
     successModelInitialized: true,
+    successModel:
+      xml === null
+        ? SuccessModel.emptySuccessModel(getSelectedService(state))
+        : parseModel(xml),
   })),
+
   on(Actions.incrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls + 1,
@@ -132,70 +123,92 @@ const _Reducer = createReducer(
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls - 1,
   })),
-  on(Actions.updateAppWorkspace, (state, { workspace }) => ({
+  on(Actions.updateCommunityWorkspace, (state, { workspace }) => ({
     ...state,
-    currentApplicationWorkspace: workspace,
+    communityWorkspace: workspace,
   })),
-  on(Actions.addFactorToDimension, (state, props) => ({
+  on(Actions.setWorkSpaceOwner, (state, props) => ({
     ...state,
-    successModel: addFactorToDimension(
-      props.factor,
-      props.dimensionName,
-      state.successModel
+    currentWorkSpaceOwner: props.username,
+    communityWorkspace: addVisitor(
+      state.communityWorkspace,
+      props.username,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
+  })),
+  on(Actions.storeVisualizationData, (state, props) => ({
+    ...state,
+    visualizationData: updateVisualizationData(
+      { ...state.visualizationData },
+      props,
     ),
   })),
   on(Actions.editFactorInDimension, (state, props) => ({
     ...state,
-    successModel: editFactorInDimension(
+    communityWorkspace: editFactorInDimension(
       props.factor,
       props.oldFactorName,
       props.dimensionName,
-      state.successModel
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
     ),
   })),
   on(Actions.addMeasureToCatalog, (state, props) => ({
     ...state,
-    measureCatalog: {
-      ...state.measureCatalog,
-      measures: addMeasureToMeasures(
-        state.measureCatalog.measures,
-        props.measure
-      ),
-    } as MeasureCatalog,
+    communityWorkspace: addMeasureToMeasures(
+      props.measure,
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
   })),
   on(Actions.editMeasure, (state, props) => ({
     ...state,
-    measureCatalog: {
-      ...state.measureCatalog,
-      measures: updateMeasureInCatalog(
-        state.measureCatalog.measures,
-        props.measure,
-        props.oldMeasureName
-      ),
-    } as MeasureCatalog,
-    successModel: {
-      ...state.successModel,
-      dimensions: updateMeasureInSuccessModel(
-        state.successModel.dimensions,
-        props
-      ),
-    } as SuccessModel,
+    communityWorkspace: updateMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+    ),
   })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,
-    successModel: addMeasureToFactorInModel(
-      state.successModel,
-      props.dimensionName,
-      props.factorName,
-      props.measure
+    communityWorkspace: addMeasureToFactorInModel(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
     ),
   })),
-  on(Actions.storeVisualizationData, (state, { data, query }) => ({
+  on(Actions.removeMeasure, (state, { name }) => ({
     ...state,
-    visualizationData: data
-      ? updateVisualizationData({ ...state.visualizationData }, data, query)
-      : state.visualizationData,
-  }))
+    communityWorkspace: removeMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      name,
+    ),
+  })),
+  on(Actions.addFactorToDimension, (state, props) => ({
+    ...state,
+    communityWorkspace: addFactorToDimension(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+    ),
+  })),
+  on(Actions.removeFactor, (state, { name }) => ({
+    ...state,
+    communityWorkspace: removeFactor(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      name,
+    ),
+  })),
 );
 
 export function Reducer(state, action) {
@@ -204,10 +217,15 @@ export function Reducer(state, action) {
 
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
-  data: any[][],
-  query: string
+  props: { data: any[][]; query: string; error: HttpErrorResponse },
 ) {
-  currentVisualizationData[query] = { data: data, fetchDate: new Date() };
+  if (!props.query || (!props.data && !props.error))
+    return currentVisualizationData;
+  currentVisualizationData[props.query] = {
+    data: props.data,
+    fetchDate: new Date(),
+    error: props.error,
+  };
   return currentVisualizationData;
 }
 
@@ -222,7 +240,7 @@ function mergeServiceData(
   serviceCollection,
   servicesFromL2P,
   messageDescriptions,
-  servicesFromMobSOS
+  servicesFromMobSOS,
 ) {
   serviceCollection = { ...serviceCollection };
   if (servicesFromL2P) {
@@ -247,7 +265,7 @@ function mergeServiceData(
           mobsosIDs: [],
           serviceMessageDescriptions: getMessageDescriptionForService(
             messageDescriptions,
-            serviceIdentifier
+            serviceIdentifier,
           ),
         };
       }
@@ -256,10 +274,13 @@ function mergeServiceData(
 
   if (servicesFromMobSOS) {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
-      let tmp = servicesFromMobSOS[serviceAgentID]?.serviceName?.split('@', 2);
+      const tmp = servicesFromMobSOS[
+        serviceAgentID
+      ]?.serviceName?.split('@', 2);
       if (!(tmp?.length > 0)) continue;
       const serviceName = tmp[0];
-      let serviceAlias = servicesFromMobSOS[serviceAgentID]?.serviceAlias;
+      let serviceAlias =
+        servicesFromMobSOS[serviceAgentID]?.serviceAlias;
       const registrationTime =
         servicesFromMobSOS[serviceAgentID]?.registrationTime;
       if (!serviceAlias) {
@@ -267,10 +288,11 @@ function mergeServiceData(
       }
 
       // only add mobsos service data if the data from the discovery is missing
-      const serviceMessageDescriptions = getMessageDescriptionForService(
-        messageDescriptions,
-        serviceName
-      );
+      const serviceMessageDescriptions =
+        getMessageDescriptionForService(
+          messageDescriptions,
+          serviceName,
+        );
       if (!(serviceName in serviceCollection)) {
         serviceCollection[serviceName] = {
           name: serviceName,
@@ -280,12 +302,14 @@ function mergeServiceData(
         };
       }
       if (!serviceCollection[serviceName]) continue;
-      let mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
+      const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
       mobsosIDs.push({
         agentID: serviceAgentID,
         registrationTime,
       });
-      mobsosIDs.sort((a, b) => a.registrationTime - b.registrationTime);
+      mobsosIDs.sort(
+        (a, b) => a.registrationTime - b.registrationTime,
+      );
       serviceCollection[serviceName] = {
         ...serviceCollection[serviceName],
         serviceMessageDescriptions: { ...serviceMessageDescriptions },
@@ -297,11 +321,12 @@ function mergeServiceData(
 
 function getMessageDescriptionForService(
   messageDescriptions,
-  serviceIdentifier: string
+  serviceIdentifier: string,
 ) {
   let serviceMessageDescriptions = {};
   if (messageDescriptions && messageDescriptions[serviceIdentifier])
-    serviceMessageDescriptions = messageDescriptions[serviceIdentifier];
+    serviceMessageDescriptions =
+      messageDescriptions[serviceIdentifier];
 
   return serviceMessageDescriptions;
 }
@@ -313,12 +338,20 @@ function getMessageDescriptionForService(
  * Example: {"ba1f0b36c32fc90cc3f47db27282ad3dc8b75812ad2d08cf82805c9077567a72d9e3815fc33d7223338dc4f429f89eb3aac0
  *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
  */
-function mergeGroupData(groups, groupsFromContactService, groupsFromMobSOS) {
+function mergeGroupData(
+  groups,
+  groupsFromContactService,
+  groupsFromMobSOS,
+) {
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
-      groups[groupID] = { id: groupID, name: groupName, member: true };
+      groups[groupID] = {
+        id: groupID,
+        name: groupName,
+        member: true,
+      };
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
@@ -327,7 +360,10 @@ function mergeGroupData(groups, groupsFromContactService, groupsFromMobSOS) {
     const groupID = group.groupID;
     const groupName = group.name;
     const member = group.isMember;
-    if (!groupsFromContactService || !(groupID in groupsFromContactService)) {
+    if (
+      !groupsFromContactService ||
+      !(groupID in groupsFromContactService)
+    ) {
       groups[groupID] = { id: groupID, name: groupName, member };
     }
   }
@@ -344,7 +380,7 @@ function parseCatalog(xml: string): MeasureCatalog {
   if (!xml) {
     return;
   }
-  let doc = parseXml(xml);
+  const doc = parseXml(xml);
   try {
     return MeasureCatalog.fromXml(doc.documentElement);
   } catch (e) {
@@ -356,7 +392,7 @@ function parseModel(xml: string): SuccessModel {
   if (!xml) {
     return;
   }
-  let doc = parseXml(xml);
+  const doc = parseXml(xml);
   try {
     return SuccessModel.fromXml(doc.documentElement);
   } catch (e) {
@@ -364,105 +400,290 @@ function parseModel(xml: string): SuccessModel {
   }
 }
 function addFactorToDimension(
-  factor: SuccessFactor,
-  dimensionName: string,
-  successModel: SuccessModel
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  props: {
+    factor: SuccessFactor;
+    dimensionName: string;
+  },
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  let factorsList = copy[dimensionName];
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+  if (!successModel) return communityWorkspace;
+  let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
-  factorsList = [...factorsList];
-  factorsList.push(factor);
-  copy[dimensionName] = factorsList;
+  factorsList.unshift(props.factor);
+  successModel.dimensions[props.dimensionName] = factorsList;
+  return copy;
+}
 
-  return { ...successModel, dimensions: copy } as SuccessModel;
+function removeFactor(
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  factorName: string,
+) {
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+  if (!successModel) return communityWorkspace;
+  for (const [dimensionName, dimension] of Object.entries(
+    successModel.dimensions,
+  )) {
+    successModel.dimensions[dimensionName] = dimension?.filter(
+      (factor: SuccessFactor) => factor.name !== factorName,
+    );
+  }
+  return copy;
+}
+
+function removeMeasure(
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  measureName: string,
+) {
+  if (!measureName) return communityWorkspace;
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const successModel = appWorkspace.model;
+
+  // delete all occurences of the measure in the successModel
+  for (const [dimensionName, dimension] of Object.entries(
+    successModel.dimensions,
+  )) {
+    const factorsCopy = [];
+    for (const factor of dimension) {
+      factorsCopy.push({
+        ...factor,
+        measures: factor.measures?.filter(
+          (measure) => measure !== measureName,
+        ),
+      });
+    }
+    successModel.dimensions[dimensionName] = factorsCopy;
+  }
+
+  return copy;
 }
 function editFactorInDimension(
   factor: SuccessFactor,
   oldFactorName: string,
   dimensionName: string,
-  successModel: SuccessModel
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
 ) {
-  if (!successModel) return;
-  const copy = { ...successModel.dimensions };
-  let factorsList = copy[dimensionName];
-  if (!factorsList) return successModel;
-  factorsList = [...factorsList];
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const successModel = appWorkspace?.model;
+  if (!successModel) return communityWorkspace;
+  const factorsList = successModel.dimensions[dimensionName];
+  if (!factorsList) return communityWorkspace;
   for (let i = 0; i < factorsList.length; i++) {
-    let f = factorsList[i];
+    const f = factorsList[i];
     if (f.name === oldFactorName) {
       factorsList[i] = factor;
     }
   }
-  copy[dimensionName] = factorsList;
-  return { ...successModel, dimensions: copy } as SuccessModel;
+  successModel.dimensions[dimensionName] = factorsList;
+  appWorkspace.model = successModel;
+  copy[owner][serviceName] = appWorkspace;
+  return copy;
 }
 
-function addMeasureToMeasures(measureMap: MeasureMap, measure: Measure) {
-  let copy = { ...measureMap } as MeasureMap;
-  copy[measure.name] = measure;
+function addMeasureToMeasures(
+  measure: Measure,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
+) {
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const measureMap = appWorkspace.catalog;
+  measureMap[measure.name] = measure;
   return copy;
 }
 
 function addMeasureToFactorInModel(
-  successModel: SuccessModel,
-  dimensionName: string,
-  factorName: string,
-  measure: Measure
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+  props: {
+    measure: Measure;
+    factorName: string;
+    dimensionName: string;
+  },
 ) {
-  if (!dimensionName) return successModel;
-  let dimensions = { ...successModel.dimensions };
-  let factorsForDimension = [...dimensions[dimensionName]] as SuccessFactor[];
-  let factorList = factorsForDimension.filter(
-    (factor) => factor.name === factorName
+  if (!props.dimensionName) return communityWorkspace;
+
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
   );
-  let copyFactorList = [];
+  const successModel = appWorkspace.model;
+
+  const factorList = successModel.dimensions[
+    props.dimensionName
+  ].filter(
+    (factor: SuccessFactor) => factor.name === props.factorName,
+  );
+  const copyFactorList = [];
   for (let factor of factorList) {
-    factor = { ...factor, measures: [...factor.measures] } as SuccessFactor;
-    factor.measures.push(measure.name);
+    factor = {
+      ...factor,
+      measures: [...factor.measures],
+    } as SuccessFactor;
+    factor.measures.unshift(props.measure.name);
     copyFactorList.push(factor);
   }
-
-  dimensions[dimensionName] = copyFactorList;
-  return { ...successModel, dimensions: dimensions } as SuccessModel;
-}
-
-function updateMeasureInCatalog(
-  measures: MeasureMap,
-  measure: Measure,
-  oldMeasureName: string
-) {
-  let copy = { ...measures };
-  copy[oldMeasureName] = measure;
+  successModel.dimensions[props.dimensionName] = copyFactorList;
   return copy;
 }
 
-function updateMeasureInSuccessModel(
-  dimensions: DimensionMap,
+function updateMeasure(
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  serviceName: string,
   props: {
     measure: Measure;
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
-  }
+  },
 ) {
-  let copyDimensions = { ...dimensions };
-  let copyFactors = [...copyDimensions[props.dimensionName]];
-  copyFactors = copyFactors.map((factor) =>
-    factor.name === props.factorName
-      ? updateMeasureInFactor(factor, props.measure, props.oldMeasureName)
-      : factor
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
   );
-  copyDimensions[props.dimensionName] = copyFactors;
-  return copyDimensions;
+  if (!appWorkspace) return communityWorkspace;
+
+  const measureCatalog = appWorkspace.catalog;
+  const successModel = appWorkspace.model;
+  // update the measure catalog
+  measureCatalog[props.measure.name] = props.measure;
+  delete measureCatalog[props.oldMeasureName];
+
+  // update the success model
+  let factors = successModel.dimensions[props.dimensionName];
+  factors = factors.map((factor) =>
+    factor.name === props.factorName
+      ? updateMeasureInFactor(
+          factor,
+          props.measure,
+          props.oldMeasureName,
+        )
+      : factor,
+  );
+  successModel.dimensions[props.dimensionName] = factors;
+  return copy;
 }
+
+// function updateMeasureInSuccessModel(
+//   dimensions: DimensionMap,
+//   props: {
+//     measure: Measure;
+//     oldMeasureName: string;
+//     factorName: string;
+//     dimensionName: string;
+//   },
+// ) {
+//   const copyDimensions = { ...dimensions };
+//   let copyFactors = [...copyDimensions[props.dimensionName]];
+//   copyFactors = copyFactors.map((factor) =>
+//     factor.name === props.factorName
+//       ? updateMeasureInFactor(
+//           factor,
+//           props.measure,
+//           props.oldMeasureName,
+//         )
+//       : factor,
+//   );
+//   copyDimensions[props.dimensionName] = copyFactors;
+//   return copyDimensions;
+// }
 
 function updateMeasureInFactor(
   factor: SuccessFactor,
   measure: Measure,
-  oldMeasureName: string
+  oldMeasureName: string,
 ) {
-  let copy = [...factor.measures];
-  return copy.map((m) => (measure.name === oldMeasureName ? measure : m));
+  const copy = [...factor.measures];
+  return copy.map((m) =>
+    measure.name === oldMeasureName ? measure : m,
+  );
+}
+
+function getSelectedService(state: AppState) {
+  if (!state.services || !state.selectedServiceName) return undefined;
+  return state.services[state.selectedServiceName];
+}
+function addVisitor(
+  communityWorkspace: CommunityWorkspace,
+  username: string,
+  owner: string,
+  serviceName: string,
+): CommunityWorkspace {
+  const copy = cloneDeep(communityWorkspace); // copy workspace first
+  const userWorkspace = copy[owner];
+  if (!userWorkspace) return communityWorkspace;
+  const appWorkspace: ApplicationWorkspace =
+    userWorkspace[serviceName];
+  if (!appWorkspace) return communityWorkspace;
+  appWorkspace.visitors.push(
+    new Visitor(username, UserRole.SPECTATOR),
+  );
+  return copy;
+}
+
+function getWorkspaceByUserAndService(
+  communityWorkspace: CommunityWorkspace,
+  user: string,
+  service: string,
+) {
+  if (!Object.keys(communityWorkspace).includes(user)) {
+    return;
+  }
+  const userWorkspace = communityWorkspace[user];
+  if (!Object.keys(userWorkspace).includes(service)) {
+    return;
+  }
+  return userWorkspace[service];
+}
+function removeVisualizationData(
+  visualizationData: VisualizationData,
+  query: string,
+): VisualizationData {
+  const copy = { ...visualizationData };
+  delete copy[query];
+  return copy;
 }

@@ -7,22 +7,29 @@
     <mat-card-subtitle>{{ description }}</mat-card-subtitle>
     <div id="push-right"></div>
     <button
-      *ngIf="editMode$ | async"
+      *ngIf="canEdit$ | async"
       mat-icon-button
       matTooltipShowDelay="0"
-      matTooltip="{{ 'success-dimension.add-factor-tooltip' | translate }}"
+      matTooltip="{{
+        'success-dimension.add-factor-tooltip' | translate
+      }}"
       (click)="openAddFactorDialog()"
     >
       <mat-icon color="primary" id="add-factor-icon">add</mat-icon>
     </button>
   </mat-card-header>
   <mat-card-content>
-    <div *ngFor="let factor of factors; let i = index" class="factor-row">
+    <div
+      *ngFor="let factor of factors; let i = index"
+      class="factor-row"
+    >
       <button
-        *ngIf="editMode$ | async"
+        *ngIf="canEdit$ | async"
         mat-icon-button
         matTooltipShowDelay="0"
-        matTooltip="{{ 'success-dimension.remove-factor-tooltip' | translate }}"
+        matTooltip="{{
+          'success-dimension.remove-factor-tooltip' | translate
+        }}"
         (click)="openRemoveFactorDialog(i)"
       >
         <mat-icon color="warn">remove_circle_outline</mat-icon>
@@ -33,8 +40,6 @@
         [measures]="measures"
         [editMode]="editMode"
         [dimensionName]="this.name"
-        (sendFactorToDimension)="_onFactorsChange($event)"
-        (sendMeasuresToDimension)="_onMeasuresChange($event)"
       >
       </app-success-factor>
     </div>

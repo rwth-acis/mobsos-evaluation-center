@@ -14,25 +14,27 @@ declare global {
 }
 
 export const environment = {
-  production: window.env.production || false,
+  production: window?.env?.production || false,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId:
-    window.env.openIdClientId || 'f8622260-875b-499a-82db-db55f89f9deb',
+    window?.env?.openIdClientId ||
+    'f8622260-875b-499a-82db-db55f89f9deb',
   openIdSilentLoginInterval: 60,
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
-  las2peerWebConnectorUrl: 'https://las2peer.tech4comp.dbis.rwth-aachen.de',
+  las2peerWebConnectorUrl:
+    'https://git.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
   servicePollingInterval: 120,
   visualizationRefreshInterval: 120,
   // enable to use the blockchain based service discovery of las2peer
-  useLas2peerServiceDiscovery: true,
+  useLas2peerServiceDiscovery: false,
   // useLas2peerServiceDiscovery: false,
-  yJsWebsocketUrl: 'wss://cloud10.dbis.rwth-aachen.de:8089',
-  // yJsWebsocketUrl: 'ws://localhost:1234',
+
+  yJsWebsocketUrl: 'ws://localhost:1234/',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend

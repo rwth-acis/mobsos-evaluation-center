@@ -1,11 +1,15 @@
-import { Component, EventEmitter, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Inject,
+  OnInit,
+} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
 
-import { ServiceInformation } from '../../store.service';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { Query } from '../../../success-model/query';
 
@@ -16,6 +20,7 @@ import {
 } from 'src/app/services/store.actions';
 import { Measure } from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 export interface DialogData {
   measures: Measure[];
@@ -36,7 +41,7 @@ export class PickMeasureDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<PickMeasureDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private dialog: MatDialog,
-    private ngrxStore: Store
+    private ngrxStore: Store,
   ) {}
 
   ngOnInit() {}
@@ -44,10 +49,10 @@ export class PickMeasureDialogComponent implements OnInit {
   onMeasureClicked(measure: Measure) {
     this.ngrxStore.dispatch(
       addMeasureToFactor({
-        measure: measure,
+        measure,
         factorName: this.data.factorName,
         dimensionName: this.data.dimensionName,
-      })
+      }),
     );
     this.dialogRef.close();
   }
@@ -61,7 +66,7 @@ export class PickMeasureDialogComponent implements OnInit {
           '',
           [new Query('', '')],
           new ValueVisualization(''),
-          []
+          [],
         ),
         service: this.data.service,
         create: true,
@@ -70,7 +75,9 @@ export class PickMeasureDialogComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.data.measures.unshift(result);
-        this.ngrxStore.dispatch(addMeasureToCatalog({ measure: result }));
+        this.ngrxStore.dispatch(
+          addMeasureToCatalog({ measure: result }),
+        );
         // this.measuresChanged.emit(this.data.measures);
       }
     });

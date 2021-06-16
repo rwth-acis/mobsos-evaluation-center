@@ -11,17 +11,25 @@ import {
   withLatestFrom,
   filter,
   share,
+  tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
-import { delayedRetry } from './retryOperator';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { VData } from '../models/visualization.model';
 import * as Action from './store.actions';
+import { disableEdit } from './store.actions';
 import {
+  APPLICATION_WORKSPACE,
+  EDIT_MODE,
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
+  USER,
   VISUALIZATION_DATA,
 } from './store.selectors';
+import { WorkspaceService } from './workspace.service';
 
 @Injectable()
 export class StateEffects {
@@ -29,7 +37,8 @@ export class StateEffects {
     private actions$: Actions,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private logger: NGXLogger
+    private logger: NGXLogger,
+    private workspaceService: WorkspaceService,
   ) {}
 
   fetchServices$ = createEffect(() =>
@@ -41,36 +50,36 @@ export class StateEffects {
             catchError((err) => {
               this.logger.error(
                 'Could not fetch services from service discovery:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
             catchError((err) => {
               this.logger.error(
                 'Could not fetch services from service MobSOS:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
 
               return of(undefined);
-            })
+            }),
           ),
         ]).pipe(
           map(([servicesFromL2P, servicesFromMobSOS]) =>
             Action.storeServices({
               servicesFromL2P,
               servicesFromMobSOS,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   fetchGroups$ = createEffect(() =>
@@ -82,47 +91,92 @@ export class StateEffects {
             catchError((err) => {
               this.logger.error(
                 'Could not groups services from Contact service:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
           this.l2p.fetchMobSOSGroupsAndObserve().pipe(
             catchError((err) => {
               this.logger.error(
                 'Could not fetch groups from service MobSOS:' +
-                  JSON.stringify(err)
+                  JSON.stringify(err),
               );
               return of(undefined);
-            })
+            }),
           ),
         ]).pipe(
-          filter(
-            ([groupsFromContactService, groupsFromMobSOS]) =>
-              !!groupsFromContactService || !!groupsFromMobSOS
+          tap(([groupsFromContactService, groupsFromMobSOS]) =>
+            Action.transferMissingGroupsToMobSOS({
+              groupsFromContactService,
+              groupsFromMobSOS,
+            }),
           ),
           map(([groupsFromContactService, groupsFromMobSOS]) =>
             Action.storeGroups({
               groupsFromContactService,
               groupsFromMobSOS,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
-      switchMap(({ groupId }) => of(Action.fetchMeasureCatalog({ groupId })))
-    )
+      tap(({ groupId }) => {
+        this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.ngrxStore.dispatch(disableEdit());
+      }),
+      switchMap(({ groupId }) =>
+        of(Action.fetchMeasureCatalog({ groupId })),
+      ),
+    ),
+  );
+
+  updateCommunityWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.updateCommunityWorkspace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+        this.ngrxStore.select(EDIT_MODE),
+      ),
+      filter(([action, groupId]) => !!groupId),
+      tap(([action, groupId, editMode]) => {
+        if (editMode && groupId) {
+          this.workspaceService.startSynchronizingWorkspace(groupId);
+        }
+      }),
+      switchMap(() => of(Action.success())),
+    ),
+  );
+
+  initState$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.initState),
+      withLatestFrom(
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+      ),
+      tap(([action, user, groupId]) => {
+        if (user?.profile) {
+          this.l2p.setCredentials(
+            user.profile.preferred_username,
+            null,
+            user.access_token,
+          );
+        }
+      }),
+      switchMap(() => of(Action.success())),
+    ),
   );
 
   setService$ = createEffect(() =>
@@ -131,9 +185,27 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
       filter(([{ service }, groupId]) => !!service),
       switchMap(([{ service }, groupId]) =>
-        of(Action.fetchSuccessModel({ groupId, serviceName: service.name }))
-      )
-    )
+        of(
+          Action.fetchSuccessModel({
+            groupId,
+            serviceName: service.name,
+          }),
+        ),
+      ),
+    ),
+  );
+
+  storeUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeUser),
+      filter(({ user }) => !!user),
+      tap(({ user }) => {
+        localStorage.setItem('id_token', user.id_token);
+        localStorage.setItem('access_token', user.access_token);
+        localStorage.setItem('profile', JSON.stringify(user.profile));
+      }),
+      switchMap(({ user }) => of(Action.success())),
+    ),
   );
 
   fetchMeasureCatalog$ = createEffect(() =>
@@ -141,17 +213,17 @@ export class StateEffects {
       ofType(Action.fetchMeasureCatalog),
       switchMap(({ groupId }) =>
         this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
-          map((MeasureCatalogXML) =>
+          map((xml) =>
             Action.storeCatalog({
-              xml: MeasureCatalogXML,
-            })
+              xml,
+            }),
           ),
           catchError((err) => {
             return of(Action.storeCatalog({ xml: null }));
-          })
-        )
-      )
-    )
+          }),
+        ),
+      ),
+    ),
   );
 
   saveModelAndCatalog$ = createEffect(() =>
@@ -161,22 +233,22 @@ export class StateEffects {
         combineLatest([
           this.ngrxStore.select(MEASURE_CATALOG_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
-        ])
+        ]),
       ),
       switchMap(([action, [measureCatalogXML, groupId]]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
-          .pipe(map(() => Action.saveCatalogSuccess()))
+          .pipe(map(() => Action.saveCatalogSuccess())),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
   );
 
-  saveModel$ = createEffect(() =>
+  saveModelAndCatalogResult$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveCatalogSuccess),
       withLatestFrom(
@@ -184,19 +256,98 @@ export class StateEffects {
           this.ngrxStore.select(SUCCESS_MODEL_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ])
+        ]),
       ),
       switchMap(([action, [successModelXML, groupId, serviceName]]) =>
         this.l2p
-          .saveSuccessModelAndObserve(groupId, serviceName, successModelXML)
-          .pipe(map(() => Action.successResponse()))
+          .saveSuccessModelAndObserve(
+            groupId,
+            serviceName,
+            successModelXML,
+          )
+          .pipe(map(() => Action.successResponse())),
       ),
       catchError((err) => {
         console.error(err);
         return of(Action.failureResponse(err));
       }),
-      share()
-    )
+      share(),
+    ),
+  );
+
+  transferMissingGroupsToMobSOS$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.transferMissingGroupsToMobSOS),
+      switchMap((action) => {
+        const missingGroups = action.groupsFromContactService.filter(
+          (group) =>
+            !action.groupsFromMobSOS.find(
+              (g) => g.name === group.name,
+            ),
+        );
+        return this.l2p
+          .saveGroupsToMobSOS(missingGroups)
+          .pipe(map(() => Action.successResponse()));
+      }),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share(),
+    ),
+  );
+
+  saveModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveModel),
+      withLatestFrom(
+        combineLatest([
+          this.ngrxStore.select(SELECTED_GROUP_ID),
+          this.ngrxStore.select(SELECTED_SERVICE_NAME),
+        ]),
+      ),
+      switchMap(([action, [groupId, serviceName]]) =>
+        this.l2p
+          .saveSuccessModelAndObserve(
+            groupId,
+            serviceName,
+            action.xml,
+          )
+          .pipe(
+            tap(() => {
+              Action.storeSuccessModel({ xml: action.xml });
+            }),
+            map(() => Action.successResponse()),
+          ),
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share(),
+    ),
+  );
+
+  saveCatalog$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.saveCatalog),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      switchMap(([action, groupId]) =>
+        this.l2p
+          .saveMeasureCatalogAndObserve(groupId, action.xml)
+          .pipe(
+            tap((res) => {
+              Action.storeCatalog({ xml: action.xml });
+            }),
+            map(() => Action.successResponse()),
+          ),
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse(err));
+      }),
+      share(),
+    ),
   );
 
   fetchVisualizationData$ = createEffect(() =>
@@ -205,42 +356,84 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
-        if (
-          !dataForQuery?.data ||
-          dataForQuery.fetchDate.getTime() < Date.now() - 300000
-        ) {
-          // no data yet or last fetch time more than 5min ago
-          return this.l2p.fetchVisualizationData(query, queryParams).pipe(
-            delayedRetry(100, 3, 10),
-            map((data) =>
-              Action.storeVisualizationData({
-                data,
-                query,
-              })
-            )
-          );
+        if (shouldFetch(dataForQuery)) {
+          if (dataForQuery?.error) {
+            Action.removeVisualizationDataForQuery({ query });
+          }
+          return this.l2p
+            .fetchVisualizationData(query, queryParams)
+            .pipe(
+              map((vdata) =>
+                Action.storeVisualizationData({
+                  data: vdata,
+                  query,
+                  error: null,
+                }),
+              ),
+              catchError((err) =>
+                of(
+                  Action.storeVisualizationData({
+                    data: null,
+                    query,
+                    error: err,
+                  }),
+                ),
+              ),
+            );
         }
         return of(Action.failureResponse(undefined));
       }),
-      catchError((err) => of(Action.failureResponse(err)))
-    )
+      catchError((err) => of(Action.failureResponse(err))),
+    ),
   );
 
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
       mergeMap(({ groupId, serviceName }) =>
-        this.l2p.fetchSuccessModelAsObservable(groupId, serviceName).pipe(
-          map((SuccessModelXML) =>
-            Action.storeSuccessModel({
-              xml: SuccessModelXML,
-            })
+        this.l2p
+          .fetchSuccessModelAsObservable(groupId, serviceName)
+          .pipe(
+            map((xml) =>
+              Action.storeSuccessModel({
+                xml,
+              }),
+            ),
+            catchError((err) => {
+              return of(Action.storeSuccessModel({ xml: null }));
+            }),
           ),
-          catchError((err) => {
-            return of(Action.storeSuccessModel({ xml: null }));
-          })
-        )
-      )
-    )
+      ),
+      catchError((err) => {
+        return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
   );
+}
+
+/**
+ * Determines whether a new visualization data request should be made
+ * @param dataForQuery the current data from the store
+ * @returns true if we should make a new request
+ */
+function shouldFetch(dataForQuery: VData): boolean {
+  if (!dataForQuery) return true;
+  if (dataForQuery.error) {
+    const status = dataForQuery.error.status;
+    if (!status) {
+      // Unknown error
+      return true;
+    } else if (status === 400) {
+      // SQL query error
+      return false;
+    } else if (status >= 500) {
+      // Server error
+      if (dataForQuery?.fetchDate.getTime() < Date.now() - 300000)
+        return true;
+    }
+  } else if (dataForQuery.fetchDate.getTime() < Date.now() - 300000) {
+    return true;
+  }
+  return false;
 }

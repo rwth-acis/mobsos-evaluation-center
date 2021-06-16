@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   BaseVisualizationComponent,
   VisualizationComponent,
@@ -6,7 +12,7 @@ import {
 import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Measure } from 'src/success-model/measure';
-import { ServiceInformation } from 'src/app/store.service';
+
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
@@ -15,6 +21,7 @@ import {
 import { Observable } from 'rxjs';
 import { VData } from 'src/app/models/visualization.model';
 import { filter } from 'rxjs/operators';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
   selector: 'app-value-visualization',
@@ -30,14 +37,14 @@ export class ValueVisualizationComponent
   @Input() measureName: string;
 
   @Input() service: ServiceInformation;
-  value$: Observable<any[][]>;
+  value$: Observable<VData>;
   measure$;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
     let query = this.measure.queries[0].sql;
 
@@ -45,13 +52,21 @@ export class ValueVisualizationComponent
     query = this.applyVariableReplacements(query, this.service);
     query =
       BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-        query
+        query,
       );
     super.fetchVisualizationData(query, queryParams);
-    this.value$ = this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query);
-    this.value$.pipe(filter((data) => !!data)).subscribe((data) => {
-      this.value = data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0];
-      this.visualizationInitialized = true;
-    });
+    this.value$ = this.ngrxStore.select(
+      VISUALIZATION_DATA_FOR_QUERY,
+      query,
+    );
+    this.value$
+      .pipe(filter((data) => !!data && !data.error))
+      .subscribe((v) => {
+        this.value =
+          v.data?.slice(-1)[0].length === 0
+            ? 0
+            : v.data.slice(-1)[0][0];
+        this.visualizationInitialized = true;
+      });
   }
 }

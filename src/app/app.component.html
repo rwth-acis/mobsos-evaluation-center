@@ -5,27 +5,29 @@
     [fixedInViewport]="mobileQuery.matches"
     [opened]="!mobileQuery.matches"
   >
-    <mat-form-field id="community-selection">
-      <mat-label>Community</mat-label>
-      <mat-select
-        [formControl]="selectedGroupForm"
-        (selectionChange)="onGroupSelected($event.value)"
-      >
-        <mat-option
-          class="mat-body-strong"
-          *ngFor="let group of userGroups$ | async"
-          [value]="group.id"
+    <mat-form-field id="community-selection" *ngIf="user$| async">
+      <ng-container *ngIf="groupsAreLoaded$ | async; else groupsAreLoading">
+        <mat-label>Community</mat-label>
+        <mat-select
+          [formControl]="selectedGroupForm"
+          (selectionChange)="onGroupSelected($event.value)"
         >
-          {{ group.name }}
-        </mat-option>
-        <mat-divider></mat-divider>
-        <mat-option
-          *ngFor="let group of foreignGroups$ | async"
-          [value]="group.id"
-        >
-          {{ group.name }}
-        </mat-option>
-      </mat-select>
+          <mat-option
+            class="mat-body-strong"
+            *ngFor="let group of userGroups$ | async"
+            [value]="group.id"
+          >
+            {{ group.name }}
+          </mat-option>
+          <mat-divider></mat-divider>
+          <mat-option
+            *ngFor="let group of foreignGroups$ | async"
+            [value]="group.id"
+          >
+            {{ group.name }}
+          </mat-option>
+        </mat-select>
+      </ng-container>
     </mat-form-field>
     <mat-divider></mat-divider>
     <mat-nav-list>
@@ -39,10 +41,10 @@
         {{ 'shared.pages.success-modeling' | translate }}
       </a>
       <a
+        *ngIf="expertMode$ | async"
         mat-list-item
         routerLink="/raw-edit"
         routerLinkActive="active"
-        [hidden]="!expertMode"
         (click)="menuItemClicked()"
       >
         <mat-icon matListIcon>code</mat-icon>
@@ -59,6 +61,7 @@
     </mat-nav-list>
     <footer>
       <mat-slide-toggle
+        *ngIf="user$ | async"
         labelPosition="before"
         [checked]="expertMode$ | async"
         (change)="setExpertMode($event.checked)"
@@ -116,7 +119,7 @@
       *ngIf="loading$ | async"
     ></mat-progress-bar>
     <main>
-      <ng-container *ngIf="user$ | async; else notLoggedIn">
+      <ng-container *ngIf="loggedIn$ | async; else notLoggedIn">
         <router-outlet></router-outlet
       ></ng-container>
     </main>
@@ -134,4 +137,9 @@
 
 <ng-template #notLoggedIn>
   <mat-card> {{ 'not-logged-in' | translate }} </mat-card>
+</ng-template>
+
+<ng-template #groupsAreLoading>
+  <mat-spinner color="accent" id="groupsLoadingIndicator" [diameter]="30">
+  </mat-spinner>
 </ng-template>

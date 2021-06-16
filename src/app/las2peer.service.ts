@@ -1,8 +1,12 @@
 import { Injectable, isDevMode } from '@angular/core';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpParams,
+} from '@angular/common/http';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 import {
   catchError,
   map,
@@ -13,6 +17,8 @@ import {
 } from 'rxjs/operators';
 import { merge } from 'lodash';
 import { delayedRetry } from './services/retryOperator';
+import { Store } from '@ngrx/store';
+import { USER } from './services/store.selectors';
 
 export interface SuccessModel {
   xml: string;
@@ -77,7 +83,7 @@ export class Las2peerService {
   setCredentials(username, password, accessToken) {
     this.userCredentials = {
       user: username,
-      password: password,
+      password,
       token: accessToken,
     };
   }
@@ -95,7 +101,7 @@ export class Las2peerService {
       };
       body?: string;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-    } = {}
+    } = {},
   ): Promise<T> {
     options = merge(
       {
@@ -105,7 +111,7 @@ export class Las2peerService {
           'accept-language': 'en-US',
         },
       },
-      options
+      options,
     );
 
     if (this.userCredentials) {
@@ -152,7 +158,9 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
-    return this.http.request(options.method, url, ngHttpOptions).toPromise();
+    return this.http
+      .request(options.method, url, ngHttpOptions)
+      .toPromise();
   }
 
   makeRequestAndObserve<T>(
@@ -165,7 +173,7 @@ export class Las2peerService {
       body?: string;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
       observe?: string;
-    } = {}
+    } = {},
   ) {
     options = merge(
       {
@@ -175,22 +183,25 @@ export class Las2peerService {
           'accept-language': 'en-US',
         },
       },
-      options
+      options,
     );
-    if (this.userCredentials) {
-      const username = this.userCredentials.user;
-      const password = this.userCredentials.password;
-      const token = this.userCredentials.token;
-      options = merge(
-        {
-          headers: {
-            Authorization: 'Basic ' + btoa(username + ':' + password),
-            access_token: token,
-          },
+
+    this.userCredentials = JSON.parse(
+      localStorage.getItem('profile'),
+    );
+    const username = this.userCredentials.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile')).sub;
+    const token = localStorage.getItem('access_token');
+    options = merge(
+      {
+        headers: {
+          Authorization: 'Basic ' + btoa(username + ':' + sub),
+          access_token: token,
         },
-        options
-      );
-    }
+      },
+      options,
+    );
+
     // if (!environment.production) {
     //   this.logger.debug(
     //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
@@ -223,19 +234,22 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
-    return this.http.request(options.method, url, ngHttpOptions).pipe(share());
+
+    return this.http
+      .request(options.method, url, ngHttpOptions)
+      .pipe(share());
   }
 
   async fetchServicesFromDiscovery() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
-      this.SERVICES_PATH
+      this.SERVICES_PATH,
     );
     return this.makeRequest(url).catch((response) =>
       this.logger.error(
         'Could not fetch services from service discovery:' +
-          JSON.stringify(response)
-      )
+          JSON.stringify(response),
+      ),
     );
   }
 
@@ -243,20 +257,22 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH
+      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
     return this.makeRequest(url).catch((response) =>
       this.logger.error(
         'Could not fetch services from service MobSOS:' +
-          JSON.stringify(response)
-      )
+          JSON.stringify(response),
+      ),
     );
   }
 
   fetchServicesFromDiscoveryAndObserve() {
+    if (!environment.useLas2peerServiceDiscovery)
+      return of(undefined);
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
-      this.SERVICES_PATH
+      this.SERVICES_PATH,
     );
     return this.makeRequestAndObserve(url);
   }
@@ -265,7 +281,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH
+      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
     return this.makeRequestAndObserve(url);
   }
@@ -280,7 +296,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_GROUP_PATH
+      this.SUCCESS_MODELING_GROUP_PATH,
     );
     return this.makeRequestAndObserve(url);
   }
@@ -289,7 +305,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
-      this.CONTACT_GROUPS_PATH
+      this.CONTACT_GROUPS_PATH,
     );
     return this.makeRequestAndObserve(url);
   }
@@ -298,7 +314,7 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_GROUP_PATH
+      this.SUCCESS_MODELING_GROUP_PATH,
     );
     return this.makeRequest(url);
   }
@@ -308,7 +324,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
-      groupID
+      groupID,
     );
     return this.makeRequest(url);
   }
@@ -319,7 +335,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
       groupID,
-      service
+      service,
     );
     return new Promise((resolve, reject) => {
       this.makeRequest<SuccessModel>(url)
@@ -336,10 +352,10 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
       groupID,
-      service
+      service,
     );
     return this.makeRequestAndObserve<SuccessModel>(url).pipe(
-      map((response) => response.xml)
+      map((response) => response.xml),
     );
   }
 
@@ -349,16 +365,16 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
       groupID,
-      service
+      service,
     );
     return this.makeRequestAndObserve<SuccessModel>(url, {
       observe: 'response',
     }).pipe(
       map(
         (response) => !!response,
-        () => false
+        () => false,
       ),
-      catchError(() => of(false))
+      catchError(() => of(false)),
     );
   }
 
@@ -366,15 +382,17 @@ export class Las2peerService {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
-      this.SURVEYS_QUESTIONNAIRES_PATH
+      this.SURVEYS_QUESTIONNAIRES_PATH,
     );
     return this.makeRequest<{ questionnaires: Questionnaire[] }>(url)
-      .then((response) => this.fetchQuestionnaireForms(response.questionnaires))
+      .then((response) =>
+        this.fetchQuestionnaireForms(response.questionnaires),
+      )
       .then((response) => {
         for (const questionnaire of response) {
           questionnaire.name = decodeURIComponent(questionnaire.name);
           questionnaire.description = decodeURIComponent(
-            questionnaire.description
+            questionnaire.description,
           );
         }
         return response;
@@ -388,11 +406,14 @@ export class Las2peerService {
         this.SURVEYS_SERVICE_PATH,
         this.SURVEYS_QUESTIONNAIRES_PATH,
         questionnaire.id,
-        this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX
+        this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
       );
-      questionnaire.formXML = await this.makeRequest<string>(formUrl, {
-        responseType: 'text',
-      });
+      questionnaire.formXML = await this.makeRequest<string>(
+        formUrl,
+        {
+          responseType: 'text',
+        },
+      );
     }
     return questionnaires;
   }
@@ -406,12 +427,12 @@ export class Las2peerService {
     end: string,
     resource: string,
     resourceLabel: string,
-    lang: string
+    lang: string,
   ) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
-      this.SURVEYS_SURVEY_PATH
+      this.SURVEYS_SURVEY_PATH,
     );
     return this.makeRequest(url, {
       method: 'POST',
@@ -429,13 +450,16 @@ export class Las2peerService {
     });
   }
 
-  async setQuestionnaireForSurvey(questionnaireId: number, surveyId: number) {
+  async setQuestionnaireForSurvey(
+    questionnaireId: number,
+    surveyId: number,
+  ) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_SURVEY_PATH,
       surveyId,
-      this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX
+      this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX,
     );
     return this.makeRequest(url, {
       method: 'POST',
@@ -449,7 +473,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_SURVEY_PATH,
-      surveyId
+      surveyId,
     );
     return this.makeRequest(url, {
       method: 'DELETE',
@@ -467,14 +491,14 @@ export class Las2peerService {
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
         this.SUCCESS_MODELING_GROUP_PATH,
-        groupID
+        groupID,
       );
     } catch (e) {
       method = 'POST';
       url = Las2peerService.joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
-        this.SUCCESS_MODELING_GROUP_PATH
+        this.SUCCESS_MODELING_GROUP_PATH,
       );
     }
 
@@ -487,7 +511,37 @@ export class Las2peerService {
     });
   }
 
-  async saveSuccessModel(groupID: string, service: string, xml: string) {
+  saveGroupsToMobSOS(groups) {
+    let method;
+    let url;
+
+    method = 'POST';
+    url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SUCCESS_MODELING_SERVICE_PATH,
+      this.SUCCESS_MODELING_GROUP_PATH,
+    );
+
+    const requests = [];
+    for (const group of groups) {
+      requests.push(
+        this.makeRequestAndObserve(url, {
+          method,
+          body: JSON.stringify({
+            groupID: group.id,
+            name: group.groupName,
+          }),
+        }),
+      );
+    }
+    return forkJoin(requests);
+  }
+
+  async saveSuccessModel(
+    groupID: string,
+    service: string,
+    xml: string,
+  ) {
     let method;
     try {
       await this.fetchSuccessModel(groupID, service);
@@ -501,7 +555,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
       groupID,
-      service
+      service,
     );
     return this.makeRequest<SuccessModel>(url, {
       method,
@@ -514,34 +568,23 @@ export class Las2peerService {
       });
   }
 
-  saveSuccessModelAndObserve(groupID: string, service: string, xml: string) {
+  saveSuccessModelAndObserve(
+    groupID: string,
+    service: string,
+    xml: string,
+  ) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
       groupID,
-      service
+      service,
     );
-    let method = 'PUT';
     return this.makeRequestAndObserve<SuccessModel>(url, {
-      method,
+      method: 'PUT',
       body: JSON.stringify({ xml }),
       observe: 'response',
     });
-    // return this.checkIfSuccessModelPresent(groupID, service).pipe(
-    //   map((res) => {
-    //     method = res ? 'PUT' : 'POST';
-
-    //   }),
-    //   catchError((err) => {
-    //     method = 'POST';
-    //     return this.makeRequestAndObserve<SuccessModel>(url, {
-    //       method,
-    //       body: JSON.stringify({ xml }),
-    //       observe: 'response',
-    //     });
-    //   })
-    // );
   }
 
   async fetchMeasureCatalog(groupID: string) {
@@ -549,27 +592,30 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
-      groupID
+      groupID,
     );
     return this.makeRequest<MeasureCatalog>(url)
-      .then((response) => response.xml)
+      .then((response) => response?.xml)
       .catch((response) => {
         throw response;
       });
   }
 
-  fetchMeasureCatalogAsObservable(groupID: string): Observable<string> {
+  fetchMeasureCatalogAsObservable(
+    groupID: string,
+  ): Observable<string> {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
-      groupID
+      groupID,
     );
-    let req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+    const req = this.makeRequestAndObserve<MeasureCatalog>(url, {
       observe: 'body',
     }).pipe(
-      // delayedRetry(20, 3, 5),
-      map((response) => (response ? response['xml'] : null))
+      map((response: { xml?: string }) =>
+        response ? response.xml : null,
+      ),
     );
     req.subscribe();
 
@@ -581,17 +627,17 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
-      groupID
+      groupID,
     );
-    let req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+    const req = this.makeRequestAndObserve<MeasureCatalog>(url, {
       observe: 'response',
     });
     return req.pipe(
       map(
         (response) => !!response,
-        () => false
+        () => false,
       ),
-      catchError(() => of(false))
+      catchError(() => of(false)),
     );
   }
 
@@ -608,7 +654,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
-      groupID
+      groupID,
     );
     return this.makeRequest<MeasureCatalog>(url, {
       method,
@@ -627,7 +673,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
-      groupID
+      groupID,
     );
     method = 'PUT';
     return this.makeRequestAndObserve<MeasureCatalog>(url, {
@@ -638,7 +684,9 @@ export class Las2peerService {
   }
 
   async fetchMessageDescriptions(serviceName: string) {
-    return this.fetchMessageDescriptionsAndObserve(serviceName).toPromise();
+    return this.fetchMessageDescriptionsAndObserve(
+      serviceName,
+    ).toPromise();
   }
 
   fetchMessageDescriptionsAndObserve(serviceName: string) {
@@ -646,7 +694,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH,
-      serviceName
+      serviceName,
     );
     return this.makeRequestAndObserve<object>(url);
   }
@@ -654,12 +702,13 @@ export class Las2peerService {
   async visualizeQuery(
     query: string,
     queryParams: string[],
-    format: string = 'JSON'
+    format: string = 'JSON',
   ) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
-      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH + `?format=${format}`
+      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH +
+        `?format=${format}`,
     );
     const requestBody = {
       cache: false,
@@ -672,15 +721,16 @@ export class Las2peerService {
       title: '',
       save: false,
     };
-    let profile = JSON.parse(localStorage.getItem('profile'));
+    const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
     if (profile) {
       authorHeader = {
         Authorization:
-          'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
+          'Basic ' +
+          btoa(profile.preferred_username + ':' + profile.sub),
       };
     }
-    // console.log(profile, authorHeader);
+
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
@@ -692,12 +742,12 @@ export class Las2peerService {
   fetchVisualizationData(
     query: string,
     queryParams: string[],
-    format: string = 'JSON'
+    format: string = 'JSON',
   ) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
-      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH
+      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
     );
     const requestBody = {
       cache: false,
@@ -710,15 +760,16 @@ export class Las2peerService {
       title: '',
       save: false,
     };
-    let profile = JSON.parse(localStorage.getItem('profile'));
+    const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
     if (profile) {
       authorHeader = {
         Authorization:
-          'Basic ' + btoa(profile.preferred_username + ':' + profile.sub),
+          'Basic ' +
+          btoa(profile.preferred_username + ':' + profile.sub),
       };
     }
-    // console.log(profile, authorHeader);
+
     return this.makeRequestAndObserve(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
@@ -731,11 +782,14 @@ export class Las2peerService {
   async searchProjectOnReqBaz(project: string) {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.reqBazUrl,
-      this.REQBAZ_PROJECTS_PATH + `?search=${project}`
+      this.REQBAZ_PROJECTS_PATH + `?search=${project}`,
     );
-    const options: { headers: { [key: string]: string } } = { headers: {} };
+    const options: { headers: { [key: string]: string } } = {
+      headers: {},
+    };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -745,11 +799,14 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_PROJECTS_PATH,
       projectId,
-      this.REQBAZ_CATEGORIES_PATH + `?search=${category}`
+      this.REQBAZ_CATEGORIES_PATH + `?search=${category}`,
     );
-    const options: { headers: { [key: string]: string } } = { headers: {} };
+    const options: { headers: { [key: string]: string } } = {
+      headers: {},
+    };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -759,11 +816,14 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
       categoryId,
-      this.REQBAZ_REQUIREMENTS_PATH
+      this.REQBAZ_REQUIREMENTS_PATH,
     );
-    const options: { headers: { [key: string]: string } } = { headers: {} };
+    const options: { headers: { [key: string]: string } } = {
+      headers: {},
+    };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -773,14 +833,18 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
-      this.REQBAZ_REALIZED_PATH
+      this.REQBAZ_REALIZED_PATH,
     );
-    const options: { headers: { [key: string]: string }; method: string } = {
+    const options: {
+      headers: { [key: string]: string };
+      method: string;
+    } = {
       headers: {},
       method: 'POST',
     };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -790,14 +854,18 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
-      this.REQBAZ_LEADDEV_PATH
+      this.REQBAZ_LEADDEV_PATH,
     );
-    const options: { headers: { [key: string]: string }; method: string } = {
+    const options: {
+      headers: { [key: string]: string };
+      method: string;
+    } = {
       headers: {},
       method: 'POST',
     };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -807,14 +875,18 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
-      this.REQBAZ_LEADDEV_PATH
+      this.REQBAZ_LEADDEV_PATH,
     );
-    const options: { headers: { [key: string]: string }; method: string } = {
+    const options: {
+      headers: { [key: string]: string };
+      method: string;
+    } = {
       headers: {},
       method: 'DELETE',
     };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -824,14 +896,18 @@ export class Las2peerService {
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
-      this.REQBAZ_REALIZED_PATH
+      this.REQBAZ_REALIZED_PATH,
     );
-    const options: { headers: { [key: string]: string }; method: string } = {
+    const options: {
+      headers: { [key: string]: string };
+      method: string;
+    } = {
       headers: {},
       method: 'DELETE',
     };
     if (this.userCredentials) {
-      options.headers.Authorization = 'Bearer ' + this.userCredentials.token;
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
   }
@@ -844,7 +920,10 @@ export class Las2peerService {
         })
         .catch((error) => failureCallback(error));
     pollingFunc();
-    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
+    return setInterval(
+      pollingFunc,
+      environment.servicePollingInterval * 1000,
+    );
   }
 
   pollMobSOSServiceDiscovery(successCallback, failureCallback) {
@@ -855,7 +934,10 @@ export class Las2peerService {
         })
         .catch((error) => failureCallback(error));
     pollingFunc();
-    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
+    return setInterval(
+      pollingFunc,
+      environment.servicePollingInterval * 1000,
+    );
   }
 
   pollContactServiceGroups(successCallback, failureCallback) {
@@ -866,7 +948,10 @@ export class Las2peerService {
         })
         .catch((error) => failureCallback(error));
     pollingFunc();
-    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
+    return setInterval(
+      pollingFunc,
+      environment.servicePollingInterval * 1000,
+    );
   }
 
   pollMobSOSGroups(successCallback, failureCallback) {
@@ -877,7 +962,10 @@ export class Las2peerService {
         })
         .catch((error) => failureCallback(error));
     pollingFunc();
-    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
+    return setInterval(
+      pollingFunc,
+      environment.servicePollingInterval * 1000,
+    );
   }
 
   pollMobSOSQuestionnaires(successCallback, failureCallback) {
@@ -888,6 +976,9 @@ export class Las2peerService {
         })
         .catch((error) => failureCallback(error));
     pollingFunc();
-    return setInterval(pollingFunc, environment.servicePollingInterval * 1000);
+    return setInterval(
+      pollingFunc,
+      environment.servicePollingInterval * 1000,
+    );
   }
 }

@@ -9,6 +9,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -34,7 +35,10 @@ import { SuccessModelingComponent } from './success-modeling/success-modeling.co
 import { RawEditComponent } from './raw-edit/raw-edit.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { Observable, of } from 'rxjs';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
 import { translations as en } from '../locale/en';
 import { translations as de } from '../locale/de';
 import {
@@ -42,14 +46,13 @@ import {
   NGX_MONACO_EDITOR_CONFIG,
   NgxMonacoEditorConfig,
 } from 'ngx-monaco-editor';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SuccessDimensionComponent } from './success-dimension/success-dimension.component';
 import { Location, PlatformLocation } from '@angular/common';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 
-// import * as PlotlyJS from 'plotly.js/dist/plotly.js';
-// import {PlotlyModule} from 'angular-plotly.js';
 import { SuccessMeasureComponent } from './success-measure/success-measure.component';
 import { SuccessFactorComponent } from './success-factor/success-factor.component';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
@@ -73,7 +76,10 @@ import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-tabl
 import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
 // tslint:disable-next-line:max-line-length
 import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {
+  HttpClientModule,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
 import { GoogleChartsModule } from 'angular-google-charts';
 
 import { Reducer } from 'src/app/services/store.reducer';
@@ -81,8 +87,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
-
-// PlotlyModule.plotlyjs = PlotlyJS;
+import { WorkspaceManagementComponent } from './workspace-management/workspace-management.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -99,7 +104,7 @@ export function createTranslateLoader() {
 }
 
 export function localStorageSyncReducer(
-  reducer: ActionReducer<any>
+  reducer: ActionReducer<any>,
 ): ActionReducer<any> {
   return localStorageSync({
     keys: [
@@ -108,7 +113,7 @@ export function localStorageSyncReducer(
           'services',
           'groups',
           'selectedGroupId',
-          'selectedService',
+          'selectedServiceName',
           'questionnaires',
           'expertMode',
           'measureCatalog',
@@ -119,9 +124,12 @@ export function localStorageSyncReducer(
       },
     ],
     rehydrate: true,
+    removeOnUndefined: true,
   })(reducer);
 }
-const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
+const metaReducers: Array<MetaReducer<any, any>> = [
+  localStorageSyncReducer,
+];
 
 @NgModule({
   declarations: [
@@ -150,12 +158,14 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     SqlTableComponent,
     RequirementsListComponent,
     PickReqbazProjectComponent,
+    WorkspaceManagementComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
+    MatMenuModule,
     GoogleChartsModule,
     BrowserAnimationsModule,
     TranslateModule.forRoot({
@@ -185,7 +195,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     FormsModule,
     MatToolbarModule,
     MatCardModule,
-    // PlotlyModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
     }),
@@ -193,7 +202,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
     MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatBadgeModule,
-
     MatTooltipModule,
     MatInputModule,
     MatRippleModule,
@@ -221,7 +229,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
 export class AppModule {}
 
 export function getMonacoConfig(
-  platformLocation: PlatformLocation
+  platformLocation: PlatformLocation,
 ): NgxMonacoEditorConfig {
   const baseHref = platformLocation.getBaseHrefFromDOM();
 
