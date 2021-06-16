@@ -12,11 +12,13 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('ValueVisualizationComponent', () => {
   let component: ValueVisualizationComponent;
   let fixture: ComponentFixture<ValueVisualizationComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -31,6 +33,7 @@ describe('ValueVisualizationComponent', () => {
           MatDialogModule,
           HttpClientTestingModule,
         ],
+        providers: [provideMockStore({ initialState })],
       }).compileComponents();
     }),
   );

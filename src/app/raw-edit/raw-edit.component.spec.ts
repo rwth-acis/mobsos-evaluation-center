@@ -20,11 +20,17 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from '../models/state.model';
+import { StateEffects } from '../services/store.effects';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
   let fixture: ComponentFixture<RawEditComponent>;
-
+  const initialState = INITIAL_APP_STATE;
+  let actions$: Observable<any>;
+  let effects: StateEffects;
+  let store: MockStore<AppState>;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -48,6 +54,11 @@ describe('RawEditComponent', () => {
           BrowserAnimationsModule,
           HttpClientTestingModule,
         ],
+        providers: [
+          provideMockStore({ initialState }),
+          StateEffects,
+          provideMockActions(() => actions$),
+        ],
       }).compileComponents();
     }),
   );
@@ -62,3 +73,6 @@ describe('RawEditComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+function provideMockActions(arg0: () => any): any {
+  throw new Error('Function not implemented.');
+}

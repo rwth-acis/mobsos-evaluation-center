@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -15,11 +14,13 @@ import {
 } from '@ngx-translate/core';
 import { createTranslateLoader } from '../app.module';
 import { MatDialogModule } from '@angular/material/dialog';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from '../models/state.model';
 
 describe('SuccessMeasureComponent', () => {
   let component: SuccessMeasureComponent;
   let fixture: ComponentFixture<SuccessMeasureComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -39,6 +40,7 @@ describe('SuccessMeasureComponent', () => {
           MatIconModule,
           HttpClientTestingModule,
         ],
+        providers: [provideMockStore({ initialState })],
       }).compileComponents();
     }),
   );

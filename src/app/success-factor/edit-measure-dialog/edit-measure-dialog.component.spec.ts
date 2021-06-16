@@ -34,11 +34,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { KpiVisualizationComponent } from '../../visualizations/kpi-visualization/kpi-visualization.component';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import { MatInputModule } from '@angular/material/input';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+import { provideMockStore } from '@ngrx/store/testing';
+import { StateEffects } from 'src/app/services/store.effects';
 
 describe('EditMeasureDialogComponent', () => {
   let component: EditMeasureDialogComponent;
   let fixture: ComponentFixture<EditMeasureDialogComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -71,7 +74,6 @@ describe('EditMeasureDialogComponent', () => {
           MatSelectModule,
           MatIconModule,
           MatProgressSpinnerModule,
-
           MatInputModule,
         ],
         providers: [
@@ -94,6 +96,8 @@ describe('EditMeasureDialogComponent', () => {
               create: false,
             },
           },
+          provideMockStore({ initialState }),
+          StateEffects,
         ],
       })
         .overrideModule(BrowserDynamicTestingModule, {

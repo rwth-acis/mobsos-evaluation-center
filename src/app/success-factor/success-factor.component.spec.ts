@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -16,11 +15,13 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
+import { INITIAL_APP_STATE } from '../models/state.model';
+import { provideMockStore } from '@ngrx/store/testing';
 
 describe('SuccessFactorComponent', () => {
   let component: SuccessFactorComponent;
   let fixture: ComponentFixture<SuccessFactorComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -40,6 +41,7 @@ describe('SuccessFactorComponent', () => {
           MatTooltipModule,
           MatDialogModule,
         ],
+        providers: [provideMockStore({ initialState })],
       }).compileComponents();
     }),
   );

@@ -11,7 +11,6 @@ import {
 } from '../visualization.component';
 import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Measure } from 'src/success-model/measure';
 
 import { Store } from '@ngrx/store';
 import {
@@ -22,6 +21,7 @@ import { Observable } from 'rxjs';
 import { VData } from 'src/app/models/visualization.model';
 import { filter } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
+import { Measure } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-value-visualization',
@@ -46,7 +46,7 @@ export class ValueVisualizationComponent
 
   ngOnInit() {
     this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
-    let query = this.measure.queries[0].sql;
+    let query = this.measure?.queries[0].sql;
 
     const queryParams = this.getParamsForQuery(query);
     query = this.applyVariableReplacements(query, this.service);

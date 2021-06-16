@@ -1,10 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
-import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
-import { KpiVisualization } from '../../../success-model/visualization';
-
-import { Measure } from 'src/success-model/measure';
 
 import { Store } from '@ngrx/store';
 import {
@@ -12,6 +8,9 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import { ServiceInformation } from 'src/app/models/service.model';
+import { Observable } from 'rxjs';
+import { Measure } from 'src/app/models/measure.model';
+import { KpiVisualization } from 'src/app/models/visualization.model';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -30,14 +29,14 @@ export class KpiVisualizationComponent
   }
   @Input() measure: Measure;
   @Input() measureName: string;
-  measure$;
+  measure$: Observable<Measure>;
   @Input() service: ServiceInformation;
 
   async ngOnInit() {
     this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
-    const queries = this.measure.queries;
+    const queries = this.measure?.queries;
     let visualization: KpiVisualization = this.measure
-      .visualization as KpiVisualization;
+      ?.visualization as KpiVisualization;
     if (!(visualization instanceof KpiVisualization)) {
       visualization = new KpiVisualization(
         (visualization as KpiVisualization).operationsElements,

@@ -24,7 +24,7 @@ import { INITIAL_APP_STATE } from './models/state.model';
 
 describe('AppComponent', () => {
   const initialState = INITIAL_APP_STATE;
-  let store: MockStore;
+
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -61,7 +61,6 @@ describe('AppComponent', () => {
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    store.refreshState();
     fixture.detectChanges();
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();

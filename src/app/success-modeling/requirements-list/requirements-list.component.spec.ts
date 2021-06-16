@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -13,19 +12,17 @@ import {
 import { createTranslateLoader } from '../../app.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { SuccessModel } from '../../../success-model/success-model';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('RequirementsListComponent', () => {
   let component: RequirementsListComponent;
   let fixture: ComponentFixture<RequirementsListComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -46,6 +43,7 @@ describe('RequirementsListComponent', () => {
           MatDialogModule,
           HttpClientTestingModule,
         ],
+        providers: [provideMockStore({ initialState })],
       }).compileComponents();
     }),
   );

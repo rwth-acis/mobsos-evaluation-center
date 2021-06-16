@@ -26,7 +26,6 @@ import { Query } from '../../../success-model/query';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
-  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';

@@ -1,5 +1,3 @@
-import { Measure } from '../../success-model/measure';
-
 import { Las2peerService } from '../las2peer.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +13,7 @@ import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Measure } from '../models/measure.model';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -64,7 +63,7 @@ export class BaseVisualizationComponent
     if (!this.service) {
       this.service = service;
     }
-    for (const mobsosID of this.service.mobsosIDs) {
+    for (const mobsosID of this.service?.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';
@@ -96,7 +95,7 @@ export class BaseVisualizationComponent
   }
 
   protected getParamsForQuery(query: string) {
-    if (!this.service || this.service.mobsosIDs.length === 0) {
+    if (!this.service || this.service?.mobsosIDs?.length === 0) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];

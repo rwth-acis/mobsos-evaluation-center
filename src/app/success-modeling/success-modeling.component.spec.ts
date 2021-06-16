@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -21,10 +20,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { RequirementsListComponent } from './requirements-list/requirements-list.component';
 import { QuestionnairesComponent } from './questionnaires/questionnaires.component';
-import {
-  MatExpansionModule,
-  MatExpansionPanel,
-} from '@angular/material/expansion';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -35,11 +31,18 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState, INITIAL_APP_STATE } from '../models/state.model';
+import { StateEffects } from '../services/store.effects';
+import { Observable } from 'rxjs';
 
 describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
   let fixture: ComponentFixture<SuccessModelingComponent>;
-
+  const initialState = INITIAL_APP_STATE;
+  let actions$: Observable<any>;
+  let effects: StateEffects;
+  let store: MockStore<AppState>;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -77,6 +80,11 @@ describe('SuccessModelingComponent', () => {
           MatSnackBarModule,
           MatExpansionModule,
         ],
+        providers: [
+          provideMockStore({ initialState }),
+          provideMockActions(() => actions$),
+          StateEffects,
+        ],
       }).compileComponents();
     }),
   );
@@ -91,3 +99,6 @@ describe('SuccessModelingComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+function provideMockActions(arg0: () => Observable<any>): any {
+  throw new Error('Function not implemented.');
+}

@@ -1,4 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
+import { createTranslateLoader } from '../app.module';
 
 import { WorkspaceManagementComponent } from './workspace-management.component';
 
@@ -8,9 +17,18 @@ describe('WorkspaceManagementComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ WorkspaceManagementComponent ]
-    })
-    .compileComponents();
+      declarations: [WorkspaceManagementComponent],
+      imports: [
+        MatDialogModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+      ],
+      providers: [{ provide: MatDialogRef, useValue: {} }],
+    }).compileComponents();
   });
 
   beforeEach(() => {

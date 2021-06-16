@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
@@ -11,14 +10,19 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
 import { createTranslateLoader } from '../../app.module';
 import { ChartVisualizerComponent } from './chart-visualization.component';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('ChartVisualizerComponent', () => {
   let component: ChartVisualizerComponent;
   let fixture: ComponentFixture<ChartVisualizerComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -40,8 +44,9 @@ describe('ChartVisualizerComponent', () => {
           MatDialogModule,
           HttpClientTestingModule,
         ],
+        providers: [provideMockStore({ initialState })],
       }).compileComponents();
-    })
+    }),
   );
 
   beforeEach(() => {
