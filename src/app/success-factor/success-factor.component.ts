@@ -13,7 +13,10 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
-import { EDIT_MODE } from '../services/store.selectors';
+import {
+  EDIT_MODE,
+  USER_HAS_EDIT_RIGHTS,
+} from '../services/store.selectors';
 import {
   editFactorInDimension,
   removeFactor,
@@ -34,7 +37,8 @@ export class SuccessFactorComponent implements OnInit {
   @Input() dimensionName: string;
   @Input() service: ServiceInformation;
   @Input() measures: MeasureMap;
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+
+  canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   @Output() sendFactorToDimension = new EventEmitter<SuccessFactor>();
   @Output() sendMeasuresToDimension = new EventEmitter<MeasureMap>();

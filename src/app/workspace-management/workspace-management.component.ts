@@ -37,10 +37,7 @@ import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { ApplicationWorkspace } from '../models/workspace.model';
 
 @Component({
   selector: 'app-workspace-management',
@@ -203,13 +200,14 @@ export class WorkspaceManagementComponent
    * @param owner the owner of the workspace which we want to view
    */
   onSwitchWorkspace(owner: string) {
-    this.workspaceOwner = owner;
     this.currentApplicationWorkspace =
       this.workspaceService.switchWorkspace(
-        this.workspaceOwner,
+        owner,
         this.selectedServiceName,
         this.user.profile.preferred_username,
+        this.workspaceOwner,
       );
+    this.workspaceOwner = owner;
     this.ngrxStore.dispatch(setWorkSpaceOwner({ username: owner }));
   }
 

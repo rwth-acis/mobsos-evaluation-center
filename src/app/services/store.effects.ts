@@ -15,6 +15,7 @@ import {
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { VData } from '../models/visualization.model';
 import * as Action from './store.actions';
 import { disableEdit } from './store.actions';
 import {
@@ -355,12 +356,10 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
-        if (
-          !dataForQuery?.error &&
-          (!dataForQuery?.fetchDate ||
-            dataForQuery.fetchDate.getTime() < Date.now() - 300000)
-        ) {
-          // error or no data yet or last fetch time more than 5min ago
+        if (shouldFetch(dataForQuery)) {
+          if (dataForQuery?.error) {
+            Action.removeVisualizationDataForQuery({ query });
+          }
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
@@ -411,4 +410,30 @@ export class StateEffects {
       share(),
     ),
   );
+}
+
+/**
+ * Determines whether a new visualization data request should be made
+ * @param dataForQuery the current data from the store
+ * @returns true if we should make a new request
+ */
+function shouldFetch(dataForQuery: VData): boolean {
+  if (!dataForQuery) return true;
+  if (dataForQuery.error) {
+    const status = dataForQuery.error.status;
+    if (!status) {
+      // Unknown error
+      return true;
+    } else if (status === 400) {
+      // SQL query error
+      return false;
+    } else if (status >= 500) {
+      // Server error
+      if (dataForQuery?.fetchDate.getTime() < Date.now() - 300000)
+        return true;
+    }
+  } else if (dataForQuery.fetchDate.getTime() < Date.now() - 300000) {
+    return true;
+  }
+  return false;
 }

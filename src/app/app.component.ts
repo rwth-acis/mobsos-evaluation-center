@@ -33,6 +33,7 @@ import {
   toggleExpertMode,
 } from './services/store.actions';
 import {
+  APPLICATION_WORKSPACE,
   COMMUNITY_WORKSPACE,
   EXPERT_MODE,
   FOREIGN_GROUPS,
@@ -208,16 +209,16 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     this.subscriptions$.push(sub);
     if (isDevMode()) {
-      sub = this.ngrxStore.subscribe((state) => {
-        console.log(state);
-      });
-      this.subscriptions$.push(sub);
-      // sub = this.ngrxStore
-      //   .select(COMMUNITY_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
+      // sub = this.ngrxStore.subscribe((state) => {
+      //   console.log(state);
+      // });
       // this.subscriptions$.push(sub);
+      sub = this.ngrxStore
+        .select(APPLICATION_WORKSPACE)
+        .subscribe((a) => {
+          console.log(a);
+        });
+      this.subscriptions$.push(sub);
     }
 
     // swipe navigation

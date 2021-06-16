@@ -19,6 +19,7 @@ import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { removeVisualizationDataForQuery } from './store.actions';
 
 export const initialState: AppState = INITIAL_STATE;
 
@@ -93,6 +94,13 @@ const _Reducer = createReducer(
   on(Actions.fetchSuccessModel, (state) => ({
     ...state,
     successModelInitialized: false,
+  })),
+  on(Actions.removeVisualizationDataForQuery, (state, { query }) => ({
+    ...state,
+    visualizationData: removeVisualizationData(
+      state.visualizationData,
+      query,
+    ),
   })),
   on(Actions.fetchMeasureCatalog, (state) => ({
     ...state,
@@ -670,4 +678,12 @@ function getWorkspaceByUserAndService(
     return;
   }
   return userWorkspace[service];
+}
+function removeVisualizationData(
+  visualizationData: VisualizationData,
+  query: string,
+): VisualizationData {
+  const copy = { ...visualizationData };
+  delete copy[query];
+  return copy;
 }

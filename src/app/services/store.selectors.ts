@@ -82,10 +82,10 @@ export const CURRENT_USER_WORKSPACE = createSelector(
   CURRENT_WORKSPACE_OWNER,
   USER,
   (communityWorkspace, owner, user) =>
-    getUserWorkspace(
+    getCurrentUserWorkspace(
       owner,
       communityWorkspace,
-      user.profile.preferred_username,
+      user?.profile.preferred_username,
     ),
 );
 
@@ -348,13 +348,19 @@ function getAllWorkspacesForService(
   return result as ApplicationWorkspace[];
 }
 
-function getUserWorkspace(
+/**
+ * Get the workspace for the current workspace.
+ * @param owner The owner of the current user workspace
+ * @param communityWorkspace The workspace of the community
+ * @param user The current user
+ * @returns If owner is provided, then the workspace of the owner is returned. Else the workspace of the user is returned
+ */
+function getCurrentUserWorkspace(
   owner: string,
   communityWorkspace: CommunityWorkspace,
   user: string,
 ) {
-  if (!communityWorkspace) return;
+  if (!communityWorkspace || !user) return;
   if (owner) return communityWorkspace[owner];
-  if (!user) return;
   return communityWorkspace[user];
 }

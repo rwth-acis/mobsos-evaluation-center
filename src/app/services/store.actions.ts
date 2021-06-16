@@ -3,10 +3,7 @@ import { SuccessFactor } from 'src/success-model/success-factor';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { User } from '../models/user.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 
 enum FetchActions {
   FETCH_SERVICES = 'Fetch services from the network',
@@ -43,6 +40,7 @@ enum StoreActions {
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
   SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
+  REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
 
 enum StateActions {
@@ -85,6 +83,10 @@ export const addFactorToDimension = createAction(
   StoreActions.ADD_FACTOR_TO_DIMENSION,
   props<{ factor: SuccessFactor; dimensionName: string }>(),
 );
+export const removeVisualizationDataForQuery = createAction(
+  StoreActions.REMOVE_VISUALIZATION_DATA,
+  props<{ query: string }>(),
+);
 export const editFactorInDimension = createAction(
   StoreActions.EDIT_FACTOR_IN_DIMENSION,
   props<{
@@ -93,6 +95,7 @@ export const editFactorInDimension = createAction(
     dimensionName: string;
   }>(),
 );
+
 export const addMeasureToCatalog = createAction(
   StoreActions.ADD_MEASURE_TO_CATALOG,
   props<{ measure: Measure }>(),

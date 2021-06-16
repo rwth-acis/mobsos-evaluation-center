@@ -215,12 +215,17 @@ export class WorkspaceService {
     owner: string,
     currentServiceName: string,
     username: string,
+    oldWorkspaceOwner?: string,
   ): ApplicationWorkspace {
     if (!owner) {
       console.error('user cannot be null');
       return;
     }
-
+    this.leaveWorkspace(
+      oldWorkspaceOwner,
+      currentServiceName,
+      username,
+    );
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
     );
@@ -255,6 +260,26 @@ export class WorkspaceService {
     }
     this.communityWorkspace$.next(communityWorkspace);
     return currentApplicationWorkspace;
+  }
+
+  leaveWorkspace(
+    owner: string,
+    currentServiceName: string,
+    username: string,
+  ) {
+    if (!owner || !currentServiceName) return;
+    const appWorkspace = cloneDeep(
+      this.getWorkspaceByUserAndService(owner, currentServiceName),
+    );
+    const visitors = appWorkspace.visitors.filter(
+      (visitor) => visitor.username !== username,
+    );
+    appWorkspace.visitors = visitors;
+    const communityWorkspace = cloneDeep(
+      this.communityWorkspace$.getValue(),
+    );
+    communityWorkspace[owner][currentServiceName] = appWorkspace;
+    this.communityWorkspace$.next(communityWorkspace);
   }
 
   private getWorkspaceByUserAndService(

@@ -17,7 +17,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
-import { EDIT_MODE, MEASURE } from '../services/store.selectors';
+import {
+  EDIT_MODE,
+  MEASURE,
+  USER_HAS_EDIT_RIGHTS,
+} from '../services/store.selectors';
 import {
   editMeasure,
   removeMeasure,
@@ -36,7 +40,6 @@ export class SuccessMeasureComponent
 {
   @Input() measure: Measure;
   @Input() service: ServiceInformation;
-  @Input() editMode = false;
   @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
@@ -45,7 +48,7 @@ export class SuccessMeasureComponent
   meaureName: string;
   measure$: Observable<Measure>;
 
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   public visualizationError: string;
   public error: Response;
