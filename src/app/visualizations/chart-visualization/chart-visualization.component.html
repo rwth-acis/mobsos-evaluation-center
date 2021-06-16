@@ -1,19 +1,31 @@
-<span *ngIf="!visualizationInitialized && !error" class="loading-placeholder">
-  <mat-spinner></mat-spinner>
-</span>
-<span *ngIf="error" class="loading-placeholder" (click)="openErrorDialog()">
-  <button mat-button>
-    <mat-icon>error_outline</mat-icon>
-  </button>
-</span>
-<span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet.
-  A visualization should be shown as soon as you interact with it.
-</span>
-<plotly-plot *ngIf="!error && visualizationInitialized"
-             [data]="graph.data"
-             [config]="graph.config"
-             [layout]="graph.layout"
-             [useResizeHandler]="true"
-             [style]="{position: 'relative', width: '100%', height: '100%'}"
-></plotly-plot>
+<ng-container *ngIf="data$ | async; else stillLoading">
+  <ng-container *ngIf="!error; else Error">
+    <ng-container *ngIf="data$ | async">
+      <google-chart
+        *ngIf="chart"
+        [title]="this.chart.title"
+        [type]="this.chart.chartType"
+        [data]="this.chart.data"
+        [options]="this.chart.options"
+        class="content"
+        style="width: 100%"
+        [columns]="columnNames"
+        [dynamicResize]="true"
+      ></google-chart>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #Error>
+  <span (click)="openErrorDialog()">
+    <button mat-button id="error">
+      <mat-icon>error_outline</mat-icon>
+    </button>
+  </span>
+</ng-template>
+
+<ng-template #stillLoading>
+  <span class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </span>
+</ng-template>

@@ -1,32 +1,39 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  TestBed,
+  waitForAsync,
+} from '@angular/core/testing';
 
 import { ValueVisualizationComponent } from './value-visualization.component';
-import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular/material';
-import {PlotlyModule} from 'angular-plotly.js';
-import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ValueVisualizationComponent', () => {
   let component: ValueVisualizationComponent;
   let fixture: ComponentFixture<ValueVisualizationComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ValueVisualizationComponent ],
-      imports: [
-        MatProgressSpinnerModule,
-        MatIconModule,
-        PlotlyModule,
-        LoggerModule.forRoot({
-          level: NgxLoggerLevel.TRACE,
-          serverLogLevel: NgxLoggerLevel.OFF
-        }),
-        MatDialogModule,
-        HttpClientTestingModule,
-      ],
-    })
-    .compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [ValueVisualizationComponent],
+        imports: [
+          MatProgressSpinnerModule,
+          MatIconModule,
+          LoggerModule.forRoot({
+            level: NgxLoggerLevel.TRACE,
+            serverLogLevel: NgxLoggerLevel.OFF,
+          }),
+          MatDialogModule,
+          HttpClientTestingModule,
+        ],
+      }).compileComponents();
+    }),
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ValueVisualizationComponent);

@@ -1,16 +1,19 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
-import {Measure} from '../../../success-model/measure';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Measure } from '../../../success-model/measure';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import {
   ChartVisualization,
   KpiVisualization,
   KpiVisualizationOperand,
   KpiVisualizationOperator,
-  ValueVisualization
+  ValueVisualization,
 } from '../../../success-model/visualization';
-import {ServiceInformation} from '../../store.service';
-import {SuccessMeasureInterface} from '../../success-measure/success-measure.interface';
-import {Query} from '../../../success-model/query';
+
+import { Query } from '../../../success-model/query';
+import { ServiceInformation } from 'src/app/models/service.model';
 
 export interface DialogData {
   measure: Measure;
@@ -18,14 +21,13 @@ export interface DialogData {
   create: boolean;
 }
 
-
 @Component({
   selector: 'app-edit-measure-dialog',
   templateUrl: './edit-measure-dialog.component.html',
-  styleUrls: ['./edit-measure-dialog.component.scss']
+  styleUrls: ['./edit-measure-dialog.component.scss'],
 })
 export class EditMeasureDialogComponent implements OnInit {
-  @ViewChild('previewMeasure') public previewMeasure: SuccessMeasureInterface;
+  @ViewChild('previewMeasure') public previewMeasure;
 
   visualizationChoices = {
     Value: 'success-modeling.edit-measure-dialog.choice-value',
@@ -34,31 +36,43 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   chartTypeChoices = {
-    LineChart: 'success-modeling.edit-measure-dialog.choice-linechart',
+    LineChart:
+      'success-modeling.edit-measure-dialog.choice-linechart',
     PieChart: 'success-modeling.edit-measure-dialog.choice-piechart',
     BarChart: 'success-modeling.edit-measure-dialog.choice-barchart',
-    RadarChart: 'success-modeling.edit-measure-dialog.choice-radarchart',
+    RadarChart:
+      'success-modeling.edit-measure-dialog.choice-radarchart',
   };
 
   visualizationBuffer = {
     Value: new ValueVisualization(''),
-    Chart: new ChartVisualization(null, 'chartNode', 'chart title', '300', '300'),
+    Chart: new ChartVisualization(
+      null,
+      'chartNode',
+      'chart title',
+      '300',
+      '300',
+    ),
     KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
   };
 
-  constructor(private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-  }
+  constructor(
+    private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+  ) {}
 
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 
   onVisualizationChange(visualizationType: string) {
-    if (this.data.measure.visualization && this.data.measure.visualization.type) {
-      this.visualizationBuffer[this.data.measure.visualization.type] = this.data.measure.visualization;
+    if (
+      this.data.measure.visualization &&
+      this.data.measure.visualization.type
+    ) {
+      this.visualizationBuffer[this.data.measure.visualization.type] =
+        this.data.measure.visualization;
     }
-    this.data.measure.visualization = this.visualizationBuffer[visualizationType];
+    this.data.measure.visualization =
+      this.visualizationBuffer[visualizationType];
     this.previewMeasure.refreshVisualization();
   }
 
@@ -71,29 +85,45 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onKpiOperandChange(operandName: string, index: number) {
-    (this.data.measure.visualization as KpiVisualization).operationsElements[index]
-      = new KpiVisualizationOperand(operandName, index);
+    (
+      this.data.measure.visualization as KpiVisualization
+    ).operationsElements[index] = new KpiVisualizationOperand(
+      operandName,
+      index,
+    );
     this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onKpiOperatorChange(operatorName: string, index: number) {
-    (this.data.measure.visualization as KpiVisualization).operationsElements[index]
-      = new KpiVisualizationOperator(operatorName, index);
+    (
+      this.data.measure.visualization as KpiVisualization
+    ).operationsElements[index] = new KpiVisualizationOperator(
+      operatorName,
+      index,
+    );
     this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onAddOperationClicked() {
-    const kpiVisualization = this.data.measure.visualization as KpiVisualization;
+    const kpiVisualization = this.data.measure
+      .visualization as KpiVisualization;
     kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperator('', kpiVisualization.operationsElements.length)
+      new KpiVisualizationOperator(
+        '',
+        kpiVisualization.operationsElements.length,
+      ),
     );
     kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperand('', kpiVisualization.operationsElements.length)
+      new KpiVisualizationOperand(
+        '',
+        kpiVisualization.operationsElements.length,
+      ),
     );
   }
 
   onRemoveOperationClicked() {
-    const kpiVisualization = this.data.measure.visualization as KpiVisualization;
+    const kpiVisualization = this.data.measure
+      .visualization as KpiVisualization;
     if (kpiVisualization.operationsElements.length >= 3) {
       kpiVisualization.operationsElements.pop();
       kpiVisualization.operationsElements.pop();
@@ -105,7 +135,8 @@ export class EditMeasureDialogComponent implements OnInit {
     const currentName = this.data.measure.queries[i].name;
     const visualizationType = this.data.measure.visualization.type;
     if (visualizationType === 'KPI') {
-      const visualization = this.data.measure.visualization as KpiVisualization;
+      const visualization = this.data.measure
+        .visualization as KpiVisualization;
       visualization.operationsElements.forEach((opElement, index) => {
         if (index % 2 === 0 && opElement.name === currentName) {
           opElement.name = value;

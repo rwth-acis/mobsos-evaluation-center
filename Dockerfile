@@ -1,14 +1,18 @@
-# base image
-FROM node:12.2.0
 
-# set working directory
+FROM node:16-alpine AS my-app-build
+
 WORKDIR /app
 COPY . .
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
-RUN npm install
-RUN npm install -g @angular/cli@7.3.9
+RUN npm ci  && npm run build:prod 
+# Comment out the line above and uncomment the one below to build for app running on https://example.org/monitor/
+# RUN npm ci  && npm run build:prod-sbf-dev 
 
-EXPOSE 4200
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# stage 2
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /usr/share/nginx/html
+COPY --from=my-app-build /app/dist/mobsos-evaluation-center /usr/share/nginx/html
+RUN dos2unix docker-entrypoint.sh
+# When the container starts, replace the env.js with values from environment variables
+CMD ["/bin/sh",  "-c",  "envsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js && exec nginx -g 'daemon off;' "]

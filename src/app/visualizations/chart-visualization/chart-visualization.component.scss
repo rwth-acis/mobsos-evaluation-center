@@ -1,5 +1,7 @@
-@import '../visualization.component';
-
-:host{
-  display: block;
+google-chart{
+    max-width: 500px;
+}
+#error{
+    height: 4rem;
+    width: 4rem
 }

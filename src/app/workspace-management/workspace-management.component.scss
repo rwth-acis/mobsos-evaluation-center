@@ -1,0 +1,60 @@
+#community-service-select {
+  width: 100%;
+}
+
+#header-card {
+  margin: 0 0 10px 0;
+}
+
+mat-card,
+app-success-dimension {
+  margin: 10px 0 10px 0;
+}
+
+#edit-controls {
+  min-height: 50px;
+  display: flex;
+  justify-content: space-between;
+
+  mat-slide-toggle {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+}
+.card{
+  padding: 1rem;
+}
+.mat-card-content{
+  margin-bottom:0
+}
+.popover-content {
+  max-width: 300px;
+  margin-top: 0;
+  margin-bottom: 0;
+
+  .popover-row {
+    display: flex;
+    justify-content: space-between;
+    min-width: 200px;
+    align-items: center;
+  }
+}
+
+#info-content {
+  display: flex;
+  #info-text {
+    margin-left: 5px;
+    flex-grow: 1;
+  }
+}
+
+#edit-controls{
+  display: flex; align-items: center
+}
+
+#visitors{
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
+  width: 100%;
+}

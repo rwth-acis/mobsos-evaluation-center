@@ -1,43 +1,51 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  TestBed,
+  waitForAsync,
+} from '@angular/core/testing';
 
-import {ChartVisualizationComponent} from './chart-visualization.component';
-import {MatDialogModule, MatIconModule, MatProgressSpinnerModule} from '@angular/material';
-import {PlotlyModule} from 'angular-plotly.js';
-import {LoggerModule, NgxLoggerLevel} from 'ngx-logger';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {createTranslateLoader} from '../../app.module';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-describe('ChartVisualizationComponent', () => {
-  let component: ChartVisualizationComponent;
-  let fixture: ComponentFixture<ChartVisualizationComponent>;
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { createTranslateLoader } from '../../app.module';
+import { ChartVisualizerComponent } from './chart-visualization.component';
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ChartVisualizationComponent],
-      imports: [
-        MatProgressSpinnerModule,
-        MatIconModule,
-        PlotlyModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: (createTranslateLoader)
-          }
-        }),
-        LoggerModule.forRoot({
-          level: NgxLoggerLevel.TRACE,
-          serverLogLevel: NgxLoggerLevel.OFF
-        }),
-        MatDialogModule,
-        HttpClientTestingModule,
-      ],
+describe('ChartVisualizerComponent', () => {
+  let component: ChartVisualizerComponent;
+  let fixture: ComponentFixture<ChartVisualizerComponent>;
+
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [ChartVisualizerComponent],
+        imports: [
+          MatProgressSpinnerModule,
+          MatIconModule,
+
+          TranslateModule.forRoot({
+            loader: {
+              provide: TranslateLoader,
+              useFactory: createTranslateLoader,
+            },
+          }),
+          LoggerModule.forRoot({
+            level: NgxLoggerLevel.TRACE,
+            serverLogLevel: NgxLoggerLevel.OFF,
+          }),
+          MatDialogModule,
+          HttpClientTestingModule,
+        ],
+      }).compileComponents();
     })
-      .compileComponents();
-  }));
+  );
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ChartVisualizationComponent);
+    fixture = TestBed.createComponent(ChartVisualizerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
