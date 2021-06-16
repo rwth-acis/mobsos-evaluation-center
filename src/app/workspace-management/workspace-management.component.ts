@@ -156,16 +156,17 @@ export class WorkspaceManagementComponent
   }
 
   async onEditModeChanged() {
-    if (this.checked) {
-      const result = await this.openClearWorkspaceDialog();
-      if (result) {
-        this.ngrxStore.dispatch(toggleEdit());
-      } else {
-        this.checked = true;
-      }
-    } else {
-      this.ngrxStore.dispatch(toggleEdit());
-    }
+    // if (this.checked) {
+    //   const result = await this.openClearWorkspaceDialog();
+    //   if (result) {
+    //     this.ngrxStore.dispatch(toggleEdit());
+    //   } else {
+    //     this.checked = true;
+    //   }
+    // } else {
+    //   this.ngrxStore.dispatch(toggleEdit());
+    // }
+    this.ngrxStore.dispatch(toggleEdit());
   }
 
   /**
