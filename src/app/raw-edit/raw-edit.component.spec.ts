@@ -26,6 +26,7 @@ import { StateEffects } from '../services/store.effects';
 import { Observable } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { COMMUNITY_WORKSPACE } from '../services/store.selectors';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -48,6 +49,7 @@ describe('RawEditComponent', () => {
           }),
           MonacoEditorModule.forRoot(),
           FormsModule,
+          MatProgressSpinnerModule,
           MatSelectModule,
           LoggerModule.forRoot({
             level: NgxLoggerLevel.TRACE,

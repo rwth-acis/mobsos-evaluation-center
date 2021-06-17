@@ -34,7 +34,6 @@ import {
 } from './services/store.actions';
 import {
   APPLICATION_WORKSPACE,
-  COMMUNITY_WORKSPACE,
   EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,

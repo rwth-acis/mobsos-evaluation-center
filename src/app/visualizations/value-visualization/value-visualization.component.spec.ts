@@ -31,6 +31,7 @@ describe('ValueVisualizationComponent', () => {
             serverLogLevel: NgxLoggerLevel.OFF,
           }),
           MatDialogModule,
+          MatProgressSpinnerModule,
           HttpClientTestingModule,
         ],
         providers: [provideMockStore({ initialState })],

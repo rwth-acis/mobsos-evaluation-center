@@ -33,6 +33,7 @@ import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
 import { Observable } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
@@ -72,6 +73,7 @@ describe('SuccessModelingComponent', () => {
           HttpClientTestingModule,
           MatSlideToggleModule,
           MatTooltipModule,
+          MatProgressSpinnerModule,
           MatBadgeModule,
           MatButtonToggleModule,
           MatDialogModule,

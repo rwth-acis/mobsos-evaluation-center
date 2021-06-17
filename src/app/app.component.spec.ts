@@ -21,6 +21,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { INITIAL_APP_STATE } from './models/state.model';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('AppComponent', () => {
   const initialState = INITIAL_APP_STATE;
@@ -49,6 +50,7 @@ describe('AppComponent', () => {
           MatFormFieldModule,
           MatSelectModule,
           MatSnackBarModule,
+          MatProgressSpinnerModule,
           HttpClientTestingModule,
           ServiceWorkerModule.register('', { enabled: false }),
         ],

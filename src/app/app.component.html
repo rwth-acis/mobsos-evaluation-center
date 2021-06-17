@@ -5,8 +5,10 @@
     [fixedInViewport]="mobileQuery.matches"
     [opened]="!mobileQuery.matches"
   >
-    <mat-form-field id="community-selection" *ngIf="user$| async">
-      <ng-container *ngIf="groupsAreLoaded$ | async; else groupsAreLoading">
+    <mat-form-field id="community-selection" *ngIf="user$ | async">
+      <ng-container
+        *ngIf="groupsAreLoaded$ | async; else groupsAreLoading"
+      >
         <mat-label>Community</mat-label>
         <mat-select
           [formControl]="selectedGroupForm"
@@ -111,7 +113,11 @@
         <mat-icon>menu</mat-icon>
       </button>
       <h2 slot="title">
-        {{ mobileQuery.matches ? 'MobSOS EC' : 'MobSOS Evaluation Center' }}
+        {{
+          mobileQuery.matches
+            ? 'MobSOS EC'
+            : 'MobSOS Evaluation Center'
+        }}
       </h2>
     </las2peer-frontend-statusbar>
     <mat-progress-bar
@@ -140,6 +146,10 @@
 </ng-template>
 
 <ng-template #groupsAreLoading>
-  <mat-spinner color="accent" id="groupsLoadingIndicator" [diameter]="30">
-  </mat-spinner>
+  <mat-progress-spinner
+    color="accent"
+    id="groupsLoadingIndicator"
+    [diameter]="30"
+  >
+  </mat-progress-spinner>
 </ng-template>

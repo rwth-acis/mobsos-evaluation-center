@@ -1,15 +1,23 @@
-<span *ngIf="!visualizationInitialized && !error" class="loading-placeholder">
-  <mat-spinner></mat-spinner>
+<span
+  *ngIf="!visualizationInitialized && !error"
+  class="loading-placeholder"
+>
+  <mat-progress-spinner></mat-progress-spinner>
 </span>
-<span *ngIf="error" class="loading-placeholder" (click)="openErrorDialog()">
+<span
+  *ngIf="error"
+  class="loading-placeholder"
+  (click)="openErrorDialog()"
+>
   <button mat-button>
     <mat-icon>error_outline</mat-icon>
   </button>
 </span>
 <span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet.
-  A visualization should be shown as soon as you interact with it.
+  This service has not generated any data yet. A visualization should
+  be shown as soon as you interact with it.
 </span>
 <div *ngIf="value" class="value-visualization">
-  {{value}} {{measure.visualization.unit ? measure.visualization.unit : ''}}
+  {{ value }}
+  {{ measure.visualization.unit ? measure.visualization.unit : '' }}
 </div>

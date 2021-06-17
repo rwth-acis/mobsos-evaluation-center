@@ -18,8 +18,7 @@ import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 describe('KpiVisualizationComponent', () => {
   let component: KpiVisualizationComponent;
   let fixture: ComponentFixture<KpiVisualizationComponent>;
-  let store: MockStore;
-  let initialState = INITIAL_APP_STATE;
+  const initialState = INITIAL_APP_STATE;
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({

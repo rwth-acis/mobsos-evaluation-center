@@ -26,7 +26,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {MatExpansionModule} from '@angular/material/expansion';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
@@ -150,6 +150,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
     EditFactorDialogComponent,
+    EditMeasureDialogComponent,
     PickMeasureDialogComponent,
     EditMeasureDialogComponent,
     QuestionnairesComponent,
