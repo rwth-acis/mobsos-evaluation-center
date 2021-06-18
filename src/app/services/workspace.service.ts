@@ -263,7 +263,7 @@ export class WorkspaceService {
     return currentApplicationWorkspace;
   }
 
-  leaveWorkspace(
+  private leaveWorkspace(
     owner: string,
     currentServiceName: string,
     username: string,
@@ -272,7 +272,7 @@ export class WorkspaceService {
     const appWorkspace = cloneDeep(
       this.getWorkspaceByUserAndService(owner, currentServiceName),
     );
-    const visitors = appWorkspace.visitors.filter(
+    const visitors = appWorkspace.visitors?.filter(
       (visitor) => visitor.username !== username,
     );
     appWorkspace.visitors = visitors;
