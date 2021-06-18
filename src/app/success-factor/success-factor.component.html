@@ -11,10 +11,10 @@
   <h3 *ngIf="factor">{{ factor.name }}</h3>
 </div>
 
-<div *ngIf="factor && factor.measures?.length > 0">
+<div *ngIf="factor && factor.measures?.length > 0" class="measures">
   <div
     *ngFor="let measure of factor.measures; let i = index"
-    class="measure-row"
+    class="measure"
   >
     <ng-container *ngIf="canEdit$ | async">
       <button
