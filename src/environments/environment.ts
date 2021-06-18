@@ -34,8 +34,7 @@ export const environment = {
   useLas2peerServiceDiscovery: false,
   // useLas2peerServiceDiscovery: false,
 
-  yJsWebsocketUrl:
-    'wss://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
+  yJsWebsocketUrl: 'ws://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend
