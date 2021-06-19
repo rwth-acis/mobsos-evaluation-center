@@ -283,6 +283,9 @@ export class WorkspaceService {
     const appWorkspace = cloneDeep(
       this.getWorkspaceByUserAndService(owner, currentServiceName),
     );
+    if (!appWorkspace) {
+      return;
+    }
     const visitors = appWorkspace.visitors?.filter(
       (visitor) => visitor.username !== username,
     );

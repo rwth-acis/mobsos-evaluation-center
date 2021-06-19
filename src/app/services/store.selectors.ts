@@ -250,10 +250,10 @@ export const ASSETS_LOADED = createSelector(
 
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
-  _JOINED_AS_VISITOR,
+  EDIT_MODE,
   APPLICATION_WORKSPACE,
-  (service, joinedUsingLink, workspace) =>
-    joinedUsingLink ? workspace?.service : service,
+  (service, editMode, workspace) =>
+    editMode ? workspace?.service : service,
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(

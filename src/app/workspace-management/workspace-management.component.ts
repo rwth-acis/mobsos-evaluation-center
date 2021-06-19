@@ -12,7 +12,7 @@ import {
 } from '../services/store.actions';
 
 import { cloneDeep } from 'lodash';
-import { User, UserRole } from '../models/user.model';
+import { User } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
@@ -130,7 +130,10 @@ export class WorkspaceManagementComponent
       .subscribe(async ([editMode, group, owner]) => {
         this.selectedGroup = group;
         if (editMode) {
-          if (owner) {
+          if (
+            owner &&
+            owner !== this.user?.profile.preferred_username
+          ) {
             this.workspaceService
               .joinExistingCommunnityWorkspace(group.id)
               .pipe(
