@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { filter, map, withLatestFrom } from 'rxjs/operators';
 import {
+  APPLICATION_WORKSPACE,
   ASSETS_LOADED,
   DIMENSIONS_IN_MODEL,
   MEASURE_CATALOG,
@@ -21,6 +22,9 @@ export class VisitorComponent implements OnInit {
   selectedServiceName$ = this.ngrxStore.select(SELECTED_SERVICE_NAME);
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
   assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
+  applicationWorkspaceOwner$ = this.ngrxStore
+    .select(APPLICATION_WORKSPACE)
+    .pipe(map((workspace) => workspace?.createdBy));
   showSuccessModelEmpty$ = this.ngrxStore
     .select(DIMENSIONS_IN_MODEL)
     .pipe(

@@ -1,3 +1,21 @@
+<mat-card id="workspace-info">
+  <div id="info-content">
+    <mat-icon color="accent">info_outline</mat-icon>
+    <span id="info-text">
+      {{ 'success-modeling.info.workspace-of' | translate }}
+      <strong>{{ applicationWorkspaceOwner$ | async }}</strong
+      >.
+
+      <span>
+        {{
+          'success-modeling.info.workspace-rights-spectator'
+            | translate
+        }}
+      </span>
+    </span>
+  </div>
+</mat-card>
+
 <!-- Success model -->
 <ng-container
   *ngIf="
