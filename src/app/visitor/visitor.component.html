@@ -6,15 +6,6 @@
   "
 >
   <ng-container *ngIf="assetsLoaded$ | async; else notInitialized">
-    <h3 *ngIf="group?.name">
-      {{
-        'success-modeling.community-success-model'
-          | translate
-            : {
-                service: selectedServiceName
-              }
-      }}
-    </h3>
     <ng-container
       *ngIf="
         !(showSuccessModelEmpty$ | async);
@@ -27,6 +18,7 @@
           else noSuccessModel
         "
       >
+        dsf
         <ng-container
           *ngIf="measureCatalog$ | async as measureCatalog"
         >

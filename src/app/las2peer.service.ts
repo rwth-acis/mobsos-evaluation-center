@@ -179,18 +179,20 @@ export class Las2peerService {
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
     );
-    const username = this.userCredentials.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile')).sub;
+    const username = this.userCredentials?.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
     const token = localStorage.getItem('access_token');
-    options = merge(
-      {
-        headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + sub),
-          access_token: token,
+    if (username) {
+      options = merge(
+        {
+          headers: {
+            Authorization: 'Basic ' + btoa(username + ':' + sub),
+            access_token: token,
+          },
         },
-      },
-      options,
-    );
+        options,
+      );
+    }
 
     // if (!environment.production) {
     //   this.logger.debug(

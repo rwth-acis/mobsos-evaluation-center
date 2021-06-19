@@ -88,7 +88,7 @@ export const CURRENT_USER_WORKSPACE = createSelector(
     getCurrentUserWorkspace(
       owner,
       communityWorkspace,
-      user?.profile.preferred_username,
+      user?.profile?.preferred_username,
     ),
 );
 
@@ -139,7 +139,7 @@ export const VISITORS_EXCEPT_USER = createSelector(
   (visitors, user) =>
     visitors?.filter(
       (visitor) =>
-        user.profile.preferred_username !== visitor.username,
+        user?.profile.preferred_username !== visitor.username,
     ),
 );
 
@@ -168,6 +168,8 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   USER,
   (group, user) => !!user && group?.member,
 );
+const _JOINED_AS_VISITOR = (state: StoreState) =>
+  state.Reducer.joinedUsingLink;
 
 const _SUCCESS_MODEL = (state: StoreState) =>
   state.Reducer?.successModel;
@@ -176,16 +178,17 @@ export const SUCCESS_MODEL = createSelector(
   EDIT_MODE,
   _SUCCESS_MODEL,
   APPLICATION_WORKSPACE,
-  (editMode, successModel, applicationWorkspace) =>
-    editMode && applicationWorkspace
+  _JOINED_AS_VISITOR,
+  (editMode, successModel, applicationWorkspace, isVisiting) =>
+    applicationWorkspace && (editMode || isVisiting)
       ? applicationWorkspace.model
       : successModel,
 );
 
-export const DIMENSIONS_IN_MODEL = (state: StoreState) =>
-  state.Reducer.successModel
-    ? Object.values(state.Reducer.successModel.dimensions)
-    : [];
+export const DIMENSIONS_IN_MODEL = createSelector(
+  SUCCESS_MODEL,
+  (model) => (model ? Object.values(model.dimensions) : undefined),
+);
 
 export const SUCCESS_MODEL_XML = (state: StoreState) =>
   state.Reducer.successModel
@@ -363,7 +366,7 @@ function getCurrentUserWorkspace(
   communityWorkspace: CommunityWorkspace,
   user: string,
 ) {
-  if (!communityWorkspace || !user) return;
+  if (!communityWorkspace) return;
   if (owner) return communityWorkspace[owner];
   return communityWorkspace[user];
 }

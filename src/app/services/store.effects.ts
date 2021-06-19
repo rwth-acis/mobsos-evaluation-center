@@ -200,7 +200,7 @@ export class StateEffects {
       tap(([action, user, groupId]) => {
         if (user?.profile) {
           this.l2p.setCredentials(
-            user.profile.preferred_username,
+            user?.profile.preferred_username,
             null,
             user.access_token,
           );

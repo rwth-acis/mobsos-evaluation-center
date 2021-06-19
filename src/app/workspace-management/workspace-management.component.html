@@ -202,7 +202,7 @@
           <strong
             *ngIf="
               workspace.createdBy ===
-              (user$ | async).profile.preferred_username
+              (user$ | async)?.profile.preferred_username
             "
           >
             ({{

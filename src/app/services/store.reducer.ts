@@ -86,6 +86,7 @@ const _Reducer = createReducer(
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: { ...user, signedIn: !!user },
+    joinedUsingLink: !!user,
   })),
   on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,

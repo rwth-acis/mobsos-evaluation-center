@@ -146,7 +146,7 @@ export class RequirementsListComponent
       Object.keys(requirement).includes('leadDeveloper') &&
       this.user &&
       requirement.leadDeveloper.userName ===
-        this.user.profile.preferred_username
+        this.user?.profile.preferred_username
     );
   }
 
