@@ -203,7 +203,12 @@ export const setWorkSpaceOwner = createAction(
 
 export const joinAsVisitor = createAction(
   StateActions.JOIN_AS_VISITOR,
-  props<{ groupId: string; serviceName: string; owner: string }>(),
+  props<{
+    groupId: string;
+    serviceName: string;
+    owner: string;
+    username: string;
+  }>(),
 );
 
 export const joinAsSpectator = createAction(

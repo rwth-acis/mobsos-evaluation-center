@@ -48,12 +48,12 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           }
           if (!user?.signedIn) {
             const name = await this.openDialog();
-            console.log(name);
             this.ngrxStore.dispatch(
               joinAsVisitor({
                 groupId: params.groupId,
                 serviceName: params.serviceName,
                 owner: params.username,
+                username: name,
               }),
             );
             this.router.navigateByUrl('/visitor');

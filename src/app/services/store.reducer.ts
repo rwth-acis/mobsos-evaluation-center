@@ -47,7 +47,14 @@ const _Reducer = createReducer(
     selectedServiceName: props.serviceName,
     currentWorkSpaceOwner: props.owner,
     joinedUsingLink: true,
-    user: { ...state.user, visiting: true },
+    user: {
+      ...state.user,
+      visiting: true,
+      profile: {
+        ...state.user?.profile,
+        preferred_username: props.username,
+      },
+    },
   })),
   on(Actions.joinAsSpectator, (state, props) => ({
     ...state,
