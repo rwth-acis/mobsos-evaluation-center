@@ -49,6 +49,19 @@ const _Reducer = createReducer(
     joinedUsingLink: true,
     user: { ...state.user, visiting: true },
   })),
+  on(Actions.joinAsSpectator, (state, props) => ({
+    ...state,
+    editMode: true,
+    selectedGroupId: props.groupId,
+    selectedServiceName: props.serviceName,
+    currentWorkSpaceOwner: props.owner,
+    communityWorkspace: addVisitor(
+      state.communityWorkspace,
+      props.username,
+      props.owner,
+      props.serviceName,
+    ),
+  })),
   on(Actions.setGroup, (state, { groupId }) =>
     groupId
       ? {
@@ -86,7 +99,7 @@ const _Reducer = createReducer(
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: { ...user, signedIn: !!user },
-    joinedUsingLink: !!user,
+    joinedUsingLink: !user, // if user is logged in we make disable restricted view
   })),
   on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,

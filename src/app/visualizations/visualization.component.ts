@@ -1,4 +1,3 @@
-import { Las2peerService } from '../las2peer.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -8,18 +7,23 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Measure } from '../models/measure.model';
+import { Observable } from 'rxjs';
+import {
+  MEASURE,
+  SELECTED_SERVICE,
+} from '../services/store.selectors';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
-  measure: Measure;
+  service$: Observable<ServiceInformation>;
   visualizationInitialized: boolean;
   error: HttpErrorResponse;
+  measure: Measure;
 }
 
 @Component({
@@ -35,6 +39,7 @@ export class BaseVisualizationComponent
     protected dialog: MatDialog,
   ) {}
   measure: Measure;
+  service$ = this.ngrxStore.select(SELECTED_SERVICE);
   service: ServiceInformation;
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;

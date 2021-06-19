@@ -111,6 +111,7 @@ export class WorkspaceService {
         visitors: [],
         catalog: measureCatalog,
         model: successModel,
+        service: selectedService,
       };
     }
     // update the local reference

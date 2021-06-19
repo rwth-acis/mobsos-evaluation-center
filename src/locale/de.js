@@ -146,6 +146,8 @@ export const translations = {
         'Du kannst eigene Änderungen am Erfolgsmodell vornehmen.',
       'workspace-rights-spectator':
         'Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen.',
+      'joined-as-visitor':
+        '{{owner}} hat dieses Erfolgsmodell mit dir geteilt. Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen. Frag {{owner}} ob er dich zur Community einladen kann, um selbst Änderungen vorzunehmen.',
     },
     'message-no-application-selected':
       'Es ist keine Anwendung ausgewählt. Bitte wähle oben eine aus, um das Erfolgsmodell zu sehen.',

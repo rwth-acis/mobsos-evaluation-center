@@ -41,17 +41,20 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit() {
-    if (this.service) {
-      this.measure$ = this.ngrxStore
-        .select(MEASURE, this.measureName) // selects the measure from the measure catalog
-        .pipe(
-          filter((data) => !!data),
-          distinctUntilChanged(),
-        );
-      this.measure$.subscribe((measure: Measure) => {
-        this.prepareChart(measure);
+    this.service$
+      .pipe(filter((service) => !!service))
+      .subscribe((service) => {
+        this.service = service;
+        this.measure$ = this.ngrxStore
+          .select(MEASURE, this.measureName) // selects the measure from the measure catalog
+          .pipe(
+            filter((data) => !!data),
+            distinctUntilChanged(),
+          );
+        this.measure$.subscribe((measure: Measure) => {
+          this.prepareChart(measure);
+        });
       });
-    }
   }
 
   /**

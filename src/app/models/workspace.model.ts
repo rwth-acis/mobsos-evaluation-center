@@ -1,4 +1,5 @@
 import { MeasureCatalog } from './measure.catalog';
+import { ServiceInformation } from './service.model';
 import { SuccessModel } from './success.model';
 import { Visitor } from './user.model';
 
@@ -8,6 +9,7 @@ export interface ApplicationWorkspace {
   visitors: Visitor[];
   model: SuccessModel;
   catalog: MeasureCatalog;
+  service: ServiceInformation;
 }
 
 export interface UserWorkspace {

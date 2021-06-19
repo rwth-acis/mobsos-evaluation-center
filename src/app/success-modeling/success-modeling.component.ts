@@ -182,10 +182,6 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  onEditModeChanged(e) {
-    this.ngrxStore.dispatch(toggleEdit());
-  }
-
   onSaveClicked() {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(saveModelAndCatalog());

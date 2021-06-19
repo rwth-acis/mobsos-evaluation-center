@@ -143,6 +143,8 @@ export const translations = {
         'You can make own changes to the success model.',
       'workspace-rights-spectator':
         'You can watch changes made by others, but not make changes yourself.',
+      'joined-as-visitor':
+        '{{owner}} has shared this success model with you. You can watch changes made by the community, but not make changes yourself. If you want to make changes you have to be logged in and be a part of the community',
     },
     'message-no-application-selected':
       'No application selected. Please select an application above to see its success model.',

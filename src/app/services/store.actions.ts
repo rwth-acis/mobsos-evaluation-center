@@ -50,6 +50,7 @@ enum StateActions {
   SET_SERVICE = 'set the current service',
   SET_SERVICE_BY_NAME = 'set the current service by only providing  the name',
   JOIN_AS_VISITOR = 'Join the workspace of another user from a shared link',
+  JOIN_AS_SPECTATOR = 'Join the workspace of another user from a shared link while being logged in',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -203,6 +204,16 @@ export const setWorkSpaceOwner = createAction(
 export const joinAsVisitor = createAction(
   StateActions.JOIN_AS_VISITOR,
   props<{ groupId: string; serviceName: string; owner: string }>(),
+);
+
+export const joinAsSpectator = createAction(
+  StateActions.JOIN_AS_VISITOR,
+  props<{
+    groupId: string;
+    serviceName: string;
+    owner: string;
+    username: string;
+  }>(),
 );
 
 // modes

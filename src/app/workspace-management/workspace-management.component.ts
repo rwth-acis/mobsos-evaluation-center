@@ -115,14 +115,23 @@ export class WorkspaceManagementComponent
       });
     this.subscriptions$.push(sub);
     sub = this.editMode$
-      .pipe(withLatestFrom(this.selectedGroup$))
-      .subscribe(async ([editMode, group]) => {
+      .pipe(
+        withLatestFrom(
+          this.selectedGroup$,
+          this.applicationWorkspaceOwner$,
+        ),
+      )
+      .subscribe(async ([editMode, group, owner]) => {
         this.selectedGroup = group;
         if (editMode) {
           this.initWorkspace(group.id);
-          this.onSwitchWorkspace(
-            this.user?.profile.preferred_username,
-          );
+          if (owner) {
+            this.onSwitchWorkspace(owner);
+          } else {
+            this.onSwitchWorkspace(
+              this.user?.profile.preferred_username,
+            );
+          }
         }
       });
     this.subscriptions$.push(sub);
@@ -171,17 +180,7 @@ export class WorkspaceManagementComponent
     }
   }
 
-  async onEditModeChanged() {
-    // if (this.checked) {
-    //   const result = await this.openClearWorkspaceDialog();
-    //   if (result) {
-    //     this.ngrxStore.dispatch(toggleEdit());
-    //   } else {
-    //     this.checked = true;
-    //   }
-    // } else {
-    //   this.ngrxStore.dispatch(toggleEdit());
-    // }
+  onEditModeChanged() {
     this.ngrxStore.dispatch(toggleEdit());
   }
 
@@ -242,13 +241,12 @@ export class WorkspaceManagementComponent
     if (this.selectedGroup && this.selectedService && this.user) {
       const link =
         window.location.href +
-        '/join/' +
+        'join/' +
         this.selectedGroup.id +
         '/' +
         this.selectedService.name +
         '/' +
         this.user.profile.preferred_username;
-      console.log(link);
       navigator.clipboard.writeText(link);
       const message = this.translate.instant('copied-to-clipboard');
       this._snackBar.open(message, null, { duration: 3000 });

@@ -1,17 +1,14 @@
-<mat-card id="workspace-info">
+<mat-card
+  id="workspace-info"
+  *ngIf="applicationWorkspaceOwner$ | async as owner"
+>
   <div id="info-content">
     <mat-icon color="accent">info_outline</mat-icon>
     <span id="info-text">
-      {{ 'success-modeling.info.workspace-of' | translate }}
-      <strong>{{ applicationWorkspaceOwner$ | async }}</strong
-      >.
-
-      <span>
-        {{
-          'success-modeling.info.workspace-rights-spectator'
-            | translate
-        }}
-      </span>
+      {{
+        'success-modeling.info.joined-as-visitor'
+          | translate: { owner: owner }
+      }}
     </span>
   </div>
 </mat-card>
@@ -52,7 +49,6 @@
               *ngFor="let dimension of dimensions"
               [factors]="successModel.dimensions[dimension]"
               [measures]="measureCatalog.measures"
-              [service]="selectedService"
               name="{{
                 'success-modeling.dimensions.name.' +
                   translationMap[dimension] | translate

@@ -39,7 +39,7 @@
         *ngSwitchCase="'KPI'"
       ></app-kpi-visualization>
       <app-value-visualization
-        [measure]="measureAsync"
+        [measureName]="measureAsync.name"
         [service]="service"
         *ngSwitchCase="'Value'"
       ></app-value-visualization>

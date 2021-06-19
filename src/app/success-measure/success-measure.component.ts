@@ -16,7 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { Store } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import {
   EDIT_MODE,
   MEASURE,
@@ -27,8 +27,9 @@ import {
   removeMeasure,
 } from '../services/store.actions';
 import { Measure } from '../models/measure.model';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-success-measure',
@@ -38,16 +39,15 @@ import { ServiceInformation } from '../models/service.model';
 export class SuccessMeasureComponent
   implements OnInit, OnChanges, OnDestroy
 {
-  @Input() measure: Measure;
+  @Input() measureName: string;
   @Input() service: ServiceInformation;
   @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
-  @Output() measureChange = new EventEmitter<Measure>();
-  @Output() measureDelete = new EventEmitter();
-  meaureName: string;
-  measure$: Observable<Measure>;
 
+  measure: Measure;
+  measure$: Observable<Measure>;
+  subscriptions$: Subscription[] = [];
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   public visualizationError: string;
@@ -56,33 +56,30 @@ export class SuccessMeasureComponent
 
   constructor(
     private translate: TranslateService,
-
     private dialog: MatDialog,
     private ngrxStore: Store,
   ) {}
 
   ngOnInit() {
-    this.measure = cloneDeep(this.measure) as Measure;
-    // this.measure = this.measure
-    //   ? (JSON.parse(JSON.stringify(this.measure)) as Measure)
-    //   : this.measure;
-
-    this.measure$ = this.ngrxStore.select(
-      MEASURE,
-      this.measure?.name,
-    );
+    this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
+    const sub = this.measure$.subscribe((measure) => {
+      this.measure = cloneDeep(measure);
+    });
+    this.subscriptions$.push(sub);
   }
 
   ngOnChanges(changes: SimpleChanges): void {}
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
 
   onEditClicked(event: MouseEvent) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
       data: {
-        measure: cloneDeep(this.measure),
+        measure: this.measure,
         service: this.service,
         create: false,
         dimensionName: this.dimensionName,

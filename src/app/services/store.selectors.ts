@@ -3,7 +3,10 @@ import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
-import { MeasureCatalog } from '../models/measure.catalog';
+import {
+  MeasureCatalog,
+  MeasureMap,
+} from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
@@ -22,9 +25,6 @@ export const SERVICES = (state: StoreState) =>
       )
     : undefined;
 
-export const MEASURE = (state: StoreState, name: string) =>
-  state.Reducer.measureCatalog?.measures[name];
-
 export const GROUPS = (state: StoreState) =>
   state.Reducer?.groups
     ? Object.values(state.Reducer.groups).sort((a, b) =>
@@ -41,11 +41,6 @@ export const ASSETS_LOADED = (state: StoreState) =>
   state.Reducer?.joinedUsingLink ||
   (state.Reducer?.successModelInitialized &&
     state.Reducer?.measureCatalogInitialized);
-
-export const SELECTED_SERVICE = (state: StoreState) =>
-  state.Reducer?.services && state.Reducer.selectedServiceName
-    ? state.Reducer.services[state.Reducer.selectedServiceName]
-    : undefined;
 
 export const EDIT_MODE = (state: StoreState) =>
   state.Reducer?.editMode;
@@ -211,6 +206,17 @@ export const MEASURE_CATALOG = createSelector(
       : measureCatalog,
 );
 
+export const MEASURES = createSelector(
+  MEASURE_CATALOG,
+  (catalog) => catalog?.measures,
+);
+
+export const MEASURE = createSelector(
+  MEASURES,
+  (measures: MeasureMap, measureName: string) =>
+    measures[measureName],
+);
+
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
     ? MeasureCatalog.fromPlainObject(
@@ -226,6 +232,19 @@ export const VISUALIZATION_DATA_FOR_QUERY = (
   state.Reducer.visualizationData[queryString]
     ? state.Reducer.visualizationData[queryString]
     : undefined;
+
+const _SELECTED_SERVICE = (state: StoreState) =>
+  state.Reducer?.services && state.Reducer.selectedServiceName
+    ? state.Reducer.services[state.Reducer.selectedServiceName]
+    : undefined;
+
+export const SELECTED_SERVICE = createSelector(
+  _SELECTED_SERVICE,
+  _JOINED_AS_VISITOR,
+  APPLICATION_WORKSPACE,
+  (service, joinedUsingLink, workspace) =>
+    joinedUsingLink ? workspace?.service : service,
+);
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
   EDIT_MODE,

@@ -15,6 +15,7 @@ import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dial
 import { Store } from '@ngrx/store';
 import {
   EDIT_MODE,
+  MEASURES,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';
 import {
