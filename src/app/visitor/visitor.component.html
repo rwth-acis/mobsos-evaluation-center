@@ -18,7 +18,6 @@
           else noSuccessModel
         "
       >
-        dsf
         <ng-container
           *ngIf="measureCatalog$ | async as measureCatalog"
         >
@@ -32,7 +31,6 @@
           ></app-questionnaires>
           <div id="dimensions">
             <app-success-dimension
-              [@slideInOut]
               *ngFor="let dimension of dimensions"
               [factors]="successModel.dimensions[dimension]"
               [measures]="measureCatalog.measures"

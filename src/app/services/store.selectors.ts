@@ -23,7 +23,7 @@ export const SERVICES = (state: StoreState) =>
     : undefined;
 
 export const MEASURE = (state: StoreState, name: string) =>
-  state.Reducer.measureCatalog.measures[name];
+  state.Reducer.measureCatalog?.measures[name];
 
 export const GROUPS = (state: StoreState) =>
   state.Reducer?.groups
@@ -204,8 +204,9 @@ export const MEASURE_CATALOG = createSelector(
   EDIT_MODE,
   _MEASURE_CATALOG,
   APPLICATION_WORKSPACE,
-  (editMode, measureCatalog, applicationWorkspace) =>
-    editMode && applicationWorkspace
+  _JOINED_AS_VISITOR,
+  (editMode, measureCatalog, applicationWorkspace, isVisiting) =>
+    applicationWorkspace && (editMode || isVisiting)
       ? applicationWorkspace.catalog
       : measureCatalog,
 );

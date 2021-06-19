@@ -33,7 +33,7 @@ export class VisitorComponent implements OnInit {
     );
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
-
+  dimensions = Object.keys(translationMap);
   translationMap = translationMap; // maps dimensions to their translation keys
   iconMap = iconMap; // maps dimensions to their icons
 
