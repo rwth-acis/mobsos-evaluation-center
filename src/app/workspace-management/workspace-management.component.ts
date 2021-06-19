@@ -165,9 +165,9 @@ export class WorkspaceManagementComponent
         this.workspaceOwner = owner;
       });
     this.subscriptions$.push(sub);
-    // sub = this.editMode$.pipe(first()).subscribe((mode) => {
-    //   if (mode !== this.checked) this.checked = mode;
-    // });
+    sub = this.editMode$.pipe(first()).subscribe((mode) => {
+      if (mode !== this.checked) this.checked = mode;
+    });
     this.subscriptions$.push(sub);
   }
 
