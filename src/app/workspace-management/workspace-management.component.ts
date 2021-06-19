@@ -137,7 +137,7 @@ export class WorkspaceManagementComponent
             this.workspaceService
               .joinExistingCommunnityWorkspace(group.id)
               .pipe(
-                filter((syncDone) => !syncDone),
+                filter((syncDone) => syncDone === true),
                 first(),
               )
               .subscribe(() => this.onSwitchWorkspace(owner));
