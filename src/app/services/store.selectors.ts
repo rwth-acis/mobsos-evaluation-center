@@ -17,6 +17,17 @@ import {
 } from '../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
+export const EDIT_MODE = (state: StoreState) =>
+  state.Reducer?.editMode;
+
+export const EXPERT_MODE = (state: StoreState) =>
+  state.Reducer?.expertMode;
+
+export const SELECTED_SERVICE_NAME = (state: StoreState) =>
+  state.Reducer?.selectedServiceName;
+
+export const SELECTED_GROUP_ID = (state: StoreState) =>
+  state.Reducer?.selectedGroupId;
 
 export const SERVICES = (state: StoreState) =>
   state.Reducer?.services
@@ -37,22 +48,11 @@ const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 export const VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
-export const ASSETS_LOADED = (state: StoreState) =>
-  state.Reducer?.joinedUsingLink ||
-  (state.Reducer?.successModelInitialized &&
-    state.Reducer?.measureCatalogInitialized);
+const _SUCCESS_MODEL_INIT = (state: StoreState) =>
+  state.Reducer?.successModelInitialized;
 
-export const EDIT_MODE = (state: StoreState) =>
-  state.Reducer?.editMode;
-
-export const EXPERT_MODE = (state: StoreState) =>
-  state.Reducer?.expertMode;
-
-export const SELECTED_SERVICE_NAME = (state: StoreState) =>
-  state.Reducer?.selectedServiceName;
-
-export const SELECTED_GROUP_ID = (state: StoreState) =>
-  state.Reducer?.selectedGroupId;
+const _MEASURE_CATALOG_INIT = (state: StoreState) =>
+  state.Reducer?.measureCatalogInitialized;
 
 export const SELECTED_GROUP = createSelector(
   SELECTED_GROUP_ID,
@@ -240,6 +240,13 @@ const _SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer?.services && state.Reducer.selectedServiceName
     ? state.Reducer.services[state.Reducer.selectedServiceName]
     : undefined;
+
+export const ASSETS_LOADED = createSelector(
+  SUCCESS_MODEL,
+  MEASURE_CATALOG,
+
+  (model, catalog) => !!model && !!catalog,
+);
 
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
