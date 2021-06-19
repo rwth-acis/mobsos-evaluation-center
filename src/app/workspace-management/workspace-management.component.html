@@ -95,6 +95,20 @@
           view_carousel
         </mat-icon>
       </button>
+
+      <button
+        *ngIf="
+          this.selectedGroup && this.selectedService && this.user
+        "
+        mat-icon-button
+        aria-label="Workspaces"
+        (click)="shareWorkspaceLink()"
+        matTooltip="{{
+          'success-modeling.workspaces.share-workspace' | translate
+        }}"
+      >
+        <mat-icon color="primary"> share </mat-icon>
+      </button>
     </div>
   </mat-toolbar-row>
 </mat-card>

@@ -38,8 +38,9 @@ export const VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
 export const ASSETS_LOADED = (state: StoreState) =>
-  state.Reducer?.successModelInitialized &&
-  state.Reducer?.measureCatalogInitialized;
+  state.Reducer?.joinedUsingLink ||
+  (state.Reducer?.successModelInitialized &&
+    state.Reducer?.measureCatalogInitialized);
 
 export const SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer?.services && state.Reducer.selectedServiceName

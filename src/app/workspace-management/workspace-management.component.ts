@@ -32,12 +32,14 @@ import {
   WORKSPACE_OWNER,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
-import { filter, map, withLatestFrom } from 'rxjs/operators';
+import { filter, first, map, withLatestFrom } from 'rxjs/operators';
 import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { ApplicationWorkspace } from '../models/workspace.model';
+import { GroupInformation } from '../models/community.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-workspace-management',
@@ -90,8 +92,10 @@ export class WorkspaceManagementComponent
   numberOfRequirements = 0;
   checked: boolean;
   serviceSelectForm = new FormControl('');
+  selectedGroup: GroupInformation;
 
   constructor(
+    private _snackBar: MatSnackBar,
     private dialog: MatDialog,
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
@@ -113,6 +117,7 @@ export class WorkspaceManagementComponent
     sub = this.editMode$
       .pipe(withLatestFrom(this.selectedGroup$))
       .subscribe(async ([editMode, group]) => {
+        this.selectedGroup = group;
         if (editMode) {
           this.initWorkspace(group.id);
           this.onSwitchWorkspace(
@@ -140,6 +145,17 @@ export class WorkspaceManagementComponent
         );
       },
     );
+    this.subscriptions$.push(sub);
+
+    sub = this.ngrxStore
+      .select(WORKSPACE_OWNER)
+      .subscribe((owner) => {
+        this.workspaceOwner = owner;
+      });
+    this.subscriptions$.push(sub);
+    // sub = this.editMode$.pipe(first()).subscribe((mode) => {
+    //   if (mode !== this.checked) this.checked = mode;
+    // });
     this.subscriptions$.push(sub);
   }
 
@@ -205,7 +221,7 @@ export class WorkspaceManagementComponent
       this.workspaceService.switchWorkspace(
         owner,
         this.selectedServiceName,
-        this.user.profile.preferred_username,
+        this.user?.profile.preferred_username,
         this.workspaceOwner,
       );
     this.workspaceOwner = owner;
@@ -220,6 +236,23 @@ export class WorkspaceManagementComponent
         this.selectedServiceName,
         role,
       );
+  }
+
+  shareWorkspaceLink() {
+    if (this.selectedGroup && this.selectedService && this.user) {
+      const link =
+        window.location.href +
+        '/join/' +
+        this.selectedGroup.id +
+        '/' +
+        this.selectedService.name +
+        '/' +
+        this.user.profile.preferred_username;
+      console.log(link);
+      navigator.clipboard.writeText(link);
+      const message = this.translate.instant('copied-to-clipboard');
+      this._snackBar.open(message, null, { duration: 3000 });
+    }
   }
 
   openCopyWorkspaceDialog(owner: string) {

@@ -21,7 +21,8 @@ export const translations = {
   },
   app: {
     'community-selector': {
-      'select-community-hint': 'Einloggen um eine Community auszuwählen',
+      'select-community-hint':
+        'Einloggen um eine Community auszuwählen',
     },
     'language-selector': {
       'select-language': 'Sprache auswählen',
@@ -30,7 +31,8 @@ export const translations = {
       'switch-label': 'Expertenmodus',
     },
     update: {
-      message: 'Ein neue Version ist verfügbar. Neuladen zum Aktualisieren.',
+      message:
+        'Ein neue Version ist verfügbar. Neuladen zum Aktualisieren.',
       reload: 'Neuladen',
     },
   },
@@ -39,16 +41,20 @@ export const translations = {
       'send-button': 'Speichern',
       'send-button-no-selected-group':
         'Bitte wähle eine Community in der Seitenleiste aus',
-      'snackbar-success': 'Die Messungen wurden erfolgreich gespeichert.',
-      'snackbar-failure': 'Die Messungen konnten nicht gespeichert werden.',
+      'snackbar-success':
+        'Die Messungen wurden erfolgreich gespeichert.',
+      'snackbar-failure':
+        'Die Messungen konnten nicht gespeichert werden.',
     },
     'success-models': {
       'select-application': 'Anwendung',
       'send-button': 'Speichern',
       'send-button-no-selected-group-or-application':
         'Bitte wähle eine Community und eine Anwendung aus',
-      'snackbar-success': 'Das Erfolgsmodell wurde erfolgreich gespeichert.',
-      'snackbar-failure': 'Das Erfolgsmodell konnte nicht gespeichert werden.',
+      'snackbar-success':
+        'Das Erfolgsmodell wurde erfolgreich gespeichert.',
+      'snackbar-failure':
+        'Das Erfolgsmodell konnte nicht gespeichert werden.',
     },
     tabs: {
       'success-models': 'Erfolgsmodelle',
@@ -67,14 +73,17 @@ export const translations = {
   },
   'success-factor': {
     'add-measure-button': 'Messung hinzufügen',
-    'no-measures-placeholder': 'Dieser Faktor hat noch keine Messungen.',
+    'no-measures-placeholder':
+      'Dieser Faktor hat noch keine Messungen.',
     'remove-measure-prompt':
       'Best du sicher, dass dudie Messung entfernen möchtest?',
     'remove-measure-tooltip': 'Messung entfernen',
   },
   'success-modeling': {
-    'community-workspace': 'Arbeitsbereich der {{community}} Community',
-    'community-success-model': 'Erfolgs Modell vom {{service}} Service',
+    'community-workspace':
+      'Arbeitsbereich der {{community}} Community',
+    'community-success-model':
+      'Erfolgs Modell vom {{service}} Service',
     'copy-workspace-prompt':
       'Bist du sicher, dass du dein derzeitiges Modell ersetzen möchtest?',
     dimensions: {
@@ -91,7 +100,8 @@ export const translations = {
         'information-quality':
           'Wie zutreffend/vollständig sind die angezeigten Informationen?',
         use: 'Wie oft wird diese Anwendung verwendet?',
-        'user-satisfaction': 'Wie gerne wird diese Anwendung verwendet?',
+        'user-satisfaction':
+          'Wie gerne wird diese Anwendung verwendet?',
         'individual-impact':
           'Wie sehr wirkt sich diese Anwednung auf Individuen aus?',
         'community-impact':
@@ -154,14 +164,16 @@ export const translations = {
         'Füge einen Fragebogen hinzu. Der Fragebogen kann nach dem Speichern ausgefüllt werden.',
       'delete-questionnaire-dialog': {
         'delete-measures': 'Generierte Messungen löschen.',
-        'delete-survey': 'Umfrage löschen. Die Ergebnisse bleiben erhalten.',
+        'delete-survey':
+          'Umfrage löschen. Die Ergebnisse bleiben erhalten.',
         text: 'Bist du sicher, dass du den Fragebogen entfernen möchtest?',
         title: 'Fragenbogen entfernen?',
       },
       'no-questionnaires':
         'Du hast noch keine Fragebögen ausgewählt. Aktiviere den Bearbeitungsmodus um welche hinzuzufügen.',
       'pick-questionnaire-dialog': {
-        'add-measures': 'Automatisch Messungen für die Antworten hinzufügen.',
+        'add-measures':
+          'Automatisch Messungen für die Antworten hinzufügen.',
         'assign-measures':
           'Hinzugefügte Messungen automatisch im Erfolgsmodell einfügen.',
         description: 'Beschreibung',
@@ -191,7 +203,8 @@ export const translations = {
       'no-project':
         'Dieses Modell ist zur Zeit mit keinem Projekt aus dem Requirements Bazaar verbunden. Klicke den Button um Anforderungen bearbeiten zu können.',
       'pick-reqbaz-project': {
-        'category-placeholder': 'Suche eine Kategorie des Projekts...',
+        'category-placeholder':
+          'Suche eine Kategorie des Projekts...',
         'project-placeholder': 'Suche Projekt...',
         title: 'Projekt und Kategorie auswählen',
       },
@@ -204,7 +217,8 @@ export const translations = {
     'select-application': 'Anwendung wechseln',
     'snackbar-save-failure':
       'Das Erfolosmodell konnte nicht gespeichert werden.',
-    'snackbar-save-success': 'Das Erfolosmodell wurde erfolgreich gespeichert.',
+    'snackbar-save-success':
+      'Das Erfolosmodell wurde erfolgreich gespeichert.',
     visitors: {
       'edit-role-description': 'Bearbeitung erlauben',
       heading: 'Besucher',
@@ -215,15 +229,20 @@ export const translations = {
     'workspace-closed-message':
       'Der Besitzer hat den Arbeitsbereich geschlossen.',
     workspaces: {
+      'share-workspace':
+        'Teile einen Link von deinem momentanen Arbeitsbereich',
       'copy-workspace': 'Arbeitsbereich kopieren',
       'go-to': 'Zum Arbeitsbereich gehen',
       heading: 'Arbeitsbereiche',
       'no-workspaces': 'Keine anderen Arbeitsbereiche',
-      tooltip: 'Zeige wer an einem Modell für die selbe Applikation arbeitet',
+      tooltip:
+        'Zeige wer an einem Modell für die selbe Applikation arbeitet',
       'your-workspace': 'Du',
     },
   },
   'not-logged-in': 'Logge dich ein um diese App zu nutzen',
   'not-part-of-selected-community':
     'Du bist leider nicht Teil der {{ community }} Community',
+  'copied-to-clipboard':
+    'Der Link wurde kopiert. Du kannst ihn nun mit anderen Nutzern teilen',
 };

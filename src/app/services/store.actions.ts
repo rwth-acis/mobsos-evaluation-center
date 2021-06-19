@@ -48,6 +48,8 @@ enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
+  SET_SERVICE_BY_NAME = 'set the current service by only providing  the name',
+  JOIN_AS_VISITOR = 'Join the workspace of another user from a shared link',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -163,6 +165,11 @@ export const setService = createAction(
   props<{ service: ServiceInformation }>(),
 );
 
+// export const setServiceByName = createAction(
+//   StateActions.SET_SERVICE_BY_NAME,
+//   props<{ serviceName: string }>(),
+// );
+
 export const storeUser = createAction(
   StoreActions.STORE_USER,
   props<{ user: User }>(),
@@ -193,6 +200,11 @@ export const setWorkSpaceOwner = createAction(
   props<{ username: string }>(),
 );
 
+export const joinAsVisitor = createAction(
+  StateActions.JOIN_AS_VISITOR,
+  props<{ groupId: string; serviceName: string; owner: string }>(),
+);
+
 // modes
 export const incrementLoading = createAction(
   StateActions.INCREMENT_LOADING,
@@ -221,3 +233,5 @@ export const failureResponse = createAction(
 );
 
 export const success = createAction('action was successful');
+
+export const failure = createAction('action was not successful');

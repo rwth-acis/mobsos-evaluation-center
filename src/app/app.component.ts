@@ -37,6 +37,7 @@ import {
   EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   USER,
   USER_GROUPS,
@@ -85,7 +86,9 @@ export class AppComponent implements OnInit, OnDestroy {
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore.select(USER);
-  loggedIn$ = this.user$.pipe(map((user) => user && user.signedIn));
+  authorized$ = this.user$.pipe(
+    map((user) => user && (user.signedIn || user.visiting)),
+  );
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
   groupsAreLoaded$: Observable<boolean> = combineLatest([
@@ -112,6 +115,7 @@ export class AppComponent implements OnInit, OnDestroy {
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
 
   constructor(
@@ -208,16 +212,16 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     this.subscriptions$.push(sub);
     if (isDevMode()) {
-      // sub = this.ngrxStore.subscribe((state) => {
-      //   console.log(state);
-      // });
-      // this.subscriptions$.push(sub);
-      sub = this.ngrxStore
-        .select(APPLICATION_WORKSPACE)
-        .subscribe((a) => {
-          console.log(a);
-        });
+      sub = this.ngrxStore.subscribe((state) => {
+        console.log(state);
+      });
       this.subscriptions$.push(sub);
+      // sub = this.ngrxStore
+      //   .select(APPLICATION_WORKSPACE)
+      //   .subscribe((a) => {
+      //     console.log(a);
+      //   });
+      // this.subscriptions$.push(sub);
     }
 
     // swipe navigation

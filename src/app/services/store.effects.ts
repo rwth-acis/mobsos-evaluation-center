@@ -14,17 +14,13 @@ import {
   tap,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
-import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VData } from '../models/visualization.model';
 import * as Action from './store.actions';
-import { disableEdit } from './store.actions';
 import {
-  APPLICATION_WORKSPACE,
   EDIT_MODE,
   MEASURE_CATALOG_XML,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
-  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
   USER,
   VISUALIZATION_DATA,
@@ -134,13 +130,48 @@ export class StateEffects {
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
         this.workspaceService.startSynchronizingWorkspace(groupId);
-        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
+      share(),
     ),
   );
+
+  setService$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.setService),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      filter(([{ service }, groupId]) => !!service),
+      switchMap(([{ service }, groupId]) =>
+        of(
+          Action.fetchSuccessModel({
+            groupId,
+            serviceName: service.name,
+          }),
+        ),
+      ),
+      share(),
+    ),
+  );
+
+  // setServiceByName$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(Action.setServiceByName),
+  //     withLatestFrom(this.ngrxStore.select(SERVICES)),
+  //     filter(
+  //       ([{ serviceName }, services]) =>
+  //         services.find((s) => s.name === serviceName) !== undefined,
+  //     ),
+  //     switchMap(([{ serviceName }, services]) => {
+  //       const service = services.find((s) => s.name === serviceName);
+  //       return service
+  //         ? of(Action.setService({ service }))
+  //         : of(Action.failure());
+  //     }),
+  //     share(),
+  //   ),
+  // );
 
   updateCommunityWorkspace$ = createEffect(() =>
     this.actions$.pipe(
@@ -176,22 +207,6 @@ export class StateEffects {
         }
       }),
       switchMap(() => of(Action.success())),
-    ),
-  );
-
-  setService$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
-      filter(([{ service }, groupId]) => !!service),
-      switchMap(([{ service }, groupId]) =>
-        of(
-          Action.fetchSuccessModel({
-            groupId,
-            serviceName: service.name,
-          }),
-        ),
-      ),
     ),
   );
 

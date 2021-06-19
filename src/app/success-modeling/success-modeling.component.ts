@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
@@ -66,6 +66,8 @@ import { IQuestionnaire } from '../models/questionnaire.model';
   ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
+  @Input() restricted = false;
+
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore

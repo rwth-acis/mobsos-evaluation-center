@@ -40,6 +40,15 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+  on(Actions.joinAsVisitor, (state, props) => ({
+    ...state,
+    editMode: true,
+    selectedGroupId: props.groupId,
+    selectedServiceName: props.serviceName,
+    currentWorkSpaceOwner: props.owner,
+    joinedUsingLink: true,
+    user: { ...state.user, visiting: true },
+  })),
   on(Actions.setGroup, (state, { groupId }) =>
     groupId
       ? {
@@ -119,16 +128,22 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
-  on(Actions.setWorkSpaceOwner, (state, props) => ({
-    ...state,
-    currentWorkSpaceOwner: props.username,
-    communityWorkspace: addVisitor(
-      state.communityWorkspace,
-      props.username,
-      state.currentWorkSpaceOwner,
-      state.selectedServiceName,
-    ),
-  })),
+  on(Actions.setWorkSpaceOwner, (state, props) =>
+    state.currentWorkSpaceOwner === props.username
+      ? state
+      : {
+          ...state,
+          currentWorkSpaceOwner: props.username,
+          successModelInitialized: true,
+          measureCatalogInitialized: true,
+          communityWorkspace: addVisitor(
+            state.communityWorkspace,
+            props.username,
+            state.currentWorkSpaceOwner,
+            state.selectedServiceName,
+          ),
+        },
+  ),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(

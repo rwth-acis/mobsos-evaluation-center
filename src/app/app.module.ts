@@ -88,6 +88,8 @@ import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
 import { WorkspaceManagementComponent } from './workspace-management/workspace-management.component';
+import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
+import { VisitorComponent } from './visitor/visitor.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -160,6 +162,8 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     RequirementsListComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
+    JoinWorkSpaceComponent,
+    VisitorComponent,
   ],
   imports: [
     BrowserModule,
