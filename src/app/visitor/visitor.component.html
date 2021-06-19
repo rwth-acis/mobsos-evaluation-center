@@ -36,7 +36,7 @@
             [measures]="measureCatalog.measures"
             [service]="selectedService$ | async"
             [editMode]="editMode$ | async"
-            [groupID]="(selectedGroup$ | async).id"
+            [groupID]="selectedGroupId$ | async"
           ></app-questionnaires>
           <div id="dimensions">
             <app-success-dimension
@@ -56,25 +56,8 @@
               icon="{{ iconMap[dimension] }}"
             ></app-success-dimension>
           </div>
-          <button
-            id="save-model-button"
-            mat-raised-button
-            *ngIf="saveEnabled$ | async"
-            color="primary"
-            [disabled]="saveInProgress"
-            (click)="onSaveClicked()"
-          >
-            <mat-progress-spinner
-              *ngIf="saveInProgress"
-              color="warn"
-              [diameter]="25"
-            >
-            </mat-progress-spinner>
-            {{ 'success-modeling.save-model-button' | translate }}
-          </button>
-        </ng-container>
-      </ng-container></ng-container
-    >
+        </ng-container> </ng-container
+    ></ng-container>
   </ng-container>
 </ng-container>
 
