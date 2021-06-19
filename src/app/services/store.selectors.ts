@@ -102,10 +102,13 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE = createSelector(
   (workspace, selectedServiceName) =>
     getAllWorkspacesForService(workspace, selectedServiceName),
 );
+const _WORKSPACE_OWNER = (state: StoreState) =>
+  state.Reducer.currentWorkSpaceOwner;
 
 export const WORKSPACE_OWNER = createSelector(
   APPLICATION_WORKSPACE,
-  (appworkspace) => appworkspace?.createdBy,
+  _WORKSPACE_OWNER,
+  (appworkspace, owner) => appworkspace?.createdBy || owner,
 );
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =

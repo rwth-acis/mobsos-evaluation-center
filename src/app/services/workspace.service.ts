@@ -40,7 +40,8 @@ export class WorkspaceService {
   private removeListenersCallbacks: { [key: string]: () => void } =
     {};
   private sharedDocument = new Doc();
-  private subscription$: Subscription;
+  private syncDone$: BehaviorSubject<boolean> =
+    new BehaviorSubject<boolean>(undefined);
 
   constructor(private ngrxStore: Store) {
     // updates the workspace in store
@@ -120,6 +121,15 @@ export class WorkspaceService {
     this.startSynchronizingWorkspace(groupID);
 
     return userWorkspace[selectedService.name];
+  }
+
+  joinExistingCommunnityWorkspace(groupId: string) {
+    // get the current workspace state from yjs
+    const communityWorkspace =
+      this.getCurrentCommunityWorkspace(groupId);
+    this.communityWorkspace$.next(communityWorkspace);
+    this.startSynchronizingWorkspace(groupId);
+    return this.syncDone$.asObservable().toPromise();
   }
 
   /**
@@ -306,7 +316,7 @@ export class WorkspaceService {
   private syncObject(name: string, subject: BehaviorSubject<object>) {
     const type = this.sharedDocument.get(name);
     const map = this.sharedDocument.getMap(name);
-    this.subscription$ = subject.subscribe((obj) => {
+    subject.subscribe((obj) => {
       // if the subject changes the object will be synced with yjs
       if (isDevMode()) {
         console.log('Pushing local changes to remote y-js map...');
@@ -322,6 +332,7 @@ export class WorkspaceService {
       if (!isEqual(subject.getValue(), cloneObj)) {
         subject.next(cloneObj);
       }
+      this.syncDone$.next(true);
     };
     this.sharedDocument.on('update', observeFn);
     const mapAsObj = type.toJSON();

@@ -124,10 +124,13 @@ export class WorkspaceManagementComponent
       .subscribe(async ([editMode, group, owner]) => {
         this.selectedGroup = group;
         if (editMode) {
-          this.initWorkspace(group.id);
           if (owner) {
+            await this.workspaceService.joinExistingCommunnityWorkspace(
+              group.id,
+            );
             this.onSwitchWorkspace(owner);
           } else {
+            this.initWorkspace(group.id);
             this.onSwitchWorkspace(
               this.user?.profile.preferred_username,
             );
