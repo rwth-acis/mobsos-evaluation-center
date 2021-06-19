@@ -32,7 +32,13 @@ import {
   WORKSPACE_OWNER,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
-import { filter, first, map, withLatestFrom } from 'rxjs/operators';
+import {
+  filter,
+  first,
+  map,
+  takeWhile,
+  withLatestFrom,
+} from 'rxjs/operators';
 import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -125,10 +131,13 @@ export class WorkspaceManagementComponent
         this.selectedGroup = group;
         if (editMode) {
           if (owner) {
-            await this.workspaceService.joinExistingCommunnityWorkspace(
-              group.id,
-            );
-            this.onSwitchWorkspace(owner);
+            this.workspaceService
+              .joinExistingCommunnityWorkspace(group.id)
+              .pipe(
+                filter((syncDone) => !syncDone),
+                first(),
+              )
+              .subscribe(() => this.onSwitchWorkspace(owner));
           } else {
             this.initWorkspace(group.id);
             this.onSwitchWorkspace(

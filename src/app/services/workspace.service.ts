@@ -129,7 +129,7 @@ export class WorkspaceService {
       this.getCurrentCommunityWorkspace(groupId);
     this.communityWorkspace$.next(communityWorkspace);
     this.startSynchronizingWorkspace(groupId);
-    return this.syncDone$.asObservable().toPromise();
+    return this.syncDone$.asObservable();
   }
 
   /**
