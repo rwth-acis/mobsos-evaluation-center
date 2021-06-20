@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { act, Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
 import { combineLatest, forkJoin, of, throwError } from 'rxjs';
@@ -16,12 +16,17 @@ import {
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { VData } from '../models/visualization.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 import * as Action from './store.actions';
 import {
   EDIT_MODE,
+  MEASURE_CATALOG,
   MEASURE_CATALOG_XML,
+  RESTRICTED_MODE,
   SELECTED_GROUP_ID,
+  SELECTED_SERVICE,
   SELECTED_SERVICE_NAME,
+  SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
   USER,
   VISUALIZATION_DATA,
@@ -430,35 +435,59 @@ export class StateEffects {
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
-      switchMap((action) =>
-        this.workspaceService
-          .joinExistingCommunnityWorkspace(action.groupId)
-          .pipe(
-            map((synced) => {
-              if (synced) {
-                const communityWorkspace =
-                  this.workspaceService.switchWorkspace(
-                    action.owner,
-                    action.serviceName,
-                    action.username,
-                    null,
-                    action.role,
-                  );
-                return Action.setCommunityWorkspace({
-                  workspace: communityWorkspace,
-                  owner: action.owner,
-                });
-              } else {
-                const error = new Error('Could not sync with yjs');
-                console.error(error.message);
-                throw error;
-              }
-            }),
-            catchError((err) => {
-              console.error(err);
-              return of(Action.failure());
-            }),
-          ),
+      withLatestFrom(
+        this.ngrxStore.select(SUCCESS_MODEL),
+        this.ngrxStore.select(MEASURE_CATALOG),
+        this.ngrxStore.select(RESTRICTED_MODE),
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(USER),
+      ),
+      switchMap(
+        ([action, model, catalog, restricted, service, user]) =>
+          this.workspaceService
+            .syncWithCommunnityWorkspace(action.groupId)
+            .pipe(
+              map((synced) => {
+                if (synced) {
+                  let communityWorkspace: CommunityWorkspace;
+                  try {
+                    communityWorkspace =
+                      this.workspaceService.switchWorkspace(
+                        action.owner,
+                        action.serviceName,
+                        user?.profile.preferred_username,
+                        null,
+                        action.role,
+                      );
+                  } catch (error) {
+                    if (!restricted) {
+                      communityWorkspace =
+                        this.workspaceService.initWorkspace(
+                          action.groupId,
+                          user?.profile.preferred_username,
+                          service,
+                          catalog,
+                          model,
+                        );
+                    } else {
+                      return Action.failure();
+                    }
+                  }
+                  return Action.setCommunityWorkspace({
+                    workspace: communityWorkspace,
+                    owner: action.owner,
+                  });
+                } else {
+                  const error = new Error('Could not sync with yjs');
+                  console.error(error.message);
+                  throw error;
+                }
+              }),
+              catchError((err) => {
+                console.error(err);
+                return of(Action.failure());
+              }),
+            ),
       ),
       catchError(() => {
         return of(Action.failure());
