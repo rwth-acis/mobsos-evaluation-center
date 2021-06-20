@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { act, Actions, createEffect, ofType } from '@ngrx/effects';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { combineLatest, forkJoin, of, throwError } from 'rxjs';
+import { combineLatest, forkJoin, of } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -12,14 +12,11 @@ import {
   filter,
   share,
   tap,
-  first,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { VData } from '../models/visualization.model';
-import { CommunityWorkspace } from '../models/workspace.model';
 import * as Action from './store.actions';
 import {
-  EDIT_MODE,
   MEASURE_CATALOG,
   MEASURE_CATALOG_XML,
   RESTRICTED_MODE,
@@ -134,9 +131,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
-      // tap(({ groupId }) => {
-      //   this.workspaceService.startSynchronizingWorkspace(groupId);
-      // }),
+      tap(({ groupId }) => {
+        this.workspaceService.startSynchronizingWorkspace(groupId);
+      }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
@@ -160,41 +157,6 @@ export class StateEffects {
       share(),
     ),
   );
-
-  // setServiceByName$ = createEffect(() =>
-  //   this.actions$.pipe(
-  //     ofType(Action.setServiceByName),
-  //     withLatestFrom(this.ngrxStore.select(SERVICES)),
-  //     filter(
-  //       ([{ serviceName }, services]) =>
-  //         services.find((s) => s.name === serviceName) !== undefined,
-  //     ),
-  //     switchMap(([{ serviceName }, services]) => {
-  //       const service = services.find((s) => s.name === serviceName);
-  //       return service
-  //         ? of(Action.setService({ service }))
-  //         : of(Action.failure());
-  //     }),
-  //     share(),
-  //   ),
-  // );
-
-  // updateCommunityWorkspace$ = createEffect(() =>
-  //   this.actions$.pipe(
-  //     ofType(Action.updateCommunityWorkspace),
-  //     withLatestFrom(
-  //       this.ngrxStore.select(SELECTED_GROUP_ID),
-  //       this.ngrxStore.select(EDIT_MODE),
-  //     ),
-  //     filter(([action, groupId]) => !!groupId),
-  //     tap(([action, groupId, editMode]) => {
-  //       if (editMode && groupId) {
-  //         this.workspaceService.startSynchronizingWorkspace(groupId);
-  //       }
-  //     }),
-  //     switchMap(() => of(Action.success())),
-  //   ),
-  // );
 
   initState$ = createEffect(() =>
     this.actions$.pipe(

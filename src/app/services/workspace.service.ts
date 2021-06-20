@@ -7,7 +7,7 @@ import { setCommunityWorkspace } from './store.actions';
 import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es';
-import { Doc, Map } from 'yjs';
+import * as Y from 'yjs';
 import { UserRole, Visitor } from '../models/user.model';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { SuccessModel } from '../models/success.model';
@@ -20,11 +20,10 @@ import {
   distinctUntilChanged,
   filter,
   first,
-  shareReplay,
   throttleTime,
   timeout,
 } from 'rxjs/operators';
-import { YMap } from 'yjs/dist/src/internals';
+
 const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
   providedIn: 'root',
@@ -42,7 +41,7 @@ export class WorkspaceService {
   // object containing cleanup functions to be invoked when the type is no longer needed
   private removeListenersCallbacks: { [key: string]: () => void } =
     {};
-  private sharedDocument = new Doc();
+  private sharedDocument = new Y.Doc();
   private syncDone$: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(undefined); // True when the sync with yjs is done
   provider: WebsocketProvider;
@@ -52,11 +51,20 @@ export class WorkspaceService {
    * @param ngrxStore Store which contains the local app state
    */
   constructor(private ngrxStore: Store) {
+    const provider = new WebsocketProvider(
+      environment.yJsWebsocketUrl,
+      'mobsos-ec', // room name
+      this.sharedDocument, // collection of properties which will be synced
+    );
+
+    // provider.emit('hello world', null);
+    // provider.on('hello world', () =>
+    //   console.log('synced from websocket'),
+    // );
+
     // updates the workspace in store
     this.communityWorkspace$.subscribe((workspace) => {
-      if (this.syncDone$.getValue()) {
-        this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
-      }
+      this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
     });
     // updates the workspace subject with updates from the store
     this.ngrxStore
@@ -66,6 +74,7 @@ export class WorkspaceService {
         throttleTime(5), // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
         filter(
           (workspace) =>
+            !!workspace &&
             !isEqual(workspace, this.communityWorkspace$.getValue()),
         ),
       )
@@ -146,13 +155,13 @@ export class WorkspaceService {
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
   syncWithCommunnityWorkspace(groupId: string) {
+    this.startSynchronizingWorkspace(groupId);
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
     this.communityWorkspace$.next(communityWorkspace);
-    this.startSynchronizingWorkspace(groupId);
     return this.syncDone$.asObservable().pipe(
-      timeout(ONE_MINUTE_IN_MS),
+      timeout(2 * ONE_MINUTE_IN_MS),
       filter((syncDone) => syncDone === true),
       catchError(() => of(false)),
       first(),
@@ -167,6 +176,7 @@ export class WorkspaceService {
   private getCurrentCommunityWorkspaceFromYJS(
     groupId: string,
   ): CommunityWorkspace {
+    // console.log(this.sharedDocument.getMap(groupId).toJSON());
     return cloneDeep(this.sharedDocument.getMap(groupId).toJSON());
   }
 
@@ -186,8 +196,8 @@ export class WorkspaceService {
    * This function start synchronizing the workspace for the current community
    * @param groupId groupid for the community
    */
-  private startSynchronizingWorkspace(groupId: string) {
-    if (groupId && groupId !== this.currentGroupId) {
+  startSynchronizingWorkspace(groupId: string) {
+    if (groupId !== this.currentGroupId) {
       if (this.currentGroupId) {
         this.stopSynchronizingWorkspace(this.currentGroupId);
       }
@@ -334,20 +344,12 @@ export class WorkspaceService {
   }
 
   private syncObject(name: string) {
-    const provider = new WebsocketProvider(
-      environment.yJsWebsocketUrl,
-      'mobsos-ec', // room name
-      this.sharedDocument, // collection of properties which will be synced
-    );
-    provider.emit('hello world', null);
-    provider.on('hello world', () => console.log('asifudaiofba'));
-
-    const type = this.sharedDocument.get(name);
+    // const type = this.sharedDocument.get(name);
     const map = this.sharedDocument.getMap(name);
     this.communityWorkspace$
       .pipe(
         throttleTime(10),
-        filter((obj) => !isEqual(obj, type.toJSON())),
+        filter((obj) => !isEqual(obj, map.toJSON())),
       )
       .subscribe((obj) => {
         // if the subject changes the object will be synced with yjs
@@ -358,14 +360,14 @@ export class WorkspaceService {
       });
 
     this.sharedDocument.on('update', () => this.observeFn(map));
-
+    this.syncDone$.next(true);
     map.observeDeep(() => this.observeFn(map));
     this.removeListenersCallbacks[name] = () => {
-      type.unobserve(() => this.observeFn(map));
+      map.unobserve(() => this.observeFn(map));
     };
   }
 
-  private observeFn(map: YMap<any>) {
+  private observeFn(map) {
     if (isDevMode()) {
       console.log('Applying remote changes to local object...');
     }
@@ -388,7 +390,7 @@ export class WorkspaceService {
    * @param init true if the local object has been initialized yet
    * @returns true if successfull
    */
-  private _syncObjectToMap(obj: object, map: Map<any>) {
+  private _syncObjectToMap(obj: object, map: Y.Map<any>) {
     try {
       const mapAsObj = map.toJSON();
       if (isEqual(obj, mapAsObj)) {
