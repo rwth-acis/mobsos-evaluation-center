@@ -412,8 +412,8 @@ export class WorkspaceService {
         }
         // use YMap if value is an object and use the value itself otherwise
         if (isPlainObject(objValue)) {
-          if (!(mapValue instanceof Map)) {
-            map.set(key, new Map());
+          if (!(mapValue instanceof Y.Map)) {
+            map.set(key, new Y.Map());
             mapValue = map.get(key);
           }
           this._syncObjectToMap(objValue, mapValue);
