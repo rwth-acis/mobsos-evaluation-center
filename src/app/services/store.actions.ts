@@ -3,7 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 import { CommunityWorkspace } from '../models/workspace.model';
 
 enum FetchActions {
@@ -40,7 +40,7 @@ enum StoreActions {
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
   EDIT_MEASURE = 'updates an existing measure ',
-  SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
+  SET_COMMUNITY_WORKSPACE = 'update the community workspace',
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
 
@@ -49,8 +49,7 @@ enum StateActions {
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
   SET_SERVICE_BY_NAME = 'set the current service by only providing  the name',
-  JOIN_AS_VISITOR = 'Join the workspace of another user from a shared link',
-  JOIN_AS_SPECTATOR = 'Join the workspace of another user from a shared link while being logged in',
+  JOIN_WORKSPACE = 'Join the workspace of another user from a shared link',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -166,10 +165,10 @@ export const setService = createAction(
   props<{ service: ServiceInformation }>(),
 );
 
-// export const setServiceByName = createAction(
-//   StateActions.SET_SERVICE_BY_NAME,
-//   props<{ serviceName: string }>(),
-// );
+export const setCommunityWorkspace = createAction(
+  StoreActions.SET_COMMUNITY_WORKSPACE,
+  props<{ workspace: CommunityWorkspace; owner: string }>(),
+);
 
 export const storeUser = createAction(
   StoreActions.STORE_USER,
@@ -196,28 +195,14 @@ export const updateCommunityWorkspace = createAction(
   props<{ workspace: CommunityWorkspace }>(),
 );
 
-export const setWorkSpaceOwner = createAction(
-  StoreActions.SET_WORKSPACE_OWNER,
-  props<{ username: string }>(),
-);
-
-export const joinAsVisitor = createAction(
-  StateActions.JOIN_AS_VISITOR,
+export const joinWorkSpace = createAction(
+  StateActions.JOIN_WORKSPACE,
   props<{
     groupId: string;
     serviceName: string;
     owner: string;
     username: string;
-  }>(),
-);
-
-export const joinAsSpectator = createAction(
-  StateActions.JOIN_AS_VISITOR,
-  props<{
-    groupId: string;
-    serviceName: string;
-    owner: string;
-    username: string;
+    role?: UserRole;
   }>(),
 );
 

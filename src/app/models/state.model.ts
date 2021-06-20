@@ -28,7 +28,7 @@ export interface AppState {
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
-  joinedUsingLink: boolean;
+  restricted: boolean;
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -49,7 +49,7 @@ export const INITIAL_APP_STATE: AppState = {
   expertMode: false,
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
-  joinedUsingLink: false,
+  restricted: false,
 };
 /**
  * What the store looks like

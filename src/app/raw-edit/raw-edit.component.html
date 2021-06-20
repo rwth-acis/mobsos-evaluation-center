@@ -17,12 +17,12 @@
         [disabled]="groupID == null || saveInProgress"
         (click)="_onCatalogSaveClicked()"
       >
-        <mat-progress-spinner
+        <mat-spinner
           *ngIf="saveInProgress"
           color="warn"
           [diameter]="25"
         >
-        </mat-progress-spinner>
+        </mat-spinner>
         {{
           groupID == null
             ? ('raw-edit.measures.send-button-no-selected-group'
@@ -68,12 +68,12 @@
         "
         (click)="_onModelSaveClicked()"
       >
-        <mat-progress-spinner
+        <mat-spinner
           *ngIf="saveInProgress"
           color="warn"
           [diameter]="25"
         >
-        </mat-progress-spinner>
+        </mat-spinner>
         {{
           groupID == null || selectedService == null
             ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
@@ -86,5 +86,5 @@
 </mat-tab-group>
 
 <ng-template #notReady>
-  <mat-progress-spinner id="notinit"></mat-progress-spinner>
+  <mat-spinner id="notinit"></mat-spinner>
 </ng-template>

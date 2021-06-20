@@ -8,7 +8,7 @@ import {
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share } from 'rxjs/operators';
-import { merge } from 'lodash';
+import { merge } from 'lodash-es';
 
 interface SuccessModel {
   xml: string;

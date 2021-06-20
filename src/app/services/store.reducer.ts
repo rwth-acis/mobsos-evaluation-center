@@ -9,7 +9,7 @@ import {
   CommunityWorkspace,
 } from '../models/workspace.model';
 import * as Actions from './store.actions';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -40,35 +40,7 @@ const _Reducer = createReducer(
       ),
     }),
   ),
-  on(Actions.joinAsVisitor, (state, props) => ({
-    ...state,
-    editMode: true,
-    selectedGroupId: props.groupId,
-    selectedServiceName: props.serviceName,
-    currentWorkSpaceOwner: props.owner,
-    joinedUsingLink: true,
-    user: {
-      ...state.user,
-      visiting: true,
-      profile: {
-        ...state.user?.profile,
-        preferred_username: props.username,
-      },
-    },
-  })),
-  on(Actions.joinAsSpectator, (state, props) => ({
-    ...state,
-    editMode: true,
-    selectedGroupId: props.groupId,
-    selectedServiceName: props.serviceName,
-    currentWorkSpaceOwner: props.owner,
-    communityWorkspace: addVisitor(
-      state.communityWorkspace,
-      props.username,
-      props.owner,
-      props.serviceName,
-    ),
-  })),
+
   on(Actions.setGroup, (state, { groupId }) =>
     groupId
       ? {
@@ -106,7 +78,6 @@ const _Reducer = createReducer(
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: { ...user, signedIn: !!user },
-    joinedUsingLink: !user, // if user is logged in we make disable restricted view
   })),
   on(Actions.storeCatalog, (state, { xml }) => ({
     ...state,
@@ -149,22 +120,29 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
-  on(Actions.setWorkSpaceOwner, (state, props) =>
-    state.currentWorkSpaceOwner === props.username
-      ? state
-      : {
-          ...state,
-          currentWorkSpaceOwner: props.username,
-          successModelInitialized: true,
-          measureCatalogInitialized: true,
-          communityWorkspace: addVisitor(
-            state.communityWorkspace,
-            props.username,
-            state.currentWorkSpaceOwner,
-            state.selectedServiceName,
-          ),
-        },
-  ),
+  on(Actions.setCommunityWorkspace, (state, props) => ({
+    ...state,
+    editMode: true,
+    communityWorkspace: props.workspace,
+    currentWorkSpaceOwner: props.owner,
+  })),
+  // on(Actions.setWorkSpaceOwner, (state, props) =>
+  //   state.currentWorkSpaceOwner === props.username
+  //     ? state
+  //     : {
+  //         ...state,
+  //         currentWorkSpaceOwner: props.username,
+  //         successModelInitialized: true,
+  //         measureCatalogInitialized: true,
+  //         communityWorkspace: addVisitor(
+  //           state.communityWorkspace,
+  //           props.username,
+  //           state.currentWorkSpaceOwner,
+  //           state.selectedServiceName,
+  //           UserRole.SPECTATOR,
+  //         ),
+  //       },
+  // ),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(
@@ -680,6 +658,7 @@ function addVisitor(
   username: string,
   owner: string,
   serviceName: string,
+  role: UserRole,
 ): CommunityWorkspace {
   const copy = cloneDeep(communityWorkspace); // copy workspace first
   const userWorkspace = copy[owner];
@@ -687,9 +666,19 @@ function addVisitor(
   const appWorkspace: ApplicationWorkspace =
     userWorkspace[serviceName];
   if (!appWorkspace) return communityWorkspace;
-  appWorkspace.visitors.push(
-    new Visitor(username, UserRole.SPECTATOR),
+  let visitor = appWorkspace.visitors.find(
+    (v) => v.username === username,
   );
+  if (role === UserRole.LURKER) {
+    if (visitor) {
+      username =
+        username + ' (guest ' + appWorkspace.visitors.length + ')';
+    }
+    appWorkspace.visitors.push(new Visitor(username, role));
+  } else if (!visitor) {
+    visitor = new Visitor(username, role);
+    appWorkspace.visitors.push(visitor);
+  }
   return copy;
 }
 

@@ -84,12 +84,12 @@
                   [disabled]="saveInProgress"
                   (click)="onSaveClicked()"
                 >
-                  <mat-progress-spinner
+                  <mat-spinner
                     *ngIf="saveInProgress"
                     color="warn"
                     [diameter]="25"
                   >
-                  </mat-progress-spinner>
+                  </mat-spinner>
                   {{
                     'success-modeling.save-model-button' | translate
                   }}
@@ -127,7 +127,7 @@
 
 <ng-template #notInitialized>
   <!-- success model still loading -->
-  <mat-progress-spinner style="margin: auto"> </mat-progress-spinner>
+  <mat-spinner style="margin: auto"> </mat-spinner>
 </ng-template>
 
 <ng-template #notPartOfCommunity>

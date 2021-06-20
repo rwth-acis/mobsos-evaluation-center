@@ -5,7 +5,7 @@
     [fixedInViewport]="mobileQuery.matches"
     [opened]="!mobileQuery.matches"
   >
-    <ng-container *ngIf="(user$ | async)?.profile">
+    <ng-container *ngIf="(user$ | async)?.signedIn">
       <mat-form-field
         id="community-selection"
         *ngIf="groupsAreLoaded$ | async; else groupsAreLoading"
@@ -65,7 +65,7 @@
     </ng-container>
     <footer>
       <mat-slide-toggle
-        *ngIf="(user$ | async)?.profile"
+        *ngIf="(user$ | async)?.signedIn"
         labelPosition="before"
         [checked]="expertMode$ | async"
         (change)="setExpertMode($event.checked)"
@@ -142,10 +142,10 @@
 </mat-sidenav-container>
 
 <ng-template #groupsAreLoading>
-  <mat-progress-spinner
+  <mat-spinner
     color="accent"
     id="groupsLoadingIndicator"
     [diameter]="30"
   >
-  </mat-progress-spinner>
+  </mat-spinner>
 </ng-template>

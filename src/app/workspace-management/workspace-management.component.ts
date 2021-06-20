@@ -6,12 +6,12 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import {
   disableEdit,
+  joinWorkSpace,
   setService,
-  setWorkSpaceOwner,
   toggleEdit,
 } from '../services/store.actions';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { User } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
@@ -134,17 +134,23 @@ export class WorkspaceManagementComponent
             owner &&
             owner !== this.user?.profile.preferred_username
           ) {
-            this.workspaceService
-              .joinExistingCommunnityWorkspace(group.id)
-              .pipe(
-                filter((syncDone) => syncDone === true),
-                first(),
-              )
-              .subscribe(() => this.onSwitchWorkspace(owner));
+            this.ngrxStore.dispatch(
+              joinWorkSpace({
+                groupId: group.id,
+                serviceName: this.selectedServiceName,
+                owner,
+                username: this.user.profile.preferred_username,
+              }),
+            );
           } else {
             this.initWorkspace(group.id);
-            this.onSwitchWorkspace(
-              this.user?.profile.preferred_username,
+            this.ngrxStore.dispatch(
+              joinWorkSpace({
+                groupId: group.id,
+                serviceName: this.selectedServiceName,
+                owner,
+                username: this.user.profile.preferred_username,
+              }),
             );
           }
         }
@@ -231,15 +237,14 @@ export class WorkspaceManagementComponent
    * @param owner the owner of the workspace which we want to view
    */
   onSwitchWorkspace(owner: string) {
-    this.currentApplicationWorkspace =
-      this.workspaceService.switchWorkspace(
+    this.ngrxStore.dispatch(
+      joinWorkSpace({
+        groupId: this.selectedGroup.id,
+        serviceName: this.selectedServiceName,
         owner,
-        this.selectedServiceName,
-        this.user?.profile.preferred_username,
-        this.workspaceOwner,
-      );
-    this.workspaceOwner = owner;
-    this.ngrxStore.dispatch(setWorkSpaceOwner({ username: owner }));
+        username: this.user.profile.preferred_username,
+      }),
+    );
   }
 
   onChangeRole(visitorName: string, role?: string) {

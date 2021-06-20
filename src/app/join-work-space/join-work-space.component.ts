@@ -4,12 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { withLatestFrom } from 'rxjs/operators';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
-import {
-  joinAsSpectator,
-  joinAsVisitor,
-} from '../services/store.actions';
+import { joinWorkSpace } from '../services/store.actions';
 import { USER } from '../services/store.selectors';
 
 /**
@@ -43,23 +40,14 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           },
           User,
         ]) => {
-          if (this.router.url.includes('oidc-silent')) {
-            return;
+          if (this.router.url.includes('oidc')) {
+            return; // oidc client might be redirecting while this component is active
           }
-          if (!user?.signedIn) {
-            const name = await this.openDialog();
+          localStorage.setItem('invite-link', this.router.url);
+          if (user?.signedIn) {
+            // if we are signed in we join the workspace with our regular username
             this.ngrxStore.dispatch(
-              joinAsVisitor({
-                groupId: params.groupId,
-                serviceName: params.serviceName,
-                owner: params.username,
-                username: name,
-              }),
-            );
-            this.router.navigateByUrl('/visitor');
-          } else {
-            this.ngrxStore.dispatch(
-              joinAsSpectator({
+              joinWorkSpace({
                 groupId: params.groupId,
                 serviceName: params.serviceName,
                 owner: params.username,
@@ -67,6 +55,22 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
               }),
             );
             this.router.navigateByUrl('/');
+          } else {
+            let name = localStorage.getItem('visitor-username');
+            if (!name) {
+              // if we are not signed we pick a username and join the workspace as username (guest)
+              name = await this.openDialog();
+            }
+            this.ngrxStore.dispatch(
+              joinWorkSpace({
+                groupId: params.groupId,
+                serviceName: params.serviceName,
+                owner: params.username,
+                username: name,
+                role: UserRole.LURKER,
+              }),
+            );
+            this.router.navigateByUrl('/visitor');
           }
         },
       );

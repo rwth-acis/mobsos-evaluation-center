@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { combineLatest, forkJoin, of } from 'rxjs';
+import { combineLatest, forkJoin, of, throwError } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -12,6 +12,7 @@ import {
   filter,
   share,
   tap,
+  first,
 } from 'rxjs/operators';
 import { Las2peerService } from '../las2peer.service';
 import { VData } from '../models/visualization.model';
@@ -421,6 +422,46 @@ export class StateEffects {
       ),
       catchError((err) => {
         return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
+  );
+
+  joinCommunityWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.joinWorkSpace),
+      switchMap((action) =>
+        this.workspaceService
+          .joinExistingCommunnityWorkspace(action.groupId)
+          .pipe(
+            map((synced) => {
+              if (synced) {
+                const communityWorkspace =
+                  this.workspaceService.switchWorkspace(
+                    action.owner,
+                    action.serviceName,
+                    action.username,
+                    null,
+                    action.role,
+                  );
+                return Action.setCommunityWorkspace({
+                  workspace: communityWorkspace,
+                  owner: action.owner,
+                });
+              } else {
+                const error = new Error('Could not sync with yjs');
+                console.error(error.message);
+                throw error;
+              }
+            }),
+            catchError((err) => {
+              console.error(err);
+              return of(Action.failure());
+            }),
+          ),
+      ),
+      catchError(() => {
+        return of(Action.failure());
       }),
       share(),
     ),

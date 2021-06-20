@@ -152,8 +152,9 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
-  ROLE_IN_CURRENT_WORKSPACE,
-  (role) => role === 'owner',
+  CURRENT_WORKSPACE_OWNER,
+  USER,
+  (owner, user) => owner === user?.profile.preferred_username,
 );
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
@@ -166,8 +167,6 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   USER,
   (group, user) => !!user && group?.member,
 );
-const _JOINED_AS_VISITOR = (state: StoreState) =>
-  state.Reducer.joinedUsingLink;
 
 const _SUCCESS_MODEL = (state: StoreState) =>
   state.Reducer?.successModel;
@@ -176,9 +175,8 @@ export const SUCCESS_MODEL = createSelector(
   EDIT_MODE,
   _SUCCESS_MODEL,
   APPLICATION_WORKSPACE,
-  _JOINED_AS_VISITOR,
-  (editMode, successModel, applicationWorkspace, isVisiting) =>
-    applicationWorkspace && (editMode || isVisiting)
+  (editMode, successModel, applicationWorkspace) =>
+    applicationWorkspace && editMode
       ? applicationWorkspace.model
       : successModel,
 );
@@ -187,6 +185,9 @@ export const DIMENSIONS_IN_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) => (model ? Object.values(model.dimensions) : undefined),
 );
+
+export const RESTRICTED_MODE = (state: StoreState) =>
+  state.Reducer?.restricted;
 
 export const SUCCESS_MODEL_XML = (state: StoreState) =>
   state.Reducer.successModel
@@ -202,9 +203,8 @@ export const MEASURE_CATALOG = createSelector(
   EDIT_MODE,
   _MEASURE_CATALOG,
   APPLICATION_WORKSPACE,
-  _JOINED_AS_VISITOR,
-  (editMode, measureCatalog, applicationWorkspace, isVisiting) =>
-    applicationWorkspace && (editMode || isVisiting)
+  (editMode, measureCatalog, applicationWorkspace) =>
+    applicationWorkspace && editMode
       ? applicationWorkspace.catalog
       : measureCatalog,
 );

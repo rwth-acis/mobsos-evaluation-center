@@ -5,10 +5,15 @@ import {
 } from '../models/workspace.model';
 import { updateCommunityWorkspace } from './store.actions';
 import { Injectable, isDevMode } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { cloneDeep, isEqual, isPlainObject } from 'lodash';
+import { BehaviorSubject, of, Subscription } from 'rxjs';
+import {
+  cloneDeep,
+  isEqual,
+  isEmpty,
+  isPlainObject,
+} from 'lodash-es';
 import { Doc, Map } from 'yjs';
-import { UserRole } from '../models/user.model';
+import { UserRole, Visitor } from '../models/user.model';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
@@ -16,10 +21,15 @@ import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
 import { COMMUNITY_WORKSPACE } from './store.selectors';
 import {
+  catchError,
   distinctUntilChanged,
+  filter,
+  first,
   throttle,
   throttleTime,
+  timeout,
 } from 'rxjs/operators';
+const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
   providedIn: 'root',
 })
@@ -52,7 +62,7 @@ export class WorkspaceService {
     });
     this.ngrxStore
       .select(COMMUNITY_WORKSPACE)
-      .pipe(distinctUntilChanged(), throttleTime(20))
+      .pipe(throttleTime(10)) // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
       .subscribe((workspace) => {
         if (
           !isEqual(workspace, this.communityWorkspace$.getValue())
@@ -123,13 +133,23 @@ export class WorkspaceService {
     return userWorkspace[selectedService.name];
   }
 
+  /**
+   * Used to join an existing community workspace
+   * @param groupId group ID of the community which we want to join
+   * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
+   */
   joinExistingCommunnityWorkspace(groupId: string) {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspace(groupId);
     this.communityWorkspace$.next(communityWorkspace);
     this.startSynchronizingWorkspace(groupId);
-    return this.syncDone$.asObservable();
+    return this.syncDone$.asObservable().pipe(
+      timeout(5 * ONE_MINUTE_IN_MS),
+      filter((syncDone) => syncDone === true),
+      catchError(() => of(false)),
+      first(),
+    );
   }
 
   /**
@@ -228,7 +248,8 @@ export class WorkspaceService {
     currentServiceName: string,
     username: string,
     oldWorkspaceOwner?: string,
-  ): ApplicationWorkspace {
+    role?: UserRole,
+  ): CommunityWorkspace {
     if (!owner) {
       console.error('user cannot be null');
       return;
@@ -258,20 +279,29 @@ export class WorkspaceService {
     const containedInVisitors = visitors.find(
       (visitor) => visitor.username === username,
     );
-    // we add ourselves as spectators  if we are not a visitor yet
-    if (owner !== username && !containedInVisitors) {
+    const guestVisitors = visitors.filter((visitor) =>
+      visitor.username.includes('(guest'),
+    );
+
+    if (role === UserRole.LURKER) {
+      const n = guestVisitors.length + 1;
+      username = username + ' (guest ' + n + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
+      localStorage.setItem('visitor-username', username);
+      visitors.push(new Visitor(username, role));
+    }
+    // logged in users are added if they are not a visitor yet
+    else if (owner !== username && !containedInVisitors) {
       visitors.push({
         username,
         role: UserRole.SPECTATOR,
       });
-      visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-      currentApplicationWorkspace.visitors = visitors;
-
-      communityWorkspace[owner][currentServiceName].visitors =
-        visitors;
     }
+    visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
+    currentApplicationWorkspace.visitors = visitors;
+
+    communityWorkspace[owner][currentServiceName].visitors = visitors;
     this.communityWorkspace$.next(communityWorkspace);
-    return currentApplicationWorkspace;
+    return this.communityWorkspace$.getValue();
   }
 
   private leaveWorkspace(
@@ -319,7 +349,7 @@ export class WorkspaceService {
   private syncObject(name: string, subject: BehaviorSubject<object>) {
     const type = this.sharedDocument.get(name);
     const map = this.sharedDocument.getMap(name);
-    subject.subscribe((obj) => {
+    subject.pipe(throttleTime(10)).subscribe((obj) => {
       // if the subject changes the object will be synced with yjs
       if (isDevMode()) {
         console.log('Pushing local changes to remote y-js map...');
@@ -339,7 +369,9 @@ export class WorkspaceService {
     };
     this.sharedDocument.on('update', observeFn);
     const mapAsObj = type.toJSON();
-
+    if (!isEmpty(mapAsObj)) {
+      this.syncDone$.next(true);
+    }
     // this.stopSync(name);
     // deposit cleanup function to be called when the type is no longer needed
     this.removeListenersCallbacks[name] = () => {
