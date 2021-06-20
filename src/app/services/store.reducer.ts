@@ -124,7 +124,9 @@ const _Reducer = createReducer(
     ...state,
     editMode: true,
     communityWorkspace: props.workspace,
-    currentWorkSpaceOwner: props.owner,
+    currentWorkSpaceOwner: props.owner
+      ? props.owner
+      : state.currentWorkSpaceOwner,
   })),
   // on(Actions.setWorkSpaceOwner, (state, props) =>
   //   state.currentWorkSpaceOwner === props.username

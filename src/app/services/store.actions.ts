@@ -167,7 +167,7 @@ export const setService = createAction(
 
 export const setCommunityWorkspace = createAction(
   StoreActions.SET_COMMUNITY_WORKSPACE,
-  props<{ workspace: CommunityWorkspace; owner: string }>(),
+  props<{ workspace: CommunityWorkspace; owner?: string }>(),
 );
 
 export const storeUser = createAction(

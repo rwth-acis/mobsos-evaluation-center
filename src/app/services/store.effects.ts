@@ -134,9 +134,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
-      tap(({ groupId }) => {
-        this.workspaceService.startSynchronizingWorkspace(groupId);
-      }),
+      // tap(({ groupId }) => {
+      //   this.workspaceService.startSynchronizingWorkspace(groupId);
+      // }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
@@ -179,22 +179,22 @@ export class StateEffects {
   //   ),
   // );
 
-  updateCommunityWorkspace$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.updateCommunityWorkspace),
-      withLatestFrom(
-        this.ngrxStore.select(SELECTED_GROUP_ID),
-        this.ngrxStore.select(EDIT_MODE),
-      ),
-      filter(([action, groupId]) => !!groupId),
-      tap(([action, groupId, editMode]) => {
-        if (editMode && groupId) {
-          this.workspaceService.startSynchronizingWorkspace(groupId);
-        }
-      }),
-      switchMap(() => of(Action.success())),
-    ),
-  );
+  // updateCommunityWorkspace$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(Action.updateCommunityWorkspace),
+  //     withLatestFrom(
+  //       this.ngrxStore.select(SELECTED_GROUP_ID),
+  //       this.ngrxStore.select(EDIT_MODE),
+  //     ),
+  //     filter(([action, groupId]) => !!groupId),
+  //     tap(([action, groupId, editMode]) => {
+  //       if (editMode && groupId) {
+  //         this.workspaceService.startSynchronizingWorkspace(groupId);
+  //       }
+  //     }),
+  //     switchMap(() => of(Action.success())),
+  //   ),
+  // );
 
   initState$ = createEffect(() =>
     this.actions$.pipe(
@@ -449,34 +449,38 @@ export class StateEffects {
             .pipe(
               map((synced) => {
                 if (synced) {
-                  let communityWorkspace: CommunityWorkspace;
+                  let owner = action.owner;
                   try {
-                    communityWorkspace =
-                      this.workspaceService.switchWorkspace(
-                        action.owner,
-                        action.serviceName,
-                        user?.profile.preferred_username,
-                        null,
-                        action.role,
-                      );
+                    this.workspaceService.switchWorkspace(
+                      action.owner,
+                      action.serviceName,
+                      user?.profile.preferred_username,
+                      null,
+                      action.role,
+                    );
                   } catch (error) {
                     if (!restricted) {
-                      communityWorkspace =
-                        this.workspaceService.initWorkspace(
-                          action.groupId,
-                          user?.profile.preferred_username,
-                          service,
-                          catalog,
-                          model,
-                        );
+                      this.workspaceService.initWorkspace(
+                        action.groupId,
+                        user?.profile.preferred_username,
+                        service,
+                        catalog,
+                        model,
+                      );
+                      owner = user?.profile.preferred_username;
                     } else {
                       return Action.failure();
                     }
                   }
-                  return Action.setCommunityWorkspace({
-                    workspace: communityWorkspace,
-                    owner: action.owner,
-                  });
+                  const currentCommunityWorkspace =
+                    this.workspaceService.currentCommunityWorkspace;
+                  if (!currentCommunityWorkspace) {
+                    return Action.failure();
+                  } else
+                    return Action.setCommunityWorkspace({
+                      workspace: currentCommunityWorkspace,
+                      owner,
+                    });
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
