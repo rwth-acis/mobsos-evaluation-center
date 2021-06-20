@@ -221,14 +221,17 @@ export class WorkspaceManagementComponent
       );
     }
 
+    this.workspaceService.initWorkspace(
+      groupID,
+      this.workspaceOwner,
+      this.selectedService,
+      this.measureCatalog,
+      this.successModel,
+    );
     this.currentApplicationWorkspace =
-      this.workspaceService.initWorkspace(
-        groupID,
-        this.workspaceOwner,
-        this.selectedService,
-        this.measureCatalog,
-        this.successModel,
-      );
+      this.workspaceService.currentCommunityWorkspaceValue[
+        this.workspaceOwner
+      ][this.selectedService.name];
     return true;
   }
 
