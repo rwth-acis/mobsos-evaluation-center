@@ -25,6 +25,8 @@ import {
   distinctUntilChanged,
   filter,
   first,
+  shareReplay,
+  tap,
   throttle,
   throttleTime,
   timeout,
@@ -62,7 +64,7 @@ export class WorkspaceService {
     });
     this.ngrxStore
       .select(COMMUNITY_WORKSPACE)
-      .pipe(throttleTime(10)) // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
+      .pipe(throttleTime(5)) // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
       .subscribe((workspace) => {
         if (
           !isEqual(workspace, this.communityWorkspace$.getValue())
@@ -130,25 +132,26 @@ export class WorkspaceService {
     // after initializing our local workspace we start the synchronizing with yjs
     this.startSynchronizingWorkspace(groupID);
 
-    return userWorkspace[selectedService.name];
+    return communityWorkspace;
   }
 
   /**
-   * Used to join an existing community workspace
+   * Used to join a community workspace
    * @param groupId group ID of the community which we want to join
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
-  joinExistingCommunnityWorkspace(groupId: string) {
+  syncWithCommunnityWorkspace(groupId: string) {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspace(groupId);
     this.communityWorkspace$.next(communityWorkspace);
     this.startSynchronizingWorkspace(groupId);
     return this.syncDone$.asObservable().pipe(
-      timeout(5 * ONE_MINUTE_IN_MS),
+      timeout(ONE_MINUTE_IN_MS),
       filter((syncDone) => syncDone === true),
       catchError(() => of(false)),
       first(),
+      shareReplay(1),
     );
   }
 
@@ -182,7 +185,6 @@ export class WorkspaceService {
       if (this.currentGroupId) {
         this.stopSynchronizingWorkspace(this.currentGroupId);
       }
-
       this.syncObject(groupId, this.communityWorkspace$);
       this.currentGroupId = groupId;
     }
@@ -251,8 +253,7 @@ export class WorkspaceService {
     role?: UserRole,
   ): CommunityWorkspace {
     if (!owner) {
-      console.error('user cannot be null');
-      return;
+      throw new Error('owner cannot be null');
     }
     this.leaveWorkspace(
       oldWorkspaceOwner,
@@ -263,16 +264,16 @@ export class WorkspaceService {
       this.communityWorkspace$.getValue(),
     );
     if (!communityWorkspace[owner]) {
-      console.error('user not known in current workspace');
-      return;
+      throw new Error(
+        'Cannot join workspace as it is not know in communityWorkspace',
+      );
     }
     const currentApplicationWorkspace =
       communityWorkspace[owner][currentServiceName];
     if (!currentApplicationWorkspace) {
-      console.error(
+      throw new Error(
         'this user has no application workspace for the current service',
       );
-      return;
     }
 
     const visitors = currentApplicationWorkspace.visitors;
@@ -286,7 +287,7 @@ export class WorkspaceService {
     if (role === UserRole.LURKER) {
       const n = guestVisitors.length + 1;
       username = username + ' (guest ' + n + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
-      localStorage.setItem('visitor-username', username);
+      localStorage.setItem('visitor-username', username); // save in localStorage so in the future anonymous user gets reassigned the same name
       visitors.push(new Visitor(username, role));
     }
     // logged in users are added if they are not a visitor yet
@@ -298,7 +299,6 @@ export class WorkspaceService {
     }
     visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
     currentApplicationWorkspace.visitors = visitors;
-
     communityWorkspace[owner][currentServiceName].visitors = visitors;
     this.communityWorkspace$.next(communityWorkspace);
     return this.communityWorkspace$.getValue();
@@ -368,10 +368,9 @@ export class WorkspaceService {
       this.syncDone$.next(true);
     };
     this.sharedDocument.on('update', observeFn);
-    const mapAsObj = type.toJSON();
-    if (!isEmpty(mapAsObj)) {
-      this.syncDone$.next(true);
-    }
+
+    this.syncDone$.next(true);
+
     // this.stopSync(name);
     // deposit cleanup function to be called when the type is no longer needed
     this.removeListenersCallbacks[name] = () => {

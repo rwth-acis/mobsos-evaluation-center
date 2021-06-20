@@ -123,7 +123,6 @@ export function localStorageSyncReducer(
           'user',
           'successModel',
           'visualizationData',
-          'editMode',
           'currentWorkSpaceOwner',
         ],
       },

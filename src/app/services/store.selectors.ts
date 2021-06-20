@@ -253,7 +253,7 @@ export const SELECTED_SERVICE = createSelector(
   EDIT_MODE,
   APPLICATION_WORKSPACE,
   (service, editMode, workspace) =>
-    editMode ? workspace?.service : service,
+    editMode && workspace ? workspace?.service : service,
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
