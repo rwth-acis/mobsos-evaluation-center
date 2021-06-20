@@ -48,6 +48,10 @@ export class WorkspaceService {
   get communityWorkspace() {
     return this.communityWorkspace$.asObservable();
   }
+
+  get currentCommunityWorkspaceValue() {
+    return this.communityWorkspace$.getValue();
+  }
   // object containing cleanup functions to be invoked when the type is no longer needed
   private removeListenersCallbacks: { [key: string]: () => void } =
     {};
