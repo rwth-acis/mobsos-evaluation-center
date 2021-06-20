@@ -130,29 +130,14 @@ export class WorkspaceManagementComponent
       .subscribe(async ([editMode, group, owner]) => {
         this.selectedGroup = group;
         if (editMode) {
-          if (
-            owner &&
-            owner !== this.user?.profile.preferred_username
-          ) {
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: group.id,
-                serviceName: this.selectedServiceName,
-                owner,
-                username: this.user.profile.preferred_username,
-              }),
-            );
-          } else {
-            this.initWorkspace(group.id);
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: group.id,
-                serviceName: this.selectedServiceName,
-                owner,
-                username: this.user.profile.preferred_username,
-              }),
-            );
-          }
+          this.ngrxStore.dispatch(
+            joinWorkSpace({
+              groupId: group.id,
+              serviceName: this.selectedServiceName,
+              owner,
+              username: this.user?.profile.preferred_username,
+            }),
+          );
         }
       });
     this.subscriptions$.push(sub);
@@ -203,33 +188,6 @@ export class WorkspaceManagementComponent
 
   onEditModeChanged() {
     this.ngrxStore.dispatch(toggleEdit());
-  }
-
-  /**
-   * Initializes the workspace for collaborative success modeling
-   */
-  private initWorkspace(groupID: string) {
-    if (!this.user) return console.error('user cannot be null');
-    this.workspaceOwner = this.user?.profile.preferred_username;
-    // get the current workspace state from yjs
-    if (!this.measureCatalog) {
-      this.measureCatalog = new MeasureCatalog({});
-    }
-    if (!this.successModel) {
-      this.successModel = SuccessModel.emptySuccessModel(
-        this.selectedService,
-      );
-    }
-
-    this.currentApplicationWorkspace =
-      this.workspaceService.initWorkspace(
-        groupID,
-        this.workspaceOwner,
-        this.selectedService,
-        this.measureCatalog,
-        this.successModel,
-      );
-    return true;
   }
 
   /**
