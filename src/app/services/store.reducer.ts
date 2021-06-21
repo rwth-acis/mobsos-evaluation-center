@@ -187,6 +187,16 @@ const _Reducer = createReducer(
       props,
     ),
   })),
+  on(Actions.editMeasureInCatalog, (state, props) => ({
+    ...state,
+    communityWorkspace: updateMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+      true,
+    ),
+  })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,
     communityWorkspace: addMeasureToFactorInModel(
@@ -586,12 +596,14 @@ function updateMeasure(
   communityWorkspace: CommunityWorkspace,
   owner: string,
   serviceName: string,
+
   props: {
     measure: Measure;
     oldMeasureName: string;
-    factorName: string;
-    dimensionName: string;
+    factorName?: string;
+    dimensionName?: string;
   },
+  catalogOnly?: boolean,
 ) {
   const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
   const appWorkspace = getWorkspaceByUserAndService(
@@ -606,6 +618,9 @@ function updateMeasure(
   // update the measure catalog
   measureCatalog[props.measure.name] = props.measure;
   delete measureCatalog[props.oldMeasureName];
+  if (catalogOnly) {
+    return copy;
+  }
 
   // update the success model
   let factors = successModel.dimensions[props.dimensionName];

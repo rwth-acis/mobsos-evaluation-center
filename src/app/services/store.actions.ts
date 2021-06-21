@@ -39,7 +39,8 @@ enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
-  EDIT_MEASURE = 'updates an existing measure ',
+  EDIT_MEASURE = 'updates an existing measure in catalog and success model',
+  EDIT_MEASURE_IN_CATALOG = 'updates an existing measure in catalog only ',
   SET_COMMUNITY_WORKSPACE = 'update the community workspace',
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
@@ -119,6 +120,14 @@ export const editMeasure = createAction(
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
+  }>(),
+);
+
+export const editMeasureInCatalog = createAction(
+  StoreActions.EDIT_MEASURE_IN_CATALOG,
+  props<{
+    measure: Measure;
+    oldMeasureName: string;
   }>(),
 );
 export const storeGroups = createAction(
