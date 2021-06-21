@@ -361,7 +361,6 @@ export class WorkspaceService {
       });
 
     this.sharedDocument.on('update', () => this.observeFn(map));
-    this.syncDone$.next(true);
     map.observeDeep(() => this.observeFn(map));
     this.removeListenersCallbacks[name] = () => {
       map.unobserve(() => this.observeFn(map));
