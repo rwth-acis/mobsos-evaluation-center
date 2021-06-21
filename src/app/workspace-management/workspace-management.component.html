@@ -23,7 +23,6 @@
     <mat-slide-toggle
       labelPosition="before"
       [checked]="editMode$ | async"
-      [(ngModel)]="checked"
       (toggleChange)="onEditModeChanged($event)"
       [disabled]="!(memberOfGroup$ | async)"
       [matTooltip]="
@@ -117,10 +116,18 @@
   *ngIf="(user$ | async)?.profile?.preferred_username as username"
 >
   <mat-card *ngIf="editMode$ | async" id="workspace-info">
-    <div id="info-content">
+    <div
+      id="info-content"
+      *ngIf="applicationWorkspaceOwner$ | async as owner"
+    >
       <mat-icon color="accent">info_outline</mat-icon>
       <span id="info-text">
-        <span *ngIf="userIsOwner$ | async; else notUserWorkspace">
+        <span
+          *ngIf="
+            (roleInWorkspace$ | async) === 'owner';
+            else notOwnerInCurrentWorkspace
+          "
+        >
           {{ 'success-modeling.info.own-workspace' | translate }}
         </span>
       </span>
@@ -246,7 +253,7 @@
   </ng-container>
 </mat-menu>
 
-<ng-template #notUserWorkspace>
+<ng-template #notOwnerInCurrentWorkspace>
   <ng-contiainer *ngIf="roleInWorkspace$ | async as role">
     {{ 'success-modeling.info.workspace-of' | translate }}
     <strong>{{ applicationWorkspaceOwner$ | async }}</strong
