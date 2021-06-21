@@ -1,7 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { filter, map } from 'rxjs/operators';
+import { of, Subscription } from 'rxjs';
+import {
+  catchError,
+  delay,
+  filter,
+  first,
+  map,
+  takeUntil,
+  takeWhile,
+  timeout,
+} from 'rxjs/operators';
 import { User } from '../models/user.model';
 import {
   APPLICATION_WORKSPACE,
@@ -23,10 +33,9 @@ import { iconMap, translationMap } from '../success-modeling/config';
   templateUrl: './visitor.component.html',
   styleUrls: ['./visitor.component.scss'],
 })
-export class VisitorComponent implements OnInit {
-  selectedServiceName$ = this.ngrxStore
-    .select(SELECTED_SERVICE)
-    .pipe(map((service) => service?.name));
+export class VisitorComponent implements OnInit, OnDestroy {
+  selectedServiceName$ = this.ngrxStore.select(SELECTED_SERVICE_NAME);
+
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
   assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
   user$ = this.ngrxStore.select(USER);
@@ -49,14 +58,33 @@ export class VisitorComponent implements OnInit {
   selectedServiceName: string;
   workspaceOwner: string;
   user: User;
+
+  subscriptions$: Subscription[] = [];
   constructor(private ngrxStore: Store, private router: Router) {}
 
   ngOnInit(): void {
-    this.ngrxStore
-      .select(COMMUNITY_WORKSPACE)
-      .subscribe((a) => console.log(a));
+    let sub = this.selectedServiceName$
+      .pipe(
+        filter((a) => !!a),
+        takeWhile((serviceName) => !!serviceName), // stops as soon as selectedService name is defined
+        timeout(5000),
+      )
+      .subscribe((serviceName) => {
+        console.log(serviceName);
+        if (!serviceName) {
+          const link = localStorage.getItem('invite-link');
+          if (link) {
+            this.router.navigateByUrl(link);
+          }
+        }
+      });
+    this.subscriptions$.push(sub);
     if (!localStorage.getItem('visitor-username')) {
       this.router.navigate(['/']);
     }
+  }
+
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

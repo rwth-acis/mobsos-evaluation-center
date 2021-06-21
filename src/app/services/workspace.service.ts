@@ -327,6 +327,7 @@ export class WorkspaceService {
     currentApplicationWorkspace.visitors = visitors;
     communityWorkspace[owner][currentServiceName].visitors = visitors;
     this.communityWorkspace$.next(communityWorkspace);
+    this.syncObject(this.currentGroupId);
   }
 
   private leaveWorkspace(
