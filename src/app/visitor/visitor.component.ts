@@ -63,22 +63,6 @@ export class VisitorComponent implements OnInit, OnDestroy {
   constructor(private ngrxStore: Store, private router: Router) {}
 
   ngOnInit(): void {
-    let sub = this.selectedServiceName$
-      .pipe(
-        filter((a) => !!a),
-        takeWhile((serviceName) => !!serviceName), // stops as soon as selectedService name is defined
-        timeout(5000),
-      )
-      .subscribe((serviceName) => {
-        console.log(serviceName);
-        if (!serviceName) {
-          const link = localStorage.getItem('invite-link');
-          if (link) {
-            this.router.navigateByUrl(link);
-          }
-        }
-      });
-    this.subscriptions$.push(sub);
     if (!localStorage.getItem('visitor-username')) {
       this.router.navigate(['/']);
     }
