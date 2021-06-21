@@ -5,7 +5,7 @@ import {
 } from '../models/workspace.model';
 import { setCommunityWorkspace } from './store.actions';
 import { Injectable, isDevMode } from '@angular/core';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es';
 import * as Y from 'yjs';
 import { UserRole, Visitor } from '../models/user.model';
@@ -154,7 +154,9 @@ export class WorkspaceService {
    * @param groupId group ID of the community which we want to join
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
-  syncWithCommunnityWorkspace(groupId: string) {
+  syncWithCommunnityWorkspace(groupId: string): Observable<boolean> {
+    if (this.syncDone$.getValue()) return of(true);
+
     this.startSynchronizingWorkspace(groupId);
     // get the current workspace state from yjs
     const communityWorkspace =
@@ -267,7 +269,7 @@ export class WorkspaceService {
     username: string,
     oldWorkspaceOwner?: string,
     role?: UserRole,
-  ): CommunityWorkspace {
+  ) {
     if (!owner) {
       throw new Error('owner cannot be null');
     }
@@ -317,7 +319,6 @@ export class WorkspaceService {
     currentApplicationWorkspace.visitors = visitors;
     communityWorkspace[owner][currentServiceName].visitors = visitors;
     this.communityWorkspace$.next(communityWorkspace);
-    return this.communityWorkspace$.getValue();
   }
 
   private leaveWorkspace(
