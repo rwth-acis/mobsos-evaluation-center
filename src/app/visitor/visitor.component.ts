@@ -1,33 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { filter, map } from 'rxjs/operators';
+import { User } from '../models/user.model';
 import {
-  delay,
-  filter,
-  first,
-  map,
-  throttleTime,
-  withLatestFrom,
-} from 'rxjs/operators';
-import { User, UserRole } from '../models/user.model';
-import { joinWorkSpace } from '../services/store.actions';
-import {
-  APPLICATION_WORKSPACE,
   ASSETS_LOADED,
-  COMMUNITY_WORKSPACE,
   DIMENSIONS_IN_MODEL,
-  EDIT_MODE,
   MEASURE_CATALOG,
-  RESTRICTED_MODE,
-  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP_ID,
   SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
   USER,
   WORKSPACE_OWNER,
 } from '../services/store.selectors';
-import { isEmpty } from 'lodash-es';
-import { WorkspaceService } from '../services/workspace.service';
 import { iconMap, translationMap } from '../success-modeling/config';
 
 @Component({
@@ -47,7 +32,7 @@ export class VisitorComponent implements OnInit {
       filter((dimensions) => !!dimensions),
       map(
         (dimensions) =>
-          dimensions.find((dimension) => dimension.length > 0) ===
+          dimensions?.find((dimension) => dimension.length > 0) ===
           undefined,
       ),
     );
