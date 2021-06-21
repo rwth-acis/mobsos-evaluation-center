@@ -370,7 +370,7 @@ export class WorkspaceService {
         this._syncObjectToMap(cloneDeep(obj), map);
       });
 
-    this.sharedDocument.on('update', () => this.observeFn(map));
+    // this.sharedDocument.on('update', () => this.observeFn(map));
     map.observeDeep(() => this.observeFn(map));
     this.removeListenersCallbacks[name] = () => {
       map.unobserve(() => this.observeFn(map));
