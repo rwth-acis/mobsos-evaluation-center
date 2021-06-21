@@ -196,6 +196,19 @@ export const SUCCESS_MODEL_XML = (state: StoreState) =>
       )?.toXml()?.outerHTML
     : undefined;
 
+export const WORKSPACE_MODEL = createSelector(
+  APPLICATION_WORKSPACE,
+  (workspace) => workspace?.model,
+);
+
+export const WORKSPACE_MODEL_XML = createSelector(
+  WORKSPACE_MODEL,
+  (model) =>
+    model
+      ? SuccessModel.fromPlainObject(model)?.toXml()?.outerHTML
+      : undefined,
+);
+
 const _MEASURE_CATALOG = (state: StoreState) =>
   state.Reducer?.measureCatalog;
 
@@ -226,6 +239,19 @@ export const MEASURE_CATALOG_XML = (state: StoreState) =>
         state.Reducer.measureCatalog,
       )?.toXml()?.outerHTML
     : undefined;
+
+export const WORKSPACE_CATALOG = createSelector(
+  APPLICATION_WORKSPACE,
+  (workspace) => workspace?.catalog,
+);
+
+export const WORKSPACE_CATALOG_XML = createSelector(
+  WORKSPACE_CATALOG,
+  (catalog) =>
+    catalog
+      ? MeasureCatalog.fromPlainObject(catalog)?.toXml()?.outerHTML
+      : undefined,
+);
 
 export const VISUALIZATION_DATA_FOR_QUERY = (
   state: StoreState,
