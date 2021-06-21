@@ -6,7 +6,12 @@ import {
 import { setCommunityWorkspace } from './store.actions';
 import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { cloneDeep, isEqual, isPlainObject } from 'lodash-es';
+import {
+  cloneDeep,
+  isEqual,
+  isPlainObject,
+  isEmpty,
+} from 'lodash-es';
 import * as Y from 'yjs';
 import { UserRole, Visitor } from '../models/user.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -161,6 +166,9 @@ export class WorkspaceService {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
+    if (!isEmpty(communityWorkspace)) {
+      this.syncDone$.next(true);
+    }
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
       timeout(2 * ONE_MINUTE_IN_MS),
@@ -215,7 +223,9 @@ export class WorkspaceService {
    * @param serviceName name of the application
    */
   removeWorkspace(username: string, serviceName: string) {
-    const communityWorkspace = this.communityWorkspace$.getValue();
+    const communityWorkspace = cloneDeep(
+      this.communityWorkspace$.getValue(),
+    );
     if (!communityWorkspace) return;
     if (!Object.keys(communityWorkspace).includes(username)) {
       return;
