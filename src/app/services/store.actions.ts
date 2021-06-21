@@ -171,6 +171,7 @@ export const setCommunityWorkspace = createAction(
     workspace: CommunityWorkspace;
     owner?: string;
     serviceName?: string;
+    selectedGroupId?: string;
   }>(),
 );
 

@@ -124,6 +124,9 @@ const _Reducer = createReducer(
     ...state,
     editMode: true,
     communityWorkspace: props.workspace,
+    selectedGroupId: props.selectedGroupId
+      ? props.selectedGroupId
+      : state.selectedGroupId,
     selectedServiceName: props.serviceName
       ? props.serviceName
       : state.selectedServiceName,

@@ -397,6 +397,9 @@ export class StateEffects {
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
+      tap((action) => {
+        Action.setGroup({ groupId: action.groupId });
+      }),
       withLatestFrom(
         this.ngrxStore.select(SUCCESS_MODEL),
         this.ngrxStore.select(MEASURE_CATALOG),
