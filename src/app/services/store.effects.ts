@@ -27,6 +27,9 @@ import {
   SUCCESS_MODEL_XML,
   USER,
   VISUALIZATION_DATA,
+  WORKSPACE_CATALOG,
+  WORKSPACE_CATALOG_XML,
+  WORKSPACE_MODEL_XML,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -214,7 +217,7 @@ export class StateEffects {
       ofType(Action.saveModelAndCatalog),
       withLatestFrom(
         combineLatest([
-          this.ngrxStore.select(MEASURE_CATALOG_XML),
+          this.ngrxStore.select(WORKSPACE_CATALOG_XML),
           this.ngrxStore.select(SELECTED_GROUP_ID),
         ]),
       ),
@@ -235,20 +238,22 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.saveCatalogSuccess),
       withLatestFrom(
-        combineLatest([
-          this.ngrxStore.select(SUCCESS_MODEL_XML),
-          this.ngrxStore.select(SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ]),
+        this.ngrxStore.select(WORKSPACE_MODEL_XML),
+        this.ngrxStore.select(SELECTED_GROUP_ID),
+        this.ngrxStore.select(SELECTED_SERVICE_NAME),
       ),
-      switchMap(([action, [successModelXML, groupId, serviceName]]) =>
+      switchMap(([action, successModelXML, groupId, serviceName]) =>
         this.l2p
           .saveSuccessModelAndObserve(
             groupId,
             serviceName,
             successModelXML,
           )
-          .pipe(map(() => Action.successResponse())),
+          .pipe(
+            map(() =>
+              Action.storeSuccessModel({ xml: successModelXML }),
+            ),
+          ),
       ),
       catchError((err) => {
         console.error(err);
