@@ -264,7 +264,7 @@ export class StateEffects {
       switchMap((action) => {
         const missingGroups = action.groupsFromContactService.filter(
           (group) =>
-            !action.groupsFromMobSOS.find(
+            !action.groupsFromMobSOS?.find(
               (g) => g.name === group.name,
             ),
         );
