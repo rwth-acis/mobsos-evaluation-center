@@ -216,7 +216,7 @@ export const MEASURES = createSelector(
 export const MEASURE = createSelector(
   MEASURES,
   (measures: MeasureMap, measureName: string) =>
-    measures[measureName],
+    measures ? measures[measureName] : undefined,
 );
 
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
