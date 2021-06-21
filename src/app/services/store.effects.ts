@@ -442,6 +442,7 @@ export class StateEffects {
                     return Action.setCommunityWorkspace({
                       workspace: currentCommunityWorkspace,
                       owner,
+                      serviceName: action.serviceName,
                     });
                 } else {
                   const error = new Error('Could not sync with yjs');
