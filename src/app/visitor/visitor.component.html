@@ -14,68 +14,54 @@
 </mat-card>
 
 <!-- Success model -->
+
 <ng-container
   *ngIf="
-    selectedServiceName$ | async as selectedServiceName;
-    else noServiceSelect
+    !linkExpected && (assetsLoaded$ | async);
+    else notInitialized
   "
 >
-  <ng-container *ngIf="assetsLoaded$ | async; else notInitialized">
+  <ng-container
+    *ngIf="!(showSuccessModelEmpty$ | async); else successModelEmpty"
+  >
     <ng-container
       *ngIf="
-        !(showSuccessModelEmpty$ | async);
-        else successModelEmpty
+        successModel$ | async as successModel;
+        else noSuccessModel
       "
     >
-      <ng-container
-        *ngIf="
-          successModel$ | async as successModel;
-          else noSuccessModel
-        "
-      >
-        <ng-container
-          *ngIf="measureCatalog$ | async as measureCatalog"
-        >
-          <app-questionnaires
-            [availableQuestionnaires]="availableQuestionnaires"
-            [model]="successModel"
+      <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+        <app-questionnaires
+          [availableQuestionnaires]="availableQuestionnaires"
+          [model]="successModel"
+          [measures]="measureCatalog.measures"
+          [service]="selectedService$ | async"
+          [editMode]="editMode$ | async"
+          [groupID]="selectedGroupId$ | async"
+        ></app-questionnaires>
+        <div id="dimensions">
+          <app-success-dimension
+            *ngFor="let dimension of dimensions"
+            [factors]="successModel.dimensions[dimension]"
             [measures]="measureCatalog.measures"
-            [service]="selectedService$ | async"
-            [editMode]="editMode$ | async"
-            [groupID]="selectedGroupId$ | async"
-          ></app-questionnaires>
-          <div id="dimensions">
-            <app-success-dimension
-              *ngFor="let dimension of dimensions"
-              [factors]="successModel.dimensions[dimension]"
-              [measures]="measureCatalog.measures"
-              name="{{
-                'success-modeling.dimensions.name.' +
-                  translationMap[dimension] | translate
-              }}"
-              description="{{
-                'success-modeling.dimensions.description.' +
-                  translationMap[dimension] | translate
-              }}"
-              icon="{{ iconMap[dimension] }}"
-            ></app-success-dimension>
-          </div>
-        </ng-container> </ng-container
-    ></ng-container>
-  </ng-container>
+            name="{{
+              'success-modeling.dimensions.name.' +
+                translationMap[dimension] | translate
+            }}"
+            description="{{
+              'success-modeling.dimensions.description.' +
+                translationMap[dimension] | translate
+            }}"
+            icon="{{ iconMap[dimension] }}"
+          ></app-success-dimension>
+        </div>
+      </ng-container> </ng-container
+  ></ng-container>
 </ng-container>
 
 <ng-template #noGroupSelect>
   <mat-card>
     {{ 'success-modeling.no-group-selected' | translate }}
-  </mat-card>
-</ng-template>
-
-<ng-template #noServiceSelect>
-  <mat-card>
-    {{
-      'success-modeling.message-no-application-selected' | translate
-    }}
   </mat-card>
 </ng-template>
 

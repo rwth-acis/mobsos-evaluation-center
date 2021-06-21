@@ -34,8 +34,8 @@ import { iconMap, translationMap } from '../success-modeling/config';
   styleUrls: ['./visitor.component.scss'],
 })
 export class VisitorComponent implements OnInit, OnDestroy {
+  linkExpected: boolean = true;
   selectedServiceName$ = this.ngrxStore.select(SELECTED_SERVICE_NAME);
-
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
   assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
   user$ = this.ngrxStore.select(USER);
@@ -66,6 +66,22 @@ export class VisitorComponent implements OnInit, OnDestroy {
     if (!localStorage.getItem('visitor-username')) {
       this.router.navigate(['/']);
     }
+    let sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
+      if (owner) {
+        this.linkExpected = false;
+      }
+    });
+    this.subscriptions$.push(sub);
+
+    setTimeout(() => {
+      if (this.linkExpected) {
+        let link = localStorage.getItem('invite-link');
+        if (!link) {
+          link = '/';
+        }
+        this.router.navigateByUrl(link);
+      }
+    }, 3000);
   }
 
   ngOnDestroy() {
