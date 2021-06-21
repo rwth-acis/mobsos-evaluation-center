@@ -102,7 +102,7 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE = createSelector(
   (workspace, selectedServiceName) =>
     getAllWorkspacesForService(workspace, selectedServiceName),
 );
-const _WORKSPACE_OWNER = (state: StoreState) =>
+export const SELECTED_WORK_SPACE_OWNER = (state: StoreState) =>
   state.Reducer.currentWorkSpaceOwner;
 
 export const WORKSPACE_OWNER = createSelector(
