@@ -64,7 +64,9 @@ export class WorkspaceService {
 
     // updates the workspace in store
     this.communityWorkspace$.subscribe((workspace) => {
-      this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
+      if (!isEmpty(workspace)) {
+        this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
+      }
     });
     // updates the workspace subject with updates from the store
     this.ngrxStore

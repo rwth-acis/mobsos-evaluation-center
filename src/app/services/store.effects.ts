@@ -404,6 +404,7 @@ export class StateEffects {
       ofType(Action.joinWorkSpace),
       tap((action) => {
         Action.setGroup({ groupId: action.groupId });
+        Action.enableEdit();
       }),
       withLatestFrom(
         this.ngrxStore.select(SUCCESS_MODEL),

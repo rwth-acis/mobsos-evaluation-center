@@ -122,6 +122,7 @@ export function localStorageSyncReducer(
           'measureCatalog',
           'user',
           'successModel',
+          'editMode',
           'visualizationData',
           'currentWorkSpaceOwner',
         ],

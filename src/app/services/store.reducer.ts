@@ -12,6 +12,7 @@ import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { isEmpty } from 'lodash-es';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -134,23 +135,6 @@ const _Reducer = createReducer(
       ? props.owner
       : state.currentWorkSpaceOwner,
   })),
-  // on(Actions.setWorkSpaceOwner, (state, props) =>
-  //   state.currentWorkSpaceOwner === props.username
-  //     ? state
-  //     : {
-  //         ...state,
-  //         currentWorkSpaceOwner: props.username,
-  //         successModelInitialized: true,
-  //         measureCatalogInitialized: true,
-  //         communityWorkspace: addVisitor(
-  //           state.communityWorkspace,
-  //           props.username,
-  //           state.currentWorkSpaceOwner,
-  //           state.selectedServiceName,
-  //           UserRole.SPECTATOR,
-  //         ),
-  //       },
-  // ),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(
