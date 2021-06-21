@@ -1,7 +1,7 @@
 <mat-tab-group [dynamicHeight]="true">
   <mat-tab label="{{ 'raw-edit.tabs.measures' | translate }}">
     <ng-container
-      *ngIf="measureCatalogInitialized$ | async; else notReady"
+      *ngIf="canSaveMeasureCatalog$ | async; else notReady"
     >
       <ngx-monaco-editor
         id="measure-editor"
@@ -14,7 +14,7 @@
         class="send-button"
         mat-raised-button
         color="primary"
-        [disabled]="groupID == null || saveInProgress"
+        [disabled]="!(canSaveMeasureCatalog$ | async)"
         (click)="_onCatalogSaveClicked()"
       >
         <mat-spinner
@@ -24,7 +24,7 @@
         >
         </mat-spinner>
         {{
-          groupID == null
+          !(selectedGroupId$ | async)
             ? ('raw-edit.measures.send-button-no-selected-group'
               | translate)
             : ('raw-edit.measures.send-button' | translate)
@@ -38,7 +38,7 @@
         'raw-edit.success-models.select-application' | translate
       }}</mat-label>
       <mat-select
-        [(value)]="selectedService"
+        [(value)]="selectedServiceName"
         (selectionChange)="onServiceSelected($event.value)"
       >
         <mat-option
@@ -50,7 +50,10 @@
       </mat-select>
     </mat-form-field>
     <ng-container
-      *ngIf="successModelInitialized$ | async; else notReady"
+      *ngIf="
+        canSaveSuccessModel$ | async as canSaveSuccessModel;
+        else notReady
+      "
     >
       <ngx-monaco-editor
         id="model-editor"
@@ -63,10 +66,8 @@
         class="send-button"
         mat-raised-button
         color="primary"
-        [disabled]="
-          groupID == null || selectedService == null || saveInProgress
-        "
         (click)="_onModelSaveClicked()"
+        [disabled]="this.saveInProgress"
       >
         <mat-spinner
           *ngIf="saveInProgress"
@@ -75,7 +76,7 @@
         >
         </mat-spinner>
         {{
-          groupID == null || selectedService == null
+          !(selectedGroupId$ | async) || !(selectedService$ | async)
             ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
               | translate)
             : ('raw-edit.success-models.send-button' | translate)
