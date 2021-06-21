@@ -44,6 +44,7 @@ export class SuccessMeasureComponent
   @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
+  @Input() displayTitle = true;
 
   measure: Measure;
   measure$: Observable<Measure>;
@@ -121,10 +122,10 @@ export class SuccessMeasureComponent
     // }
   }
 
-  async onDeleteClicked($event: MouseEvent) {
-    const message = await this.translate
-      .get('success-factor.remove-measure-prompt')
-      .toPromise();
+  onDeleteClicked($event: MouseEvent) {
+    const message = this.translate.instant(
+      'success-factor.remove-measure-prompt',
+    );
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
