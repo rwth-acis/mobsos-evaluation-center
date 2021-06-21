@@ -273,7 +273,7 @@ export class QuestionnairesComponent implements OnInit {
     if (!this.availableQuestionnaires) {
       return null;
     }
-    return this.availableQuestionnaires.find(
+    return this.availableQuestionnaires?.find(
       (value) => value.name === name,
     );
   }

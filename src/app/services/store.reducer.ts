@@ -668,7 +668,7 @@ function addVisitor(
   const appWorkspace: ApplicationWorkspace =
     userWorkspace[serviceName];
   if (!appWorkspace) return communityWorkspace;
-  let visitor = appWorkspace.visitors.find(
+  let visitor = appWorkspace.visitors?.find(
     (v) => v.username === username,
   );
   if (role === UserRole.LURKER) {

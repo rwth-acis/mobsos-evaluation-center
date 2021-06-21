@@ -354,7 +354,7 @@ function getUserRoleInWorkspace(
     return 'owner';
   }
   const visitors = applicationWorkspace.visitors || [];
-  const visitorSearchResult = visitors.find(
+  const visitorSearchResult = visitors?.find(
     (visitor) => visitor.username === userName,
   );
   if (visitorSearchResult) {

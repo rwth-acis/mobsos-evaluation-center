@@ -75,7 +75,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     .pipe(
       map(
         (dimensions) =>
-          dimensions.find((dimension) => dimension.length > 0) ===
+          dimensions?.find((dimension) => dimension.length > 0) ===
           undefined,
       ),
       withLatestFrom(this.editMode$),
@@ -175,6 +175,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
+    this.ngrxStore.dispatch(disableEdit());
   }
 
   onServiceSelected(service: ServiceInformation) {
