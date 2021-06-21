@@ -30,6 +30,7 @@ import {
   APPLICATION_WORKSPACE,
   ASSETS_LOADED,
   WORKSPACE_OWNER,
+  SELECTED_WORK_SPACE_OWNER,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
@@ -71,7 +72,8 @@ export class WorkspaceManagementComponent
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
-  applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
+  selectedOwner$ = this.ngrxStore.select(SELECTED_WORK_SPACE_OWNER); // holds the owner of the workspace which the user wants to join
+  applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
   user$ = this.ngrxStore.select(USER);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   workspaceInitialized$ = this.ngrxStore.select(ASSETS_LOADED);
@@ -124,22 +126,20 @@ export class WorkspaceManagementComponent
       .pipe(
         withLatestFrom(
           this.selectedGroup$,
-          this.applicationWorkspaceOwner$,
+          this.selectedOwner$,
+          this.user$,
         ),
       )
-      .subscribe(async ([editMode, group, owner]) => {
+      .subscribe(async ([editMode, group, owner, user]) => {
         this.selectedGroup = group;
         if (editMode) {
-          if (
-            owner &&
-            owner !== this.user?.profile.preferred_username
-          ) {
+          if (owner && owner !== user?.profile.preferred_username) {
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: group.id,
                 serviceName: this.selectedServiceName,
                 owner,
-                username: this.user.profile.preferred_username,
+                username: user.profile.preferred_username,
               }),
             );
           } else {
@@ -149,7 +149,7 @@ export class WorkspaceManagementComponent
                 groupId: group.id,
                 serviceName: this.selectedServiceName,
                 owner,
-                username: this.user.profile.preferred_username,
+                username: user.profile.preferred_username,
               }),
             );
           }
