@@ -107,8 +107,7 @@ const _WORKSPACE_OWNER = (state: StoreState) =>
 
 export const WORKSPACE_OWNER = createSelector(
   APPLICATION_WORKSPACE,
-  _WORKSPACE_OWNER,
-  (appworkspace, owner) => appworkspace?.createdBy || owner,
+  (appworkspace) => appworkspace?.createdBy,
 );
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
@@ -397,6 +396,7 @@ function getCurrentUserWorkspace(
   user: string,
 ) {
   if (!communityWorkspace) return;
-  if (owner) return communityWorkspace[owner];
+  if (owner && communityWorkspace[owner])
+    return communityWorkspace[owner];
   return communityWorkspace[user];
 }
