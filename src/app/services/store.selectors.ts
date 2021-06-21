@@ -182,7 +182,8 @@ export const SUCCESS_MODEL = createSelector(
 
 export const DIMENSIONS_IN_MODEL = createSelector(
   SUCCESS_MODEL,
-  (model) => (model ? Object.values(model.dimensions) : undefined),
+  (model) =>
+    model?.dimensions ? Object.values(model.dimensions) : undefined,
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>

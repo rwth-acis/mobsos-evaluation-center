@@ -436,6 +436,20 @@ export class StateEffects {
                   }
                   const currentCommunityWorkspace =
                     this.workspaceService.currentCommunityWorkspace;
+                  if (
+                    user?.signedIn &&
+                    !currentCommunityWorkspace[
+                      user.profile.preferred_username
+                    ]
+                  ) {
+                    this.workspaceService.initWorkspace(
+                      action.groupId,
+                      user?.profile.preferred_username,
+                      service,
+                      catalog,
+                      model,
+                    );
+                  }
                   if (!currentCommunityWorkspace) {
                     return Action.failure();
                   } else

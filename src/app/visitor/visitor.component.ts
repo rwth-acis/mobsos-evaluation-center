@@ -4,10 +4,13 @@ import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import {
+  APPLICATION_WORKSPACE,
   ASSETS_LOADED,
+  COMMUNITY_WORKSPACE,
   DIMENSIONS_IN_MODEL,
   MEASURE_CATALOG,
   SELECTED_GROUP_ID,
+  SELECTED_SERVICE,
   SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
   USER,
@@ -21,7 +24,9 @@ import { iconMap, translationMap } from '../success-modeling/config';
   styleUrls: ['./visitor.component.scss'],
 })
 export class VisitorComponent implements OnInit {
-  selectedServiceName$ = this.ngrxStore.select(SELECTED_SERVICE_NAME);
+  selectedServiceName$ = this.ngrxStore
+    .select(SELECTED_SERVICE)
+    .pipe(map((service) => service?.name));
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
   assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
   user$ = this.ngrxStore.select(USER);
@@ -47,6 +52,9 @@ export class VisitorComponent implements OnInit {
   constructor(private ngrxStore: Store, private router: Router) {}
 
   ngOnInit(): void {
+    this.ngrxStore
+      .select(COMMUNITY_WORKSPACE)
+      .subscribe((a) => console.log(a));
     if (!localStorage.getItem('visitor-username')) {
       this.router.navigate(['/']);
     }

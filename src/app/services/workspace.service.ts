@@ -62,11 +62,6 @@ export class WorkspaceService {
       this.sharedDocument, // collection of properties which will be synced
     );
 
-    // provider.emit('hello world', null);
-    // provider.on('hello world', () =>
-    //   console.log('synced from websocket'),
-    // );
-
     // updates the workspace in store
     this.communityWorkspace$.subscribe((workspace) => {
       this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
@@ -120,6 +115,9 @@ export class WorkspaceService {
     if (!username) {
       throw new Error('user cannot be null');
     }
+    if (!selectedService) {
+      throw new Error('service cannot be null');
+    }
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupID);
@@ -151,7 +149,7 @@ export class WorkspaceService {
     // update the subject which in turn will send an update to yjs
     this.communityWorkspace$.next(communityWorkspace);
     // // after initializing our local workspace we start the synchronizing with yjs
-    // this.startSynchronizingWorkspace(groupID);
+    this.syncObject(groupID);
   }
 
   /**
@@ -360,7 +358,7 @@ export class WorkspaceService {
     this.communityWorkspace$
       .pipe(
         throttleTime(10),
-        filter((obj) => !isEqual(obj, map.toJSON())),
+        filter((obj) => !isEmpty(obj) && !isEqual(obj, map.toJSON())),
       )
       .subscribe((obj) => {
         // if the subject changes the object will be synced with yjs
