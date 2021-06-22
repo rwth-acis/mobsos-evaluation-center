@@ -23,6 +23,7 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
@@ -40,12 +41,14 @@ import {
   SELECTED_GROUP,
   _USER,
   USER_GROUPS,
+  _EDIT_MODE,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
   filter,
   first,
   map,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -183,6 +186,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.ngrxStore.dispatch(initState());
     let sub = this.user$
       .pipe(
         filter((user) => !!user),
@@ -211,6 +215,18 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
+    // sub = this.ngrxStore
+    //   .select(_EDIT_MODE)
+    //   .pipe(withLatestFrom(this.selectedGroup$), first())
+    //   .subscribe(([editMode, group]) => {
+    //     if (editMode) {
+    //       if (!group) {
+    //         this.ngrxStore.dispatch(disableEdit());
+    //       }else{
+    //         this.ngrxStore.dispatch(initState())
+    //       }
+    //     }
+    //   });
     if (isDevMode()) {
       sub = this.ngrxStore.subscribe((state) => {
         console.log(state);

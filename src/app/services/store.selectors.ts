@@ -17,6 +17,7 @@ import {
 } from '../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
+
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
@@ -29,6 +30,7 @@ export const _EXPERT_MODE = (state: StoreState) =>
 export const _USER = (state: StoreState) =>
   state.Reducer?.user as User;
 
+// SERVICES
 export const _SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer?.selectedServiceName;
 
