@@ -159,6 +159,3 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     // this.sendFactorToDimension.emit(this.factor);
   }
 }
-function SERVICE(SERVICE: any) {
-  throw new Error('Function not implemented.');
-}

@@ -25,6 +25,7 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
+  _EDIT_MODE,
   SUCCESS_MODEL_XML,
   _USER,
   VISUALIZATION_DATA,
@@ -553,9 +554,4 @@ function shouldFetch(dataForQuery: VData): boolean {
     return true;
   }
   return false;
-}
-function _EDIT_MODE(
-  _EDIT_MODE: any,
-): import('rxjs').Observable<unknown> {
-  throw new Error('Function not implemented.');
 }
