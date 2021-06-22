@@ -2,6 +2,7 @@ import { MeasureCatalog } from './measure.catalog';
 import { ServiceInformation } from './service.model';
 import { SuccessModel } from './success.model';
 import { Visitor } from './user.model';
+import { VisualizationData } from './visualization.model';
 
 export interface ApplicationWorkspace {
   createdAt: string;
@@ -10,6 +11,7 @@ export interface ApplicationWorkspace {
   model: SuccessModel;
   catalog: MeasureCatalog;
   service: ServiceInformation;
+  visualizationData: VisualizationData;
 }
 
 export interface UserWorkspace {

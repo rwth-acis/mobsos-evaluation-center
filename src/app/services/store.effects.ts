@@ -413,9 +413,10 @@ export class StateEffects {
         this.ngrxStore.select(RESTRICTED_MODE),
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(USER),
+        this.ngrxStore.select(VISUALIZATION_DATA)
       ),
       switchMap(
-        ([action, model, catalog, restricted, service, user]) =>
+        ([action, model, catalog, restricted, service, user,vdata]) =>
           this.workspaceService
             .syncWithCommunnityWorkspace(action.groupId)
             .pipe(
@@ -439,6 +440,7 @@ export class StateEffects {
                         service,
                         catalog,
                         model,
+                        vdata
                       );
                       owner = user?.profile.preferred_username;
                     } else {
@@ -459,6 +461,7 @@ export class StateEffects {
                       service,
                       catalog,
                       model,
+                      vdata
                     );
                   }
                   if (!currentCommunityWorkspace) {

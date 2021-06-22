@@ -28,6 +28,7 @@ import {
   throttleTime,
   timeout,
 } from 'rxjs/operators';
+import { VisualizationData } from '../models/visualization.model';
 
 const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
@@ -113,6 +114,7 @@ export class WorkspaceService {
     selectedService: ServiceInformation,
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
+    visualizationData?:VisualizationData
   ) {
     if (!username) {
       throw new Error('user cannot be null');
@@ -146,6 +148,7 @@ export class WorkspaceService {
         catalog: measureCatalog,
         model: successModel,
         service: selectedService,
+        visualizationData
       };
     }
     // update the subject which in turn will send an update to yjs

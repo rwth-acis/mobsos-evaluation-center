@@ -31,6 +31,7 @@ import {
   ASSETS_LOADED,
   WORKSPACE_OWNER,
   SELECTED_WORK_SPACE_OWNER,
+  VISUALIZATION_DATA,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
@@ -47,6 +48,7 @@ import { ServiceInformation } from '../models/service.model';
 import { ApplicationWorkspace } from '../models/workspace.model';
 import { GroupInformation } from '../models/community.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { VisualizationData } from '../models/visualization.model';
 
 @Component({
   selector: 'app-workspace-management',
@@ -86,6 +88,7 @@ export class WorkspaceManagementComponent
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );
+  visualizationData$ = this.ngrxStore.select(VISUALIZATION_DATA)
 
   subscriptions$: Subscription[] = [];
 
@@ -128,9 +131,10 @@ export class WorkspaceManagementComponent
           this.selectedGroup$,
           this.selectedOwner$,
           this.user$,
+          this.visualizationData$
         ),
       )
-      .subscribe(async ([editMode, group, owner, user]) => {
+      .subscribe(async ([editMode, group, owner, user,vdata]) => {
         this.selectedGroup = group;
         if (editMode) {
           if (owner && owner !== user?.profile.preferred_username) {
@@ -143,7 +147,7 @@ export class WorkspaceManagementComponent
               }),
             );
           } else {
-            this.initWorkspace(group.id);
+            this.initWorkspace(group.id,vdata);
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: group.id,
@@ -287,7 +291,7 @@ export class WorkspaceManagementComponent
   /**
    * Initializes the workspace for collaborative success modeling
    */
-  private initWorkspace(groupID: string) {
+  private initWorkspace(groupID: string,visualizationData:VisualizationData) {
     if (!this.user) return console.error('user cannot be null');
     this.workspaceOwner = this.user?.profile.preferred_username;
     // get the current workspace state from yjs
@@ -306,6 +310,7 @@ export class WorkspaceManagementComponent
       this.selectedService,
       this.measureCatalog,
       this.successModel,
+      visualizationData
     );
     this.currentApplicationWorkspace =
       this.workspaceService.currentCommunityWorkspace[
