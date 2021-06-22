@@ -149,7 +149,7 @@ export class WorkspaceManagementComponent
               }),
             );
           } else {
-            this.initWorkspace(group.id, vdata);
+            this.initWorkspace(group.id, vdata, user);
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: group.id,
@@ -296,7 +296,9 @@ export class WorkspaceManagementComponent
   private initWorkspace(
     groupID: string,
     visualizationData: VisualizationData,
+    user?: User,
   ) {
+    if (!this.user) this.user = user;
     if (!this.user) return console.error('user cannot be null');
     this.workspaceOwner = this.user?.profile.preferred_username;
     // get the current workspace state from yjs
