@@ -45,7 +45,7 @@ export const GROUPS = (state: StoreState) =>
 
 const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
-export const VISUALIZATION_DATA = (state: StoreState) =>
+const _VISUALIZATION_DATA = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
 const _SUCCESS_MODEL_INIT = (state: StoreState) =>
@@ -55,7 +55,7 @@ const _MEASURE_CATALOG_INIT = (state: StoreState) =>
   state.Reducer?.measureCatalogInitialized;
 
 export const SELECTED_GROUP = createSelector(
-  SELECTED_GROUP_ID,
+  _SELECTED_GROUP_ID,
   _GROUPS,
   (groupId, groups) => (groups ? groups[groupId] : undefined),
 );
@@ -253,14 +253,24 @@ export const WORKSPACE_CATALOG_XML = createSelector(
       : undefined,
 );
 
-export const VISUALIZATION_DATA_FOR_QUERY = (
-  state: StoreState,
-  queryString: string,
-) =>
-  state.Reducer?.visualizationData &&
-  state.Reducer.visualizationData[queryString]
-    ? state.Reducer.visualizationData[queryString]
-    : undefined;
+export const VISUALIZATION_DATA_FROM_WORKSPACE = createSelector(
+  APPLICATION_WORKSPACE,
+  (workspace) => workspace.visualizationData,
+);
+
+export const VISUALIZATION_DATA = createSelector(
+  _VISUALIZATION_DATA,
+  VISUALIZATION_DATA_FROM_WORKSPACE,
+  _EDIT_MODE,
+  (datafromQVS, dataFromWorkspace, editMode) =>
+    editMode && dataFromWorkspace ? dataFromWorkspace : datafromQVS,
+);
+
+export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
+  VISUALIZATION_DATA,
+  (vdata, queryString: string) =>
+    vdata ? vdata[queryString] : undefined,
+);
 
 const _SELECTED_SERVICE = (state: StoreState) =>
   state.Reducer?.services && state.Reducer.selectedServiceName
