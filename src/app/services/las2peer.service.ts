@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../environments/environment';
+
 import { NGXLogger } from 'ngx-logger';
 import {
   HttpClient,
@@ -9,6 +9,7 @@ import {
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share } from 'rxjs/operators';
 import { merge } from 'lodash-es';
+import { environment } from 'src/environments/environment';
 
 interface SuccessModel {
   xml: string;

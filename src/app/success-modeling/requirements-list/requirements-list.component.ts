@@ -13,7 +13,6 @@ import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-pr
 import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
-import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { USER } from 'src/app/services/store.selectors';
@@ -21,6 +20,7 @@ import { storeSuccessModel } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
 import { ReqbazProject } from 'src/app/models/reqbaz.model';
+import { Las2peerService } from 'src/app/services/las2peer.service';
 
 @Component({
   selector: 'app-requirements-list',

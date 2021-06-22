@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { LanguageService } from './language.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { createTranslateLoader } from './app.module';
+import { createTranslateLoader } from '../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('LanguageService', () => {

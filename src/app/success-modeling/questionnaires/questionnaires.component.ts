@@ -6,7 +6,7 @@ import {
   Output,
 } from '@angular/core';
 
-import { Las2peerService } from '../../las2peer.service';
+
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -34,6 +34,7 @@ import {
 import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
+import { Las2peerService } from 'src/app/services/las2peer.service';
 
 @Component({
   selector: 'app-questionnaires',

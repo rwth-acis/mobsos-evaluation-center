@@ -13,8 +13,9 @@ import {
   share,
   tap,
 } from 'rxjs/operators';
-import { Las2peerService } from '../las2peer.service';
+
 import { VData } from '../models/visualization.model';
+import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
   MEASURE_CATALOG,
