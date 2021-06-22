@@ -10,16 +10,16 @@ import {
   toggleEdit,
 } from '../services/store.actions';
 import {
-  ASSETS_LOADED,
+  MODEL_AND_CATALOG_LOADED,
   DIMENSIONS_IN_MODEL,
-  EDIT_MODE,
+  _EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
-  USER,
+  _USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
 } from '../services/store.selectors';
 import {
@@ -68,7 +68,7 @@ import { IQuestionnaire } from '../models/questionnaire.model';
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   @Input() restricted = false;
 
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  editMode$ = this.ngrxStore.select(_EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore
     .select(DIMENSIONS_IN_MODEL)
@@ -85,8 +85,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
 
-  assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
-  user$ = this.ngrxStore.select(USER);
+  assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
+  user$ = this.ngrxStore.select(_USER);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );

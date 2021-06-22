@@ -15,9 +15,9 @@ import {
 import {
   MEASURE_CATALOG,
   MEASURE_CATALOG_XML,
-  SELECTED_GROUP_ID,
+  _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
-  SERVICES,
+  _SERVICES,
   SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
 } from '../services/store.selectors';
@@ -59,7 +59,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   measureCatalogEditor;
   successModelEditor;
   saveInProgress = false;
-  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
+  selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   measureCatalogInitialized$ = this.ngrxStore
     .select(MEASURE_CATALOG)
@@ -73,7 +73,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
       filter((model) => model !== undefined),
       first(),
     );
-  services$ = this.ngrxStore.select(SERVICES);
+  services$ = this.ngrxStore.select(_SERVICES);
 
   canSaveSuccessModel$ = combineLatest([
     this.selectedGroupId$,

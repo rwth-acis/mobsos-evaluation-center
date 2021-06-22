@@ -15,7 +15,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { USER } from 'src/app/services/store.selectors';
+import { _USER } from 'src/app/services/store.selectors';
 import { storeSuccessModel } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
@@ -34,7 +34,7 @@ export class RequirementsListComponent
 
   @Output() numberOfRequirements = new EventEmitter<number>();
 
-  user$ = this.ngrxStore.select(USER);
+  user$ = this.ngrxStore.select(_USER);
   requirements;
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;

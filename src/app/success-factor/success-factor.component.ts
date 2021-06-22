@@ -15,7 +15,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import {
-  EDIT_MODE,
+  _EDIT_MODE,
   MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,

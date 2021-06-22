@@ -19,7 +19,7 @@ import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
-import { COMMUNITY_WORKSPACE } from './store.selectors';
+import { _COMMUNITY_WORKSPACE } from './store.selectors';
 import {
   catchError,
   distinctUntilChanged,
@@ -71,7 +71,7 @@ export class WorkspaceService {
     });
     // updates the workspace subject with updates from the store
     this.ngrxStore
-      .select(COMMUNITY_WORKSPACE)
+      .select(_COMMUNITY_WORKSPACE)
       .pipe(
         distinctUntilChanged(),
         throttleTime(5), // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
@@ -114,7 +114,7 @@ export class WorkspaceService {
     selectedService: ServiceInformation,
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
-    visualizationData?:VisualizationData
+    visualizationData?: VisualizationData,
   ) {
     if (!username) {
       throw new Error('user cannot be null');
@@ -148,7 +148,7 @@ export class WorkspaceService {
         catalog: measureCatalog,
         model: successModel,
         service: selectedService,
-        visualizationData
+        visualizationData,
       };
     }
     // update the subject which in turn will send an update to yjs

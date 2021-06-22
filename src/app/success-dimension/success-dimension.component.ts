@@ -12,7 +12,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
-  EDIT_MODE,
+  _EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';

@@ -21,12 +21,12 @@ import {
   MEASURE_CATALOG,
   MEASURE_CATALOG_XML,
   RESTRICTED_MODE,
-  SELECTED_GROUP_ID,
+  _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
-  SELECTED_SERVICE_NAME,
+  _SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
   SUCCESS_MODEL_XML,
-  USER,
+  _USER,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG,
   WORKSPACE_CATALOG_XML,
@@ -148,7 +148,7 @@ export class StateEffects {
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       filter(([{ service }, groupId]) => !!service),
       switchMap(([{ service }, groupId]) =>
         of(
@@ -166,8 +166,8 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.initState),
       withLatestFrom(
-        this.ngrxStore.select(USER),
-        this.ngrxStore.select(SELECTED_GROUP_ID),
+        this.ngrxStore.select(_USER),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
       ),
       tap(([action, user, groupId]) => {
         if (user?.profile) {
@@ -219,7 +219,7 @@ export class StateEffects {
       withLatestFrom(
         combineLatest([
           this.ngrxStore.select(WORKSPACE_CATALOG_XML),
-          this.ngrxStore.select(SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
         ]),
       ),
       switchMap(([action, [measureCatalogXML, groupId]]) =>
@@ -240,8 +240,8 @@ export class StateEffects {
       ofType(Action.saveCatalogSuccess),
       withLatestFrom(
         this.ngrxStore.select(WORKSPACE_MODEL_XML),
-        this.ngrxStore.select(SELECTED_GROUP_ID),
-        this.ngrxStore.select(SELECTED_SERVICE_NAME),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
       switchMap(([action, successModelXML, groupId, serviceName]) =>
         this.l2p
@@ -291,8 +291,8 @@ export class StateEffects {
       ofType(Action.saveModel),
       withLatestFrom(
         combineLatest([
-          this.ngrxStore.select(SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_SERVICE_NAME),
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ]),
       ),
       switchMap(([action, [groupId, serviceName]]) =>
@@ -320,7 +320,7 @@ export class StateEffects {
   saveCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveCatalog),
-      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       switchMap(([action, groupId]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, action.xml)
@@ -412,11 +412,19 @@ export class StateEffects {
         this.ngrxStore.select(MEASURE_CATALOG),
         this.ngrxStore.select(RESTRICTED_MODE),
         this.ngrxStore.select(SELECTED_SERVICE),
-        this.ngrxStore.select(USER),
-        this.ngrxStore.select(VISUALIZATION_DATA)
+        this.ngrxStore.select(_USER),
+        this.ngrxStore.select(VISUALIZATION_DATA),
       ),
       switchMap(
-        ([action, model, catalog, restricted, service, user,vdata]) =>
+        ([
+          action,
+          model,
+          catalog,
+          restricted,
+          service,
+          user,
+          vdata,
+        ]) =>
           this.workspaceService
             .syncWithCommunnityWorkspace(action.groupId)
             .pipe(
@@ -440,7 +448,7 @@ export class StateEffects {
                         service,
                         catalog,
                         model,
-                        vdata
+                        vdata,
                       );
                       owner = user?.profile.preferred_username;
                     } else {
@@ -461,7 +469,7 @@ export class StateEffects {
                       service,
                       catalog,
                       model,
-                      vdata
+                      vdata,
                     );
                   }
                   if (!currentCommunityWorkspace) {

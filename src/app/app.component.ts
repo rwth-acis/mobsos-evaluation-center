@@ -13,7 +13,6 @@ import { MediaMatcher } from '@angular/cdk/layout';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 
-
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
 import * as Hammer from 'hammerjs';
@@ -34,12 +33,12 @@ import {
 } from './services/store.actions';
 import {
   APPLICATION_WORKSPACE,
-  EXPERT_MODE,
+  _EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
-  USER,
+  _USER,
   USER_GROUPS,
 } from './services/store.selectors';
 import {
@@ -86,7 +85,7 @@ export class AppComponent implements OnInit, OnDestroy {
   myGroups: GroupInformation[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
-  user$: Observable<User> = this.ngrxStore.select(USER);
+  user$: Observable<User> = this.ngrxStore.select(_USER);
   // authorized$ = this.user$.pipe(
   //   map((user) => user && (user.signedIn || user.visiting)),
   // );
@@ -114,7 +113,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
-  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  expertMode$ = this.ngrxStore.select(_EXPERT_MODE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];

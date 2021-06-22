@@ -17,24 +17,38 @@ import {
 } from '../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
-export const EDIT_MODE = (state: StoreState) =>
+export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
+  state.Reducer?.currentNumberOfHttpCalls > 0;
+
+export const _EDIT_MODE = (state: StoreState) =>
   state.Reducer?.editMode;
 
-export const EXPERT_MODE = (state: StoreState) =>
+export const _EXPERT_MODE = (state: StoreState) =>
   state.Reducer?.expertMode;
 
-export const SELECTED_SERVICE_NAME = (state: StoreState) =>
+export const _USER = (state: StoreState) =>
+  state.Reducer?.user as User;
+
+export const _SELECTED_SERVICE_NAME = (state: StoreState) =>
   state.Reducer?.selectedServiceName;
 
-export const SELECTED_GROUP_ID = (state: StoreState) =>
-  state.Reducer?.selectedGroupId;
-
-export const SERVICES = (state: StoreState) =>
+export const _SERVICES = (state: StoreState) =>
   state.Reducer?.services
     ? Object.values(state.Reducer.services).sort((a, b) =>
         sortServicesByName(a, b),
       )
     : undefined;
+
+const _SELECTED_SERVICE = (state: StoreState) =>
+  state.Reducer?.services && state.Reducer.selectedServiceName
+    ? state.Reducer.services[state.Reducer.selectedServiceName]
+    : undefined;
+
+// GROUPS
+export const _SELECTED_GROUP_ID = (state: StoreState) =>
+  state.Reducer?.selectedGroupId;
+
+const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
 export const GROUPS = (state: StoreState) =>
   state.Reducer?.groups
@@ -43,16 +57,11 @@ export const GROUPS = (state: StoreState) =>
       )
     : undefined;
 
-const _GROUPS = (state: StoreState) => state.Reducer?.groups;
+export const USER_GROUPS = (state: StoreState) =>
+  _userGroups(state.Reducer?.groups);
 
-const _VISUALIZATION_DATA = (state: StoreState) =>
-  state.Reducer?.visualizationData;
-
-const _SUCCESS_MODEL_INIT = (state: StoreState) =>
-  state.Reducer?.successModelInitialized;
-
-const _MEASURE_CATALOG_INIT = (state: StoreState) =>
-  state.Reducer?.measureCatalogInitialized;
+export const FOREIGN_GROUPS = (state: StoreState) =>
+  _foreignGroups(state.Reducer?.groups);
 
 export const SELECTED_GROUP = createSelector(
   _SELECTED_GROUP_ID,
@@ -60,25 +69,26 @@ export const SELECTED_GROUP = createSelector(
   (groupId, groups) => (groups ? groups[groupId] : undefined),
 );
 
-export const USER_GROUPS = (state: StoreState) =>
-  _userGroups(state.Reducer?.groups);
+export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
+  SELECTED_GROUP,
+  _USER,
+  (group, user) => !!user && group?.member,
+);
 
-export const FOREIGN_GROUPS = (state: StoreState) =>
-  _foreignGroups(state.Reducer?.groups);
+// WORKSPACE
+export const SELECTED_WORK_SPACE_OWNER = (state: StoreState) =>
+  state.Reducer.currentWorkSpaceOwner;
 
-const CURRENT_WORKSPACE_OWNER = (state: StoreState) =>
+const _CURRENT_WORKSPACE_OWNER = (state: StoreState) =>
   state.Reducer?.currentWorkSpaceOwner;
 
-export const USER = (state: StoreState) =>
-  state.Reducer?.user as User;
-
-export const COMMUNITY_WORKSPACE = (state: StoreState) =>
+export const _COMMUNITY_WORKSPACE = (state: StoreState) =>
   state.Reducer?.communityWorkspace;
 
 export const CURRENT_USER_WORKSPACE = createSelector(
-  COMMUNITY_WORKSPACE,
-  CURRENT_WORKSPACE_OWNER,
-  USER,
+  _COMMUNITY_WORKSPACE,
+  _CURRENT_WORKSPACE_OWNER,
+  _USER,
   (communityWorkspace, owner, user) =>
     getCurrentUserWorkspace(
       owner,
@@ -89,7 +99,7 @@ export const CURRENT_USER_WORKSPACE = createSelector(
 
 export const APPLICATION_WORKSPACE = createSelector(
   CURRENT_USER_WORKSPACE,
-  SELECTED_SERVICE_NAME,
+  _SELECTED_SERVICE_NAME,
   (userWorkspace, serviceName) =>
     userWorkspace && serviceName
       ? userWorkspace[serviceName]
@@ -97,13 +107,11 @@ export const APPLICATION_WORKSPACE = createSelector(
 );
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE = createSelector(
-  COMMUNITY_WORKSPACE,
-  SELECTED_SERVICE_NAME,
+  _COMMUNITY_WORKSPACE,
+  _SELECTED_SERVICE_NAME,
   (workspace, selectedServiceName) =>
     getAllWorkspacesForService(workspace, selectedServiceName),
 );
-export const SELECTED_WORK_SPACE_OWNER = (state: StoreState) =>
-  state.Reducer.currentWorkSpaceOwner;
 
 export const WORKSPACE_OWNER = createSelector(
   APPLICATION_WORKSPACE,
@@ -112,8 +120,8 @@ export const WORKSPACE_OWNER = createSelector(
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
   createSelector(
-    COMMUNITY_WORKSPACE,
-    SELECTED_SERVICE_NAME,
+    _COMMUNITY_WORKSPACE,
+    _SELECTED_SERVICE_NAME,
     WORKSPACE_OWNER,
     (communityWorkspace, selectedServiceName, owner) =>
       getAllWorkspacesForService(
@@ -132,7 +140,7 @@ export const VISITORS = createSelector(
 
 export const VISITORS_EXCEPT_USER = createSelector(
   VISITORS,
-  USER,
+  _USER,
   (visitors, user) =>
     visitors?.filter(
       (visitor) =>
@@ -142,7 +150,7 @@ export const VISITORS_EXCEPT_USER = createSelector(
 
 export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  USER,
+  _USER,
   (appWorkspace, user) =>
     getUserRoleInWorkspace(
       appWorkspace,
@@ -150,34 +158,34 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
     ),
 );
 
+export const USER_HAS_EDIT_RIGHTS = createSelector(
+  _EDIT_MODE,
+  ROLE_IN_CURRENT_WORKSPACE,
+  (editMode, role) =>
+    editMode && (role === 'owner' || role === 'editor'),
+);
+
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
-  CURRENT_WORKSPACE_OWNER,
-  USER,
+  _CURRENT_WORKSPACE_OWNER,
+  _USER,
   (owner, user) => owner === user?.profile.preferred_username,
 );
 
-export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
-  state.Reducer?.currentNumberOfHttpCalls > 0;
-
-// export const SUCCESS_MODEL = (state: StoreState) =>
-//   parseModel(state.Reducer.successModelXML);
-export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
-  SELECTED_GROUP,
-  USER,
-  (group, user) => !!user && group?.member,
-);
-
-const _SUCCESS_MODEL = (state: StoreState) =>
+// SUCCESS MODEL
+const SUCCESS_MODEL_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.successModel;
 
-export const SUCCESS_MODEL = createSelector(
-  EDIT_MODE,
-  _SUCCESS_MODEL,
+const SUCCESS_MODEL_FROM_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  (editMode, successModel, applicationWorkspace) =>
-    applicationWorkspace && editMode
-      ? applicationWorkspace.model
-      : successModel,
+  (workspace) => workspace?.model,
+);
+
+export const SUCCESS_MODEL = createSelector(
+  _EDIT_MODE,
+  SUCCESS_MODEL_FROM_NETWORK,
+  SUCCESS_MODEL_FROM_WORKSPACE,
+  (editMode, successModelFromNetwork, successModelInWorkspace) =>
+    editMode ? successModelInWorkspace : successModelFromNetwork,
 );
 
 export const DIMENSIONS_IN_MODEL = createSelector(
@@ -209,17 +217,27 @@ export const WORKSPACE_MODEL_XML = createSelector(
       : undefined,
 );
 
-const _MEASURE_CATALOG = (state: StoreState) =>
+// MEASURE CATALOG
+const MEASURE_CATALOG_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.measureCatalog;
 
-export const MEASURE_CATALOG = createSelector(
-  EDIT_MODE,
-  _MEASURE_CATALOG,
+const MEASURE_CATALOG_FROM_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  (editMode, measureCatalog, applicationWorkspace) =>
-    applicationWorkspace && editMode
-      ? applicationWorkspace.catalog
-      : measureCatalog,
+  (workspace) => workspace?.catalog,
+);
+
+export const MEASURE_CATALOG = createSelector(
+  _EDIT_MODE,
+  MEASURE_CATALOG_FROM_NETWORK,
+  MEASURE_CATALOG_FROM_WORKSPACE,
+  (
+    editMode,
+    measureCatalogFromNetwork,
+    measureCatalogFromWorkspace,
+  ) =>
+    editMode
+      ? measureCatalogFromWorkspace
+      : measureCatalogFromNetwork,
 );
 
 export const MEASURES = createSelector(
@@ -253,13 +271,18 @@ export const WORKSPACE_CATALOG_XML = createSelector(
       : undefined,
 );
 
+// VISUALIZATION_DATA
+
+const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
+  state.Reducer?.visualizationData;
+
 export const VISUALIZATION_DATA_FROM_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  (workspace) => workspace.visualizationData,
+  (workspace) => workspace?.visualizationData,
 );
 
 export const VISUALIZATION_DATA = createSelector(
-  _VISUALIZATION_DATA,
+  VISUALIZATION_DATA_FROM_QVS,
   VISUALIZATION_DATA_FROM_WORKSPACE,
   _EDIT_MODE,
   (datafromQVS, dataFromWorkspace, editMode) =>
@@ -272,32 +295,20 @@ export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
     vdata ? vdata[queryString] : undefined,
 );
 
-const _SELECTED_SERVICE = (state: StoreState) =>
-  state.Reducer?.services && state.Reducer.selectedServiceName
-    ? state.Reducer.services[state.Reducer.selectedServiceName]
-    : undefined;
-
-export const ASSETS_LOADED = createSelector(
+export const MODEL_AND_CATALOG_LOADED = createSelector(
   SUCCESS_MODEL,
   MEASURE_CATALOG,
-
   (model, catalog) => !!model && !!catalog,
 );
 
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
-  EDIT_MODE,
+  _EDIT_MODE,
   APPLICATION_WORKSPACE,
   (service, editMode, workspace) =>
     editMode && workspace ? workspace?.service : service,
 );
 
-export const USER_HAS_EDIT_RIGHTS = createSelector(
-  EDIT_MODE,
-  ROLE_IN_CURRENT_WORKSPACE,
-  (editMode, role) =>
-    editMode && (role === 'owner' || role === 'editor'),
-);
 function parseXml(xml: string) {
   const parser = new DOMParser();
   return parser.parseFromString(xml, 'text/xml');

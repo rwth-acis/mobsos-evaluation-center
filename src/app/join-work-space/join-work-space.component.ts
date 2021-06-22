@@ -7,7 +7,7 @@ import { withLatestFrom } from 'rxjs/operators';
 import { User, UserRole } from '../models/user.model';
 import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
 import { joinWorkSpace } from '../services/store.actions';
-import { USER } from '../services/store.selectors';
+import { _USER } from '../services/store.selectors';
 
 /**
  * Used to join the workspace of another user by url. Url should be of the following format: /join/:groupId/:serviceName/:username
@@ -30,7 +30,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription$ = this.route.params
-      .pipe(withLatestFrom(this.ngrxStore.select(USER)))
+      .pipe(withLatestFrom(this.ngrxStore.select(_USER)))
       .subscribe(
         async ([params, user]: [
           {

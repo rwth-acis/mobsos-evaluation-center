@@ -15,15 +15,15 @@ import {
 import { User } from '../models/user.model';
 import {
   APPLICATION_WORKSPACE,
-  ASSETS_LOADED,
-  COMMUNITY_WORKSPACE,
+  MODEL_AND_CATALOG_LOADED,
+  _COMMUNITY_WORKSPACE,
   DIMENSIONS_IN_MODEL,
   MEASURE_CATALOG,
-  SELECTED_GROUP_ID,
+  _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
-  SELECTED_SERVICE_NAME,
+  _SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
-  USER,
+  _USER,
   WORKSPACE_OWNER,
 } from '../services/store.selectors';
 import { iconMap, translationMap } from '../success-modeling/config';
@@ -35,10 +35,12 @@ import { iconMap, translationMap } from '../success-modeling/config';
 })
 export class VisitorComponent implements OnInit, OnDestroy {
   linkExpected: boolean = true;
-  selectedServiceName$ = this.ngrxStore.select(SELECTED_SERVICE_NAME);
-  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
-  assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
-  user$ = this.ngrxStore.select(USER);
+  selectedServiceName$ = this.ngrxStore.select(
+    _SELECTED_SERVICE_NAME,
+  );
+  selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
+  assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
+  user$ = this.ngrxStore.select(_USER);
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
   showSuccessModelEmpty$ = this.ngrxStore
     .select(DIMENSIONS_IN_MODEL)

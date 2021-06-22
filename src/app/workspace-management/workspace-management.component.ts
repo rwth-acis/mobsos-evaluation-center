@@ -17,18 +17,18 @@ import { FormControl } from '@angular/forms';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   VISITORS_EXCEPT_USER,
-  EDIT_MODE,
+  _EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
-  SERVICES,
+  _SERVICES,
   SUCCESS_MODEL,
-  USER,
+  _USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   APPLICATION_WORKSPACE,
-  ASSETS_LOADED,
+  MODEL_AND_CATALOG_LOADED,
   WORKSPACE_OWNER,
   SELECTED_WORK_SPACE_OWNER,
   VISUALIZATION_DATA,
@@ -68,17 +68,19 @@ export class WorkspaceManagementComponent
   currentApplicationWorkspace$ = this.ngrxStore.select(
     APPLICATION_WORKSPACE,
   );
-  services$ = this.ngrxStore.select(SERVICES);
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  services$ = this.ngrxStore.select(_SERVICES);
+  editMode$ = this.ngrxStore.select(_EDIT_MODE);
   roleInWorkspace$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
   selectedOwner$ = this.ngrxStore.select(SELECTED_WORK_SPACE_OWNER); // holds the owner of the workspace which the user wants to join
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
-  user$ = this.ngrxStore.select(USER);
+  user$ = this.ngrxStore.select(_USER);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
-  workspaceInitialized$ = this.ngrxStore.select(ASSETS_LOADED);
+  workspaceInitialized$ = this.ngrxStore.select(
+    MODEL_AND_CATALOG_LOADED,
+  );
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   showEditButton$ = combineLatest([
@@ -88,7 +90,7 @@ export class WorkspaceManagementComponent
   ]).pipe(
     map(([group, service, init]) => !!group && !!service && init),
   );
-  visualizationData$ = this.ngrxStore.select(VISUALIZATION_DATA)
+  visualizationData$ = this.ngrxStore.select(VISUALIZATION_DATA);
 
   subscriptions$: Subscription[] = [];
 
@@ -131,10 +133,10 @@ export class WorkspaceManagementComponent
           this.selectedGroup$,
           this.selectedOwner$,
           this.user$,
-          this.visualizationData$
+          this.visualizationData$,
         ),
       )
-      .subscribe(async ([editMode, group, owner, user,vdata]) => {
+      .subscribe(async ([editMode, group, owner, user, vdata]) => {
         this.selectedGroup = group;
         if (editMode) {
           if (owner && owner !== user?.profile.preferred_username) {
@@ -147,7 +149,7 @@ export class WorkspaceManagementComponent
               }),
             );
           } else {
-            this.initWorkspace(group.id,vdata);
+            this.initWorkspace(group.id, vdata);
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: group.id,
@@ -291,7 +293,10 @@ export class WorkspaceManagementComponent
   /**
    * Initializes the workspace for collaborative success modeling
    */
-  private initWorkspace(groupID: string,visualizationData:VisualizationData) {
+  private initWorkspace(
+    groupID: string,
+    visualizationData: VisualizationData,
+  ) {
     if (!this.user) return console.error('user cannot be null');
     this.workspaceOwner = this.user?.profile.preferred_username;
     // get the current workspace state from yjs
@@ -310,7 +315,7 @@ export class WorkspaceManagementComponent
       this.selectedService,
       this.measureCatalog,
       this.successModel,
-      visualizationData
+      visualizationData,
     );
     this.currentApplicationWorkspace =
       this.workspaceService.currentCommunityWorkspace[
