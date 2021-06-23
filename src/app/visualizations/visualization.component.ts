@@ -56,7 +56,7 @@ export class BaseVisualizationComponent
   ) {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     if (!query) return;
-    query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
+    query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = BaseVisualizationComponent.htmlDecode(query);
     return query;
   }
@@ -78,7 +78,7 @@ export class BaseVisualizationComponent
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';
-    return query.replace('$SERVICES$', servicesString);
+    return query?.replace('$SERVICES$', servicesString);
   }
 
   ngOnInit() {}
@@ -88,15 +88,17 @@ export class BaseVisualizationComponent
   ngOnDestroy(): void {}
 
   openErrorDialog() {
-    let errorText;
+    let errorText = 'Http status code: ' + this.error.status + '\n';
     if (this.error.error) {
-      errorText = (
-        this.error.statusText +
-        ': ' +
-        this.error.error
-      ).trim();
-    } else {
-      errorText = this.error;
+      errorText += this.error.statusText;
+
+      if (typeof this.error.error === 'string') {
+        errorText += ': ' + this.error.error;
+      }
+
+      errorText = errorText.trim();
+    } else if (typeof this.error === 'string') {
+      errorText += this.error;
     }
 
     this.dialog.open(ErrorDialogComponent, {

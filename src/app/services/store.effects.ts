@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { props, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
 import { combineLatest, forkJoin, of } from 'rxjs';
 import {
@@ -13,23 +13,21 @@ import {
   share,
   tap,
 } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
   MEASURE_CATALOG,
-  MEASURE_CATALOG_XML,
   RESTRICTED_MODE,
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
   _EDIT_MODE,
-  SUCCESS_MODEL_XML,
   _USER,
   VISUALIZATION_DATA,
-  WORKSPACE_CATALOG,
   WORKSPACE_CATALOG_XML,
   WORKSPACE_MODEL_XML,
   SELECTED_WORK_SPACE_OWNER,
@@ -530,28 +528,54 @@ export class StateEffects {
   );
 }
 
+const ONE_MINUTE_IN_MS = 60000;
+const REFETCH_INTERVAL =
+  (environment.visualizationRefreshInterval
+    ? environment.visualizationRefreshInterval
+    : 30) * ONE_MINUTE_IN_MS;
 /**
  * Determines whether a new visualization data request should be made
  * @param dataForQuery the current data from the store
  * @returns true if we should make a new request
  */
 function shouldFetch(dataForQuery: VData): boolean {
-  if (!dataForQuery) return true;
-  if (dataForQuery.error) {
-    const status = dataForQuery.error.status;
-    if (!status) {
-      // Unknown error
-      return true;
-    } else if (status === 400) {
-      // SQL query error
-      return false;
-    } else if (status >= 500) {
-      // Server error
-      if (dataForQuery?.fetchDate.getTime() < Date.now() - 300000)
+  if (!dataForQuery?.fetchDate) return true; // initial state: we dont have any data yet
+  if (dataForQuery.data) {
+    // we got data: now check if data is not too old
+    if (
+      Date.now() - dataForQuery.fetchDate.getTime() >
+      REFETCH_INTERVAL
+    ) {
+      // data older than fetch interval
+      return true; // data older than
+    } else return false;
+  } else if (dataForQuery.error) {
+    // the query had led to an error
+    if (
+      Date.now() - dataForQuery.fetchDate.getTime() >
+      REFETCH_INTERVAL
+    ) {
+      // data older than fetch interval
+      const status = dataForQuery.error.status;
+      if (!status) {
+        // Unknown error
         return true;
+      } else if (status === 400) {
+        // user error
+        if (dataForQuery.error.error.includes('known/configured')) {
+          // data base not configured on query visualization service
+          return true;
+        } else {
+          // assume SQL query error
+          return false;
+        }
+      } else if (status >= 500) {
+        // server error
+        return true;
+      }
+    } else {
+      return false;
     }
-  } else if (dataForQuery.fetchDate.getTime() < Date.now() - 300000) {
-    return true;
   }
-  return false;
+  return true;
 }

@@ -73,7 +73,6 @@ export class ChartVisualizerComponent
       );
 
     if (this.query !== query) {
-      this.visualizationInitialized = false;
       this.query = query;
       super.fetchVisualizationData(query, queryParams);
       this.data$ = this.ngrxStore.select(
@@ -83,15 +82,16 @@ export class ChartVisualizerComponent
       this.data$
         .pipe(
           tap((data) => (this.error = data?.error)),
-          filter((data) => !!data && !data.error),
+          filter((data) => !!data),
         )
         .subscribe((vdata) => {
+          this.visualizationInitialized = true;
           if (vdata.error) {
-            this.error = vdata.error;
-            return;
+            return super.fetchVisualizationData(query, queryParams);
           }
           const dataTable = vdata.data;
           if (dataTable instanceof Array && dataTable.length >= 2) {
+            this.error = null;
             const labelTypes = dataTable[1];
             const rows = dataTable.slice(2) as any[][];
             this.chart = new GoogleChart(

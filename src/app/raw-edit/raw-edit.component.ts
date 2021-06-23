@@ -27,6 +27,7 @@ import {
   filter,
   first,
   map,
+  tap,
   timeout,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -80,7 +81,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.selectedService$,
   ]).pipe(
     map(
-      (groupid, service) =>
+      ([groupid, service]) =>
         !!groupid && !!service && !this.saveInProgress,
     ),
   );

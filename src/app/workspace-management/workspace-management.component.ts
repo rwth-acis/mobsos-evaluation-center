@@ -134,33 +134,44 @@ export class WorkspaceManagementComponent
           this.selectedOwner$,
           this.user$,
           this.visualizationData$,
+          this.successModel$,
         ),
       )
-      .subscribe(async ([editMode, group, owner, user, vdata]) => {
-        this.selectedGroup = group;
-        if (editMode) {
-          if (owner && owner !== user?.profile.preferred_username) {
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: group.id,
-                serviceName: this.selectedServiceName,
-                owner,
-                username: user.profile.preferred_username,
-              }),
-            );
-          } else {
-            this.initWorkspace(group.id, vdata, user);
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: group.id,
-                serviceName: this.selectedServiceName,
-                owner,
-                username: user.profile.preferred_username,
-              }),
-            );
+      .subscribe(
+        async ([
+          editMode,
+          group,
+          owner,
+          user,
+          vdata,
+          successModel,
+        ]) => {
+          this.successModel = successModel;
+          this.selectedGroup = group;
+          if (editMode) {
+            if (owner && owner !== user?.profile.preferred_username) {
+              this.ngrxStore.dispatch(
+                joinWorkSpace({
+                  groupId: group.id,
+                  serviceName: this.selectedServiceName,
+                  owner,
+                  username: user.profile.preferred_username,
+                }),
+              );
+            } else {
+              this.initWorkspace(group.id, vdata, user);
+              this.ngrxStore.dispatch(
+                joinWorkSpace({
+                  groupId: group.id,
+                  serviceName: this.selectedServiceName,
+                  owner,
+                  username: user.profile.preferred_username,
+                }),
+              );
+            }
           }
-        }
-      });
+        },
+      );
     this.subscriptions$.push(sub);
     sub = this.successModel$.subscribe((successModel) => {
       this.successModel = successModel;
@@ -168,6 +179,10 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
     sub = this.measureCatalog$.subscribe((measureCatalog) => {
       this.measureCatalog = measureCatalog;
+    });
+    this.subscriptions$.push(sub);
+    sub = this.successModel$.subscribe((model) => {
+      this.successModel = model;
     });
     this.subscriptions$.push(sub);
     sub = this.user$.subscribe((user) => {

@@ -29,7 +29,8 @@ export const environment = {
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
   servicePollingInterval: 120,
-  visualizationRefreshInterval: 120,
+  // interval at which visualizations should be refetched in minutes
+  visualizationRefreshInterval: 10,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: false,
 

@@ -14,7 +14,9 @@
         class="send-button"
         mat-raised-button
         color="primary"
-        [disabled]="!(canSaveMeasureCatalog$ | async)"
+        [disabled]="
+          !(canSaveMeasureCatalog$ | async) && !saveInProgress
+        "
         (click)="_onCatalogSaveClicked()"
       >
         <mat-spinner

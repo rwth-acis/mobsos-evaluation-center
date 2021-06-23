@@ -227,13 +227,24 @@ function updateVisualizationData(
   currentVisualizationData: VisualizationData,
   props: { data: any[][]; query: string; error: HttpErrorResponse },
 ) {
-  if (!props.query || (!props.data && !props.error))
+  if (!props.query || (!props.data && !props.error)) {
     return currentVisualizationData;
-  currentVisualizationData[props.query] = {
-    data: props.data,
-    fetchDate: new Date(),
-    error: props.error,
-  };
+  }
+
+  if (props.error?.status >= 400 && props.error?.status < 500) {
+    currentVisualizationData[props.query] = {
+      data: currentVisualizationData[props.query]?.data,
+      fetchDate: new Date(),
+      error: props.error,
+    };
+  } else {
+    currentVisualizationData[props.query] = {
+      data: props.data,
+      fetchDate: new Date(),
+      error: props.error,
+    };
+  }
+
   return currentVisualizationData;
 }
 

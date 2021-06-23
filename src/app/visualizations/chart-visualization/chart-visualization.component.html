@@ -1,18 +1,16 @@
-<ng-container *ngIf="data$ | async; else stillLoading">
-  <ng-container *ngIf="!error; else Error">
-    <ng-container *ngIf="data$ | async">
-      <google-chart
-        *ngIf="chart"
-        [title]="this.chart.title"
-        [type]="this.chart.chartType"
-        [data]="this.chart.data"
-        [options]="this.chart.options"
-        class="content"
-        style="width: 100%"
-        [columns]="columnNames"
-        [dynamicResize]="true"
-      ></google-chart>
-    </ng-container>
+<ng-container *ngIf="!error; else Error">
+  <ng-container *ngIf="data$ | async; else stillLoading">
+    <google-chart
+      *ngIf="chart"
+      [title]="this.chart.title"
+      [type]="this.chart.chartType"
+      [data]="this.chart.data"
+      [options]="this.chart.options"
+      class="content"
+      style="width: 100%"
+      [columns]="columnNames"
+      [dynamicResize]="true"
+    ></google-chart>
   </ng-container>
 </ng-container>
 

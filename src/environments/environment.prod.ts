@@ -24,7 +24,8 @@ export const environment = {
   mobsosSurveysUrl:
     'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   servicePollingInterval: 10,
-  visualizationRefreshInterval: 60,
+  // interval at which visualizations should be refetched from server
+  visualizationRefreshInterval: 12 * 60,
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: true,
   // URL of the y-js websocket server
