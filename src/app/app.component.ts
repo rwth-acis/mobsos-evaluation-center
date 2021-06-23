@@ -23,17 +23,15 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
-  disableEdit,
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
-  initState,
+  fetchSuccessModel,
   setGroup,
   storeUser,
   toggleExpertMode,
 } from './services/store.actions';
 import {
-  APPLICATION_WORKSPACE,
   _EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
@@ -42,11 +40,13 @@ import {
   _USER,
   USER_GROUPS,
   _EDIT_MODE,
+  SUCCESS_MODEL,
+  _SELECTED_GROUP_ID,
+  _SELECTED_SERVICE_NAME,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -186,59 +186,41 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.ngrxStore.dispatch(initState());
-    let sub = this.user$
+    let sub = this.ngrxStore
+      .select(_USER)
       .pipe(
-        filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
+        filter((user) => user?.signedIn),
+        withLatestFrom(
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+        ),
       )
-      .subscribe((user) => {
-        if (user) {
-          this.ngrxStore.dispatch(fetchGroups());
-        }
+      .subscribe(([user, groupId, serviceName]) => {
+        this.ngrxStore.dispatch(fetchGroups());
         this.ngrxStore.dispatch(fetchServices());
+        if (groupId) {
+          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+          if (serviceName) {
+            this.ngrxStore.dispatch(
+              fetchSuccessModel({ groupId, serviceName }),
+            );
+          }
+        }
       });
     this.subscriptions$.push(sub);
-    this.ngrxStore.dispatch(initState());
 
     sub = this.selectedGroup$
       .pipe(
-        filter((group) => !!group && !!group.name),
-        first(),
+        distinctUntilKeyChanged('id'),
+        filter((group) => !!group?.name),
       )
       .subscribe((group) => {
         if (this.selectedGroupForm.value !== group.name) {
-          this.ngrxStore.dispatch(
-            fetchMeasureCatalog({ groupId: group.id }),
-          ); // initial fetch of measure catalog
-          if (group?.name) this.selectedGroupForm.reset(group.name);
+          this.selectedGroupForm.reset(group.name);
         }
       });
     this.subscriptions$.push(sub);
-    // sub = this.ngrxStore
-    //   .select(_EDIT_MODE)
-    //   .pipe(withLatestFrom(this.selectedGroup$), first())
-    //   .subscribe(([editMode, group]) => {
-    //     if (editMode) {
-    //       if (!group) {
-    //         this.ngrxStore.dispatch(disableEdit());
-    //       }else{
-    //         this.ngrxStore.dispatch(initState())
-    //       }
-    //     }
-    //   });
-    if (isDevMode()) {
-      sub = this.ngrxStore.subscribe((state) => {
-        console.log(state);
-      });
-      this.subscriptions$.push(sub);
-      // sub = this.ngrxStore
-      //   .select(APPLICATION_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
-      // this.subscriptions$.push(sub);
-    }
 
     // swipe navigation
     const hammertime = new Hammer(this.elementRef.nativeElement, {});
@@ -276,17 +258,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.LOCAL_STORAGE_EXPERT_MODE,
     );
 
-    sub = this.selectedGroup$.subscribe((selectedGroup) => {
-      this.selectedGroup = selectedGroup?.id;
-      if (selectedGroup?.id) {
-        this.ngrxStore.dispatch(
-          fetchMeasureCatalog({ groupId: selectedGroup.id }),
-        );
-        this.selectedGroupForm.setValue(selectedGroup.id);
-      }
-    });
-    this.subscriptions$.push(sub);
-
     const silentLoginFunc = () => {
       this.userManager
         .signinSilentCallback()
@@ -298,17 +269,32 @@ export class AppComponent implements OnInit, OnDestroy {
     };
     silentLoginFunc();
 
-    sub = this.user$.subscribe((user) => {
-      this.user = user;
-      this.signedIn = !!user;
-      clearInterval(this.silentSigninIntervalHandle);
-      if (this.signedIn) {
-        this.silentSigninIntervalHandle = setInterval(
-          silentLoginFunc,
-          environment.openIdSilentLoginInterval * 1000,
-        );
-      }
-    });
+    sub = this.user$
+      .pipe(distinctUntilKeyChanged('signedIn'))
+      .subscribe((user) => {
+        this.user = user;
+        this.signedIn = !!user;
+        clearInterval(this.silentSigninIntervalHandle);
+        if (this.signedIn) {
+          this.silentSigninIntervalHandle = setInterval(
+            silentLoginFunc,
+            environment.openIdSilentLoginInterval * 1000,
+          );
+        }
+      });
     this.subscriptions$.push(sub);
+
+    if (isDevMode() || !environment.production) {
+      // Logging in dev mode
+      sub = this.ngrxStore.subscribe((state) => {
+        console.log(state);
+      });
+      this.subscriptions$.push(sub);
+
+      sub = this.ngrxStore.select(SUCCESS_MODEL).subscribe((a) => {
+        console.log(a);
+      });
+      this.subscriptions$.push(sub);
+    }
   }
 }
