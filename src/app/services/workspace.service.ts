@@ -19,7 +19,10 @@ import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
-import { _COMMUNITY_WORKSPACE } from './store.selectors';
+import {
+  _COMMUNITY_WORKSPACE,
+  _SELECTED_SERVICE_NAME,
+} from './store.selectors';
 import {
   catchError,
   distinctUntilChanged,
@@ -169,7 +172,7 @@ export class WorkspaceService {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
-    if (!isEmpty(communityWorkspace)) {
+    if (communityWorkspace) {
       this.syncDone$.next(true);
     }
     this.communityWorkspace$.next(communityWorkspace);
@@ -281,7 +284,10 @@ export class WorkspaceService {
     currentServiceName: string,
     username: string,
     oldWorkspaceOwner?: string,
+    model?: SuccessModel,
+    catalog?: MeasureCatalog,
     role?: UserRole,
+    vdata?: VisualizationData,
   ) {
     if (!owner) {
       throw new Error('owner cannot be null');
@@ -299,8 +305,9 @@ export class WorkspaceService {
         'Cannot join workspace as it is not know in communityWorkspace',
       );
     }
-    const currentApplicationWorkspace =
-      communityWorkspace[owner][currentServiceName];
+    const currentApplicationWorkspace = communityWorkspace[owner][
+      currentServiceName
+    ] as ApplicationWorkspace;
     if (!currentApplicationWorkspace) {
       throw new Error(
         'this user has no application workspace for the current service',
@@ -330,7 +337,25 @@ export class WorkspaceService {
     }
     visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
     currentApplicationWorkspace.visitors = visitors;
-    communityWorkspace[owner][currentServiceName].visitors = visitors;
+    // communityWorkspace[owner][currentServiceName].visitors = visitors;
+    if (owner === username) {
+      currentApplicationWorkspace.catalog = catalog;
+      currentApplicationWorkspace.model = model;
+    }
+    if (role !== UserRole.LURKER && vdata) {
+      const vdataInWorkspace =
+        currentApplicationWorkspace.visualizationData;
+      for (const [query, data] of Object.entries(vdata)) {
+        if (
+          data.data &&
+          (!vdataInWorkspace[query] ||
+            data.fetchDate > vdataInWorkspace[query].fetchDate)
+        ) {
+          // Workspace visualization data non-existant or local visualization data more recent
+          vdataInWorkspace[query] = data;
+        }
+      }
+    }
     this.communityWorkspace$.next(communityWorkspace);
     this.syncObject(this.currentGroupId);
   }
