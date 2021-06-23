@@ -162,54 +162,6 @@ export class StateEffects {
     ),
   );
 
-  initState$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.initState),
-      withLatestFrom(
-        this.ngrxStore.select(_EDIT_MODE),
-        this.ngrxStore.select(_SELECTED_GROUP_ID),
-        this.ngrxStore.select(_USER),
-        this.ngrxStore.select(SELECTED_WORK_SPACE_OWNER),
-        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-      ),
-      tap(([action, editMode, groupId, user, owner, serviceName]) => {
-        if (user.signedIn) {
-          Action.fetchGroups();
-          Action.fetchServices();
-          if (groupId) {
-            Action.fetchMeasureCatalog({ groupId });
-            if (serviceName) {
-              Action.fetchSuccessModel({ groupId, serviceName });
-            }
-          }
-        }
-      }),
-      switchMap(
-        ([action, editMode, groupId, user, owner, serviceName]) => {
-          if (editMode && user?.profile && owner && serviceName) {
-            this.l2p.setCredentials(
-              user?.profile.preferred_username,
-              null,
-              user.access_token,
-            );
-            if (!owner) {
-              owner = user?.profile.preferred_username;
-            }
-            return of(
-              Action.joinWorkSpace({
-                groupId,
-                owner,
-                serviceName,
-                username: user.profile.preferred_username,
-              }),
-            );
-          }
-          return of(Action.success());
-        },
-      ),
-    ),
-  );
-
   storeUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.storeUser),
