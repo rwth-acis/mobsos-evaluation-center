@@ -30,11 +30,14 @@ import {
   APPLICATION_WORKSPACE,
   MODEL_AND_CATALOG_LOADED,
   WORKSPACE_OWNER,
-  SELECTED_WORK_SPACE_OWNER,
+  SELECTED_WORKSPACE_OWNER,
   VISUALIZATION_DATA,
+  _SELECTED_SERVICE_NAME,
+  _SELECTED_GROUP_ID,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   first,
   map,
@@ -74,7 +77,7 @@ export class WorkspaceManagementComponent
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
-  selectedOwner$ = this.ngrxStore.select(SELECTED_WORK_SPACE_OWNER); // holds the owner of the workspace which the user wants to join
+  selectedOwner$ = this.ngrxStore.select(SELECTED_WORKSPACE_OWNER); // holds the owner of the workspace which the user wants to join
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
   user$ = this.ngrxStore.select(_USER);
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
@@ -127,51 +130,35 @@ export class WorkspaceManagementComponent
         ); // set the value in the selection
       });
     this.subscriptions$.push(sub);
-    sub = this.editMode$
+
+    this.ngrxStore
+      .select(_EDIT_MODE)
       .pipe(
+        distinctUntilChanged(),
         withLatestFrom(
-          this.selectedGroup$,
-          this.selectedOwner$,
-          this.user$,
-          this.visualizationData$,
-          this.successModel$,
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+          this.ngrxStore.select(_USER),
         ),
       )
-      .subscribe(
-        async ([
-          editMode,
-          group,
-          owner,
-          user,
-          vdata,
-          successModel,
-        ]) => {
-          this.successModel = successModel;
-          this.selectedGroup = group;
-          if (editMode) {
-            if (owner && owner !== user?.profile.preferred_username) {
-              this.ngrxStore.dispatch(
-                joinWorkSpace({
-                  groupId: group.id,
-                  serviceName: this.selectedServiceName,
-                  owner,
-                  username: user.profile.preferred_username,
-                }),
-              );
-            } else {
-              this.initWorkspace(group.id, vdata, user);
-              this.ngrxStore.dispatch(
-                joinWorkSpace({
-                  groupId: group.id,
-                  serviceName: this.selectedServiceName,
-                  owner,
-                  username: user.profile.preferred_username,
-                }),
-              );
-            }
+      .subscribe(([editMode, groupId, owner, serviceName, user]) => {
+        const username = user?.profile.preferred_username;
+
+        if (editMode && username && serviceName) {
+          if (!owner) {
+            owner = user?.profile.preferred_username;
           }
-        },
-      );
+          this.ngrxStore.dispatch(
+            joinWorkSpace({
+              groupId,
+              owner,
+              serviceName,
+              username,
+            }),
+          );
+        }
+      });
     this.subscriptions$.push(sub);
     sub = this.successModel$.subscribe((successModel) => {
       this.successModel = successModel;
@@ -313,32 +300,31 @@ export class WorkspaceManagementComponent
     visualizationData: VisualizationData,
     user?: User,
   ) {
-    if (!this.user) this.user = user;
-    if (!this.user) return console.error('user cannot be null');
-    this.workspaceOwner = this.user?.profile.preferred_username;
-    // get the current workspace state from yjs
-    if (!this.measureCatalog) {
-      this.measureCatalog = new MeasureCatalog({});
-    }
-    if (!this.successModel) {
-      this.successModel = SuccessModel.emptySuccessModel(
-        this.selectedService,
-      );
-    }
-
-    this.workspaceService.initWorkspace(
-      groupID,
-      this.workspaceOwner,
-      this.selectedService,
-      this.measureCatalog,
-      this.successModel,
-      visualizationData,
-    );
-    this.currentApplicationWorkspace =
-      this.workspaceService.currentCommunityWorkspace[
-        this.workspaceOwner
-      ][this.selectedService.name];
-    return true;
+    // if (!this.user) this.user = user;
+    // if (!this.user) return console.error('user cannot be null');
+    // this.workspaceOwner = this.user?.profile.preferred_username;
+    // // get the current workspace state from yjs
+    // if (!this.measureCatalog) {
+    //   this.measureCatalog = new MeasureCatalog({});
+    // }
+    // if (!this.successModel) {
+    //   this.successModel = SuccessModel.emptySuccessModel(
+    //     this.selectedService,
+    //   );
+    // }
+    // this.workspaceService.initWorkspace(
+    //   groupID,
+    //   this.workspaceOwner,
+    //   this.selectedService,
+    //   this.measureCatalog,
+    //   this.successModel,
+    //   visualizationData,
+    // );
+    // this.currentApplicationWorkspace =
+    //   this.workspaceService.currentCommunityWorkspace[
+    //     this.workspaceOwner
+    //   ][this.selectedService.name];
+    // return true;
   }
 
   ngOnDestroy() {
