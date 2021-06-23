@@ -196,6 +196,12 @@ export const DIMENSIONS_IN_MODEL = createSelector(
     model?.dimensions ? Object.values(model.dimensions) : undefined,
 );
 
+export const SUCCESS_MODEL_IS_EMPTY = createSelector(
+  DIMENSIONS_IN_MODEL,
+  (dimensions) =>
+    !dimensions?.find((dimension) => dimension.length > 0),
+);
+
 export const RESTRICTED_MODE = (state: StoreState) =>
   state.Reducer?.restricted;
 
