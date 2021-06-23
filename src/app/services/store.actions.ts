@@ -50,7 +50,7 @@ enum StateActions {
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
   SET_SERVICE_BY_NAME = 'set the current service by only providing  the name',
-  JOIN_WORKSPACE = 'Join the workspace of another user from a shared link',
+  JOIN_WORKSPACE = 'Join the workspace of another user',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
