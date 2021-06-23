@@ -12,6 +12,7 @@ import {
   filter,
   share,
   tap,
+  exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
@@ -19,18 +20,17 @@ import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
-  MEASURE_CATALOG,
   RESTRICTED_MODE,
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
-  SUCCESS_MODEL,
   _EDIT_MODE,
   _USER,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   WORKSPACE_MODEL_XML,
-  SELECTED_WORK_SPACE_OWNER,
+  SUCCESS_MODEL_FROM_NETWORK,
+  MEASURE_CATALOG_FROM_NETWORK,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -141,6 +141,10 @@ export class StateEffects {
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
       share(),
     ),
   );
@@ -158,6 +162,10 @@ export class StateEffects {
           }),
         ),
       ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
       share(),
     ),
   );
@@ -170,8 +178,13 @@ export class StateEffects {
         localStorage.setItem('id_token', user.id_token);
         localStorage.setItem('access_token', user.access_token);
         localStorage.setItem('profile', JSON.stringify(user.profile));
+        this.l2p.setCredentials(
+          user?.profile.preferred_username,
+          user.profile.sub,
+          user.access_token,
+        );
       }),
-      switchMap(({ user }) => of(Action.success())),
+      switchMap(() => of(Action.success())),
     ),
   );
 
@@ -190,6 +203,10 @@ export class StateEffects {
           }),
         ),
       ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
     ),
   );
 
@@ -383,19 +400,15 @@ export class StateEffects {
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
-      tap((action) => {
-        Action.setGroup({ groupId: action.groupId });
-        Action.enableEdit();
-      }),
       withLatestFrom(
-        this.ngrxStore.select(SUCCESS_MODEL),
-        this.ngrxStore.select(MEASURE_CATALOG),
+        this.ngrxStore.select(SUCCESS_MODEL_FROM_NETWORK),
+        this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
         this.ngrxStore.select(RESTRICTED_MODE),
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(_USER),
         this.ngrxStore.select(VISUALIZATION_DATA),
       ),
-      switchMap(
+      exhaustMap(
         ([
           action,
           model,
@@ -418,7 +431,10 @@ export class StateEffects {
                       action.serviceName,
                       action.username,
                       null,
+                      model,
+                      catalog,
                       action.role,
+                      vdata,
                     );
                   } catch (error) {
                     if (!restricted) {
@@ -454,12 +470,13 @@ export class StateEffects {
                   }
                   if (!currentCommunityWorkspace) {
                     return Action.failure();
-                  } else
+                  } else {
                     return Action.setCommunityWorkspace({
                       workspace: currentCommunityWorkspace,
                       owner,
                       serviceName: action.serviceName,
                     });
+                  }
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
