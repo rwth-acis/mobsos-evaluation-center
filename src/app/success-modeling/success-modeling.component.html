@@ -1,4 +1,4 @@
-<!-- Only show component if group is selected -->
+<!-- Only show component if authorized -->
 <ng-container
   *ngIf="(user$ | async)?.signedIn || restricted; else notAuthorized"
 >
