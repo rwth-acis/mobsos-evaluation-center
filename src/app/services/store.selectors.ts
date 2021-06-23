@@ -78,7 +78,7 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
 );
 
 // WORKSPACE
-export const SELECTED_WORK_SPACE_OWNER = (state: StoreState) =>
+export const SELECTED_WORKSPACE_OWNER = (state: StoreState) =>
   state.Reducer.currentWorkSpaceOwner;
 
 const _CURRENT_WORKSPACE_OWNER = (state: StoreState) =>
@@ -174,7 +174,7 @@ export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
 );
 
 // SUCCESS MODEL
-const SUCCESS_MODEL_FROM_NETWORK = (state: StoreState) =>
+export const SUCCESS_MODEL_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.successModel;
 
 const SUCCESS_MODEL_FROM_WORKSPACE = createSelector(
@@ -226,7 +226,7 @@ export const WORKSPACE_MODEL_XML = createSelector(
 );
 
 // MEASURE CATALOG
-const MEASURE_CATALOG_FROM_NETWORK = (state: StoreState) =>
+export const MEASURE_CATALOG_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.measureCatalog;
 
 const MEASURE_CATALOG_FROM_WORKSPACE = createSelector(
