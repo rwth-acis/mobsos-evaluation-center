@@ -21,6 +21,7 @@ import {
   SUCCESS_MODEL,
   _USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
+  SUCCESS_MODEL_IS_EMPTY,
 } from '../services/store.selectors';
 import {
   catchError,
@@ -71,13 +72,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   editMode$ = this.ngrxStore.select(_EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore
-    .select(DIMENSIONS_IN_MODEL)
+    .select(SUCCESS_MODEL_IS_EMPTY)
     .pipe(
-      map(
-        (dimensions) =>
-          dimensions?.find((dimension) => dimension.length > 0) ===
-          undefined,
-      ),
       withLatestFrom(this.editMode$),
       map(([empty, editMode]) => empty && !editMode),
     );
