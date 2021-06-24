@@ -421,12 +421,15 @@ export class StateEffects {
               map((synced) => {
                 if (synced) {
                   let owner = action.owner;
-
+                  let username = action.username;
+                  if (user?.signedIn) {
+                    username = user.profile.preferred_username;
+                  }
                   try {
                     this.workspaceService.switchWorkspace(
                       action.owner,
                       action.serviceName,
-                      action.username,
+                      username,
                       null,
                       model,
                       catalog,
@@ -434,10 +437,10 @@ export class StateEffects {
                       vdata,
                     );
                   } catch (error) {
-                    if (!restricted) {
+                    if (user?.signedIn) {
                       this.workspaceService.initWorkspace(
                         action.groupId,
-                        user?.profile.preferred_username,
+                        username,
                         service,
                         catalog,
                         model,
@@ -458,7 +461,7 @@ export class StateEffects {
                   ) {
                     this.workspaceService.initWorkspace(
                       action.groupId,
-                      user?.profile.preferred_username,
+                      user.profile.preferred_username,
                       service,
                       catalog,
                       model,
