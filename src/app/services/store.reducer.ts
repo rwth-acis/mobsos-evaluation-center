@@ -628,8 +628,9 @@ function updateMeasure(
   const measureCatalog = appWorkspace.catalog;
   const successModel = appWorkspace.model;
   // update the measure catalog
-  measureCatalog[props.measure.name] = props.measure;
-  delete measureCatalog[props.oldMeasureName];
+
+  delete measureCatalog.measures[props.oldMeasureName];
+  measureCatalog.measures[props.measure.name] = props.measure;
   if (catalogOnly) {
     return copy;
   }
