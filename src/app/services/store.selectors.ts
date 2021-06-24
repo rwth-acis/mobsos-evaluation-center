@@ -131,7 +131,7 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
         selectedServiceName,
       )?.filter(
         (workspace: ApplicationWorkspace) =>
-          workspace.createdBy !== owner,
+          workspace?.createdBy !== owner,
       ),
   );
 
@@ -171,7 +171,7 @@ export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
   _USER,
   (workspace, user) =>
-    workspace.createdBy === user?.profile.preferred_username,
+    workspace?.createdBy === user?.profile.preferred_username,
 );
 
 // SUCCESS MODEL
@@ -407,7 +407,7 @@ function getUserRoleInWorkspace(
   if (!userName || !applicationWorkspace) {
     return;
   }
-  if (applicationWorkspace.createdBy === userName) {
+  if (applicationWorkspace?.createdBy === userName) {
     return 'owner';
   }
   const visitors = applicationWorkspace.visitors || [];
