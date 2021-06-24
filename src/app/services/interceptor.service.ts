@@ -28,7 +28,7 @@ import {
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
 import { delayedRetry } from './retryOperator';
-
+const ONE_MINUTE_IN_MS = 60000;
 /** Pass untouched request through to the next request handler. */
 @Injectable({
   providedIn: 'root',
@@ -58,7 +58,7 @@ export class Interceptor implements HttpInterceptor {
             res instanceof HttpErrorResponse ||
             res instanceof HttpResponse,
         ),
-        timeoutWith(300000, throwError('Timeout')),
+        timeoutWith(2 * ONE_MINUTE_IN_MS, throwError('Timeout')),
         tap((res) => {
           if (res instanceof HttpResponse) {
             this.handleResponse(res, req);
@@ -69,7 +69,7 @@ export class Interceptor implements HttpInterceptor {
 
           setTimeout(() => {
             delete this.cachedRequests[req.url];
-          }, 30000);
+          }, 2 * ONE_MINUTE_IN_MS);
           if (err.status >= 500) {
             this.unreachableServices[req.url] = true;
           }
@@ -90,6 +90,6 @@ export class Interceptor implements HttpInterceptor {
     this.ngrxStore.dispatch(decrementLoading());
     setTimeout(() => {
       delete this.cachedRequests[req.url];
-    }, 30000);
+    }, 2 * ONE_MINUTE_IN_MS);
   }
 }
