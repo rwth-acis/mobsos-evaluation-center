@@ -16,7 +16,7 @@
     <div *ngIf="value" class="value-visualization">
       {{ value }}
       {{
-        measure.visualization.unit ? measure.visualization.unit : ''
+        measure?.visualization.unit ? measure.visualization.unit : ''
       }}
     </div>
     <button *ngIf="value" mat-icon-button [matMenuTriggerFor]="menu">
