@@ -51,14 +51,14 @@
               <ng-container
                 *ngIf="measureCatalog$ | async as measureCatalog"
               >
-                <app-questionnaires
+                <!-- <app-questionnaires
                   [availableQuestionnaires]="availableQuestionnaires"
                   [model]="successModel"
                   [measures]="measureCatalog.measures"
                   [service]="selectedService$ | async"
                   [editMode]="editMode$ | async"
                   [groupID]="(selectedGroup$ | async).id"
-                ></app-questionnaires>
+                ></app-questionnaires> -->
                 <div id="dimensions">
                   <app-success-dimension
                     [@slideInOut]
