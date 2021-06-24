@@ -1,5 +1,14 @@
-<ng-container *ngIf="!error; else Error">
-  <ng-container *ngIf="data$ | async; else stillLoading">
+<ng-container *ngIf="data$ | async as data; else stillLoading">
+  <div id="chart-row">
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="chart-info">
+        Showing data fetched on {{ data.fetchDate | date: 'short' }}.
+        <p *ngIf="data.error">
+          The following error was encountered, while fetching more
+          recent data {{ data.error.error }}
+        </p>
+      </div>
+    </mat-menu>
     <google-chart
       *ngIf="chart"
       [title]="this.chart.title"
@@ -11,16 +20,19 @@
       [columns]="columnNames"
       [dynamicResize]="true"
     ></google-chart>
-  </ng-container>
+    <button *ngIf="chart" mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon> info_outline </mat-icon>
+    </button>
+  </div>
 </ng-container>
 
-<ng-template #Error>
+<ng-container *ngIf="error && !chart">
   <span (click)="openErrorDialog()">
     <button mat-button id="error">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon>warning</mat-icon>
     </button>
   </span>
-</ng-template>
+</ng-container>
 
 <ng-template #stillLoading>
   <span class="loading-placeholder">

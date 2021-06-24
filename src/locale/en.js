@@ -77,6 +77,12 @@ export const translations = {
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    visualization: {
+      'fetch-info':
+        'Showing data fetched on {{date}} from the server ',
+      'fetch-error':
+        ' The following error was encountered, while fetching more recent data: {{ error }}',
+    },
     'community-workspace': 'Workspace of the {{community}} Community',
     'community-success-model':
       'Success Model for the {{service}} service ',

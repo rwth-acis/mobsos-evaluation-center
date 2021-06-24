@@ -5,3 +5,13 @@ google-chart{
     height: 4rem;
     width: 4rem
 }
+
+#chart-info{
+ margin: auto;
+ padding: 1rem
+}
+#chart-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start
+}

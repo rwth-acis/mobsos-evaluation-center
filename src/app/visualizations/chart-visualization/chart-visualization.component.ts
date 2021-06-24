@@ -80,12 +80,8 @@ export class ChartVisualizerComponent
         query,
       );
       this.data$
-        .pipe(
-          tap((data) => (this.error = data?.error)),
-          filter((data) => !!data),
-        )
+        .pipe(tap((data) => (this.error = data?.error)))
         .subscribe((vdata) => {
-          this.visualizationInitialized = true;
           if (vdata.error) {
             return super.fetchVisualizationData(query, queryParams);
           }

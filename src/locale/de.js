@@ -80,6 +80,12 @@ export const translations = {
     'remove-measure-tooltip': 'Messung entfernen',
   },
   'success-modeling': {
+    visualization: {
+      'fetch-info':
+        'Die Daten wurden am {{date}} vom Server geladen.',
+      'fetch-error':
+        ' Folgender Fehler ist beim Laden von rezenteren Daten aufgetreten: {{ error }}',
+    },
     'community-workspace':
       'Arbeitsbereich der {{community}} Community',
     'community-success-model':
