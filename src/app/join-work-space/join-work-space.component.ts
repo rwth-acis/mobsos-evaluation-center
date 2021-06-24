@@ -1,12 +1,20 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Store } from '@ngrx/store';
+import { props, Store } from '@ngrx/store';
+import { UserManager } from 'oidc-client';
 import { Observable, Subscription } from 'rxjs';
 import { withLatestFrom } from 'rxjs/operators';
 import { User, UserRole } from '../models/user.model';
 import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
-import { joinWorkSpace } from '../services/store.actions';
+import {
+  joinWorkSpace,
+  setCommunityWorkspaceOwner,
+  setGroup,
+  setService,
+  setServiceName,
+  setUserName,
+} from '../services/store.actions';
 import { _USER } from '../services/store.selectors';
 
 /**
@@ -27,8 +35,15 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   groupId$: Observable<string>;
   serviceName$: Observable<string>;
   subscription$: Subscription;
+  owner: string;
+  serviceName: string;
+  groupId: string;
+  username: string;
+  user: User;
+  private userManager = new UserManager({});
 
   ngOnInit() {
+    this.userManager.signinCallback();
     this.subscription$ = this.route.params
       .pipe(withLatestFrom(this.ngrxStore.select(_USER)))
       .subscribe(
@@ -43,6 +58,19 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           if (this.router.url.includes('oidc')) {
             return; // oidc client might be redirecting while this component is active
           }
+          this.ngrxStore.dispatch(
+            setGroup({ groupId: params.groupId }),
+          );
+          this.ngrxStore.dispatch(
+            setServiceName({ serviceName: params.serviceName }),
+          );
+          this.ngrxStore.dispatch(
+            setCommunityWorkspaceOwner({ owner: params.username }),
+          );
+          this.user = user;
+          this.owner = params.username;
+          this.groupId = params.groupId;
+          this.serviceName = params.serviceName;
           localStorage.setItem('invite-link', this.router.url);
           if (user?.signedIn) {
             // if we are signed in we join the workspace with our regular username
@@ -56,17 +84,18 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
             );
             this.router.navigateByUrl('/');
           } else {
-            let name = localStorage.getItem('visitor-username');
-            if (!name) {
-              // if we are not signed we pick a username and join the workspace as username (guest)
-              name = await this.openDialog();
+            const cachedName = localStorage.getItem(
+              'visitor-username',
+            );
+            if (!cachedName) {
+              return;
             }
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: params.groupId,
                 serviceName: params.serviceName,
                 owner: params.username,
-                username: name,
+                username: cachedName,
                 role: UserRole.LURKER,
               }),
             );
@@ -74,6 +103,24 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           }
         },
       );
+  }
+
+  joinWorkspace() {
+    if (!this.username) {
+      return;
+    }
+    this.ngrxStore.dispatch(setUserName({ username: this.username }));
+
+    this.ngrxStore.dispatch(
+      joinWorkSpace({
+        groupId: this.groupId,
+        serviceName: this.serviceName,
+        owner: this.owner,
+        username: this.username,
+        role: UserRole.LURKER,
+      }),
+    );
+    this.router.navigateByUrl('/visitor');
   }
 
   openDialog(): Promise<any> {

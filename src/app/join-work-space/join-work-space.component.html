@@ -1,0 +1,38 @@
+<div class="container">
+  <mat-card class="example-card">
+    <mat-card-content>
+      <p class="title">
+        <strong>{{ owner }} </strong> has shared this success model
+        with you
+      </p>
+
+      <div class="pick-username" *ngIf="!user?.signedIn">
+        <p>A username is required to join this workspace.</p>
+        <p>
+          If you have a las2peer <strong>account</strong> , use the
+          login button in the top right corner.
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-expansion-panel hideToggle>
+    <mat-expansion-panel-header>
+      <mat-panel-title> Continue as Visitor </mat-panel-title>
+    </mat-expansion-panel-header>
+    <h3>Pick a username</h3>
+
+    <mat-form-field>
+      <mat-label>Username</mat-label>
+      <input matInput [(ngModel)]="username" />
+    </mat-form-field>
+    <br />
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="joinWorkspace()"
+    >
+      Enter
+    </button>
+  </mat-expansion-panel>
+</div>
