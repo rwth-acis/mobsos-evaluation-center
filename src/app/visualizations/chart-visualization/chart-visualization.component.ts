@@ -51,9 +51,11 @@ export class ChartVisualizerComponent
             filter((data) => !!data),
             distinctUntilChanged(),
           );
-        this.measure$.subscribe((measure: Measure) => {
-          this.prepareChart(measure);
-        });
+        this.measure$
+          .pipe(filter((data) => !!data))
+          .subscribe((measure: Measure) => {
+            this.prepareChart(measure);
+          });
       });
   }
 
@@ -62,6 +64,7 @@ export class ChartVisualizerComponent
    * @param measure success measure
    */
   private prepareChart(measure: Measure) {
+    if (!measure) return;
     const visualization = measure.visualization as ChartVisualization;
     let query = measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
@@ -82,7 +85,7 @@ export class ChartVisualizerComponent
       this.data$
         .pipe(tap((data) => (this.error = data?.error)))
         .subscribe((vdata) => {
-          if (vdata.error) {
+          if (!vdata || vdata?.error) {
             return super.fetchVisualizationData(query, queryParams);
           }
           const dataTable = vdata.data;
