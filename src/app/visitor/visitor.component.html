@@ -31,14 +31,14 @@
       "
     >
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-        <app-questionnaires
+        <!-- <app-questionnaires
           [availableQuestionnaires]="availableQuestionnaires"
           [model]="successModel"
           [measures]="measureCatalog.measures"
           [service]="selectedService$ | async"
           [editMode]="editMode$ | async"
           [groupID]="selectedGroupId$ | async"
-        ></app-questionnaires>
+        ></app-questionnaires> -->
         <div id="dimensions">
           <app-success-dimension
             *ngFor="let dimension of dimensions"
@@ -68,11 +68,19 @@
 <ng-template #successModelEmpty>
   <!-- success model non existant -->
   <mat-card
-    *ngIf="memberOfGroup$ | async; else notMemberOfSelectedGroup"
+    *ngIf="memberOfGroup$ | async; else showSuccessModelEmpty"
   >
     {{
       'success-modeling.message-no-success-model-found' | translate
     }}
+  </mat-card>
+</ng-template>
+
+<ng-template #showSuccessModelEmpty>
+  <!-- success model non existant -->
+  <mat-card>
+    The success model is empty. Wait for other users to start adding
+    elements
   </mat-card>
 </ng-template>
 
