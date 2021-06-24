@@ -15,7 +15,7 @@
         mat-raised-button
         color="primary"
         [disabled]="
-          !(canSaveMeasureCatalog$ | async) && !saveInProgress
+          !(canSaveMeasureCatalog$ | async) || saveInProgress
         "
         (click)="_onCatalogSaveClicked()"
       >
@@ -51,12 +51,7 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <ng-container
-      *ngIf="
-        canSaveSuccessModel$ | async as canSaveSuccessModel;
-        else notReady
-      "
-    >
+    <ng-container *ngIf="canSaveSuccessModel$ | async; else notReady">
       <ngx-monaco-editor
         id="model-editor"
         (onInit)="registerSuccessModelEditor($event)"
@@ -69,7 +64,7 @@
         mat-raised-button
         color="primary"
         (click)="_onModelSaveClicked()"
-        [disabled]="this.saveInProgress"
+        [disabled]="!(canSaveSuccessModel$ | async) || saveInProgress"
       >
         <mat-spinner
           *ngIf="saveInProgress"
