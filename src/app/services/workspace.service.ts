@@ -172,9 +172,9 @@ export class WorkspaceService {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
-    // if (communityWorkspace) {
-    //   this.syncDone$.next(true);
-    // }
+    if (communityWorkspace) {
+      this.syncDone$.next(true);
+    }
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
       timeout(2 * ONE_MINUTE_IN_MS),
@@ -192,7 +192,6 @@ export class WorkspaceService {
   private getCurrentCommunityWorkspaceFromYJS(
     groupId: string,
   ): CommunityWorkspace {
-    // console.log(this.sharedDocument.getMap(groupId).toJSON());
     return cloneDeep(this.sharedDocument.getMap(groupId).toJSON());
   }
 
@@ -322,7 +321,7 @@ export class WorkspaceService {
       visitor.username.includes('(guest'),
     );
 
-    if (role === UserRole.LURKER) {
+    if (role === UserRole.LURKER && !username.includes('(guest') && !containedInVisitors ) {
       const n = guestVisitors.length + 1;
       username = username + ' (guest ' + n + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
       localStorage.setItem('visitor-username', username); // in the future anonymous user gets reassigned the same name

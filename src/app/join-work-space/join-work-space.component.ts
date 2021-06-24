@@ -120,7 +120,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
         role: UserRole.LURKER,
       }),
     );
-    localStorage.setItem('visitor-username', this.username);
+
     this.router.navigateByUrl('/visitor');
   }
 
