@@ -233,8 +233,7 @@ function updateVisualizationData(
 
   if (props.error?.status >= 400 && props.error?.status < 500) {
     currentVisualizationData[props.query] = {
-      data: currentVisualizationData[props.query]?.data,
-      fetchDate: new Date(),
+      ...currentVisualizationData[props.query],
       error: props.error,
     };
   } else {
