@@ -41,7 +41,6 @@ import {
   filter,
   first,
   map,
-  takeWhile,
   withLatestFrom,
 } from 'rxjs/operators';
 import { WorkspaceService } from '../services/workspace.service';
@@ -89,10 +88,7 @@ export class WorkspaceManagementComponent
   showEditButton$ = combineLatest([
     this.selectedGroup$,
     this.selectedService$,
-    this.workspaceInitialized$,
-  ]).pipe(
-    map(([group, service, init]) => !!group && !!service && init),
-  );
+  ]).pipe(map(([group, service]) => !!group && !!service));
   visualizationData$ = this.ngrxStore.select(VISUALIZATION_DATA);
 
   subscriptions$: Subscription[] = [];
