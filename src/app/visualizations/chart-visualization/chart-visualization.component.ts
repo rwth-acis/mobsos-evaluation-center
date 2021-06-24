@@ -59,7 +59,7 @@ export class ChartVisualizerComponent
 
   /**
    * Prepares chart for given measure
-   * @param measure
+   * @param measure success measure
    */
   private prepareChart(measure: Measure) {
     const visualization = measure.visualization as ChartVisualization;

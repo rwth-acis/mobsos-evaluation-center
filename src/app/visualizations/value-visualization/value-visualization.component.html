@@ -25,10 +25,15 @@
 
     <mat-menu #menu="matMenu" yPosition="above">
       <div id="value-info">
-        Showing data fetched on {{ data.fetchDate | date: 'short' }}.
+        {{
+          'success-modeling.visualization.fetch-info'
+            | translate: { date: data.fetchDate | date: 'short' }
+        }}
         <p *ngIf="data.error">
-          The following error was encountered, while fetching more
-          recent data {{ data.error.error }}
+          {{
+            'success-modeling.visualization.fetch-error'
+              | translate: { error: data.error.error }
+          }}
         </p>
       </div>
     </mat-menu>
