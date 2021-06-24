@@ -25,6 +25,8 @@ import {
   SUCCESS_MODEL,
   _USER,
   WORKSPACE_OWNER,
+  SUCCESS_MODEL_FROM_NETWORK,
+  SUCCESS_MODEL_IS_EMPTY,
 } from '../services/store.selectors';
 import { iconMap, translationMap } from '../success-modeling/config';
 
@@ -42,16 +44,10 @@ export class VisitorComponent implements OnInit, OnDestroy {
   assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
   user$ = this.ngrxStore.select(_USER);
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
-  showSuccessModelEmpty$ = this.ngrxStore
-    .select(DIMENSIONS_IN_MODEL)
-    .pipe(
-      filter((dimensions) => !!dimensions),
-      map(
-        (dimensions) =>
-          dimensions?.find((dimension) => dimension.length > 0) ===
-          undefined,
-      ),
-    );
+  showSuccessModelEmpty$ = this.ngrxStore.select(
+    SUCCESS_MODEL_IS_EMPTY,
+  );
+
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   dimensions = Object.keys(translationMap);
