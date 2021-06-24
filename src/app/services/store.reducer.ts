@@ -100,6 +100,24 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
+  on(Actions.setUserName, (state, props) => ({
+    ...state,
+    user: {
+      ...state.user,
+      profile: {
+        ...state.user?.profile,
+        preferred_username: props.username,
+      },
+    },
+  })),
+  on(Actions.setServiceName, (state, props) => ({
+    ...state,
+    selectedServiceName: props.serviceName,
+  })),
+  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner,
+  })),
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModelInitialized: true,
