@@ -8,7 +8,9 @@ export class MeasureCatalog {
   constructor(public measures: MeasureMap) {}
 
   static fromXml(xml: Element): MeasureCatalog {
-    const measureNodes = Array.from(xml.getElementsByTagName('measure'));
+    const measureNodes = Array.from(
+      xml.getElementsByTagName('measure'),
+    );
     const measureMap: MeasureMap = {};
     for (const measureNode of measureNodes) {
       const measureName = measureNode.getAttribute('name');
@@ -18,11 +20,11 @@ export class MeasureCatalog {
   }
 
   public static fromPlainObject(obj: MeasureCatalog): MeasureCatalog {
-    if (!obj) return;
+    if (!obj?.measures) return;
     const measureMap: MeasureMap = {};
     for (const measureName of Object.keys(obj.measures)) {
       measureMap[measureName] = Measure.fromPlainObject(
-        obj.measures[measureName]
+        obj.measures[measureName],
       );
     }
     return new MeasureCatalog(measureMap);
