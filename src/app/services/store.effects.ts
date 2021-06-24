@@ -343,9 +343,6 @@ export class StateEffects {
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (shouldFetch(dataForQuery)) {
-          if (dataForQuery?.error) {
-            Action.removeVisualizationDataForQuery({ query });
-          }
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
@@ -519,17 +516,19 @@ function shouldFetch(dataForQuery: VData): boolean {
       return true; // data older than
     } else return false;
   } else if (dataForQuery.error) {
+    const status = dataForQuery.error.status;
+    if (!status) {
+      // Unknown error
+      return true;
+    }
     // the query had led to an error
     if (
       Date.now() - dataForQuery.fetchDate.getTime() >
       REFETCH_INTERVAL
     ) {
       // data older than fetch interval
-      const status = dataForQuery.error.status;
-      if (!status) {
-        // Unknown error
-        return true;
-      } else if (status === 400) {
+
+      if (status === 400) {
         // user error
         if (dataForQuery.error.error.includes('known/configured')) {
           // data base not configured on query visualization service
