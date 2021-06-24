@@ -88,7 +88,9 @@ export class AppComponent implements OnInit, OnDestroy {
   myGroups: GroupInformation[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
-  user$: Observable<User> = this.ngrxStore.select(_USER);
+  user$: Observable<User> = this.ngrxStore
+    .select(_USER)
+    .pipe(filter((user) => !!user));
   // authorized$ = this.user$.pipe(
   //   map((user) => user && (user.signedIn || user.visiting)),
   // );
@@ -189,6 +191,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let sub = this.ngrxStore
       .select(_USER)
       .pipe(
+        filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
         filter((user) => user?.signedIn),
         withLatestFrom(
