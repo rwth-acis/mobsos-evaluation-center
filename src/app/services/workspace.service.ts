@@ -172,9 +172,9 @@ export class WorkspaceService {
     // get the current workspace state from yjs
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
-    if (communityWorkspace) {
-      this.syncDone$.next(true);
-    }
+    // if (communityWorkspace) {
+    //   this.syncDone$.next(true);
+    // }
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
       timeout(2 * ONE_MINUTE_IN_MS),
