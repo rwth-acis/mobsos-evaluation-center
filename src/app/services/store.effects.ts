@@ -520,17 +520,17 @@ function shouldFetch(dataForQuery: VData): boolean {
     } else return false;
   } else if (dataForQuery.error) {
     const status = dataForQuery.error.status;
-    if (!status) {
-      // Unknown error
-      return true;
-    }
+
     // the query had led to an error
     if (
       Date.now() - dataForQuery.fetchDate.getTime() >
-      REFETCH_INTERVAL
+      5 * ONE_MINUTE_IN_MS
     ) {
       // data older than fetch interval
-
+      if (!status) {
+        // Unknown error
+        return true;
+      }
       if (status === 400) {
         // user error
         if (dataForQuery.error.error.includes('known/configured')) {
