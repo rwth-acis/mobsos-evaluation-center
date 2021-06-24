@@ -19,8 +19,7 @@ export const environment = {
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId:
-    window?.env?.openIdClientId ||
-    'f8622260-875b-499a-82db-db55f89f9deb',
+    window?.env?.openIdClientId || 'www.localclient.com',
   openIdSilentLoginInterval: 60,
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   las2peerWebConnectorUrl:
