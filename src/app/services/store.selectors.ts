@@ -168,9 +168,10 @@ export const USER_HAS_EDIT_RIGHTS = createSelector(
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
-  _CURRENT_WORKSPACE_OWNER,
+  APPLICATION_WORKSPACE,
   _USER,
-  (owner, user) => owner === user?.profile.preferred_username,
+  (workspace, user) =>
+    workspace.createdBy === user?.profile.preferred_username,
 );
 
 // SUCCESS MODEL
