@@ -109,6 +109,7 @@ export class WorkspaceManagementComponent
   checked: boolean;
   serviceSelectForm = new FormControl('');
   selectedGroup: GroupInformation;
+  selectedGroupId: string;
 
   constructor(
     private _snackBar: MatSnackBar,
@@ -168,9 +169,11 @@ export class WorkspaceManagementComponent
       this.measureCatalog = measureCatalog;
     });
     this.subscriptions$.push(sub);
-    sub = this.successModel$.subscribe((model) => {
-      this.successModel = model;
-    });
+    sub = this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .subscribe((groupId) => {
+        this.selectedGroupId = groupId;
+      });
     this.subscriptions$.push(sub);
     sub = this.user$.subscribe((user) => {
       this.user = user;
@@ -220,7 +223,7 @@ export class WorkspaceManagementComponent
   onSwitchWorkspace(owner: string) {
     this.ngrxStore.dispatch(
       joinWorkSpace({
-        groupId: this.selectedGroup.id,
+        groupId: this.selectedGroupId,
         serviceName: this.selectedServiceName,
         owner,
         username: this.user.profile.preferred_username,
@@ -239,11 +242,11 @@ export class WorkspaceManagementComponent
   }
 
   shareWorkspaceLink() {
-    if (this.selectedGroup && this.selectedService && this.user) {
+    if (this.selectedGroupId && this.selectedService && this.user) {
       const link =
         window.location.href +
         'join/' +
-        this.selectedGroup.id +
+        this.selectedGroupId +
         '/' +
         this.selectedService.name +
         '/' +

@@ -96,9 +96,7 @@
       </button>
 
       <button
-        *ngIf="
-          this.selectedGroup && this.selectedService && this.user
-        "
+        *ngIf="userIsOwner$ | async"
         mat-icon-button
         aria-label="Workspaces"
         (click)="shareWorkspaceLink()"
