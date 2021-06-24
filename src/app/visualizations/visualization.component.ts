@@ -114,7 +114,7 @@ export class BaseVisualizationComponent
       return [];
     }
     const serviceRegex = /\$SERVICE\$/g;
-    const matches = query.match(serviceRegex);
+    const matches = query?.match(serviceRegex);
     const params = [];
     if (matches) {
       for (const match of matches) {
