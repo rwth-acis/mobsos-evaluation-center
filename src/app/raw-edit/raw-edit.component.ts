@@ -79,12 +79,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   canSaveSuccessModel$ = combineLatest([
     this.selectedGroupId$,
     this.selectedService$,
-  ]).pipe(
-    map(
-      ([groupid, service]) =>
-        !!groupid && !!service && !this.saveInProgress,
-    ),
-  );
+  ]).pipe(map(([groupid, service]) => !!groupid && !!service));
 
   canSaveMeasureCatalog$ = this.selectedGroupId$.pipe(
     map((groupid) => !!groupid && !this.saveInProgress),
@@ -103,7 +98,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.canSaveSuccessModel$.subscribe((sub) => console.log(sub));
     this.ngrxStore.dispatch(disableEdit());
     this.selectedGroupId$
       .pipe(filter((groupId) => !!groupId))
