@@ -65,9 +65,6 @@ export class VisitorComponent implements OnInit, OnDestroy {
   constructor(private ngrxStore: Store, private router: Router) {}
 
   ngOnInit(): void {
-    if (!localStorage.getItem('visitor-username')) {
-      this.router.navigate(['/']);
-    }
     let sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
       if (owner) {
         this.linkExpected = false;
