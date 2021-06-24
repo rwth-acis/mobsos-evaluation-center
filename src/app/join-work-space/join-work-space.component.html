@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="!user?.signedIn">
   <mat-card class="example-card">
     <mat-card-content>
       <p class="title">
@@ -6,7 +6,7 @@
         with you
       </p>
 
-      <div class="pick-username" *ngIf="!user?.signedIn">
+      <div class="pick-username">
         <p>A username is required to join this workspace.</p>
         <p>
           If you have a las2peer <strong>account</strong> , use the
