@@ -232,7 +232,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
     if (this.swUpdate.isEnabled) {
-      this.swUpdate.available.subscribe(async () => {
+      sub = this.swUpdate.available.subscribe(async () => {
         const message = await this.translate
           .get('app.update.message')
           .toPromise();
@@ -248,6 +248,7 @@ export class AppComponent implements OnInit, OnDestroy {
           window.location.reload();
         });
       });
+      this.subscriptions$.push(sub);
     }
 
     const silentLoginFunc = () => {
