@@ -7,6 +7,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import {
   disableEdit,
   joinWorkSpace,
+  setCommunityWorkspace,
   setService,
   toggleEdit,
 } from '../services/store.actions';
@@ -85,26 +86,24 @@ export class WorkspaceManagementComponent
   );
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
-  showEditButton$ = combineLatest([
+  showWorkSpaceManagementControls$ = combineLatest([
     this.selectedGroup$,
     this.selectedService$,
-  ]).pipe(map(([group, service]) => !!group && !!service));
-  visualizationData$ = this.ngrxStore.select(VISUALIZATION_DATA);
+  ]).pipe(
+    map(([group, service]) => !!group && !!service),
+    distinctUntilChanged(),
+  );
 
   subscriptions$: Subscription[] = [];
 
   // Local variables
   user: User;
-  currentApplicationWorkspace: ApplicationWorkspace;
-  measureCatalog: MeasureCatalog;
-  selectedService: ServiceInformation;
-  selectedServiceName: string;
-  successModel: SuccessModel;
   workspaceOwner: string;
   numberOfRequirements = 0;
   checked: boolean;
-  serviceSelectForm = new FormControl('');
-  selectedGroup: GroupInformation;
+  // these variables represent what the user has selected, not necessarily the current state
+  selectedService: ServiceInformation;
+  selectedServiceName: string;
   selectedGroupId: string;
 
   constructor(
@@ -121,10 +120,6 @@ export class WorkspaceManagementComponent
       .subscribe((service) => {
         this.selectedService = service;
         this.selectedServiceName = service.name;
-        // this is used so that the initial success model is fetched. We should rather use a new effect for this
-        this.serviceSelectForm.setValue(
-          service.alias ? service.alias : this.selectedServiceName,
-        ); // set the value in the selection
       });
     this.subscriptions$.push(sub);
 
@@ -157,14 +152,7 @@ export class WorkspaceManagementComponent
         }
       });
     this.subscriptions$.push(sub);
-    sub = this.successModel$.subscribe((successModel) => {
-      this.successModel = successModel;
-    });
-    this.subscriptions$.push(sub);
-    sub = this.measureCatalog$.subscribe((measureCatalog) => {
-      this.measureCatalog = measureCatalog;
-    });
-    this.subscriptions$.push(sub);
+
     sub = this.ngrxStore
       .select(_SELECTED_GROUP_ID)
       .subscribe((groupId) => {
@@ -174,14 +162,6 @@ export class WorkspaceManagementComponent
     sub = this.user$.subscribe((user) => {
       this.user = user;
     });
-    this.subscriptions$.push(sub);
-    sub = this.currentApplicationWorkspace$.subscribe(
-      (currentApplicationWorkspace) => {
-        this.currentApplicationWorkspace = cloneDeep(
-          currentApplicationWorkspace,
-        );
-      },
-    );
     this.subscriptions$.push(sub);
 
     sub = this.ngrxStore
@@ -228,13 +208,12 @@ export class WorkspaceManagementComponent
   }
 
   onChangeRole(visitorName: string, role?: string) {
-    this.currentApplicationWorkspace =
-      this.workspaceService.changeVisitorRole(
-        visitorName,
-        this.workspaceOwner,
-        this.selectedServiceName,
-        role,
-      );
+    this.workspaceService.changeVisitorRole(
+      visitorName,
+      this.workspaceOwner,
+      this.selectedServiceName,
+      role,
+    );
   }
 
   shareWorkspaceLink() {
@@ -263,12 +242,11 @@ export class WorkspaceManagementComponent
     });
     const sub = dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.currentApplicationWorkspace =
-          this.workspaceService.copyWorkspace(
-            owner,
-            this.user?.profile.preferred_username,
-            this.selectedServiceName,
-          );
+        this.workspaceService.copyWorkspace(
+          owner,
+          this.user?.profile.preferred_username,
+          this.selectedServiceName,
+        );
       }
       sub.unsubscribe();
     });
