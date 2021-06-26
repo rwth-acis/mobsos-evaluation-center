@@ -47,6 +47,7 @@ import {
 import {
   distinctUntilKeyChanged,
   filter,
+  first,
   map,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -188,8 +189,11 @@ export class AppComponent implements OnInit, OnDestroy {
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ),
+        first(),
       )
       .subscribe(([user, groupId, serviceName]) => {
+        // only gets called once if user is signed in
+        // initial fetching
         this.ngrxStore.dispatch(fetchGroups());
         this.ngrxStore.dispatch(fetchServices());
         if (groupId) {
@@ -205,8 +209,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     sub = this.selectedGroup$
       .pipe(
+        filter((group) => !!group),
         distinctUntilKeyChanged('id'),
-        filter((group) => !!group?.name),
       )
       .subscribe((group) => {
         this.selectedGroupId = group.id;
