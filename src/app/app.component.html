@@ -16,7 +16,11 @@
           (selectionChange)="onGroupSelected($event.value)"
         >
           <ng-container *ngIf="(userGroups$ | async)?.length > 0">
-            <div class="sub-header" mat-subheader>Your Groups</div>
+            <div class="sub-header" mat-subheader>
+              {{
+                'app.community-selector.your-groups-hint' | translate
+              }}
+            </div>
             <mat-option
               class="mat-body-strong"
               *ngFor="let group of userGroups$ | async"
@@ -27,7 +31,12 @@
             <mat-divider></mat-divider>
           </ng-container>
           <ng-container *ngIf="(foreignGroups$ | async)?.length > 0">
-            <div class="sub-header" mat-subheader>Other Groups</div>
+            <div class="sub-header" mat-subheader>
+              {{
+                'app.community-selector.foreign-groups-hint'
+                  | translate
+              }}
+            </div>
             <mat-option
               *ngFor="let group of foreignGroups$ | async"
               [value]="group.id"

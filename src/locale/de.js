@@ -23,6 +23,8 @@ export const translations = {
     'community-selector': {
       'select-community-hint':
         'Einloggen um eine Community auszuwählen',
+      'your-groups-hint': 'Deine Gruppen',
+      'foreign-groups-hint': 'Andere Gruppen',
     },
     'language-selector': {
       'select-language': 'Sprache auswählen',

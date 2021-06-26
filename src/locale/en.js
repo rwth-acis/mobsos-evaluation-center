@@ -22,6 +22,8 @@ export const translations = {
   app: {
     'community-selector': {
       'select-community-hint': 'Login to select your community',
+      'your-groups-hint': 'Your Groups',
+      'foreign-groups-hint': 'Foreign Groups',
     },
     'language-selector': {
       'select-language': 'Select Language',
