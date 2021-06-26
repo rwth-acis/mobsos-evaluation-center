@@ -4,10 +4,9 @@
 $primary: map-get($mobsos-evaluation-center-theme, primary);
 
 mat-sidenav-container {
-  min-height: 100%;    
+  min-height: 100%;
 
   mat-sidenav {
-
     width: 250px;
     height: 100vh;
     background-color: mat-color($primary, darker);
@@ -21,7 +20,7 @@ mat-sidenav-container {
     }
 
     mat-form-field {
-      margin-top:5px;
+      margin-top: 5px;
       margin-left: 16px;
       margin-right: 16px;
 
@@ -31,7 +30,6 @@ mat-sidenav-container {
     }
 
     #community-selection {
-  
       position: relative;
     }
 
@@ -110,4 +108,9 @@ mat-sidenav-container {
       font-size: 45px;
     }
   }
+}
+.mat-subheader {
+  font-size: small !important;
+  color: grey;
+  padding-bottom: 10px;
 }

@@ -78,14 +78,13 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
-
+  selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void;
   environment = environment;
-  LOCAL_STORAGE_EXPERT_MODE = 'expert-mode';
-  expertMode = false;
-  myGroups: GroupInformation[] = [];
+
+  // Observables
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore
@@ -106,12 +105,10 @@ export class AppComponent implements OnInit, OnDestroy {
         user && (!!userGroups || !!foreignGroups),
     ),
   );
-  otherGroups: GroupInformation[] = [];
-  groups = [];
-  groupMap = {};
-  selectedGroup;
-  selectedGroupForm = new FormControl('');
-  user;
+
+  selectedGroup: string;
+  selectedGroupName: string;
+  user: User;
   signedIn = false;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
@@ -166,12 +163,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.languageService.changeLanguage(language);
   }
 
-  setExpertMode(mode) {
-    this.expertMode = mode;
+  toggleExpertMode() {
     this.ngrxStore.dispatch(toggleExpertMode());
   }
 
-  setUser(user) {
+  setUser(user: User) {
     this.ngrxStore.dispatch(storeUser({ user }));
   }
 
@@ -219,9 +215,7 @@ export class AppComponent implements OnInit, OnDestroy {
         filter((group) => !!group?.name),
       )
       .subscribe((group) => {
-        if (this.selectedGroupForm.value !== group.name) {
-          this.selectedGroupForm.reset(group.name);
-        }
+        this.selectedGroupName = group.id;
       });
     this.subscriptions$.push(sub);
 
@@ -257,9 +251,6 @@ export class AppComponent implements OnInit, OnDestroy {
         });
       });
     }
-    this.expertMode = !!localStorage.getItem(
-      this.LOCAL_STORAGE_EXPERT_MODE,
-    );
 
     const silentLoginFunc = () => {
       this.userManager
