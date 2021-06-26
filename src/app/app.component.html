@@ -12,7 +12,7 @@
       >
         <mat-label>Community</mat-label>
         <mat-select
-          [(ngModel)]="selectedGroupName"
+          [(ngModel)]="selectedGroupId"
           (selectionChange)="onGroupSelected($event.value)"
         >
           <ng-container *ngIf="(userGroups$ | async)?.length > 0">

@@ -83,16 +83,22 @@ export class AppComponent implements OnInit, OnDestroy {
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void;
   environment = environment;
+  mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  reqBazFrontendUrl = environment.reqBazFrontendUrl;
+  private userManager = new UserManager({});
+  private silentSigninIntervalHandle: Timer;
 
   // Observables
+  loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
+  expertMode$ = this.ngrxStore.select(_EXPERT_MODE);
+  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
+  subscriptions$: Subscription[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore
     .select(_USER)
     .pipe(filter((user) => !!user));
-  // authorized$ = this.user$.pipe(
-  //   map((user) => user && (user.signedIn || user.visiting)),
-  // );
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
   groupsAreLoaded$: Observable<boolean> = combineLatest([
@@ -106,19 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
     ),
   );
 
-  selectedGroup: string;
-  selectedGroupName: string;
-  user: User;
-  signedIn = false;
-  mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  reqBazFrontendUrl = environment.reqBazFrontendUrl;
-  private userManager = new UserManager({});
-  private silentSigninIntervalHandle: Timer;
-  loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
-  expertMode$ = this.ngrxStore.select(_EXPERT_MODE);
-  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
-  role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
-  subscriptions$: Subscription[] = [];
+  selectedGroupId: string; // used to show the selected group in the form field
 
   constructor(
     private logger: NGXLogger,
@@ -215,7 +209,7 @@ export class AppComponent implements OnInit, OnDestroy {
         filter((group) => !!group?.name),
       )
       .subscribe((group) => {
-        this.selectedGroupName = group.id;
+        this.selectedGroupId = group.id;
       });
     this.subscriptions$.push(sub);
 
@@ -266,10 +260,8 @@ export class AppComponent implements OnInit, OnDestroy {
     sub = this.user$
       .pipe(distinctUntilKeyChanged('signedIn'))
       .subscribe((user) => {
-        this.user = user;
-        this.signedIn = !!user;
         clearInterval(this.silentSigninIntervalHandle);
-        if (this.signedIn) {
+        if (user?.signedIn) {
           this.silentSigninIntervalHandle = setInterval(
             silentLoginFunc,
             environment.openIdSilentLoginInterval * 1000,
