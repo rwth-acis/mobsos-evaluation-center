@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { props, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { UserManager } from 'oidc-client';
 import { Observable, Subscription } from 'rxjs';
 import { withLatestFrom } from 'rxjs/operators';
@@ -11,7 +11,6 @@ import {
   joinWorkSpace,
   setCommunityWorkspaceOwner,
   setGroup,
-  setService,
   setServiceName,
   setUserName,
 } from '../services/store.actions';
@@ -43,7 +42,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   private userManager = new UserManager({});
 
   ngOnInit() {
-    this.userManager.signinCallback();
+    this.userManager.createSigninRequest();
     this.subscription$ = this.route.params
       .pipe(withLatestFrom(this.ngrxStore.select(_USER)))
       .subscribe(
@@ -71,7 +70,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           this.owner = params.username;
           this.groupId = params.groupId;
           this.serviceName = params.serviceName;
-          localStorage.setItem('invite-link', this.router.url);
+
           if (user?.signedIn) {
             // if we are signed in we join the workspace with our regular username
             this.ngrxStore.dispatch(
@@ -87,9 +86,18 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
             const cachedName = localStorage.getItem(
               'visitor-username',
             );
-            if (!cachedName) {
+            const cachedInviteLink =
+              localStorage.getItem('invite-link');
+
+            if (
+              !cachedName ||
+              !cachedInviteLink ||
+              !this.router.url.includes(cachedInviteLink)
+            ) {
+              localStorage.setItem('invite-link', this.router.url);
               return;
             }
+            // if we had joined this workspace before we use the same username
             this.ngrxStore.dispatch(
               joinWorkSpace({
                 groupId: params.groupId,
