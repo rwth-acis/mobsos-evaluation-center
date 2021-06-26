@@ -154,6 +154,15 @@ export const translations = {
         'Du kannst eigene Änderungen am Erfolgsmodell vornehmen.',
       'workspace-rights-spectator':
         'Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen.',
+      'shared-by': 'hat dieses Erfolgsmodell mit dir geteilt',
+      'username-required':
+        'Du brauchst einen Nutzernamen um beizutreten',
+      'pick-username': 'Wähle einen Nutzernamen aus',
+      username: 'Benutzername',
+      join: 'Beitreten',
+      'continue-as-visitor': 'Als Gast beitreten',
+      'sign-in':
+        'Falls du einen las2peer <strong>account</strong> besitzt, nutze den Login oben rechts.',
       'joined-as-visitor':
         '{{owner}} hat dieses Erfolgsmodell mit dir geteilt. Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen. Frag {{owner}} ob er dich zur Community einladen kann, um selbst Änderungen vorzunehmen.',
     },

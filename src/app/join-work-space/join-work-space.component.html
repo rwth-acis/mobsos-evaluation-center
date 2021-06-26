@@ -1,29 +1,35 @@
+<!-- only show this view if user is not signed in. Signed in users will be redirected automatically -->
 <div class="container" *ngIf="!user?.signedIn">
   <mat-card class="example-card">
     <mat-card-content>
       <p class="title">
-        <strong>{{ owner }} </strong> has shared this success model
-        with you
+        <strong>{{ owner }}</strong>
+        {{ 'success-modeling.info.shared-by' | translate }}
       </p>
 
       <div class="pick-username">
-        <p>A username is required to join this workspace.</p>
         <p>
-          If you have a las2peer <strong>account</strong> , use the
-          login button in the top right corner.
+          {{ 'success-modeling.info.username-required' | translate }}
         </p>
+        <p
+          [innerHtml]="'success-modeling.info.sign-in' | translate"
+        ></p>
       </div>
     </mat-card-content>
   </mat-card>
 
   <mat-expansion-panel hideToggle>
     <mat-expansion-panel-header>
-      <mat-panel-title> Continue as Visitor </mat-panel-title>
+      <mat-panel-title
+        >{{ 'success-modeling.info.continue-as-visitor' | translate }}
+      </mat-panel-title>
     </mat-expansion-panel-header>
-    <h3>Pick a username</h3>
+    <h3>{{ 'success-modeling.info.pick-username' | translate }}</h3>
 
     <mat-form-field>
-      <mat-label>Username</mat-label>
+      <mat-label>{{
+        'success-modeling.info.username' | translate
+      }}</mat-label>
       <input matInput [(ngModel)]="username" />
     </mat-form-field>
     <br />
@@ -32,7 +38,7 @@
       color="primary"
       (click)="joinWorkspace()"
     >
-      Enter
+      {{ 'success-modeling.info.join' | translate }}
     </button>
   </mat-expansion-panel>
 </div>

@@ -151,6 +151,15 @@ export const translations = {
         'You can make own changes to the success model.',
       'workspace-rights-spectator':
         'You can watch changes made by others, but not make changes yourself.',
+      'shared-by': 'has shared this success model with you',
+      'username-required':
+        'A username is required to join this workspace.',
+      'pick-username': 'Pick a username',
+      username: 'Username',
+      join: 'Join',
+      'sign-in':
+        ' If you have a las2peer <strong>account</strong> , use the login button in the top right corner.',
+      'continue-as-visitor': ' Continue as Visitor',
       'joined-as-visitor':
         '{{owner}} has shared this success model with you. You can watch changes made by the community, but not make changes yourself. If you want to make changes you have to be logged in and be a part of the community',
     },
