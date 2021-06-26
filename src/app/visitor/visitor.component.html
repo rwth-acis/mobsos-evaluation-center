@@ -17,7 +17,7 @@
 
 <ng-container
   *ngIf="
-    !linkExpected && (assetsLoaded$ | async);
+    workspaceOwner && (assetsLoaded$ | async);
     else notInitialized
   "
 >

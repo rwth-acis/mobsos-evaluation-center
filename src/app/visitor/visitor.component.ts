@@ -36,7 +36,6 @@ import { iconMap, translationMap } from '../success-modeling/config';
   styleUrls: ['./visitor.component.scss'],
 })
 export class VisitorComponent implements OnInit, OnDestroy {
-  workSpaceOwner: string;
   selectedServiceName$ = this.ngrxStore.select(
     _SELECTED_SERVICE_NAME,
   );
@@ -63,14 +62,14 @@ export class VisitorComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     let sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
       if (owner) {
-        this.workSpaceOwner = owner;
+        this.workspaceOwner = owner;
       }
     });
     this.subscriptions$.push(sub);
 
     setTimeout(() => {
       // if after 3 seconds the workspace is not we redirect
-      if (!this.workSpaceOwner) {
+      if (!this.workspaceOwner) {
         let link = localStorage.getItem('invite-link'); // if an invite link was cached, we rejoin that workspace
         if (!link) {
           link = '/';
