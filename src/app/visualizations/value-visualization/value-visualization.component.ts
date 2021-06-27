@@ -22,6 +22,7 @@ import { VData } from 'src/app/models/visualization.model';
 import {
   distinctUntilKeyChanged,
   filter,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -76,7 +77,10 @@ export class ValueVisualizationComponent
           query,
         );
         this.value$
-          .pipe(filter((data) => !!data && !data.error))
+          .pipe(
+            tap((data) => (this.error = data?.error)),
+            filter((data) => !!data && !data.error),
+          )
           .subscribe((v) => {
             this.value =
               v?.data?.slice(-1)[0]?.length === 0
