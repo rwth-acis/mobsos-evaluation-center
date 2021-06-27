@@ -321,7 +321,11 @@ export class WorkspaceService {
       visitor.username.includes('(guest'),
     );
 
-    if (role === UserRole.LURKER && !username.includes('(guest') && !containedInVisitors ) {
+    if (
+      role === UserRole.LURKER &&
+      !username.includes('(guest') &&
+      !containedInVisitors
+    ) {
       const n = guestVisitors.length + 1;
       username = username + ' (guest ' + n + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
       localStorage.setItem('visitor-username', username); // in the future anonymous user gets reassigned the same name
@@ -396,8 +400,8 @@ export class WorkspaceService {
           console.log('Pushing local changes to remote y-js map...');
         }
         this.sharedDocument.transact(() => {
-        this._syncObjectToMap(cloneDeep(obj), map);
-      });
+          this._syncObjectToMap(cloneDeep(obj), map);
+        });
       });
 
     // this.sharedDocument.on('update', () => this.observeFn(map));
@@ -412,7 +416,10 @@ export class WorkspaceService {
       console.log('Applying remote changes to local object...');
     }
     const cloneObj = cloneDeep(map.toJSON());
-    this.communityWorkspace$.next(cloneObj);
+    if (!isEqual(cloneObj, this.communityWorkspace$.getValue())) {
+      this.communityWorkspace$.next(cloneObj);
+    }
+
     this.syncDone$.next(true);
   }
 
