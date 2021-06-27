@@ -395,7 +395,9 @@ export class WorkspaceService {
         if (isDevMode()) {
           console.log('Pushing local changes to remote y-js map...');
         }
+        this.sharedDocument.transact(() => {
         this._syncObjectToMap(cloneDeep(obj), map);
+      });
       });
 
     // this.sharedDocument.on('update', () => this.observeFn(map));
