@@ -1,10 +1,10 @@
 <span
   *ngIf="error"
-  class="loading-placeholder"
+  class="visualization-error"
   (click)="openErrorDialog()"
 >
   <button mat-button>
-    <mat-icon>error_outline</mat-icon>
+    <mat-icon>warning</mat-icon>
   </button>
 </span>
 <span *ngIf="serviceNotFoundInMobSOS">

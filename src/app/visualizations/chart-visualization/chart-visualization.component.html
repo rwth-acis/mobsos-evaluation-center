@@ -31,13 +31,15 @@
   </div>
 </ng-container>
 
-<ng-container *ngIf="error && !chart">
-  <span (click)="openErrorDialog()">
-    <button mat-button id="error">
-      <mat-icon>warning</mat-icon>
-    </button>
-  </span>
-</ng-container>
+<span
+  *ngIf="error && !chart"
+  (click)="openErrorDialog()"
+  class="visualization-error"
+>
+  <button mat-button>
+    <mat-icon>warning</mat-icon>
+  </button>
+</span>
 
 <ng-template #stillLoading>
   <span class="loading-placeholder">

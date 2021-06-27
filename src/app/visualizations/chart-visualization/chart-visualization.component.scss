@@ -1,10 +1,6 @@
 google-chart{
     max-width: 500px;
 }
-#error{
-    height: 4rem;
-    width: 4rem
-}
 
 #chart-info{
  margin: auto;
@@ -14,4 +10,18 @@ google-chart{
     display: flex;
     justify-content: space-between;
     align-items: flex-start
+}
+.visualization-error{
+  $loading-size: 4rem;
+
+  width: $loading-size;
+  height: $loading-size;
+  line-height: $loading-size;
+
+  mat-icon {
+    font-size: $loading-size;
+    width: $loading-size;
+    height: $loading-size;
+    line-height: $loading-size;
+  }
 }
