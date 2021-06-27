@@ -1,4 +1,3 @@
-import { Las2peerService } from '../las2peer.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -8,18 +7,23 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Measure } from '../models/measure.model';
+import { Observable } from 'rxjs';
+import {
+  MEASURE,
+  SELECTED_SERVICE,
+} from '../services/store.selectors';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
-  measure: Measure;
+  service$: Observable<ServiceInformation>;
   visualizationInitialized: boolean;
   error: HttpErrorResponse;
+  measure: Measure;
 }
 
 @Component({
@@ -35,6 +39,7 @@ export class BaseVisualizationComponent
     protected dialog: MatDialog,
   ) {}
   measure: Measure;
+  service$ = this.ngrxStore.select(SELECTED_SERVICE);
   service: ServiceInformation;
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
@@ -51,7 +56,7 @@ export class BaseVisualizationComponent
   ) {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     if (!query) return;
-    query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
+    query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = BaseVisualizationComponent.htmlDecode(query);
     return query;
   }
@@ -73,7 +78,7 @@ export class BaseVisualizationComponent
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';
-    return query.replace('$SERVICES$', servicesString);
+    return query?.replace('$SERVICES$', servicesString);
   }
 
   ngOnInit() {}
@@ -83,15 +88,17 @@ export class BaseVisualizationComponent
   ngOnDestroy(): void {}
 
   openErrorDialog() {
-    let errorText;
+    let errorText = 'Http status code: ' + this.error.status + '\n';
     if (this.error.error) {
-      errorText = (
-        this.error.statusText +
-        ': ' +
-        this.error.error
-      ).trim();
-    } else {
-      errorText = this.error;
+      errorText += this.error.statusText;
+
+      if (typeof this.error.error === 'string') {
+        errorText += ': ' + this.error.error;
+      }
+
+      errorText = errorText.trim();
+    } else if (typeof this.error === 'string') {
+      errorText += this.error;
     }
 
     this.dialog.open(ErrorDialogComponent, {
@@ -107,7 +114,7 @@ export class BaseVisualizationComponent
       return [];
     }
     const serviceRegex = /\$SERVICE\$/g;
-    const matches = query.match(serviceRegex);
+    const matches = query?.match(serviceRegex);
     const params = [];
     if (matches) {
       for (const match of matches) {

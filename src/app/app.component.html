@@ -5,68 +5,85 @@
     [fixedInViewport]="mobileQuery.matches"
     [opened]="!mobileQuery.matches"
   >
-    <mat-form-field id="community-selection" *ngIf="user$ | async">
-      <ng-container
+    <ng-container *ngIf="(user$ | async)?.signedIn">
+      <mat-form-field
+        id="community-selection"
         *ngIf="groupsAreLoaded$ | async; else groupsAreLoading"
       >
         <mat-label>Community</mat-label>
         <mat-select
-          [formControl]="selectedGroupForm"
+          [(ngModel)]="selectedGroupId"
           (selectionChange)="onGroupSelected($event.value)"
         >
-          <mat-option
-            class="mat-body-strong"
-            *ngFor="let group of userGroups$ | async"
-            [value]="group.id"
-          >
-            {{ group.name }}
-          </mat-option>
-          <mat-divider></mat-divider>
-          <mat-option
-            *ngFor="let group of foreignGroups$ | async"
-            [value]="group.id"
-          >
-            {{ group.name }}
-          </mat-option>
+          <ng-container *ngIf="(userGroups$ | async)?.length > 0">
+            <div class="sub-header" mat-subheader>
+              {{
+                'app.community-selector.your-groups-hint' | translate
+              }}
+            </div>
+            <mat-option
+              class="mat-body-strong"
+              *ngFor="let group of userGroups$ | async"
+              [value]="group.id"
+            >
+              {{ group.name }}
+            </mat-option>
+            <mat-divider></mat-divider>
+          </ng-container>
+          <ng-container *ngIf="(foreignGroups$ | async)?.length > 0">
+            <div class="sub-header" mat-subheader>
+              {{
+                'app.community-selector.foreign-groups-hint'
+                  | translate
+              }}
+            </div>
+            <mat-option
+              *ngFor="let group of foreignGroups$ | async"
+              [value]="group.id"
+            >
+              {{ group.name }}
+            </mat-option>
+          </ng-container>
         </mat-select>
-      </ng-container>
-    </mat-form-field>
-    <mat-divider></mat-divider>
-    <mat-nav-list>
-      <a
-        mat-list-item
-        routerLink="/"
-        routerLinkActive="active"
-        (click)="menuItemClicked()"
-      >
-        <mat-icon matListIcon>trending_up</mat-icon>
-        {{ 'shared.pages.success-modeling' | translate }}
-      </a>
-      <a
-        *ngIf="expertMode$ | async"
-        mat-list-item
-        routerLink="/raw-edit"
-        routerLinkActive="active"
-        (click)="menuItemClicked()"
-      >
-        <mat-icon matListIcon>code</mat-icon>
-        {{ 'shared.pages.raw-edit' | translate }}
-      </a>
-      <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
-        <mat-icon matListIcon>open_in_browser</mat-icon>
-        {{ 'shared.pages.manage-questionnaires' | translate }}
-      </a>
-      <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
-        <mat-icon matListIcon>open_in_browser</mat-icon>
-        {{ 'shared.pages.manage-requirements' | translate }}
-      </a>
-    </mat-nav-list>
+      </mat-form-field>
+
+      <mat-divider></mat-divider>
+      <mat-nav-list>
+        <a
+          mat-list-item
+          routerLink="/"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
+        >
+          <mat-icon matListIcon>trending_up</mat-icon>
+          {{ 'shared.pages.success-modeling' | translate }}
+        </a>
+        <a
+          *ngIf="expertMode$ | async"
+          mat-list-item
+          routerLink="/raw-edit"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
+        >
+          <mat-icon matListIcon>code</mat-icon>
+          {{ 'shared.pages.raw-edit' | translate }}
+        </a>
+        <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
+          <mat-icon matListIcon>open_in_browser</mat-icon>
+          {{ 'shared.pages.manage-questionnaires' | translate }}
+        </a>
+        <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
+          <mat-icon matListIcon>open_in_browser</mat-icon>
+          {{ 'shared.pages.manage-requirements' | translate }}
+        </a>
+      </mat-nav-list>
+    </ng-container>
     <footer>
       <mat-slide-toggle
-        *ngIf="user$ | async"
+        *ngIf="(user$ | async)?.signedIn"
         labelPosition="before"
         [checked]="expertMode$ | async"
-        (change)="setExpertMode($event.checked)"
+        (change)="toggleExpertMode()"
       >
         {{ 'app.expert-mode.switch-label' | translate }}
       </mat-slide-toggle>
@@ -125,9 +142,7 @@
       *ngIf="loading$ | async"
     ></mat-progress-bar>
     <main>
-      <ng-container *ngIf="loggedIn$ | async; else notLoggedIn">
-        <router-outlet></router-outlet
-      ></ng-container>
+      <router-outlet></router-outlet>
     </main>
     <footer id="footer">
       <a href="https://las2peer.org/" target="_blank">
@@ -141,15 +156,11 @@
   </mat-sidenav-content>
 </mat-sidenav-container>
 
-<ng-template #notLoggedIn>
-  <mat-card> {{ 'not-logged-in' | translate }} </mat-card>
-</ng-template>
-
 <ng-template #groupsAreLoading>
-  <mat-progress-spinner
+  <mat-spinner
     color="accent"
     id="groupsLoadingIndicator"
     [diameter]="30"
   >
-  </mat-progress-spinner>
+  </mat-spinner>
 </ng-template>

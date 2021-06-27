@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
@@ -10,17 +10,18 @@ import {
   toggleEdit,
 } from '../services/store.actions';
 import {
-  ASSETS_LOADED,
+  MODEL_AND_CATALOG_LOADED,
   DIMENSIONS_IN_MODEL,
-  EDIT_MODE,
+  _EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
-  USER,
+  _USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
+  SUCCESS_MODEL_IS_EMPTY,
 } from '../services/store.selectors';
 import {
   catchError,
@@ -66,16 +67,13 @@ import { IQuestionnaire } from '../models/questionnaire.model';
   ],
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
-  editMode$ = this.ngrxStore.select(EDIT_MODE);
+  @Input() restricted = false;
+
+  editMode$ = this.ngrxStore.select(_EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   showSuccessModelEmpty$ = this.ngrxStore
-    .select(DIMENSIONS_IN_MODEL)
+    .select(SUCCESS_MODEL_IS_EMPTY)
     .pipe(
-      map(
-        (dimensions) =>
-          dimensions.find((dimension) => dimension.length > 0) ===
-          undefined,
-      ),
       withLatestFrom(this.editMode$),
       map(([empty, editMode]) => empty && !editMode),
     );
@@ -83,8 +81,8 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
 
-  assetsLoaded$ = this.ngrxStore.select(ASSETS_LOADED);
-  user$ = this.ngrxStore.select(USER);
+  assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
+  user$ = this.ngrxStore.select(_USER);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
@@ -173,15 +171,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
+    this.ngrxStore.dispatch(disableEdit());
   }
 
   onServiceSelected(service: ServiceInformation) {
     this.ngrxStore.dispatch(disableEdit());
     this.ngrxStore.dispatch(setService({ service }));
-  }
-
-  onEditModeChanged(e) {
-    this.ngrxStore.dispatch(toggleEdit());
   }
 
   onSaveClicked() {

@@ -1,0 +1,15 @@
+.container {
+  max-width: 500px;
+  margin: auto;
+  
+  mat-card {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+  }
+  mat-expansion-panel {
+    margin-top: 10px;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+  }
+}
+.title {
+  font-size: large;
+}

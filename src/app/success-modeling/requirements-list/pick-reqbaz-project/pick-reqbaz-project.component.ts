@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {Las2peerService} from '../../../las2peer.service';
 import {FormControl} from '@angular/forms';
 import {BehaviorSubject} from 'rxjs';
 import {startWith} from 'rxjs/operators';
+import { Las2peerService } from 'src/app/services/las2peer.service';
 
 interface Project {
   name: string;

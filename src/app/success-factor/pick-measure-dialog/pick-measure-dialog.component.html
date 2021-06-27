@@ -1,14 +1,103 @@
-<h1 mat-dialog-title>{{'success-modeling.pick-measure-dialog.title'|translate}}</h1>
+<h1 mat-dialog-title>
+  {{ 'success-modeling.pick-measure-dialog.title' | translate }}
+</h1>
 <div mat-dialog-content>
-  <button mat-raised-button color="primary" (click)="openNewMeasureDialog()" id="create-measure-button">
-    {{'success-modeling.pick-measure-dialog.create-measure-button'|translate}}
-  </button>
-  <mat-card *ngIf="!data.measures || data.measures.length == 0" class="no-measure-card">
+  <mat-card
+    *ngIf="!data.measures || data.measures.length == 0"
+    class="no-measure-card"
+  >
     <mat-icon color="primary">info_outline</mat-icon>
-    <span>{{'success-modeling.pick-measure-dialog.no-measures'|translate}}</span>
+    <span>{{
+      'success-modeling.pick-measure-dialog.no-measures' | translate
+    }}</span>
   </mat-card>
-  <mat-card *ngFor="let measure of data.measures; let i = index" matRipple>
-    <app-success-measure [measure]="measure" [service]="data.service" [editMode]="true" [canDelete]="true"
-                         (measureDelete)="deleteMeasure(i)" (click)="onMeasureClicked(measure)"></app-success-measure>
-  </mat-card>
+  <div class="example-action-buttons">
+    <button mat-button (click)="accordion.openAll()">
+      Expand All
+    </button>
+    <button mat-button (click)="accordion.closeAll()">
+      Collapse All
+    </button>
+  </div>
+  <mat-accordion class="example-headers-align" multi>
+    <mat-expansion-panel
+      *ngFor="let measure of data.measures; let i = index"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ measure.name }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <ng-template matExpansionPanelContent>
+        <div [ngSwitch]="measure.visualization.type">
+          <app-kpi-visualization
+            [measure]="measure"
+            [service]="service"
+            *ngSwitchCase="'KPI'"
+          ></app-kpi-visualization>
+          <app-value-visualization
+            [measureName]="measure.name"
+            [service]="service"
+            *ngSwitchCase="'Value'"
+          ></app-value-visualization>
+          <app-chart-visualization
+            *ngSwitchCase="'Chart'"
+            [measureName]="measure.name"
+            [service]="service"
+          ></app-chart-visualization>
+          <div *ngSwitchDefault>
+            Unknown chartType: {{ measureAsync.visualization.type }}
+          </div>
+        </div>
+
+        <div id="edit-controls">
+          <button
+            mat-icon-button
+            color="primary"
+            [matTooltip]="
+              'success-factor.add-measure-button' | translate
+            "
+            (click)="onMeasureClicked(measure)"
+          >
+            <mat-icon> playlist_add </mat-icon>
+          </button>
+          <button
+            *ngIf="canEdit$ | async"
+            mat-icon-button
+            color="primary"
+            [matTooltip]="
+              'success-modeling.edit-mode-toggle' | translate
+            "
+            (click)="onEditClicked(measure)"
+          >
+            <mat-icon> edit </mat-icon>
+          </button>
+          <button
+            *ngIf="canEdit$ | async"
+            mat-icon-button
+            color="warn"
+            [matTooltip]="
+              'success-factor.remove-measure-tooltip' | translate
+            "
+            (click)="deleteMeasure(i)"
+          >
+            <mat-icon> delete_forever </mat-icon>
+          </button>
+        </div>
+      </ng-template>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="openNewMeasureDialog()"
+    id="create-measure-button"
+  >
+    {{
+      'success-modeling.pick-measure-dialog.create-measure-button'
+        | translate
+    }}
+  </button>
 </div>

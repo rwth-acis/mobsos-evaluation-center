@@ -46,3 +46,4 @@ testem.log
 Thumbs.db
 .vscode/launch.json
 yjs-websocket/node_modules/
+src/assets/monaco/*

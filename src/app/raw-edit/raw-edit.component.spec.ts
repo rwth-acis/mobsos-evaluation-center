@@ -25,7 +25,7 @@ import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { StateEffects } from '../services/store.effects';
 import { Observable } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { COMMUNITY_WORKSPACE } from '../services/store.selectors';
+import { _COMMUNITY_WORKSPACE } from '../services/store.selectors';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('RawEditComponent', () => {

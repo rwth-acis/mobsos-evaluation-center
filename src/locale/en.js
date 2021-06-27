@@ -22,6 +22,8 @@ export const translations = {
   app: {
     'community-selector': {
       'select-community-hint': 'Login to select your community',
+      'your-groups-hint': 'Your Groups',
+      'foreign-groups-hint': 'Foreign Groups',
     },
     'language-selector': {
       'select-language': 'Select Language',
@@ -40,7 +42,8 @@ export const translations = {
       'send-button': 'Save',
       'send-button-no-selected-group':
         'Please pick a community on the side bar',
-      'snackbar-success': 'The measures have been saved successfully.',
+      'snackbar-success':
+        'The measures have been saved successfully.',
       'snackbar-failure': 'The measures could not be saved.',
     },
     'success-models': {
@@ -48,7 +51,8 @@ export const translations = {
       'send-button': 'Save',
       'send-button-no-selected-group-or-application':
         'Please pick a community and an application',
-      'snackbar-success': 'The success model has been saved successfully.',
+      'snackbar-success':
+        'The success model has been saved successfully.',
       'snackbar-failure': 'The success model could not be saved.',
     },
     tabs: {
@@ -62,19 +66,28 @@ export const translations = {
       'factor-input-placeholder': 'Factor Name',
     },
     'add-factor-tooltip': 'Add Factor',
-    'remove-factor-prompt': 'Are your sure you want to remove this factor?',
+    'remove-factor-prompt':
+      'Are your sure you want to remove this factor?',
     'remove-factor-tooltip': 'Remove factor',
   },
   'success-factor': {
     'add-measure-button': 'Add Measure',
     'no-measures-placeholder':
       'This factor has no measures attached to it yet.',
-    'remove-measure-prompt': 'Are you sure you want to remove this measure?',
+    'remove-measure-prompt':
+      'Are you sure you want to remove this measure?',
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    visualization: {
+      'fetch-info':
+        'Showing data fetched on {{date}} from the server ',
+      'fetch-error':
+        ' The following error was encountered, while fetching more recent data: {{ error }}',
+    },
     'community-workspace': 'Workspace of the {{community}} Community',
-    'community-success-model': 'Success Model for the {{service}} service ',
+    'community-success-model':
+      'Success Model for the {{service}} service ',
     'copy-workspace-prompt':
       'Are you sure you want to replace your current model?',
     dimensions: {
@@ -91,7 +104,8 @@ export const translations = {
         'information-quality':
           'How accurate/complete is the presented information?',
         use: 'How often is this application used?',
-        'user-satisfaction': 'How much do people like using this application?',
+        'user-satisfaction':
+          'How much do people like using this application?',
         'individual-impact':
           'How much does this application affect individuals?',
         'community-impact':
@@ -125,7 +139,8 @@ export const translations = {
       'unit-placeholder': 'Unit',
       'visualization-select': 'Visualization',
     },
-    'edit-tooltip': 'Create or edit the success model for this application',
+    'edit-tooltip':
+      'Create or edit the success model for this application',
     info: {
       'workspace-ask-owner-to-save':
         'To save changes for everybody you have to ask the owner of this workspace to hit the save button.',
@@ -136,6 +151,17 @@ export const translations = {
         'You can make own changes to the success model.',
       'workspace-rights-spectator':
         'You can watch changes made by others, but not make changes yourself.',
+      'shared-by': 'has shared this success model with you',
+      'username-required':
+        'A username is required to join this workspace.',
+      'pick-username': 'Pick a username',
+      username: 'Username',
+      join: 'Join',
+      'sign-in':
+        ' If you have a las2peer <strong>account</strong> , use the login button in the top right corner.',
+      'continue-as-visitor': ' Continue as Visitor',
+      'joined-as-visitor':
+        '{{owner}} has shared this success model with you. You can watch changes made by the community, but not make changes yourself. If you want to make changes you have to be logged in and be a part of the community',
     },
     'message-no-application-selected':
       'No application selected. Please select an application above to see its success model.',
@@ -145,7 +171,8 @@ export const translations = {
       'No success model present. You must be a member of the selected community to create a new model.',
     'pick-measure-dialog': {
       'create-measure-button': 'Create Measure',
-      'no-measures': 'No measures exist yet. Create one with the button above.',
+      'no-measures':
+        'No measures exist yet. Create one with the button above.',
       title: 'Pick a Measure',
     },
     questionnaires: {
@@ -153,15 +180,18 @@ export const translations = {
         'Add a questionnaire. The questionnaire can be filled in after saving.',
       'delete-questionnaire-dialog': {
         'delete-measures': 'Delete generated measures.',
-        'delete-survey': 'Delete survey. Results will be still available.',
+        'delete-survey':
+          'Delete survey. Results will be still available.',
         text: 'Are you sure that you want to remove the questionnaire?',
         title: 'Remove Questionnaire?',
       },
       'no-questionnaires':
         'You have not picked any questionnaires yet. Activate the edit mode to add one.',
       'pick-questionnaire-dialog': {
-        'add-measures': 'Automatically add measures for questionnaire answers.',
-        'assign-measures': 'Insert added measures into the success model.',
+        'add-measures':
+          'Automatically add measures for questionnaire answers.',
+        'assign-measures':
+          'Insert added measures into the success model.',
         description: 'Description',
         dimensions: 'Dimensions',
         language: 'Language',
@@ -201,7 +231,8 @@ export const translations = {
     'save-model-button': 'Save Model',
     'select-application': 'Switch Application',
     'snackbar-save-failure': 'The success model could not be saved.',
-    'snackbar-save-success': 'The success model has been saved successfully.',
+    'snackbar-save-success':
+      'The success model has been saved successfully.',
     visitors: {
       'edit-role-description': 'Allow editing',
       heading: 'Visitors',
@@ -211,15 +242,19 @@ export const translations = {
     },
     'workspace-closed-message': 'The owner has closed the workspace.',
     workspaces: {
+      'share-workspace': 'Share link to current workspace',
       'copy-workspace': 'Copy workspace',
       'go-to': 'Go to Workspace',
       heading: 'Workspaces',
       'no-workspaces': 'No other workspaces',
-      tooltip: 'See who else is working on a model for this application',
+      tooltip:
+        'See who else is working on a model for this application',
       'your-workspace': 'You',
     },
   },
   'not-logged-in': 'You need to be logged in to use this App',
   'not-part-of-selected-community':
     'You are not a member of the {{ community }} Community',
+  'copied-to-clipboard':
+    'The link has been copied to the clipboard. You can now share it with others',
 };

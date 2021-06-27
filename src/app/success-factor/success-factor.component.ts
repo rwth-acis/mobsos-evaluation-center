@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -14,7 +15,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import {
-  EDIT_MODE,
+  _EDIT_MODE,
+  MEASURES,
+  SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';
 import {
@@ -26,19 +29,25 @@ import { SuccessFactor } from '../models/success.model';
 import { MeasureMap } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
+import { Subscription } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-success-factor',
   templateUrl: './success-factor.component.html',
   styleUrls: ['./success-factor.component.scss'],
 })
-export class SuccessFactorComponent implements OnInit {
+export class SuccessFactorComponent implements OnInit, OnDestroy {
   @Input() factor: SuccessFactor;
   @Input() dimensionName: string;
-  @Input() service: ServiceInformation;
-  @Input() measures: MeasureMap;
+  service: ServiceInformation;
+  measures: MeasureMap;
 
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  measures$ = this.ngrxStore
+    .select(MEASURES)
+    .pipe(distinctUntilChanged());
 
   @Output() sendFactorToDimension = new EventEmitter<SuccessFactor>();
   @Output() sendMeasuresToDimension = new EventEmitter<MeasureMap>();
@@ -49,7 +58,21 @@ export class SuccessFactorComponent implements OnInit {
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit() {}
+  subscriptions$: Subscription[] = [];
+
+  ngOnInit() {
+    let sub = this.measures$.subscribe(
+      (measures) => (this.measures = measures),
+    );
+    this.subscriptions$.push(sub);
+    sub = this.service$.subscribe(
+      (service) => (this.service = service),
+    );
+    this.subscriptions$.push(sub);
+  }
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
 
   async openRemoveMeasureDialog(measureIndex: number) {
     const message = await this.translate

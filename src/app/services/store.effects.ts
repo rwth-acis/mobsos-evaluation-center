@@ -12,22 +12,25 @@ import {
   filter,
   share,
   tap,
+  exhaustMap,
 } from 'rxjs/operators';
-import { Las2peerService } from '../las2peer.service';
-import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { environment } from 'src/environments/environment';
+
 import { VData } from '../models/visualization.model';
+import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
-import { disableEdit } from './store.actions';
 import {
-  APPLICATION_WORKSPACE,
-  EDIT_MODE,
-  MEASURE_CATALOG_XML,
-  SELECTED_GROUP_ID,
-  SELECTED_SERVICE_NAME,
-  SUCCESS_MODEL,
-  SUCCESS_MODEL_XML,
-  USER,
+  RESTRICTED_MODE,
+  _SELECTED_GROUP_ID,
+  SELECTED_SERVICE,
+  _SELECTED_SERVICE_NAME,
+  _EDIT_MODE,
+  _USER,
   VISUALIZATION_DATA,
+  WORKSPACE_CATALOG_XML,
+  WORKSPACE_MODEL_XML,
+  SUCCESS_MODEL_FROM_NETWORK,
+  MEASURE_CATALOG_FROM_NETWORK,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -134,55 +137,22 @@ export class StateEffects {
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
         this.workspaceService.startSynchronizingWorkspace(groupId);
-        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(({ groupId }) =>
         of(Action.fetchMeasureCatalog({ groupId })),
       ),
-    ),
-  );
-
-  updateCommunityWorkspace$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.updateCommunityWorkspace),
-      withLatestFrom(
-        this.ngrxStore.select(SELECTED_GROUP_ID),
-        this.ngrxStore.select(EDIT_MODE),
-      ),
-      filter(([action, groupId]) => !!groupId),
-      tap(([action, groupId, editMode]) => {
-        if (editMode && groupId) {
-          this.workspaceService.startSynchronizingWorkspace(groupId);
-        }
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
       }),
-      switchMap(() => of(Action.success())),
-    ),
-  );
-
-  initState$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.initState),
-      withLatestFrom(
-        this.ngrxStore.select(USER),
-        this.ngrxStore.select(SELECTED_GROUP_ID),
-      ),
-      tap(([action, user, groupId]) => {
-        if (user?.profile) {
-          this.l2p.setCredentials(
-            user.profile.preferred_username,
-            null,
-            user.access_token,
-          );
-        }
-      }),
-      switchMap(() => of(Action.success())),
+      share(),
     ),
   );
 
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       filter(([{ service }, groupId]) => !!service),
       switchMap(([{ service }, groupId]) =>
         of(
@@ -192,6 +162,11 @@ export class StateEffects {
           }),
         ),
       ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
+      share(),
     ),
   );
 
@@ -203,8 +178,13 @@ export class StateEffects {
         localStorage.setItem('id_token', user.id_token);
         localStorage.setItem('access_token', user.access_token);
         localStorage.setItem('profile', JSON.stringify(user.profile));
+        this.l2p.setCredentials(
+          user?.profile.preferred_username,
+          user.profile.sub,
+          user.access_token,
+        );
       }),
-      switchMap(({ user }) => of(Action.success())),
+      switchMap(() => of(Action.success())),
     ),
   );
 
@@ -223,6 +203,10 @@ export class StateEffects {
           }),
         ),
       ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
     ),
   );
 
@@ -231,8 +215,8 @@ export class StateEffects {
       ofType(Action.saveModelAndCatalog),
       withLatestFrom(
         combineLatest([
-          this.ngrxStore.select(MEASURE_CATALOG_XML),
-          this.ngrxStore.select(SELECTED_GROUP_ID),
+          this.ngrxStore.select(WORKSPACE_CATALOG_XML),
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
         ]),
       ),
       switchMap(([action, [measureCatalogXML, groupId]]) =>
@@ -252,20 +236,22 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.saveCatalogSuccess),
       withLatestFrom(
-        combineLatest([
-          this.ngrxStore.select(SUCCESS_MODEL_XML),
-          this.ngrxStore.select(SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_SERVICE_NAME),
-        ]),
+        this.ngrxStore.select(WORKSPACE_MODEL_XML),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
-      switchMap(([action, [successModelXML, groupId, serviceName]]) =>
+      switchMap(([action, successModelXML, groupId, serviceName]) =>
         this.l2p
           .saveSuccessModelAndObserve(
             groupId,
             serviceName,
             successModelXML,
           )
-          .pipe(map(() => Action.successResponse())),
+          .pipe(
+            map(() =>
+              Action.storeSuccessModel({ xml: successModelXML }),
+            ),
+          ),
       ),
       catchError((err) => {
         console.error(err);
@@ -281,7 +267,7 @@ export class StateEffects {
       switchMap((action) => {
         const missingGroups = action.groupsFromContactService.filter(
           (group) =>
-            !action.groupsFromMobSOS.find(
+            !action.groupsFromMobSOS?.find(
               (g) => g.name === group.name,
             ),
         );
@@ -302,8 +288,8 @@ export class StateEffects {
       ofType(Action.saveModel),
       withLatestFrom(
         combineLatest([
-          this.ngrxStore.select(SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_SERVICE_NAME),
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ]),
       ),
       switchMap(([action, [groupId, serviceName]]) =>
@@ -331,7 +317,7 @@ export class StateEffects {
   saveCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveCatalog),
-      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP_ID)),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       switchMap(([action, groupId]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, action.xml)
@@ -357,9 +343,6 @@ export class StateEffects {
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (shouldFetch(dataForQuery)) {
-          if (dataForQuery?.error) {
-            Action.removeVisualizationDataForQuery({ query });
-          }
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
@@ -410,30 +393,160 @@ export class StateEffects {
       share(),
     ),
   );
+
+  joinCommunityWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.joinWorkSpace),
+      withLatestFrom(
+        this.ngrxStore.select(SUCCESS_MODEL_FROM_NETWORK),
+        this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
+        this.ngrxStore.select(RESTRICTED_MODE),
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(_USER),
+        this.ngrxStore.select(VISUALIZATION_DATA),
+      ),
+      exhaustMap(
+        ([
+          action,
+          model,
+          catalog,
+          restricted,
+          service,
+          user,
+          vdata,
+        ]) =>
+          this.workspaceService
+            .syncWithCommunnityWorkspace(action.groupId)
+            .pipe(
+              map((synced) => {
+                if (synced) {
+                  let owner = action.owner;
+                  let username = action.username;
+                  if (user?.signedIn) {
+                    username = user.profile.preferred_username;
+                  }
+                  try {
+                    this.workspaceService.switchWorkspace(
+                      action.owner,
+                      action.serviceName,
+                      username,
+                      null,
+                      model,
+                      catalog,
+                      action.role,
+                      vdata,
+                    );
+                  } catch (error) {
+                    if (user?.signedIn) {
+                      this.workspaceService.initWorkspace(
+                        action.groupId,
+                        username,
+                        service,
+                        catalog,
+                        model,
+                        vdata,
+                      );
+                      owner = user?.profile.preferred_username;
+                    } else {
+                      return Action.failure();
+                    }
+                  }
+                  const currentCommunityWorkspace =
+                    this.workspaceService.currentCommunityWorkspace;
+                  if (
+                    user?.signedIn &&
+                    !currentCommunityWorkspace[
+                      user.profile.preferred_username
+                    ]
+                  ) {
+                    this.workspaceService.initWorkspace(
+                      action.groupId,
+                      user.profile.preferred_username,
+                      service,
+                      catalog,
+                      model,
+                      vdata,
+                    );
+                  }
+                  if (!currentCommunityWorkspace) {
+                    return Action.failure();
+                  } else {
+                    return Action.setCommunityWorkspace({
+                      workspace: currentCommunityWorkspace,
+                      owner,
+                      serviceName: action.serviceName,
+                    });
+                  }
+                } else {
+                  const error = new Error('Could not sync with yjs');
+                  console.error(error.message);
+                  throw error;
+                }
+              }),
+              catchError((err) => {
+                console.error(err);
+                return of(Action.failure());
+              }),
+            ),
+      ),
+      catchError(() => {
+        return of(Action.failure());
+      }),
+      share(),
+    ),
+  );
 }
 
+const ONE_MINUTE_IN_MS = 60000;
+const REFETCH_INTERVAL =
+  (environment.visualizationRefreshInterval
+    ? environment.visualizationRefreshInterval
+    : 30) * ONE_MINUTE_IN_MS;
 /**
  * Determines whether a new visualization data request should be made
  * @param dataForQuery the current data from the store
  * @returns true if we should make a new request
  */
 function shouldFetch(dataForQuery: VData): boolean {
-  if (!dataForQuery) return true;
-  if (dataForQuery.error) {
+  if (!dataForQuery?.fetchDate) return true; // initial state: we dont have any data yet
+  if (dataForQuery.data) {
+    // we got data: now check if data is not too old
+    if (
+      Date.now() - dataForQuery.fetchDate.getTime() >
+      REFETCH_INTERVAL
+    ) {
+      // data older than fetch interval
+      return true; // data older than
+    } else return false;
+  } else if (dataForQuery.error) {
     const status = dataForQuery.error.status;
-    if (!status) {
-      // Unknown error
-      return true;
-    } else if (status === 400) {
-      // SQL query error
-      return false;
-    } else if (status >= 500) {
-      // Server error
-      if (dataForQuery?.fetchDate.getTime() < Date.now() - 300000)
+
+    // the query had led to an error
+    if (
+      Date.now() - dataForQuery.fetchDate.getTime() >
+      5 * ONE_MINUTE_IN_MS
+    ) {
+      // data older than fetch interval
+      if (!status) {
+        // Unknown error
         return true;
+      }
+      if (status === 400) {
+        // user error
+        if (dataForQuery.error.error.includes('known/configured')) {
+          // data base not configured on query visualization service
+          return true;
+        } else {
+          // assume SQL query error
+          return false;
+        }
+      } else if (status >= 500) {
+        // server error
+        return true;
+      }
+    } else {
+      return false;
     }
-  } else if (dataForQuery.fetchDate.getTime() < Date.now() - 300000) {
-    return true;
   }
-  return false;
+  return true;
 }

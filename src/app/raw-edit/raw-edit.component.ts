@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
-import { Las2peerService } from '../las2peer.service';
 import vkbeautify from 'vkbeautify';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   failureResponse,
   PostActions,
   saveCatalog,
@@ -14,10 +14,12 @@ import {
 } from '../services/store.actions';
 import {
   MEASURE_CATALOG,
-  SELECTED_GROUP_ID,
+  MEASURE_CATALOG_XML,
+  _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
-  SERVICES,
+  _SERVICES,
   SUCCESS_MODEL,
+  SUCCESS_MODEL_XML,
 } from '../services/store.selectors';
 import {
   catchError,
@@ -25,10 +27,12 @@ import {
   filter,
   first,
   map,
+  tap,
   timeout,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -42,7 +46,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   groupID;
   services = [];
   serviceMap = {};
-  selectedService: string;
+  selectedServiceName: string;
 
   editorOptions = {
     theme: 'vs',
@@ -56,7 +60,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
   measureCatalogEditor;
   successModelEditor;
   saveInProgress = false;
-  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP_ID);
+  selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   measureCatalogInitialized$ = this.ngrxStore
     .select(MEASURE_CATALOG)
@@ -70,10 +74,18 @@ export class RawEditComponent implements OnInit, OnDestroy {
       filter((model) => model !== undefined),
       first(),
     );
-  services$ = this.ngrxStore.select(SERVICES);
+  services$ = this.ngrxStore.select(_SERVICES);
+
+  canSaveSuccessModel$ = combineLatest([
+    this.selectedGroupId$,
+    this.selectedService$,
+  ]).pipe(map(([groupid, service]) => !!groupid && !!service));
+
+  canSaveMeasureCatalog$ = this.selectedGroupId$.pipe(
+    map((groupid) => !!groupid && !this.saveInProgress),
+  );
 
   constructor(
-    private las2peer: Las2peerService,
     private snackBar: MatSnackBar,
     private translate: TranslateService,
     private ngrxStore: Store,
@@ -86,37 +98,32 @@ export class RawEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.ngrxStore.dispatch(disableEdit());
     this.selectedGroupId$
       .pipe(filter((groupId) => !!groupId))
       .subscribe((groupID) => {
         this.groupID = groupID;
-        // this.fetchXml();
       });
-    this.selectedService$
-      .pipe(
-        filter((service) => !!service),
-        map((service) => service.name),
-      )
-      .subscribe((serviceName) => {
-        this.selectedService = serviceName;
-        // this.fetchXml();
-      });
+    this.selectedService$.subscribe((service) => {
+      this.selectedServiceName = service?.name;
+    });
     this.services$.subscribe((services) => {
       this.serviceMap = services;
     });
-    this.successModel$
+    this.ngrxStore
+      .select(SUCCESS_MODEL_XML)
       .pipe(distinctUntilChanged())
-      .subscribe((model) => {
-        this.successModelXml = RawEditComponent.prettifyXml(
-          (model as SuccessModel)?.toXml().outerHTML,
-        );
+      .subscribe((xml) => {
+        this.successModelXml = RawEditComponent.prettifyXml(xml);
       });
-    this.measureCatalog$
-      .pipe(distinctUntilChanged())
-      .subscribe((catalog) => {
-        this.measureCatalogXml = RawEditComponent.prettifyXml(
-          (catalog as MeasureCatalog)?.toXml().outerHTML,
-        );
+    this.ngrxStore
+      .select(MEASURE_CATALOG_XML)
+      .pipe(
+        distinctUntilChanged(),
+        filter((catalog) => !!catalog),
+      )
+      .subscribe((xml) => {
+        this.measureCatalogXml = RawEditComponent.prettifyXml(xml);
       });
   }
 

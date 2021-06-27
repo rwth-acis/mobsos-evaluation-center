@@ -27,7 +27,7 @@ export class SuccessModel {
     public service: string,
     public dimensions: DimensionMap,
     public questionnaires: Questionnaire[],
-    public reqBazProject: ReqbazProject
+    public reqBazProject: ReqbazProject,
   ) {}
 
   /**
@@ -50,12 +50,12 @@ export class SuccessModel {
         'Community Impact': [],
       },
       [],
-      null
+      null,
     );
   }
 
   public static fromPlainObject(obj: SuccessModel): SuccessModel {
-    if (!obj) {
+    if (!obj?.dimensions) {
       return undefined;
     }
     const dimensions: DimensionMap = merge({}, initialDimensionMap);
@@ -63,19 +63,23 @@ export class SuccessModel {
       dimensions[objDimensionName] = [];
       for (const objFactor of obj.dimensions[objDimensionName]) {
         dimensions[objDimensionName].push(
-          SuccessFactor.fromPlainObject(objFactor)
+          SuccessFactor.fromPlainObject(objFactor),
         );
       }
     }
     const questionnaires = [];
     for (const objQuestionnaire of obj.questionnaires) {
       if (objQuestionnaire) {
-        questionnaires.push(Questionnaire.fromPlainObject(objQuestionnaire));
+        questionnaires.push(
+          Questionnaire.fromPlainObject(objQuestionnaire),
+        );
       }
     }
     let reqBazProject;
     if (obj.reqBazProject) {
-      reqBazProject = ReqbazProject.fromPlainObject(obj.reqBazProject);
+      reqBazProject = ReqbazProject.fromPlainObject(
+        obj.reqBazProject,
+      );
     } else {
       reqBazProject = null;
     }
@@ -85,7 +89,7 @@ export class SuccessModel {
       obj.service,
       dimensions,
       questionnaires,
-      reqBazProject
+      reqBazProject,
     );
   }
 
@@ -93,39 +97,48 @@ export class SuccessModel {
     try {
       const modelName = xml.getAttribute('name');
       const service = xml.getAttribute('service');
-      const dimensionNodes = Array.from(xml.getElementsByTagName('dimension'));
+      const dimensionNodes = Array.from(
+        xml.getElementsByTagName('dimension'),
+      );
       const dimensions: DimensionMap = merge({}, initialDimensionMap);
       for (const dimensionNode of dimensionNodes) {
         const dimensionName = dimensionNode.getAttribute('name');
         const availableDimensions = Object.keys(dimensions);
         if (!availableDimensions.includes(dimensionName)) {
           throw new Error(
-            `${dimensionName} is not a valid dimension. Valid dimensions are ${availableDimensions.join()}`
+            `${dimensionName} is not a valid dimension. Valid dimensions are ${availableDimensions.join()}`,
           );
         }
         const factorNodes = Array.from(
-          dimensionNode.getElementsByTagName('factor')
+          dimensionNode.getElementsByTagName('factor'),
         );
         for (const factorNode of factorNodes) {
-          dimensions[dimensionName].push(SuccessFactor.fromXml(factorNode));
+          dimensions[dimensionName].push(
+            SuccessFactor.fromXml(factorNode),
+          );
         }
       }
       const questionnaireCollectionNodes = Array.from(
-        xml.getElementsByTagName('questionnaires')
+        xml.getElementsByTagName('questionnaires'),
       );
       const questionnaires = [];
       if (questionnaireCollectionNodes.length > 0) {
-        const questionnaireCollectionNode = questionnaireCollectionNodes[0];
+        const questionnaireCollectionNode =
+          questionnaireCollectionNodes[0];
         const questionnaireNodes = Array.from(
-          questionnaireCollectionNode.getElementsByTagName('questionnaire')
+          questionnaireCollectionNode.getElementsByTagName(
+            'questionnaire',
+          ),
         );
         for (const questionnaireNode of questionnaireNodes) {
-          questionnaires.push(Questionnaire.fromXml(questionnaireNode));
+          questionnaires.push(
+            Questionnaire.fromXml(questionnaireNode),
+          );
         }
       }
 
       const reqBazProjectNodes = Array.from(
-        xml.getElementsByTagName('reqbaz-project')
+        xml.getElementsByTagName('reqbaz-project'),
       );
       let reqBazProject = null;
       if (reqBazProjectNodes.length > 0) {
@@ -137,7 +150,7 @@ export class SuccessModel {
         service,
         dimensions,
         questionnaires,
-        reqBazProject
+        reqBazProject,
       );
     } catch (e) {
       throw new Error('Parsing model failed: ' + e);
@@ -176,7 +189,9 @@ export class SuccessFactor {
   static fromXml(xml: Element) {
     try {
       const factorName = xml.getAttribute('name');
-      const measureNodes = Array.from(xml.getElementsByTagName('measure'));
+      const measureNodes = Array.from(
+        xml.getElementsByTagName('measure'),
+      );
       const measures = [];
       for (const measureNode of measureNodes) {
         measures.push(measureNode.getAttribute('name'));

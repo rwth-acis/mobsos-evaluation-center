@@ -49,7 +49,7 @@ export class KpiVisualizationComponent
       abstractTerm.push(operationElement.name);
       // even index means, that this must be an operand since we only support binary operators
       if (operationElement.index % 2 === 0) {
-        const query = queries.find(
+        const query = queries?.find(
           (value) => value.name === operationElement.name,
         );
         let sql = query.sql;

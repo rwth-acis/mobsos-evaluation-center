@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../environments/environment';
+
 import { NGXLogger } from 'ngx-logger';
 import {
   HttpClient,
@@ -8,7 +8,8 @@ import {
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share } from 'rxjs/operators';
-import { merge } from 'lodash';
+import { merge } from 'lodash-es';
+import { environment } from 'src/environments/environment';
 
 interface SuccessModel {
   xml: string;
@@ -179,18 +180,20 @@ export class Las2peerService {
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
     );
-    const username = this.userCredentials.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile')).sub;
+    const username = this.userCredentials?.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
     const token = localStorage.getItem('access_token');
-    options = merge(
-      {
-        headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + sub),
-          access_token: token,
+    if (username) {
+      options = merge(
+        {
+          headers: {
+            Authorization: 'Basic ' + btoa(username + ':' + sub),
+            access_token: token,
+          },
         },
-      },
-      options,
-    );
+        options,
+      );
+    }
 
     // if (!environment.production) {
     //   this.logger.debug(

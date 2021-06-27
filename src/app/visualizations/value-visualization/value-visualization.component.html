@@ -1,23 +1,44 @@
 <span
-  *ngIf="!visualizationInitialized && !error"
-  class="loading-placeholder"
->
-  <mat-progress-spinner></mat-progress-spinner>
-</span>
-<span
   *ngIf="error"
-  class="loading-placeholder"
+  class="visualization-error"
   (click)="openErrorDialog()"
 >
   <button mat-button>
-    <mat-icon>error_outline</mat-icon>
+    <mat-icon>warning</mat-icon>
   </button>
 </span>
 <span *ngIf="serviceNotFoundInMobSOS">
   This service has not generated any data yet. A visualization should
   be shown as soon as you interact with it.
 </span>
-<div *ngIf="value" class="value-visualization">
-  {{ value }}
-  {{ measure.visualization.unit ? measure.visualization.unit : '' }}
+<div id="value-row">
+  <ng-container *ngIf="value$ | async as data; else stillLoading">
+    <div *ngIf="value" class="value-visualization">
+      {{ value }}
+      {{
+        measure?.visualization.unit ? measure.visualization.unit : ''
+      }}
+    </div>
+    <button *ngIf="value" mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon> info_outline </mat-icon>
+    </button>
+
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="value-info">
+        {{
+          'success-modeling.visualization.fetch-info'
+            | translate: { date: data.fetchDate | date: 'short' }
+        }}
+        <p *ngIf="data.error">
+          {{
+            'success-modeling.visualization.fetch-error'
+              | translate: { error: data.error.error }
+          }}
+        </p>
+      </div>
+    </mat-menu>
+  </ng-container>
 </div>
+<ng-template #stillLoading class="loading-placeholder">
+  <mat-spinner></mat-spinner>
+</ng-template>

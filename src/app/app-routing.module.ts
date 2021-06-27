@@ -5,6 +5,8 @@ import { RawEditComponent } from './raw-edit/raw-edit.component';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
+import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
+import { VisitorComponent } from './visitor/visitor.component';
 
 const routes: Routes = [
   { path: '', component: SuccessModelingComponent },
@@ -12,6 +14,11 @@ const routes: Routes = [
   { path: 'oidc-signin', component: OidcSigninComponent },
   { path: 'oidc-signout', component: OidcSignoutComponent },
   { path: 'oidc-silent', component: OidcSilentComponent },
+  {
+    path: 'join/:groupId/:serviceName/:username',
+    component: JoinWorkSpaceComponent,
+  },
+  { path: 'visitor', component: VisitorComponent },
 ];
 
 @NgModule({

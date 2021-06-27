@@ -3,7 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import { Measure } from '../models/measure.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 import { CommunityWorkspace } from '../models/workspace.model';
 
 enum FetchActions {
@@ -29,6 +29,7 @@ enum StoreActions {
   STORE_SERVICES = 'store services',
   STORE_GROUPS = 'store groups',
   STORE_USER = 'Store the user',
+  SET_USERNAME = 'Set the username. Called for anonymous users',
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
@@ -39,8 +40,10 @@ enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
-  EDIT_MEASURE = 'updates an existing measure ',
-  SET_WORKSPACE_OWNER = 'set the owner of the current workspace',
+  EDIT_MEASURE = 'updates an existing measure in catalog and success model',
+  EDIT_MEASURE_IN_CATALOG = 'updates an existing measure in catalog only ',
+  SET_COMMUNITY_WORKSPACE = 'update the community workspace',
+  SET_COMMUNITY_WORKSPACE_OWNER = 'set the selected community workspace owner',
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
 }
 
@@ -48,6 +51,8 @@ enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
+  SET_SERVICE_NAME = 'set the current service by only providing  the name',
+  JOIN_WORKSPACE = 'Join the workspace of another user',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -119,6 +124,14 @@ export const editMeasure = createAction(
     dimensionName: string;
   }>(),
 );
+
+export const editMeasureInCatalog = createAction(
+  StoreActions.EDIT_MEASURE_IN_CATALOG,
+  props<{
+    measure: Measure;
+    oldMeasureName: string;
+  }>(),
+);
 export const storeGroups = createAction(
   StoreActions.STORE_SERVICES,
   props<{ groupsFromContactService; groupsFromMobSOS }>(),
@@ -163,6 +176,28 @@ export const setService = createAction(
   props<{ service: ServiceInformation }>(),
 );
 
+export const setServiceName = createAction(
+  StateActions.SET_SERVICE_NAME,
+  props<{ serviceName: string }>(),
+);
+
+export const setCommunityWorkspace = createAction(
+  StoreActions.SET_COMMUNITY_WORKSPACE,
+  props<{
+    workspace: CommunityWorkspace;
+    owner?: string;
+    serviceName?: string;
+    selectedGroupId?: string;
+  }>(),
+);
+
+export const setCommunityWorkspaceOwner = createAction(
+  StoreActions.SET_COMMUNITY_WORKSPACE_OWNER,
+  props<{
+    owner?: string;
+  }>(),
+);
+
 export const storeUser = createAction(
   StoreActions.STORE_USER,
   props<{ user: User }>(),
@@ -188,8 +223,19 @@ export const updateCommunityWorkspace = createAction(
   props<{ workspace: CommunityWorkspace }>(),
 );
 
-export const setWorkSpaceOwner = createAction(
-  StoreActions.SET_WORKSPACE_OWNER,
+export const joinWorkSpace = createAction(
+  StateActions.JOIN_WORKSPACE,
+  props<{
+    groupId: string;
+    serviceName: string;
+    owner: string;
+    username: string;
+    role?: UserRole;
+  }>(),
+);
+
+export const setUserName = createAction(
+  StoreActions.SET_USERNAME,
   props<{ username: string }>(),
 );
 
@@ -221,3 +267,5 @@ export const failureResponse = createAction(
 );
 
 export const success = createAction('action was successful');
+
+export const failure = createAction('action was not successful');

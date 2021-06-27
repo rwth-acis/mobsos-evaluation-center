@@ -18,7 +18,6 @@
   >
     <ng-container *ngIf="canEdit$ | async">
       <button
-        *ngIf="measure"
         mat-icon-button
         matTooltipShowDelay="0"
         matTooltip="{{
@@ -30,8 +29,7 @@
       </button>
     </ng-container>
     <app-success-measure
-      *ngIf="measure"
-      [measure]="measures[measure]"
+      [measureName]="measures[measure]?.name"
       [dimensionName]="this.dimensionName"
       (measureChange)="this.measuresChange.emit(measures)"
       [service]="service"

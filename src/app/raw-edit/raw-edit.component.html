@@ -1,7 +1,7 @@
 <mat-tab-group [dynamicHeight]="true">
   <mat-tab label="{{ 'raw-edit.tabs.measures' | translate }}">
     <ng-container
-      *ngIf="measureCatalogInitialized$ | async; else notReady"
+      *ngIf="canSaveMeasureCatalog$ | async; else notReady"
     >
       <ngx-monaco-editor
         id="measure-editor"
@@ -14,17 +14,19 @@
         class="send-button"
         mat-raised-button
         color="primary"
-        [disabled]="groupID == null || saveInProgress"
+        [disabled]="
+          !(canSaveMeasureCatalog$ | async) || saveInProgress
+        "
         (click)="_onCatalogSaveClicked()"
       >
-        <mat-progress-spinner
+        <mat-spinner
           *ngIf="saveInProgress"
           color="warn"
           [diameter]="25"
         >
-        </mat-progress-spinner>
+        </mat-spinner>
         {{
-          groupID == null
+          !(selectedGroupId$ | async)
             ? ('raw-edit.measures.send-button-no-selected-group'
               | translate)
             : ('raw-edit.measures.send-button' | translate)
@@ -38,7 +40,7 @@
         'raw-edit.success-models.select-application' | translate
       }}</mat-label>
       <mat-select
-        [(value)]="selectedService"
+        [(value)]="selectedServiceName"
         (selectionChange)="onServiceSelected($event.value)"
       >
         <mat-option
@@ -49,9 +51,7 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <ng-container
-      *ngIf="successModelInitialized$ | async; else notReady"
-    >
+    <ng-container *ngIf="canSaveSuccessModel$ | async; else notReady">
       <ngx-monaco-editor
         id="model-editor"
         (onInit)="registerSuccessModelEditor($event)"
@@ -63,19 +63,17 @@
         class="send-button"
         mat-raised-button
         color="primary"
-        [disabled]="
-          groupID == null || selectedService == null || saveInProgress
-        "
         (click)="_onModelSaveClicked()"
+        [disabled]="!(canSaveSuccessModel$ | async) || saveInProgress"
       >
-        <mat-progress-spinner
+        <mat-spinner
           *ngIf="saveInProgress"
           color="warn"
           [diameter]="25"
         >
-        </mat-progress-spinner>
+        </mat-spinner>
         {{
-          groupID == null || selectedService == null
+          !(selectedGroupId$ | async) || !(selectedService$ | async)
             ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
               | translate)
             : ('raw-edit.success-models.send-button' | translate)
@@ -86,5 +84,5 @@
 </mat-tab-group>
 
 <ng-template #notReady>
-  <mat-progress-spinner id="notinit"></mat-progress-spinner>
+  <mat-spinner id="notinit"></mat-spinner>
 </ng-template>

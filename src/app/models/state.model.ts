@@ -28,6 +28,7 @@ export interface AppState {
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
+  restricted: boolean;
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -48,6 +49,7 @@ export const INITIAL_APP_STATE: AppState = {
   expertMode: false,
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
+  restricted: false,
 };
 /**
  * What the store looks like

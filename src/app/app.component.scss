@@ -20,6 +20,7 @@ mat-sidenav-container {
     }
 
     mat-form-field {
+      margin-top: 5px;
       margin-left: 16px;
       margin-right: 16px;
 
@@ -29,7 +30,6 @@ mat-sidenav-container {
     }
 
     #community-selection {
-  
       position: relative;
     }
 
@@ -108,4 +108,9 @@ mat-sidenav-container {
       font-size: 45px;
     }
   }
+}
+.mat-subheader {
+  font-size: small !important;
+  color: grey;
+  padding-bottom: 10px;
 }
