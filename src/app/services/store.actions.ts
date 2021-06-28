@@ -1,6 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import { Measure } from '../models/measure.model';
+import { ReqbazProject } from '../models/reqbaz.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
 import { User, UserRole } from '../models/user.model';
@@ -45,6 +46,8 @@ enum StoreActions {
   SET_COMMUNITY_WORKSPACE = 'update the community workspace',
   SET_COMMUNITY_WORKSPACE_OWNER = 'set the selected community workspace owner',
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
+  ADD_REQUIREMENTS_BAZAR_PROJECT = 'add a requirement bazar project to the success model',
+  REMOVE_REQUIREMENTS_BAZAR_PROJECT = 'remove a requirement bazar project from the success model',
 }
 
 enum StateActions {
@@ -99,6 +102,20 @@ export const editFactorInDimension = createAction(
     factor: SuccessFactor;
     oldFactorName: string;
     dimensionName: string;
+  }>(),
+);
+
+export const addReqBazarProject = createAction(
+  StoreActions.ADD_REQUIREMENTS_BAZAR_PROJECT,
+  props<{
+    project: ReqbazProject;
+  }>(),
+);
+
+export const removeReqBazarProject = createAction(
+  StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
+  props<{
+    id: number;
   }>(),
 );
 

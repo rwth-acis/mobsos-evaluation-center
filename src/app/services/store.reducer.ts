@@ -13,6 +13,7 @@ import { cloneDeep } from 'lodash-es';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { isEmpty } from 'lodash-es';
+import { ReqbazProject } from '../models/reqbaz.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -125,6 +126,14 @@ const _Reducer = createReducer(
       xml === null
         ? SuccessModel.emptySuccessModel(getSelectedService(state))
         : parseModel(xml),
+  })),
+  on(Actions.addReqBazarProject, (state, { project }) => ({
+    ...state,
+    communityWorkspace: addReqBazarProject(state, project),
+  })),
+  on(Actions.removeReqBazarProject, (state) => ({
+    ...state,
+    communityWorkspace: removeReqBazarProject(state),
   })),
 
   on(Actions.incrementLoading, (state) => ({
@@ -239,6 +248,44 @@ const _Reducer = createReducer(
 
 export function Reducer(state, action) {
   return _Reducer(state, action);
+}
+
+function addReqBazarProject(state: AppState, project: ReqbazProject) {
+  const selectedServiceName = state.selectedServiceName;
+  const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
+  const workspace = state.communityWorkspace;
+  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    currentWorkSpaceOwner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) {
+    return workspace;
+  }
+  appWorkspace.model.reqBazProject = project;
+
+  copy[currentWorkSpaceOwner][selectedServiceName] = appWorkspace;
+  return copy;
+}
+
+function removeReqBazarProject(state: AppState) {
+  const selectedServiceName = state.selectedServiceName;
+  const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
+  const workspace = state.communityWorkspace;
+  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    currentWorkSpaceOwner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) {
+    return workspace;
+  }
+  appWorkspace.model.reqBazProject = null;
+
+  copy[currentWorkSpaceOwner][selectedServiceName] = appWorkspace;
+  return copy;
 }
 
 function updateVisualizationData(

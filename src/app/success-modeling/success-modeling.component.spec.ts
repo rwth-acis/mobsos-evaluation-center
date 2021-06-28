@@ -39,8 +39,8 @@ describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
   let fixture: ComponentFixture<SuccessModelingComponent>;
   const initialState = INITIAL_APP_STATE;
+  // tslint:disable-next-line: prefer-const
   let actions$: Observable<any>;
-  let effects: StateEffects;
   let store: MockStore<AppState>;
   beforeEach(
     waitForAsync(() => {

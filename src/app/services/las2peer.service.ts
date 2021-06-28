@@ -104,15 +104,17 @@ export class Las2peerService {
       },
       options,
     );
+    this.userCredentials = JSON.parse(
+      localStorage.getItem('profile'),
+    );
 
     if (this.userCredentials) {
-      const username = this.userCredentials.user;
-      const password = this.userCredentials.password;
-      const token = this.userCredentials.token;
-
+      const username = this.userCredentials?.preferred_username;
+      const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
+      const token = localStorage.getItem('access_token');
       options = merge(options, {
         headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + password),
+          Authorization: 'Basic ' + btoa(username + ':' + sub),
           access_token: token,
         },
       });
@@ -140,7 +142,7 @@ export class Las2peerService {
       reportProgress?: boolean;
       withCredentials?: boolean;
     } = {};
-    if (options.headers) {
+    if (options.headers && !url.includes('bazaar')) {
       ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
@@ -149,6 +151,7 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
+
     return this.http
       .request(options.method, url, ngHttpOptions)
       .toPromise();
@@ -773,6 +776,7 @@ export class Las2peerService {
   }
 
   async searchProjectOnReqBaz(project: string) {
+    if (project.length === 0) return;
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_PROJECTS_PATH + `?search=${project}`,
