@@ -45,3 +45,5 @@ testem.log
 .DS_Store
 Thumbs.db
 .vscode/launch.json
+yjs-websocket/node_modules/
+src/assets/monaco/*

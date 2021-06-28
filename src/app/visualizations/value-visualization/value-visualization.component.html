@@ -1,15 +1,55 @@
-<span *ngIf="!visualizationInitialized && !error" class="loading-placeholder">
-  <mat-spinner></mat-spinner>
-</span>
-<span *ngIf="error" class="loading-placeholder" (click)="openErrorDialog()">
-  <button mat-button>
-    <mat-icon>error_outline</mat-icon>
-  </button>
-</span>
-<span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet.
-  A visualization should be shown as soon as you interact with it.
-</span>
-<div *ngIf="value" class="value-visualization">
-  {{value}} {{measure.visualization.unit ? measure.visualization.unit : ''}}
+<!-- <span *ngIf="serviceNotFoundInMobSOS">
+  This service has not generated any data yet. A visualization should
+  be shown as soon as you interact with it.
+</span> -->
+<div id="value-row">
+  <ng-container *ngIf="data$ | async as data; else noDataAndNoError">
+    <ng-container *ngIf="value$ | async as value; else noData">
+      <span class="value-visualization">
+        {{ value }}
+        <ng-container
+          *ngIf="measure?.visualization?.unit !== 'undefined'"
+        >
+          {{ measure.visualization.unit }}
+        </ng-container>
+      </span>
+
+      <!-- meta info about the data -->
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon> info_outline </mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" yPosition="above">
+        <div id="value-info">
+          {{
+            'success-modeling.visualization.fetch-info'
+              | translate: { date: data.fetchDate | date: 'short' }
+          }}
+          <p *ngIf="data.error?.error">
+            {{
+              'success-modeling.visualization.fetch-error'
+                | translate: { error: data.error.error }
+            }}
+          </p>
+        </div>
+      </mat-menu>
+    </ng-container>
+  </ng-container>
 </div>
+
+<ng-template #noData>
+  <span
+    *ngIf="error$ | async as error; else noDataAndNoError"
+    class="visualization-error"
+    (click)="openErrorDialog(error)"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
+    </button>
+  </span>
+</ng-template>
+
+<ng-template #noDataAndNoError>
+  <div class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>

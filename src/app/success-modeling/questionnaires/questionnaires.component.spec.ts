@@ -12,12 +12,15 @@ import {
 import { createTranslateLoader } from '../../app.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
-import { SuccessModel } from '../../../success-model/success-model';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+import { SuccessModel } from 'src/app/models/success.model';
 
 describe('QuestionnairesComponent', () => {
   let component: QuestionnairesComponent;
   let fixture: ComponentFixture<QuestionnairesComponent>;
-
+  const initialState = INITIAL_APP_STATE;
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [QuestionnairesComponent],
@@ -37,7 +40,9 @@ describe('QuestionnairesComponent', () => {
         MatTooltipModule,
         MatButtonModule,
         MatDialogModule,
+        HttpClientTestingModule,
       ],
+      providers: [provideMockStore({ initialState })],
     }).compileComponents();
   });
 

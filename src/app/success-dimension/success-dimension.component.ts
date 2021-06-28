@@ -5,8 +5,6 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { SuccessFactor } from '../../success-model/success-factor';
-import { MeasureMap } from '../../success-model/measure-catalog';
 
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -14,7 +12,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
-  EDIT_MODE,
+  _EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';
@@ -25,6 +23,8 @@ import {
 import { ServiceInformation } from '../models/service.model';
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { SuccessFactor } from '../models/success.model';
+import { MeasureMap } from '../models/measure.catalog';
 
 @Component({
   selector: 'app-success-dimension',

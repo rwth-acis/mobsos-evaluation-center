@@ -20,11 +20,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { INITIAL_STATE } from './models/state.model';
+import { INITIAL_APP_STATE } from './models/state.model';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('AppComponent', () => {
-  const initialState = INITIAL_STATE;
-  let store: MockStore;
+  const initialState = INITIAL_APP_STATE;
+
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
@@ -49,6 +50,7 @@ describe('AppComponent', () => {
           MatFormFieldModule,
           MatSelectModule,
           MatSnackBarModule,
+          MatProgressSpinnerModule,
           HttpClientTestingModule,
           ServiceWorkerModule.register('', { enabled: false }),
         ],
@@ -61,7 +63,6 @@ describe('AppComponent', () => {
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    store.refreshState();
     fixture.detectChanges();
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();

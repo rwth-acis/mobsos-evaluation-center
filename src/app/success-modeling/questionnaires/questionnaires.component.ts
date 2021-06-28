@@ -5,33 +5,36 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { MeasureMap } from '../../../success-model/measure-catalog';
 
-import { SuccessModel } from '../../../success-model/success-model';
-import {
-  Las2peerService,
-  Questionnaire,
-} from '../../las2peer.service';
+
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-import { Questionnaire as QuestionnairModel } from '../../../success-model/questionnaire';
 import { environment } from '../../../environments/environment';
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import { NGXLogger } from 'ngx-logger';
-import { SuccessFactor } from '../../../success-model/success-factor';
-import { Measure } from '../../../success-model/measure';
 import * as SqlString from 'sqlstring';
-import { ChartVisualization } from '../../../success-model/visualization';
-import { Query } from '../../../success-model/query';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
-  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
+import { MeasureMap } from 'src/app/models/measure.catalog';
+import {
+  SuccessFactor,
+  SuccessModel,
+} from 'src/app/models/success.model';
+import {
+  IQuestionnaire,
+  Questionnaire,
+  Questionnaire as QuestionnaireModel,
+} from 'src/app/models/questionnaire.model';
+import { Measure } from 'src/app/models/measure.model';
+import { Query } from 'src/app/models/query.model';
+import { ChartVisualization } from 'src/app/models/visualization.model';
+import { Las2peerService } from 'src/app/services/las2peer.service';
 
 @Component({
   selector: 'app-questionnaires',
@@ -106,7 +109,7 @@ export class QuestionnairesComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const questionnaire =
-          result.selectedQuestionnaire as Questionnaire;
+          result.selectedQuestionnaire as IQuestionnaire;
         let serviceName = this.service.name;
         if (serviceName.includes('@')) {
           serviceName = serviceName.split('@')[0];
@@ -139,7 +142,7 @@ export class QuestionnairesComponent implements OnInit {
               .setQuestionnaireForSurvey(questionnaire.id, surveyId)
               .then(() => {
                 this.model.questionnaires.push(
-                  new QuestionnairModel(
+                  new QuestionnaireModel(
                     questionnaire.name,
                     questionnaire.id,
                     surveyId,
@@ -271,7 +274,7 @@ export class QuestionnairesComponent implements OnInit {
     if (!this.availableQuestionnaires) {
       return null;
     }
-    return this.availableQuestionnaires.find(
+    return this.availableQuestionnaires?.find(
       (value) => value.name === name,
     );
   }

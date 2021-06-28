@@ -2,7 +2,7 @@ export class Questionnaire {
   constructor(
     public name: string,
     public id: number,
-    public surveyId: number
+    public surveyId: number,
   ) {}
 
   static fromXml(xml: Element): Questionnaire {
@@ -24,4 +24,16 @@ export class Questionnaire {
     questionnaire.setAttribute('surveyId', this.surveyId.toString());
     return questionnaire;
   }
+}
+
+export interface IQuestionnaire {
+  id: number;
+  description: string;
+  lang: string;
+  logo: string;
+  name: string;
+  organization: string;
+  owner: string;
+  url: string;
+  formXML: string;
 }

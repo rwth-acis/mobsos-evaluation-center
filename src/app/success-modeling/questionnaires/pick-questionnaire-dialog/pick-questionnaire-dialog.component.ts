@@ -5,9 +5,9 @@ import {
   OnInit,
 } from '@angular/core';
 
-import { Questionnaire } from '../../../las2peer.service';
 import { environment } from '../../../../environments/environment';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { IQuestionnaire } from 'src/app/models/questionnaire.model';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -17,10 +17,11 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 })
 export class PickQuestionnaireDialogComponent implements OnInit {
   constructor(
-    @Inject(MAT_DIALOG_DATA) public availableQuestionnaires: Questionnaire[]
+    @Inject(MAT_DIALOG_DATA)
+    public availableQuestionnaires: IQuestionnaire[],
   ) {}
 
-  selectedQuestionnaire: Questionnaire;
+  selectedQuestionnaire: IQuestionnaire;
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
@@ -56,9 +57,9 @@ export class PickQuestionnaireDialogComponent implements OnInit {
       return null;
     }
     const xml = PickQuestionnaireDialogComponent.parseXml(
-      this.selectedQuestionnaire.formXML
+      this.selectedQuestionnaire.formXML,
     );
-    return Array.from(xml.getElementsByTagName('qu:Page')).length;
+    return Array.from(xml.getElementsByTagName('qu:Page'))?.length;
   }
 
   getDimensions(): string[] {
@@ -66,10 +67,10 @@ export class PickQuestionnaireDialogComponent implements OnInit {
       return [];
     }
     const xml = PickQuestionnaireDialogComponent.parseXml(
-      this.selectedQuestionnaire.formXML
+      this.selectedQuestionnaire.formXML,
     );
     const successModelRecommendations = Array.from(
-      xml.getElementsByTagName('qu:SuccessModelRecommendation')
+      xml.getElementsByTagName('qu:SuccessModelRecommendation'),
     );
     const resultSet = new Set<string>();
     for (const recommendation of successModelRecommendations) {
@@ -79,7 +80,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     resultSet.forEach((value) => {
       const translateStringValue =
         PickQuestionnaireDialogComponent.getTranslateStringForDimensionName(
-          value
+          value,
         );
       result.push(translateStringValue);
     });

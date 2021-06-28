@@ -1,27 +1,21 @@
 import { createReducer, on } from '@ngrx/store';
-import {
-  MeasureCatalog,
-  MeasureMap,
-} from '../models/measure.catalog';
+import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
-import { AppState, INITIAL_STATE } from '../models/state.model';
-import {
-  DimensionMap,
-  SuccessFactor,
-  SuccessModel,
-} from '../models/success.model';
+import { AppState, INITIAL_APP_STATE } from '../models/state.model';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VisualizationData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
 } from '../models/workspace.model';
 import * as Actions from './store.actions';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { removeVisualizationDataForQuery } from './store.actions';
+import { isEmpty } from 'lodash-es';
+import { ReqbazProject } from '../models/reqbaz.model';
 
-export const initialState: AppState = INITIAL_STATE;
+export const initialState: AppState = INITIAL_APP_STATE;
 
 const _Reducer = createReducer(
   initialState,
@@ -48,6 +42,7 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+
   on(Actions.setGroup, (state, { groupId }) =>
     groupId
       ? {
@@ -82,6 +77,10 @@ const _Reducer = createReducer(
     ...state,
     expertMode: !state.expertMode,
   })),
+  on(Actions.setNumberOfRequirements, (state, { n }) => ({
+    ...state,
+    numberOfRequirements: n,
+  })),
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: { ...user, signedIn: !!user },
@@ -106,6 +105,24 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
+  on(Actions.setUserName, (state, props) => ({
+    ...state,
+    user: {
+      ...state.user,
+      profile: {
+        ...state.user?.profile,
+        preferred_username: props.username,
+      },
+    },
+  })),
+  on(Actions.setServiceName, (state, props) => ({
+    ...state,
+    selectedServiceName: props.serviceName,
+  })),
+  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner,
+  })),
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModelInitialized: true,
@@ -113,6 +130,14 @@ const _Reducer = createReducer(
       xml === null
         ? SuccessModel.emptySuccessModel(getSelectedService(state))
         : parseModel(xml),
+  })),
+  on(Actions.addReqBazarProject, (state, { project }) => ({
+    ...state,
+    communityWorkspace: addReqBazarProject(state, project),
+  })),
+  on(Actions.removeReqBazarProject, (state) => ({
+    ...state,
+    communityWorkspace: removeReqBazarProject(state),
   })),
 
   on(Actions.incrementLoading, (state) => ({
@@ -127,15 +152,19 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
-  on(Actions.setWorkSpaceOwner, (state, props) => ({
+  on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
-    currentWorkSpaceOwner: props.username,
-    communityWorkspace: addVisitor(
-      state.communityWorkspace,
-      props.username,
-      state.currentWorkSpaceOwner,
-      state.selectedServiceName,
-    ),
+    editMode: true,
+    communityWorkspace: props.workspace,
+    selectedGroupId: props.selectedGroupId
+      ? props.selectedGroupId
+      : state.selectedGroupId,
+    selectedServiceName: props.serviceName
+      ? props.serviceName
+      : state.selectedServiceName,
+    currentWorkSpaceOwner: props.owner
+      ? props.owner
+      : state.currentWorkSpaceOwner,
   })),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
@@ -171,6 +200,16 @@ const _Reducer = createReducer(
       state.currentWorkSpaceOwner,
       state.selectedServiceName,
       props,
+    ),
+  })),
+  on(Actions.editMeasureInCatalog, (state, props) => ({
+    ...state,
+    communityWorkspace: updateMeasure(
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+      props,
+      true,
     ),
   })),
   on(Actions.addMeasureToFactor, (state, props) => ({
@@ -215,17 +254,65 @@ export function Reducer(state, action) {
   return _Reducer(state, action);
 }
 
+function addReqBazarProject(state: AppState, project: ReqbazProject) {
+  const selectedServiceName = state.selectedServiceName;
+  const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
+  const workspace = state.communityWorkspace;
+  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    currentWorkSpaceOwner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) {
+    return workspace;
+  }
+  appWorkspace.model.reqBazProject = project;
+
+  copy[currentWorkSpaceOwner][selectedServiceName] = appWorkspace;
+  return copy;
+}
+
+function removeReqBazarProject(state: AppState) {
+  const selectedServiceName = state.selectedServiceName;
+  const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
+  const workspace = state.communityWorkspace;
+  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    currentWorkSpaceOwner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) {
+    return workspace;
+  }
+  appWorkspace.model.reqBazProject = null;
+
+  copy[currentWorkSpaceOwner][selectedServiceName] = appWorkspace;
+  return copy;
+}
+
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
   props: { data: any[][]; query: string; error: HttpErrorResponse },
 ) {
-  if (!props.query || (!props.data && !props.error))
+  if (!props.query || (!props.data && !props.error)) {
     return currentVisualizationData;
-  currentVisualizationData[props.query] = {
-    data: props.data,
-    fetchDate: new Date(),
-    error: props.error,
-  };
+  }
+
+  if (props.error?.status >= 400 && props.error?.status < 500) {
+    currentVisualizationData[props.query] = {
+      ...currentVisualizationData[props.query],
+      error: props.error,
+    };
+  } else {
+    currentVisualizationData[props.query] = {
+      data: props.data,
+      fetchDate: new Date(),
+      error: props.error,
+    };
+  }
+
   return currentVisualizationData;
 }
 
@@ -572,12 +659,14 @@ function updateMeasure(
   communityWorkspace: CommunityWorkspace,
   owner: string,
   serviceName: string,
+
   props: {
     measure: Measure;
     oldMeasureName: string;
-    factorName: string;
-    dimensionName: string;
+    factorName?: string;
+    dimensionName?: string;
   },
+  catalogOnly?: boolean,
 ) {
   const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
   const appWorkspace = getWorkspaceByUserAndService(
@@ -590,8 +679,12 @@ function updateMeasure(
   const measureCatalog = appWorkspace.catalog;
   const successModel = appWorkspace.model;
   // update the measure catalog
-  measureCatalog[props.measure.name] = props.measure;
-  delete measureCatalog[props.oldMeasureName];
+
+  delete measureCatalog.measures[props.oldMeasureName];
+  measureCatalog.measures[props.measure.name] = props.measure;
+  if (catalogOnly) {
+    return copy;
+  }
 
   // update the success model
   let factors = successModel.dimensions[props.dimensionName];
@@ -652,6 +745,7 @@ function addVisitor(
   username: string,
   owner: string,
   serviceName: string,
+  role: UserRole,
 ): CommunityWorkspace {
   const copy = cloneDeep(communityWorkspace); // copy workspace first
   const userWorkspace = copy[owner];
@@ -659,9 +753,19 @@ function addVisitor(
   const appWorkspace: ApplicationWorkspace =
     userWorkspace[serviceName];
   if (!appWorkspace) return communityWorkspace;
-  appWorkspace.visitors.push(
-    new Visitor(username, UserRole.SPECTATOR),
+  let visitor = appWorkspace.visitors?.find(
+    (v) => v.username === username,
   );
+  if (role === UserRole.LURKER) {
+    if (visitor) {
+      username =
+        username + ' (guest ' + appWorkspace.visitors.length + ')';
+    }
+    appWorkspace.visitors.push(new Visitor(username, role));
+  } else if (!visitor) {
+    visitor = new Visitor(username, role);
+    appWorkspace.visitors.push(visitor);
+  }
   return copy;
 }
 

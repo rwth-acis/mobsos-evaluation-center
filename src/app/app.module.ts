@@ -13,7 +13,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,9 +26,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SuccessModelingComponent } from './success-modeling/success-modeling.component';
 import { RawEditComponent } from './raw-edit/raw-edit.component';
@@ -88,6 +89,10 @@ import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
 import { WorkspaceManagementComponent } from './workspace-management/workspace-management.component';
+import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
+import { VisitorComponent } from './visitor/visitor.component';
+import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
+import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -119,7 +124,9 @@ export function localStorageSyncReducer(
           'measureCatalog',
           'user',
           'successModel',
+          'editMode',
           'visualizationData',
+          'currentWorkSpaceOwner',
         ],
       },
     ],
@@ -150,6 +157,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     KpiVisualizationComponent,
     ConfirmationDialogComponent,
     EditFactorDialogComponent,
+    EditMeasureDialogComponent,
     PickMeasureDialogComponent,
     EditMeasureDialogComponent,
     QuestionnairesComponent,
@@ -159,13 +167,19 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     RequirementsListComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
+    JoinWorkSpaceComponent,
+    VisitorComponent,
+    PickUsernameDialogComponent,
+    BottomSheetComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
+    MatExpansionModule,
     GoogleChartsModule,
     BrowserAnimationsModule,
     TranslateModule.forRoot({
@@ -186,6 +200,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatListModule,
     MatSlideToggleModule,
     MatButtonModule,
+    MatBottomSheetModule,
     MatTabsModule,
     MatFormFieldModule,
     MatProgressBarModule,

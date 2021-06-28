@@ -11,14 +11,13 @@
   <h3 *ngIf="factor">{{ factor.name }}</h3>
 </div>
 
-<div *ngIf="factor && factor.measures?.length > 0">
+<div *ngIf="factor && factor.measures?.length > 0" class="measures">
   <div
     *ngFor="let measure of factor.measures; let i = index"
-    class="measure-row"
+    class="measure"
   >
     <ng-container *ngIf="canEdit$ | async">
       <button
-        *ngIf="measure"
         mat-icon-button
         matTooltipShowDelay="0"
         matTooltip="{{
@@ -30,8 +29,7 @@
       </button>
     </ng-container>
     <app-success-measure
-      *ngIf="measure"
-      [measure]="measures[measure]"
+      [measureName]="measures[measure]?.name"
       [dimensionName]="this.dimensionName"
       (measureChange)="this.measuresChange.emit(measures)"
       [service]="service"

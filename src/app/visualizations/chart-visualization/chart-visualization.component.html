@@ -1,30 +1,57 @@
-<ng-container *ngIf="data$ | async; else stillLoading">
-  <ng-container *ngIf="!error; else Error">
-    <ng-container *ngIf="data$ | async">
-      <google-chart
-        *ngIf="chart"
-        [title]="this.chart.title"
-        [type]="this.chart.chartType"
-        [data]="this.chart.data"
-        [options]="this.chart.options"
-        class="content"
-        style="width: 100%"
-        [columns]="columnNames"
-        [dynamicResize]="true"
-      ></google-chart>
-    </ng-container>
-  </ng-container>
-</ng-container>
+<div id="chart-row">
+  <ng-container *ngIf="data$ | async as data; else noData">
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="chart-info">
+        {{
+          'success-modeling.visualization.fetch-info'
+            | translate: { date: data.fetchDate | date: 'short' }
+        }}
+        <p *ngIf="data.error">
+          {{
+            'success-modeling.visualization.fetch-error'
+              | translate: { error: data.error.error }
+          }}
+        </p>
+      </div>
+    </mat-menu>
+    <div *ngIf="chartInitialized; else noData"></div>
+    <google-chart
+      *ngIf="chartData"
+      [title]="this.chartData.title"
+      [type]="this.chartData.chartType"
+      [data]="this.chartData.data"
+      [options]="this.chartData.options"
+      [columns]="columnNames"
+      [dynamicResize]="true"
+      [style]="'display: ' + chartInitialized ? 'block' : 'none'"
+      class="content"
+      style="width: 100%"
+      (ready)="this.chartInitialized = true"
+    ></google-chart>
 
-<ng-template #Error>
-  <span (click)="openErrorDialog()">
-    <button mat-button id="error">
-      <mat-icon>error_outline</mat-icon>
+    <button
+      *ngIf="chartInitialized"
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+    >
+      <mat-icon> info_outline </mat-icon>
+    </button></ng-container
+  >
+</div>
+
+<ng-template #noData>
+  <span
+    *ngIf="error && !chartData; else noDataAndNoError"
+    (click)="openErrorDialog()"
+    class="visualization-error"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
     </button>
   </span>
 </ng-template>
 
-<ng-template #stillLoading>
+<ng-template #noDataAndNoError>
   <span class="loading-placeholder">
     <mat-spinner></mat-spinner>
   </span>

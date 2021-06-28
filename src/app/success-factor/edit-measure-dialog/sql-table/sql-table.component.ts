@@ -7,7 +7,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Las2peerService } from '../../../las2peer.service';
+
 
 @Component({
   selector: 'app-sql-table',
@@ -73,7 +73,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
   protected applyVariableReplacements(query: string) {
     let servicesString = '(';
     const services = [];
-    for (const mobsosID of this.service.mobsosIDs) {
+    for (const mobsosID of this.service?.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';

@@ -8,20 +8,25 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { SuccessModel } from '../../../success-model/success-model';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
-import { ReqbazProject } from '../../../success-model/reqbaz-project';
 import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
-import { Las2peerService } from '../../las2peer.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { USER } from 'src/app/services/store.selectors';
-import { storeSuccessModel } from 'src/app/services/store.actions';
+import { _USER } from 'src/app/services/store.selectors';
+import {
+  addReqBazarProject,
+  removeReqBazarProject,
+  setNumberOfRequirements,
+  storeSuccessModel,
+} from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
-
+import { SuccessModel } from 'src/app/models/success.model';
+import { ReqbazProject } from 'src/app/models/reqbaz.model';
+import { Las2peerService } from 'src/app/services/las2peer.service';
+import { cloneDeep } from 'lodash-es';
 @Component({
   selector: 'app-requirements-list',
   templateUrl: './requirements-list.component.html',
@@ -34,7 +39,7 @@ export class RequirementsListComponent
 
   @Output() numberOfRequirements = new EventEmitter<number>();
 
-  user$ = this.ngrxStore.select(USER);
+  user$ = this.ngrxStore.select(_USER);
   requirements;
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
@@ -60,11 +65,6 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    this.refreshRequirements();
-    this.refreshRequirementsHandle = setInterval(
-      () => this.refreshRequirements(),
-      environment.servicePollingInterval * 1000,
-    );
     this.user$.subscribe((user) => (this.user = user));
   }
 
@@ -83,11 +83,20 @@ export class RequirementsListComponent
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.successModel = SuccessModel.fromPlainObject(
+          cloneDeep(this.successModel),
+        );
         this.successModel.reqBazProject = new ReqbazProject(
           result.selectedProject.name,
           result.selectedProject.id,
           result.selectedCategory.id,
         );
+        this.ngrxStore.dispatch(
+          addReqBazarProject({
+            project: this.successModel.reqBazProject,
+          }),
+        );
+
         this.ngrxStore.dispatch(
           storeSuccessModel({
             xml: this.successModel.toXml().outerHTML,
@@ -111,15 +120,30 @@ export class RequirementsListComponent
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.successModel = SuccessModel.fromPlainObject(
+          cloneDeep(this.successModel),
+        );
+        const id = this.successModel.reqBazProject.id;
+        this.ngrxStore.dispatch(
+          removeReqBazarProject({
+            id,
+          }),
+        );
+
         this.successModel.reqBazProject = null;
         this.ngrxStore.dispatch(
           storeSuccessModel({
             xml: this.successModel.toXml().outerHTML,
           }),
         );
+        this.setNumberOfRequirements(0);
         this.numberOfRequirements.emit(0);
       }
     });
+  }
+
+  setNumberOfRequirements(n: number) {
+    this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
   }
 
   refreshRequirements() {
@@ -133,6 +157,7 @@ export class RequirementsListComponent
       )
       .then((requirements) => {
         this.requirements = requirements;
+        this.setNumberOfRequirements((requirements as [])?.length);
         this.numberOfRequirements.emit((requirements as []).length);
       });
   }
@@ -146,7 +171,7 @@ export class RequirementsListComponent
       Object.keys(requirement).includes('leadDeveloper') &&
       this.user &&
       requirement.leadDeveloper.userName ===
-        this.user.profile.preferred_username
+        this.user?.profile.preferred_username
     );
   }
 

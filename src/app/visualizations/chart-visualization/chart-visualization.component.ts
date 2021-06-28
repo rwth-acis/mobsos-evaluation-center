@@ -31,7 +31,8 @@ export class ChartVisualizerComponent
   data$: Observable<VData>;
   measure$: Observable<Measure>;
   query: string; // local copy of the sql query
-  chart: GoogleChart;
+  chartData: GoogleChart;
+  chartInitialized = false;
 
   constructor(
     protected dialog: MatDialog,
@@ -41,24 +42,30 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit() {
-    if (this.service) {
-      this.measure$ = this.ngrxStore
-        .select(MEASURE, this.measureName) // selects the measure from the measure catalog
-        .pipe(
-          filter((data) => !!data),
-          distinctUntilChanged(),
-        );
-      this.measure$.subscribe((measure: Measure) => {
-        this.prepareChart(measure);
+    this.service$
+      .pipe(filter((service) => !!service))
+      .subscribe((service) => {
+        this.service = service;
+        this.measure$ = this.ngrxStore
+          .select(MEASURE, this.measureName) // selects the measure from the measure catalog
+          .pipe(
+            filter((data) => !!data),
+            distinctUntilChanged(),
+          );
+        this.measure$
+          .pipe(filter((data) => !!data))
+          .subscribe((measure: Measure) => {
+            this.prepareChart(measure);
+          });
       });
-    }
   }
 
   /**
    * Prepares chart for given measure
-   * @param measure
+   * @param measure success measure
    */
   private prepareChart(measure: Measure) {
+    if (!measure) return;
     const visualization = measure.visualization as ChartVisualization;
     let query = measure.queries[0].sql;
     const queryParams = this.getParamsForQuery(query);
@@ -70,7 +77,6 @@ export class ChartVisualizerComponent
       );
 
     if (this.query !== query) {
-      this.visualizationInitialized = false;
       this.query = query;
       super.fetchVisualizationData(query, queryParams);
       this.data$ = this.ngrxStore.select(
@@ -78,20 +84,17 @@ export class ChartVisualizerComponent
         query,
       );
       this.data$
-        .pipe(
-          tap((data) => (this.error = data?.error)),
-          filter((data) => !!data && !data.error),
-        )
+        .pipe(tap((data) => (this.error = data?.error)))
         .subscribe((vdata) => {
-          if (vdata.error) {
-            this.error = vdata.error;
-            return;
+          if (!vdata || vdata?.error) {
+            return super.fetchVisualizationData(query, queryParams);
           }
           const dataTable = vdata.data;
           if (dataTable instanceof Array && dataTable.length >= 2) {
+            this.error = null;
             const labelTypes = dataTable[1];
             const rows = dataTable.slice(2) as any[][];
-            this.chart = new GoogleChart(
+            this.chartData = new GoogleChart(
               '',
               visualization.chartType,
               rows,
@@ -107,7 +110,7 @@ export class ChartVisualizerComponent
                 animation: { startup: true },
               },
             );
-            if (this.chart) this.visualizationInitialized = true;
+            if (this.chartData) this.visualizationInitialized = true;
           }
         });
     }

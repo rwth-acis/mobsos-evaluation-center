@@ -1,0 +1,105 @@
+<mat-card
+  id="workspace-info"
+  *ngIf="applicationWorkspaceOwner$ | async as owner"
+>
+  <div id="info-content">
+    <mat-icon color="accent">info_outline</mat-icon>
+    <span id="info-text">
+      {{
+        'success-modeling.info.joined-as-visitor'
+          | translate: { owner: owner }
+      }}
+    </span>
+  </div>
+</mat-card>
+
+<!-- Success model -->
+
+<ng-container
+  *ngIf="
+    workspaceOwner && (assetsLoaded$ | async);
+    else notInitialized
+  "
+>
+  <ng-container
+    *ngIf="!(showSuccessModelEmpty$ | async); else successModelEmpty"
+  >
+    <ng-container
+      *ngIf="
+        successModel$ | async as successModel;
+        else noSuccessModel
+      "
+    >
+      <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+        <!-- <app-questionnaires
+          [availableQuestionnaires]="availableQuestionnaires"
+          [model]="successModel"
+          [measures]="measureCatalog.measures"
+          [service]="selectedService$ | async"
+          [editMode]="editMode$ | async"
+          [groupID]="selectedGroupId$ | async"
+        ></app-questionnaires> -->
+        <div id="dimensions">
+          <app-success-dimension
+            *ngFor="let dimension of dimensions"
+            [factors]="successModel.dimensions[dimension]"
+            [measures]="measureCatalog.measures"
+            name="{{
+              'success-modeling.dimensions.name.' +
+                translationMap[dimension] | translate
+            }}"
+            description="{{
+              'success-modeling.dimensions.description.' +
+                translationMap[dimension] | translate
+            }}"
+            icon="{{ iconMap[dimension] }}"
+          ></app-success-dimension>
+        </div>
+      </ng-container> </ng-container
+  ></ng-container>
+</ng-container>
+
+<ng-template #noGroupSelect>
+  <mat-card>
+    {{ 'success-modeling.no-group-selected' | translate }}
+  </mat-card>
+</ng-template>
+
+<ng-template #successModelEmpty>
+  <!-- success model non existant -->
+  <mat-card
+    *ngIf="memberOfGroup$ | async; else showSuccessModelEmpty"
+  >
+    {{
+      'success-modeling.message-no-success-model-found' | translate
+    }}
+  </mat-card>
+</ng-template>
+
+<ng-template #showSuccessModelEmpty>
+  <!-- success model non existant -->
+  <mat-card>
+    The success model is empty. Wait for other users to start adding
+    elements
+  </mat-card>
+</ng-template>
+
+<ng-template #notInitialized>
+  <!-- success model still loading -->
+  <mat-spinner style="margin: auto"> </mat-spinner>
+</ng-template>
+
+<ng-template #notPartOfCommunity>
+  <mat-card>
+    {{
+      'not-part-of-selected-community'
+        | translate: { community: (selectedGroup$ | async).name }
+    }}
+  </mat-card>
+</ng-template>
+
+<ng-template #notAuthorized>
+  <mat-card>
+    {{ 'not-logged-in' | translate }}
+  </mat-card>
+</ng-template>

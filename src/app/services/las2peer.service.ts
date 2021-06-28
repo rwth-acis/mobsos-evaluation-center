@@ -1,34 +1,25 @@
-import { Injectable, isDevMode } from '@angular/core';
-import { environment } from '../environments/environment';
+import { Injectable } from '@angular/core';
+
 import { NGXLogger } from 'ngx-logger';
 import {
   HttpClient,
   HttpHeaders,
   HttpParams,
 } from '@angular/common/http';
-import { forkJoin, Observable, of, throwError } from 'rxjs';
-import {
-  catchError,
-  map,
-  share,
-  shareReplay,
-  tap,
-  timeout,
-} from 'rxjs/operators';
-import { merge } from 'lodash';
-import { delayedRetry } from './services/retryOperator';
-import { Store } from '@ngrx/store';
-import { USER } from './services/store.selectors';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map, share } from 'rxjs/operators';
+import { merge } from 'lodash-es';
+import { environment } from 'src/environments/environment';
 
-export interface SuccessModel {
+interface SuccessModel {
   xml: string;
 }
 
-export interface MeasureCatalog {
+interface MeasureCatalog {
   xml: string;
 }
 
-export interface Questionnaire {
+interface Questionnaire {
   id: number;
   description: string;
   lang: string;
@@ -113,15 +104,17 @@ export class Las2peerService {
       },
       options,
     );
+    this.userCredentials = JSON.parse(
+      localStorage.getItem('profile'),
+    );
 
     if (this.userCredentials) {
-      const username = this.userCredentials.user;
-      const password = this.userCredentials.password;
-      const token = this.userCredentials.token;
-
+      const username = this.userCredentials?.preferred_username;
+      const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
+      const token = localStorage.getItem('access_token');
       options = merge(options, {
         headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + password),
+          Authorization: 'Basic ' + btoa(username + ':' + sub),
           access_token: token,
         },
       });
@@ -149,7 +142,7 @@ export class Las2peerService {
       reportProgress?: boolean;
       withCredentials?: boolean;
     } = {};
-    if (options.headers) {
+    if (options.headers && !url.includes('bazaar')) {
       ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
@@ -158,6 +151,7 @@ export class Las2peerService {
     if (options.responseType) {
       ngHttpOptions.responseType = options.responseType;
     }
+
     return this.http
       .request(options.method, url, ngHttpOptions)
       .toPromise();
@@ -189,18 +183,20 @@ export class Las2peerService {
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
     );
-    const username = this.userCredentials.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile')).sub;
+    const username = this.userCredentials?.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
     const token = localStorage.getItem('access_token');
-    options = merge(
-      {
-        headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + sub),
-          access_token: token,
+    if (username) {
+      options = merge(
+        {
+          headers: {
+            Authorization: 'Basic ' + btoa(username + ':' + sub),
+            access_token: token,
+          },
         },
-      },
-      options,
-    );
+        options,
+      );
+    }
 
     // if (!environment.production) {
     //   this.logger.debug(
@@ -780,6 +776,7 @@ export class Las2peerService {
   }
 
   async searchProjectOnReqBaz(project: string) {
+    if (project.length === 0) return;
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_PROJECTS_PATH + `?search=${project}`,
