@@ -2,7 +2,7 @@ export class ReqbazProject {
   constructor(
     public name: string,
     public id: number,
-    public categoryId: number
+    public categoryId: number,
   ) {}
 
   static fromXml(xml: Element): ReqbazProject {
@@ -21,7 +21,43 @@ export class ReqbazProject {
     const questionnaire = doc.createElement('reqbaz-project');
     questionnaire.setAttribute('name', this.name);
     questionnaire.setAttribute('id', this.id.toString());
-    questionnaire.setAttribute('categoryId', this.categoryId.toString());
+    questionnaire.setAttribute(
+      'categoryId',
+      this.categoryId.toString(),
+    );
     return questionnaire;
   }
+}
+
+export interface Requirement {
+  id: number;
+  name: string;
+  description: string;
+  projectId: number;
+  creator: {
+    id: number;
+    userName: string;
+    firstName: string;
+    lastName: string;
+    admin: false;
+    las2peerId: any;
+    profileImage: string;
+    emailLeadSubscription: boolean;
+    emailFollowSubscription: boolean;
+  };
+  categories: Category[];
+  creationDate: Date;
+  numberOfComments: number;
+  numberOfAttachments: number;
+  numberOfFollowers: number;
+  upVotes: number;
+  downVotes: number;
+  userVoted: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  projectId: number;
 }

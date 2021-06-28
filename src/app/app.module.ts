@@ -30,6 +30,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SuccessModelingComponent } from './success-modeling/success-modeling.component';
 import { RawEditComponent } from './raw-edit/raw-edit.component';
@@ -91,6 +92,7 @@ import { WorkspaceManagementComponent } from './workspace-management/workspace-m
 import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
 import { VisitorComponent } from './visitor/visitor.component';
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
+import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -168,6 +170,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     JoinWorkSpaceComponent,
     VisitorComponent,
     PickUsernameDialogComponent,
+    BottomSheetComponent,
   ],
   imports: [
     BrowserModule,
@@ -197,6 +200,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatListModule,
     MatSlideToggleModule,
     MatButtonModule,
+    MatBottomSheetModule,
     MatTabsModule,
     MatFormFieldModule,
     MatProgressBarModule,

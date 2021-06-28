@@ -40,7 +40,7 @@
     <div id="workspace-controls" *ngIf="editMode$ | async">
       <button
         mat-icon-button
-        [matMenuTriggerFor]="reqMenu"
+        (click)="openBottomSheet()"
         aria-label="Requirements Bazaar"
         matTooltip="{{
           'success-modeling.reqbaz.tooltip' | translate
@@ -49,9 +49,7 @@
         <mat-icon
           color="primary"
           svgIcon="reqbaz-logo"
-          [matBadge]="
-            numberOfRequirements === 0 ? null : numberOfRequirements
-          "
+          [matBadge]="numberOfRequirements$ | async"
           matBadgeColor="accent"
         >
         </mat-icon>
@@ -137,16 +135,6 @@
   </mat-card>
 </ng-container>
 
-<!-- menu for Requirements Bazar -->
-<mat-menu #reqMenu="matMenu">
-  <mat-card-content class="card">
-    <app-requirements-list
-      [successModel]="successModel$ | async"
-      (numberOfRequirements)="numberOfRequirements = $event.valueOf()"
-    >
-    </app-requirements-list>
-  </mat-card-content>
-</mat-menu>
 <!-- menu for visitors -->
 <mat-menu #groupMenu>
   <ng-container

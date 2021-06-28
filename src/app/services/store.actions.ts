@@ -48,6 +48,7 @@ enum StoreActions {
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
   ADD_REQUIREMENTS_BAZAR_PROJECT = 'add a requirement bazar project to the success model',
   REMOVE_REQUIREMENTS_BAZAR_PROJECT = 'remove a requirement bazar project from the success model',
+  SET_NUMBER_OF_REQUIREMENTS = 'set the number of requirements for the current project',
 }
 
 enum StateActions {
@@ -116,6 +117,13 @@ export const removeReqBazarProject = createAction(
   StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
   props<{
     id: number;
+  }>(),
+);
+
+export const setNumberOfRequirements = createAction(
+  StoreActions.SET_NUMBER_OF_REQUIREMENTS,
+  props<{
+    n: number;
   }>(),
 );
 

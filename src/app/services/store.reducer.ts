@@ -77,6 +77,10 @@ const _Reducer = createReducer(
     ...state,
     expertMode: !state.expertMode,
   })),
+  on(Actions.setNumberOfRequirements, (state, { n }) => ({
+    ...state,
+    numberOfRequirements: n,
+  })),
   on(Actions.storeUser, (state, { user }) => ({
     ...state,
     user: { ...user, signedIn: !!user },

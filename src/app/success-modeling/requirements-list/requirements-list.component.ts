@@ -19,6 +19,7 @@ import { _USER } from 'src/app/services/store.selectors';
 import {
   addReqBazarProject,
   removeReqBazarProject,
+  setNumberOfRequirements,
   storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
@@ -64,11 +65,6 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    this.refreshRequirements();
-    this.refreshRequirementsHandle = setInterval(
-      () => this.refreshRequirements(),
-      environment.servicePollingInterval * 1000,
-    );
     this.user$.subscribe((user) => (this.user = user));
   }
 
@@ -140,9 +136,14 @@ export class RequirementsListComponent
             xml: this.successModel.toXml().outerHTML,
           }),
         );
+        this.setNumberOfRequirements(0);
         this.numberOfRequirements.emit(0);
       }
     });
+  }
+
+  setNumberOfRequirements(n: number) {
+    this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
   }
 
   refreshRequirements() {
@@ -156,6 +157,7 @@ export class RequirementsListComponent
       )
       .then((requirements) => {
         this.requirements = requirements;
+        this.setNumberOfRequirements((requirements as [])?.length);
         this.numberOfRequirements.emit((requirements as []).length);
       });
   }
