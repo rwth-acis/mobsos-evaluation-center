@@ -87,7 +87,10 @@ export class BaseVisualizationComponent
 
   ngOnDestroy(): void {}
 
-  openErrorDialog() {
+  openErrorDialog(error?: HttpErrorResponse) {
+    if (error) {
+      this.error = error;
+    }
     let errorText = 'Http status code: ' + this.error.status + '\n';
     if (this.error.error) {
       errorText += this.error.statusText;
