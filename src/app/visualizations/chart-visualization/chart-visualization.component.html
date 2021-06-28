@@ -1,5 +1,5 @@
-<ng-container *ngIf="data$ | async as data; else stillLoading">
-  <div id="chart-row">
+<div id="chart-row">
+  <ng-container *ngIf="data$ | async as data; else noData">
     <mat-menu #menu="matMenu" yPosition="above">
       <div id="chart-info">
         {{
@@ -14,34 +14,44 @@
         </p>
       </div>
     </mat-menu>
+    <div *ngIf="chartInitialized; else noData"></div>
     <google-chart
-      *ngIf="chart"
-      [title]="this.chart.title"
-      [type]="this.chart.chartType"
-      [data]="this.chart.data"
-      [options]="this.chart.options"
-      class="content"
-      style="width: 100%"
+      *ngIf="chartData"
+      [title]="this.chartData.title"
+      [type]="this.chartData.chartType"
+      [data]="this.chartData.data"
+      [options]="this.chartData.options"
       [columns]="columnNames"
       [dynamicResize]="true"
+      [style]="'display: ' + chartInitialized ? 'block' : 'none'"
+      class="content"
+      style="width: 100%"
+      (ready)="this.chartInitialized = true"
     ></google-chart>
-    <button *ngIf="chart" mat-icon-button [matMenuTriggerFor]="menu">
+
+    <button
+      *ngIf="chartInitialized"
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+    >
       <mat-icon> info_outline </mat-icon>
+    </button></ng-container
+  >
+</div>
+
+<ng-template #noData>
+  <span
+    *ngIf="error && !chartData; else noDataAndNoError"
+    (click)="openErrorDialog()"
+    class="visualization-error"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
     </button>
-  </div>
-</ng-container>
+  </span>
+</ng-template>
 
-<span
-  *ngIf="error && !chart"
-  (click)="openErrorDialog()"
-  class="visualization-error"
->
-  <button mat-button>
-    <mat-icon>warning</mat-icon>
-  </button>
-</span>
-
-<ng-template #stillLoading>
+<ng-template #noDataAndNoError>
   <span class="loading-placeholder">
     <mat-spinner></mat-spinner>
   </span>
