@@ -32,7 +32,7 @@ export interface VisualizationComponent {
   template: '',
 })
 export class BaseVisualizationComponent
-  implements VisualizationComponent, OnInit, OnChanges, OnDestroy
+  implements VisualizationComponent, OnInit, OnDestroy
 {
   constructor(
     protected ngrxStore: Store,
@@ -82,8 +82,6 @@ export class BaseVisualizationComponent
   }
 
   ngOnInit() {}
-
-  ngOnChanges(changes: SimpleChanges): void {}
 
   ngOnDestroy(): void {}
 

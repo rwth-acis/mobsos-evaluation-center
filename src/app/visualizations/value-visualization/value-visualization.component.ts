@@ -37,7 +37,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export class ValueVisualizationComponent
   extends BaseVisualizationComponent
-  implements VisualizationComponent, OnInit, OnChanges, OnDestroy
+  implements VisualizationComponent, OnInit, OnDestroy
 {
   @Input() measureName: string;
 
@@ -58,6 +58,10 @@ export class ValueVisualizationComponent
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   ngOnInit() {

@@ -281,7 +281,6 @@ export const WORKSPACE_CATALOG_XML = createSelector(
 );
 
 // VISUALIZATION_DATA
-
 const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
@@ -315,7 +314,7 @@ export const SELECTED_SERVICE = createSelector(
   _EDIT_MODE,
   APPLICATION_WORKSPACE,
   (service, editMode, workspace) =>
-    editMode && workspace ? workspace?.service : service,
+    editMode && workspace?.service ? workspace.service : service,
 );
 
 function parseXml(xml: string) {
