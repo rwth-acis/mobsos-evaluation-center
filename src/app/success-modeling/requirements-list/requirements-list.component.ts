@@ -16,12 +16,17 @@ import { environment } from '../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { _USER } from 'src/app/services/store.selectors';
-import { storeSuccessModel } from 'src/app/services/store.actions';
+import {
+  addReqBazarProject,
+  removeReqBazarProject,
+  setNumberOfRequirements,
+  storeSuccessModel,
+} from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
 import { ReqbazProject } from 'src/app/models/reqbaz.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-
+import { cloneDeep } from 'lodash-es';
 @Component({
   selector: 'app-requirements-list',
   templateUrl: './requirements-list.component.html',
@@ -60,11 +65,6 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    this.refreshRequirements();
-    this.refreshRequirementsHandle = setInterval(
-      () => this.refreshRequirements(),
-      environment.servicePollingInterval * 1000,
-    );
     this.user$.subscribe((user) => (this.user = user));
   }
 
@@ -83,11 +83,20 @@ export class RequirementsListComponent
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.successModel = SuccessModel.fromPlainObject(
+          cloneDeep(this.successModel),
+        );
         this.successModel.reqBazProject = new ReqbazProject(
           result.selectedProject.name,
           result.selectedProject.id,
           result.selectedCategory.id,
         );
+        this.ngrxStore.dispatch(
+          addReqBazarProject({
+            project: this.successModel.reqBazProject,
+          }),
+        );
+
         this.ngrxStore.dispatch(
           storeSuccessModel({
             xml: this.successModel.toXml().outerHTML,
@@ -111,15 +120,30 @@ export class RequirementsListComponent
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.successModel = SuccessModel.fromPlainObject(
+          cloneDeep(this.successModel),
+        );
+        const id = this.successModel.reqBazProject.id;
+        this.ngrxStore.dispatch(
+          removeReqBazarProject({
+            id,
+          }),
+        );
+
         this.successModel.reqBazProject = null;
         this.ngrxStore.dispatch(
           storeSuccessModel({
             xml: this.successModel.toXml().outerHTML,
           }),
         );
+        this.setNumberOfRequirements(0);
         this.numberOfRequirements.emit(0);
       }
     });
+  }
+
+  setNumberOfRequirements(n: number) {
+    this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
   }
 
   refreshRequirements() {
@@ -133,6 +157,7 @@ export class RequirementsListComponent
       )
       .then((requirements) => {
         this.requirements = requirements;
+        this.setNumberOfRequirements((requirements as [])?.length);
         this.numberOfRequirements.emit((requirements as []).length);
       });
   }

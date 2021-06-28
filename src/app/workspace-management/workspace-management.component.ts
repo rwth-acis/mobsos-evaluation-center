@@ -8,6 +8,7 @@ import {
   disableEdit,
   joinWorkSpace,
   setCommunityWorkspace,
+  setNumberOfRequirements,
   setService,
   toggleEdit,
 } from '../services/store.actions';
@@ -35,6 +36,7 @@ import {
   VISUALIZATION_DATA,
   _SELECTED_SERVICE_NAME,
   _SELECTED_GROUP_ID,
+  NUMBER_OF_REQUIREMENTS,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
@@ -44,6 +46,10 @@ import {
   map,
   withLatestFrom,
 } from 'rxjs/operators';
+import {
+  MatBottomSheet,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
 import { WorkspaceService } from '../services/workspace.service';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -52,6 +58,9 @@ import { ApplicationWorkspace } from '../models/workspace.model';
 import { GroupInformation } from '../models/community.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { VisualizationData } from '../models/visualization.model';
+import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
+import { Las2peerService } from '../services/las2peer.service';
+import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 
 @Component({
   selector: 'app-workspace-management',
@@ -80,6 +89,9 @@ export class WorkspaceManagementComponent
   selectedOwner$ = this.ngrxStore.select(SELECTED_WORKSPACE_OWNER); // holds the owner of the workspace which the user wants to join
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
   user$ = this.ngrxStore.select(_USER);
+  numberOfRequirements$ = this.ngrxStore
+    .select(NUMBER_OF_REQUIREMENTS)
+    .pipe(map((n) => (n === 0 ? null : n)));
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   workspaceInitialized$ = this.ngrxStore.select(
     MODEL_AND_CATALOG_LOADED,
@@ -112,6 +124,8 @@ export class WorkspaceManagementComponent
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
     private ngrxStore: Store,
+    private _bottomSheet: MatBottomSheet,
+    private las2peer: Las2peerService,
   ) {}
 
   ngOnInit(): void {
@@ -174,6 +188,20 @@ export class WorkspaceManagementComponent
       if (mode !== this.checked) this.checked = mode;
     });
     this.subscriptions$.push(sub);
+    sub = this.successModel$.subscribe((model) => {
+      if (model?.reqBazProject) {
+        this.las2peer
+          .fetchRequirementsOnReqBaz(model.reqBazProject.categoryId)
+          .then((requirements: Requirement[]) => {
+            if (requirements) {
+              this.ngrxStore.dispatch(
+                setNumberOfRequirements({ n: requirements?.length }),
+              );
+            }
+          });
+      }
+    });
+    this.subscriptions$.push(sub);
   }
 
   async onServiceSelected(service: ServiceInformation) {
@@ -205,6 +233,10 @@ export class WorkspaceManagementComponent
         username: this.user.profile.preferred_username,
       }),
     );
+  }
+
+  openBottomSheet(): void {
+    this._bottomSheet.open(BottomSheetComponent);
   }
 
   onChangeRole(visitorName: string, role?: string) {
@@ -267,41 +299,6 @@ export class WorkspaceManagementComponent
       );
       return dialogRef.afterClosed().toPromise();
     }
-  }
-
-  /**
-   * Initializes the workspace for collaborative success modeling
-   */
-  private initWorkspace(
-    groupID: string,
-    visualizationData: VisualizationData,
-    user?: User,
-  ) {
-    // if (!this.user) this.user = user;
-    // if (!this.user) return console.error('user cannot be null');
-    // this.workspaceOwner = this.user?.profile.preferred_username;
-    // // get the current workspace state from yjs
-    // if (!this.measureCatalog) {
-    //   this.measureCatalog = new MeasureCatalog({});
-    // }
-    // if (!this.successModel) {
-    //   this.successModel = SuccessModel.emptySuccessModel(
-    //     this.selectedService,
-    //   );
-    // }
-    // this.workspaceService.initWorkspace(
-    //   groupID,
-    //   this.workspaceOwner,
-    //   this.selectedService,
-    //   this.measureCatalog,
-    //   this.successModel,
-    //   visualizationData,
-    // );
-    // this.currentApplicationWorkspace =
-    //   this.workspaceService.currentCommunityWorkspace[
-    //     this.workspaceOwner
-    //   ][this.selectedService.name];
-    // return true;
   }
 
   ngOnDestroy() {

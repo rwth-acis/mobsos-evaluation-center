@@ -31,7 +31,8 @@ export class ChartVisualizerComponent
   data$: Observable<VData>;
   measure$: Observable<Measure>;
   query: string; // local copy of the sql query
-  chart: GoogleChart;
+  chartData: GoogleChart;
+  chartInitialized = false;
 
   constructor(
     protected dialog: MatDialog,
@@ -93,7 +94,7 @@ export class ChartVisualizerComponent
             this.error = null;
             const labelTypes = dataTable[1];
             const rows = dataTable.slice(2) as any[][];
-            this.chart = new GoogleChart(
+            this.chartData = new GoogleChart(
               '',
               visualization.chartType,
               rows,
@@ -109,7 +110,7 @@ export class ChartVisualizerComponent
                 animation: { startup: true },
               },
             );
-            if (this.chart) this.visualizationInitialized = true;
+            if (this.chartData) this.visualizationInitialized = true;
           }
         });
     }

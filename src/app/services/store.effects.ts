@@ -400,94 +400,84 @@ export class StateEffects {
       withLatestFrom(
         this.ngrxStore.select(SUCCESS_MODEL_FROM_NETWORK),
         this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
-        this.ngrxStore.select(RESTRICTED_MODE),
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(_USER),
         this.ngrxStore.select(VISUALIZATION_DATA),
       ),
-      exhaustMap(
-        ([
-          action,
-          model,
-          catalog,
-          restricted,
-          service,
-          user,
-          vdata,
-        ]) =>
-          this.workspaceService
-            .syncWithCommunnityWorkspace(action.groupId)
-            .pipe(
-              map((synced) => {
-                if (synced) {
-                  let owner = action.owner;
-                  let username = action.username;
+      exhaustMap(([action, model, catalog, service, user, vdata]) =>
+        this.workspaceService
+          .syncWithCommunnityWorkspace(action.groupId)
+          .pipe(
+            map((synced) => {
+              if (synced) {
+                let owner = action.owner;
+                let username = action.username;
+                if (user?.signedIn) {
+                  username = user.profile.preferred_username;
+                }
+                try {
+                  this.workspaceService.switchWorkspace(
+                    action.owner,
+                    action.serviceName,
+                    username,
+                    null,
+                    model,
+                    catalog,
+                    action.role,
+                    vdata,
+                  );
+                } catch (error) {
                   if (user?.signedIn) {
-                    username = user.profile.preferred_username;
-                  }
-                  try {
-                    this.workspaceService.switchWorkspace(
-                      action.owner,
-                      action.serviceName,
-                      username,
-                      null,
-                      model,
-                      catalog,
-                      action.role,
-                      vdata,
-                    );
-                  } catch (error) {
-                    if (user?.signedIn) {
-                      this.workspaceService.initWorkspace(
-                        action.groupId,
-                        username,
-                        service,
-                        catalog,
-                        model,
-                        vdata,
-                      );
-                      owner = user?.profile.preferred_username;
-                    } else {
-                      return Action.failure();
-                    }
-                  }
-                  const currentCommunityWorkspace =
-                    this.workspaceService.currentCommunityWorkspace;
-                  if (
-                    user?.signedIn &&
-                    !currentCommunityWorkspace[
-                      user.profile.preferred_username
-                    ]
-                  ) {
                     this.workspaceService.initWorkspace(
                       action.groupId,
-                      user.profile.preferred_username,
+                      username,
                       service,
                       catalog,
                       model,
                       vdata,
                     );
-                  }
-                  if (!currentCommunityWorkspace) {
-                    return Action.failure();
+                    owner = user?.profile.preferred_username;
                   } else {
-                    return Action.setCommunityWorkspace({
-                      workspace: currentCommunityWorkspace,
-                      owner,
-                      serviceName: action.serviceName,
-                    });
+                    return Action.failure();
                   }
-                } else {
-                  const error = new Error('Could not sync with yjs');
-                  console.error(error.message);
-                  throw error;
                 }
-              }),
-              catchError((err) => {
-                console.error(err);
-                return of(Action.failure());
-              }),
-            ),
+                const currentCommunityWorkspace =
+                  this.workspaceService.currentCommunityWorkspace;
+                if (
+                  user?.signedIn &&
+                  !currentCommunityWorkspace[
+                    user.profile.preferred_username
+                  ]
+                ) {
+                  this.workspaceService.initWorkspace(
+                    action.groupId,
+                    user.profile.preferred_username,
+                    service,
+                    catalog,
+                    model,
+                    vdata,
+                  );
+                }
+                if (!currentCommunityWorkspace) {
+                  return Action.failure();
+                } else {
+                  return Action.setCommunityWorkspace({
+                    workspace: currentCommunityWorkspace,
+                    owner,
+                    serviceName: action.serviceName,
+                  });
+                }
+              } else {
+                const error = new Error('Could not sync with yjs');
+                console.error(error.message);
+                throw error;
+              }
+            }),
+            catchError((err) => {
+              console.error(err);
+              return of(Action.failure());
+            }),
+          ),
       ),
       catchError(() => {
         return of(Action.failure());

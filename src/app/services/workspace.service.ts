@@ -313,6 +313,11 @@ export class WorkspaceService {
       );
     }
 
+    if (username === owner) {
+      currentApplicationWorkspace.catalog = catalog;
+      currentApplicationWorkspace.model = model;
+    }
+
     const visitors = currentApplicationWorkspace.visitors;
     const containedInVisitors = visitors.find(
       (visitor) => visitor.username === username,

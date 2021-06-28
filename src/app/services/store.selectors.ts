@@ -21,6 +21,9 @@ import {
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
+export const NUMBER_OF_REQUIREMENTS = (state: StoreState) =>
+  state.Reducer?.numberOfRequirements;
+
 export const _EDIT_MODE = (state: StoreState) =>
   state.Reducer?.editMode;
 
@@ -281,7 +284,6 @@ export const WORKSPACE_CATALOG_XML = createSelector(
 );
 
 // VISUALIZATION_DATA
-
 const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
@@ -315,7 +317,7 @@ export const SELECTED_SERVICE = createSelector(
   _EDIT_MODE,
   APPLICATION_WORKSPACE,
   (service, editMode, workspace) =>
-    editMode && workspace ? workspace?.service : service,
+    editMode && workspace?.service ? workspace.service : service,
 );
 
 function parseXml(xml: string) {

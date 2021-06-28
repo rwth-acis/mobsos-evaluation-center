@@ -29,6 +29,7 @@ export interface AppState {
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
   restricted: boolean;
+  numberOfRequirements: number;
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -50,6 +51,7 @@ export const INITIAL_APP_STATE: AppState = {
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
   restricted: false,
+  numberOfRequirements: 0,
 };
 /**
  * What the store looks like

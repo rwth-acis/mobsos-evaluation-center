@@ -32,7 +32,7 @@ export interface VisualizationComponent {
   template: '',
 })
 export class BaseVisualizationComponent
-  implements VisualizationComponent, OnInit, OnChanges, OnDestroy
+  implements VisualizationComponent, OnInit, OnDestroy
 {
   constructor(
     protected ngrxStore: Store,
@@ -83,11 +83,12 @@ export class BaseVisualizationComponent
 
   ngOnInit() {}
 
-  ngOnChanges(changes: SimpleChanges): void {}
-
   ngOnDestroy(): void {}
 
-  openErrorDialog() {
+  openErrorDialog(error?: HttpErrorResponse) {
+    if (error) {
+      this.error = error;
+    }
     let errorText = 'Http status code: ' + this.error.status + '\n';
     if (this.error.error) {
       errorText += this.error.statusText;

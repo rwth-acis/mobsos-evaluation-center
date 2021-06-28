@@ -60,7 +60,7 @@ export class VisitorComponent implements OnInit, OnDestroy {
   constructor(private ngrxStore: Store, private router: Router) {}
 
   ngOnInit(): void {
-    let sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
+    const sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
       if (owner) {
         this.workspaceOwner = owner;
       }
