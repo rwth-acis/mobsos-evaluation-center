@@ -4,7 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { UserManager } from 'oidc-client';
 import { Observable, Subscription } from 'rxjs';
-import { withLatestFrom } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  withLatestFrom,
+} from 'rxjs/operators';
 import { User, UserRole } from '../models/user.model';
 import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
 import {
@@ -31,9 +36,11 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
   ) {}
+  user$ = this.ngrxStore.select(_USER);
   groupId$: Observable<string>;
   serviceName$: Observable<string>;
   subscription$: Subscription;
+  subscriptions$: Subscription[] = [];
   owner: string;
   serviceName: string;
   groupId: string;
@@ -43,8 +50,8 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.userManager.createSigninRequest();
-    this.subscription$ = this.route.params
-      .pipe(withLatestFrom(this.ngrxStore.select(_USER)))
+    let sub = this.route.params
+      .pipe(withLatestFrom(this.user$))
       .subscribe(
         async ([params, user]: [
           {
@@ -111,6 +118,26 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           }
         },
       );
+
+    this.subscriptions$.push(sub);
+    sub = this.user$
+      .pipe(
+        filter((user) => !!user),
+        distinctUntilKeyChanged('signedIn'),
+      )
+      .subscribe((user) => {
+        if (user?.signedIn) {
+          this.ngrxStore.dispatch(
+            joinWorkSpace({
+              groupId: this.groupId,
+              serviceName: this.serviceName,
+              owner: this.username,
+              username: user.profile.preferred_username,
+            }),
+          );
+          this.router.navigateByUrl('');
+        }
+      });
   }
 
   joinWorkspace() {
@@ -144,6 +171,8 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription$.unsubscribe();
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
   }
 }
