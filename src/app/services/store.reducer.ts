@@ -443,6 +443,7 @@ function mergeGroupData(
 ) {
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
+    groups = {};
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       groups[groupID] = {
@@ -751,34 +752,34 @@ function getSelectedService(state: AppState) {
   if (!state.services || !state.selectedServiceName) return undefined;
   return state.services[state.selectedServiceName];
 }
-function addVisitor(
-  communityWorkspace: CommunityWorkspace,
-  username: string,
-  owner: string,
-  serviceName: string,
-  role: UserRole,
-): CommunityWorkspace {
-  const copy = cloneDeep(communityWorkspace); // copy workspace first
-  const userWorkspace = copy[owner];
-  if (!userWorkspace) return communityWorkspace;
-  const appWorkspace: ApplicationWorkspace =
-    userWorkspace[serviceName];
-  if (!appWorkspace) return communityWorkspace;
-  let visitor = appWorkspace.visitors?.find(
-    (v) => v.username === username,
-  );
-  if (role === UserRole.LURKER) {
-    if (visitor) {
-      username =
-        username + ' (guest ' + appWorkspace.visitors.length + ')';
-    }
-    appWorkspace.visitors.push(new Visitor(username, role));
-  } else if (!visitor) {
-    visitor = new Visitor(username, role);
-    appWorkspace.visitors.push(visitor);
-  }
-  return copy;
-}
+// function addVisitor(
+//   communityWorkspace: CommunityWorkspace,
+//   username: string,
+//   owner: string,
+//   serviceName: string,
+//   role: UserRole,
+// ): CommunityWorkspace {
+//   const copy = cloneDeep(communityWorkspace); // copy workspace first
+//   const userWorkspace = copy[owner];
+//   if (!userWorkspace) return communityWorkspace;
+//   const appWorkspace: ApplicationWorkspace =
+//     userWorkspace[serviceName];
+//   if (!appWorkspace) return communityWorkspace;
+//   let visitor = appWorkspace.visitors?.find(
+//     (v) => v.username === username,
+//   );
+//   if (role === UserRole.LURKER) {
+//     if (visitor) {
+//       username =
+//         username + ' (guest ' + appWorkspace.visitors.length + ')';
+//     }
+//     appWorkspace.visitors.push(new Visitor(username, role));
+//   } else if (!visitor) {
+//     visitor = new Visitor(username, role);
+//     appWorkspace.visitors.push(visitor);
+//   }
+//   return copy;
+// }
 
 function getWorkspaceByUserAndService(
   communityWorkspace: CommunityWorkspace,

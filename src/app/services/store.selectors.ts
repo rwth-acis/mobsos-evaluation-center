@@ -64,11 +64,11 @@ export const GROUPS = (state: StoreState) =>
     : undefined;
 
 export const USER_GROUPS = createSelector(GROUPS, (groups) =>
-  groups.filter((g) => g.member),
+  groups?.filter((g) => g.member),
 );
 
 export const FOREIGN_GROUPS = createSelector(GROUPS, (groups) =>
-  groups.filter((g) => !g.member),
+  groups?.filter((g) => !g.member),
 );
 
 export const SELECTED_GROUP = createSelector(
