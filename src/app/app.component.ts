@@ -296,6 +296,7 @@ export class AppComponent implements OnInit, OnDestroy {
   async openAddCommunityDialog() {
     const dialogRef = this.dialog.open(AddCommunityDialogComponent, {
       data: null,
+      disableClose: true,
     });
     const communityName = await dialogRef.afterClosed().toPromise();
     if (communityName?.length > 0) {

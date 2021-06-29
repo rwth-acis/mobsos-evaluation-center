@@ -6,6 +6,16 @@
     <input [(ngModel)]="name" matInput placeholder="ACIS" />
   </mat-form-field>
 </div>
-<div mat-dialog-actions [mat-dialog-close]="name">
-  <button mat-flat-button color="primary">Ok</button>
+<div mat-dialog-actions>
+  <button
+    mat-flat-button
+    [mat-dialog-close]="name"
+    color="primary"
+    [disabled]="!(this.name?.trim().length > 0)"
+  >
+    Ok
+  </button>
+  <button mat-button color="warn" [mat-dialog-close]="undefined">
+    Cancel
+  </button>
 </div>

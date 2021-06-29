@@ -212,9 +212,7 @@ export class Las2peerService {
       ngHttpOptions.responseType = options.responseType;
     }
 
-    return this.http
-      .request(options.method, url, ngHttpOptions)
-      .pipe(share());
+    return this.http.request(options.method, url, ngHttpOptions);
   }
 
   async fetchServicesFromDiscovery() {
