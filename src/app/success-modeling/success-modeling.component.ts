@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
-  PostActions,
+  HttpActions,
   saveModelAndCatalog,
   setService,
   toggleEdit,
@@ -198,7 +198,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         )
         .subscribe((result) => {
           this.saveInProgress = false;
-          if (result.type === PostActions.SAVE_CATALOG_SUCCESS) {
+          if (result.type === HttpActions.SAVE_CATALOG_SUCCESS) {
             const message = this.translate.instant(
               'success-modeling.snackbar-save-success',
             );

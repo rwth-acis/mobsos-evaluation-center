@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { GroupInformation } from '../models/community.model';
 
 import { Measure } from '../models/measure.model';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
@@ -7,30 +8,27 @@ import { SuccessFactor } from '../models/success.model';
 import { User, UserRole } from '../models/user.model';
 import { CommunityWorkspace } from '../models/workspace.model';
 
-enum FetchActions {
+export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
   FETCH_GROUPS = 'fetch groups from the network',
   FETCH_SERVICE_MESSAGE_DESCRIPTION = 'fetch service descriptions for a service from the network ',
   FETCH_MEASURE_CATALOG_FOR_GROUP = 'fetch measure catalog for current Group',
   FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE = 'fetch success model for current Group and current service',
   FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
-}
-
-export enum PostActions {
   SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
-  SUCCESS_RESPONSE = 'response was successfully',
-  FAILURE_RESPONSE = 'response was not successfully',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
+  ADD_GROUP = 'adds a new group',
 }
 
-enum StoreActions {
+export enum StoreActions {
   STORE_SERVICE_MESSAGE_DESCRIPTION = 'store the service descriptions for a service from the network',
   STORE_SERVICES = 'store services',
   STORE_GROUPS = 'store groups',
   STORE_USER = 'Store the user',
-  SET_USERNAME = 'Set the username. Called for anonymous users',
+  STORE_GROUP = 'Stores a new group in state',
+  STORE_USERNAME = 'Set the username. Called for anonymous users',
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
@@ -52,7 +50,7 @@ enum StoreActions {
   SET_NUMBER_OF_REQUIREMENTS = 'set the number of requirements for the current project',
 }
 
-enum StateActions {
+export enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
@@ -65,23 +63,24 @@ enum StateActions {
   DECREMENT_LOADING = 'Decrease the number of current http calls',
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
+
+  SUCCESS_RESPONSE = 'response was successfully',
+  FAILURE_RESPONSE = 'response was not successfully',
 }
 
 // fetching
-export const fetchServices = createAction(
-  FetchActions.FETCH_SERVICES,
-);
-export const fetchGroups = createAction(FetchActions.FETCH_GROUPS);
+export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
+export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
-  FetchActions.FETCH_VISUALIZATION_DATA,
+  HttpActions.FETCH_VISUALIZATION_DATA,
   props<{ query: string; queryParams: string[] }>(),
 );
 export const fetchMeasureCatalog = createAction(
-  FetchActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
+  HttpActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
   props<{ groupId: string }>(),
 );
 export const fetchSuccessModel = createAction(
-  FetchActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
+  HttpActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
   props<{ groupId; serviceName }>(),
 );
 
@@ -114,6 +113,14 @@ export const addReqBazarProject = createAction(
   }>(),
 );
 
+export const addGroup = createAction(
+  HttpActions.ADD_GROUP,
+  props<{ groupName: string }>(),
+);
+export const storeGroup = createAction(
+  StoreActions.STORE_GROUP,
+  props<{ group: GroupInformation }>(),
+);
 export const removeReqBazarProject = createAction(
   StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
   props<{
@@ -180,11 +187,11 @@ export const removeMeasure = createAction(
 );
 
 export const saveModelAndCatalog = createAction(
-  PostActions.SAVE_MODEL_AND_CATALOG,
+  HttpActions.SAVE_MODEL_AND_CATALOG,
 );
 
 export const saveModel = createAction(
-  PostActions.SAVE_MODEL,
+  HttpActions.SAVE_MODEL,
   props<{ xml: string }>(),
 );
 
@@ -194,7 +201,7 @@ export const transferMissingGroupsToMobSOS = createAction(
 );
 
 export const saveCatalog = createAction(
-  PostActions.SAVE_CATALOG,
+  HttpActions.SAVE_CATALOG,
   props<{ xml: string }>(),
 );
 
@@ -267,7 +274,7 @@ export const joinWorkSpace = createAction(
 );
 
 export const setUserName = createAction(
-  StoreActions.SET_USERNAME,
+  StoreActions.STORE_USERNAME,
   props<{ username: string }>(),
 );
 
@@ -288,13 +295,13 @@ export const toggleExpertMode = createAction(
 
 // http results
 export const successResponse = createAction(
-  PostActions.SUCCESS_RESPONSE,
+  StateActions.SUCCESS_RESPONSE,
 );
 export const saveCatalogSuccess = createAction(
-  PostActions.SAVE_CATALOG_SUCCESS,
+  HttpActions.SAVE_CATALOG_SUCCESS,
 );
 export const failureResponse = createAction(
-  PostActions.FAILURE_RESPONSE,
+  StateActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
 );
 

@@ -93,6 +93,7 @@ import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.compon
 import { VisitorComponent } from './visitor/visitor.component';
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
+import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -171,6 +172,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     VisitorComponent,
     PickUsernameDialogComponent,
     BottomSheetComponent,
+    AddCommunityDialogComponent,
   ],
   imports: [
     BrowserModule,

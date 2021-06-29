@@ -23,6 +23,7 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  addGroup,
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
@@ -58,6 +59,8 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -127,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private dialog: MatDialog,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -286,6 +290,16 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log(a);
       });
       this.subscriptions$.push(sub);
+    }
+  }
+
+  async openAddCommunityDialog() {
+    const dialogRef = this.dialog.open(AddCommunityDialogComponent, {
+      data: null,
+    });
+    const communityName = await dialogRef.afterClosed().toPromise();
+    if (communityName?.length > 0) {
+      this.ngrxStore.dispatch(addGroup({ groupName: communityName }));
     }
   }
 }

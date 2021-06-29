@@ -14,6 +14,10 @@ import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { isEmpty } from 'lodash-es';
 import { ReqbazProject } from '../models/reqbaz.model';
+import {
+  GroupCollection,
+  GroupInformation,
+} from '../models/community.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -142,6 +146,10 @@ const _Reducer = createReducer(
   on(Actions.storeRequirements, (state, { requirements }) => ({
     ...state,
     requirements,
+  })),
+  on(Actions.storeGroup, (state, { group }) => ({
+    ...state,
+    groups: addGroup(group, state.groups),
   })),
   on(Actions.incrementLoading, (state) => ({
     ...state,
@@ -792,5 +800,13 @@ function removeVisualizationData(
 ): VisualizationData {
   const copy = { ...visualizationData };
   delete copy[query];
+  return copy;
+}
+function addGroup(group: GroupInformation, groups: GroupCollection) {
+  if (!group?.id) {
+    return groups;
+  }
+  const copy = cloneDeep(groups);
+  copy[group.id] = group;
   return copy;
 }

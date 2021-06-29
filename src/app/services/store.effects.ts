@@ -394,6 +394,30 @@ export class StateEffects {
     ),
   );
 
+  addGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addGroup),
+      mergeMap(({ groupName }) =>
+        this.l2p.addGroup(groupName).pipe(
+          map((id: string) =>
+            id
+              ? Action.storeGroup({
+                  group: { id, name: groupName, member: true },
+                })
+              : Action.failureResponse,
+          ),
+          catchError((err) => {
+            return of(Action.storeSuccessModel({ xml: null }));
+          }),
+        ),
+      ),
+      catchError((err) => {
+        return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),

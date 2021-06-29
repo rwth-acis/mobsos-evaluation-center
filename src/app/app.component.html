@@ -47,8 +47,12 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-divider></mat-divider>
       <mat-nav-list>
+        <a mat-list-item (click)="openAddCommunityDialog()">
+          <mat-icon matListIcon> group_add </mat-icon>
+          {{ 'shared.pages.add-community' | translate }}
+        </a>
+        <mat-divider></mat-divider>
         <a
           mat-list-item
           routerLink="/"

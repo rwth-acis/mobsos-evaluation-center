@@ -254,6 +254,16 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url);
   }
 
+  addGroup(groupName: string) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+    );
+    return this.makeRequestAndObserve(url);
+  }
+
   fetchServicesFromMobSOSAndObserve() {
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
