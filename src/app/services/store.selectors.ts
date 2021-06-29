@@ -1,4 +1,5 @@
 import { createSelector } from '@ngrx/store';
+import { create } from 'domain';
 import {
   GroupCollection,
   GroupInformation,
@@ -62,11 +63,13 @@ export const GROUPS = (state: StoreState) =>
       )
     : undefined;
 
-export const USER_GROUPS = (state: StoreState) =>
-  _userGroups(state.Reducer?.groups);
+export const USER_GROUPS = createSelector(GROUPS, (groups) =>
+  groups.filter((g) => g.member),
+);
 
-export const FOREIGN_GROUPS = (state: StoreState) =>
-  _foreignGroups(state.Reducer?.groups);
+export const FOREIGN_GROUPS = createSelector(GROUPS, (groups) =>
+  groups.filter((g) => !g.member),
+);
 
 export const SELECTED_GROUP = createSelector(
   _SELECTED_GROUP_ID,

@@ -15,6 +15,7 @@ import {
   exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { GroupInformation } from '../models/community.model';
 
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -399,20 +400,28 @@ export class StateEffects {
       ofType(Action.addGroup),
       mergeMap(({ groupName }) =>
         this.l2p.addGroup(groupName).pipe(
-          map((id: string) =>
-            id
+          map((id: string) => ({
+            id,
+            name: groupName,
+            member: true,
+          })),
+          tap((group: GroupInformation) =>
+            this.l2p.saveGroupsToMobSOS([group]),
+          ),
+          map((group: GroupInformation) =>
+            group?.id
               ? Action.storeGroup({
-                  group: { id, name: groupName, member: true },
+                  group,
                 })
-              : Action.failureResponse,
+              : Action.failureResponse(null),
           ),
           catchError((err) => {
-            return of(Action.storeSuccessModel({ xml: null }));
+            return of(Action.failureResponse({ reason: err }));
           }),
         ),
       ),
       catchError((err) => {
-        return of(Action.storeSuccessModel({ xml: null }));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),

@@ -259,7 +259,10 @@ export class Las2peerService {
       this.CONTACT_GROUPS_PATH,
       groupName,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, {
+      method: 'POST',
+      responseType: 'text',
+    });
   }
 
   fetchServicesFromMobSOSAndObserve() {
