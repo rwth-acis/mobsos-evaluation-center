@@ -139,7 +139,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: removeReqBazarProject(state),
   })),
-
+  on(Actions.storeRequirements, (state, { requirements }) => ({
+    ...state,
+    requirements,
+  })),
   on(Actions.incrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls + 1,

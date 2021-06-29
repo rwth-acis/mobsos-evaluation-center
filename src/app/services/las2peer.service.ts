@@ -104,26 +104,18 @@ export class Las2peerService {
       },
       options,
     );
+
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
     );
-
-    if (this.userCredentials) {
-      const username = this.userCredentials?.preferred_username;
-      const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
-      const token = localStorage.getItem('access_token');
-      options = merge(options, {
-        headers: {
-          Authorization: 'Basic ' + btoa(username + ':' + sub),
-          access_token: token,
-        },
-      });
+    const username = this.userCredentials?.preferred_username;
+    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
+    const token = localStorage.getItem('access_token');
+    if (username) {
+      options.headers.Authorization =
+        'Basic ' + btoa(username + ':' + sub);
+      options.headers.access_token = token;
     }
-    // if (!environment.production) {
-    //   this.logger.debug(
-    //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
-    //   );
-    // }
 
     const ngHttpOptions: {
       body?: any;
@@ -142,7 +134,7 @@ export class Las2peerService {
       reportProgress?: boolean;
       withCredentials?: boolean;
     } = {};
-    if (options.headers && !url.includes('bazaar')) {
+    if (options.headers) {
       ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
@@ -154,6 +146,7 @@ export class Las2peerService {
 
     return this.http
       .request(options.method, url, ngHttpOptions)
+      .pipe(share())
       .toPromise();
   }
 
@@ -187,22 +180,10 @@ export class Las2peerService {
     const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
     const token = localStorage.getItem('access_token');
     if (username) {
-      options = merge(
-        {
-          headers: {
-            Authorization: 'Basic ' + btoa(username + ':' + sub),
-            access_token: token,
-          },
-        },
-        options,
-      );
+      options.headers.Authorization =
+        'Basic ' + btoa(username + ':' + sub);
+      options.headers.access_token = token;
     }
-
-    // if (!environment.production) {
-    //   this.logger.debug(
-    //     'Fetching from ' + url //+ ' with options ' + JSON.stringify(options)
-    //   );
-    // }
 
     const ngHttpOptions: {
       body?: any;

@@ -1,6 +1,7 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
 import { IQuestionnaire } from './questionnaire.model';
+import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
@@ -30,6 +31,7 @@ export interface AppState {
   currentWorkSpaceOwner: string;
   restricted: boolean;
   numberOfRequirements: number;
+  requirements: Requirement[];
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -52,6 +54,7 @@ export const INITIAL_APP_STATE: AppState = {
   currentWorkSpaceOwner: undefined,
   restricted: false,
   numberOfRequirements: 0,
+  requirements: undefined,
 };
 /**
  * What the store looks like

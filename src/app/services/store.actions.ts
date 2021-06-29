@@ -1,7 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import { Measure } from '../models/measure.model';
-import { ReqbazProject } from '../models/reqbaz.model';
+import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
 import { User, UserRole } from '../models/user.model';
@@ -48,6 +48,7 @@ enum StoreActions {
   REMOVE_VISUALIZATION_DATA = ' Removes visualization data for a given query',
   ADD_REQUIREMENTS_BAZAR_PROJECT = 'add a requirement bazar project to the success model',
   REMOVE_REQUIREMENTS_BAZAR_PROJECT = 'remove a requirement bazar project from the success model',
+  STORE_REQUIREMENTS = 'Store the requirements for the current req bazar project',
   SET_NUMBER_OF_REQUIREMENTS = 'set the number of requirements for the current project',
 }
 
@@ -117,6 +118,12 @@ export const removeReqBazarProject = createAction(
   StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
   props<{
     id: number;
+  }>(),
+);
+export const storeRequirements = createAction(
+  StoreActions.STORE_REQUIREMENTS,
+  props<{
+    requirements: Requirement[];
   }>(),
 );
 
