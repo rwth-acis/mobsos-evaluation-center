@@ -437,7 +437,7 @@ export class StateEffects {
         this.ngrxStore.select(_USER),
         this.ngrxStore.select(VISUALIZATION_DATA),
       ),
-      exhaustMap(([action, model, catalog, service, user, vdata]) =>
+      switchMap(([action, model, catalog, service, user, vdata]) =>
         this.workspaceService
           .syncWithCommunnityWorkspace(action.groupId)
           .pipe(
