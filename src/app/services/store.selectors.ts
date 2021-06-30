@@ -287,7 +287,7 @@ export const WORKSPACE_CATALOG_XML = createSelector(
 );
 
 // VISUALIZATION_DATA
-const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
+export const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
 export const VISUALIZATION_DATA_FROM_WORKSPACE = createSelector(
@@ -304,9 +304,14 @@ export const VISUALIZATION_DATA = createSelector(
 );
 
 export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
-  VISUALIZATION_DATA,
-  (vdata, queryString: string) =>
-    vdata ? vdata[queryString] : undefined,
+  VISUALIZATION_DATA_FROM_QVS,
+  VISUALIZATION_DATA_FROM_WORKSPACE,
+  (workspacedata, qvsdata, queryString: string) =>
+    workspacedata && workspacedata[queryString]
+      ? workspacedata[queryString]
+      : qvsdata
+      ? qvsdata[queryString]
+      : undefined,
 );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
