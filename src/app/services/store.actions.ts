@@ -244,7 +244,7 @@ export const storeUser = createAction(
 
 export const storeVisualizationData = createAction(
   StoreActions.STORE_VISUALIZATION_DATA,
-  props<{ data: any; query: string; error: any }>(),
+  props<{ data?: any; query?: string; error?: any }>(),
 );
 
 export const storeCatalog = createAction(

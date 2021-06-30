@@ -305,21 +305,25 @@ function removeReqBazarProject(state: AppState) {
 
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
-  props: { data: any[][]; query: string; error: HttpErrorResponse },
+  props: {
+    data?: any[][];
+    query?: string;
+    error?: HttpErrorResponse;
+  },
 ) {
-  if (!props.query || (!props.data && !props.error)) {
+  if (!props.query || props?.error?.status < 200) {
     return currentVisualizationData;
   }
-
-  if (props.error?.status >= 400 && props.error?.status < 500) {
-    currentVisualizationData[props.query] = {
-      ...currentVisualizationData[props.query],
-      error: props.error,
-    };
-  } else {
+  if (props.data) {
+    // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
       fetchDate: new Date(),
+      error: null,
+    };
+  } else if (props.error) {
+    currentVisualizationData[props.query] = {
+      ...currentVisualizationData[props.query],
       error: props.error,
     };
   }

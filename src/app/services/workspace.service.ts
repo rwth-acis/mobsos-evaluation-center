@@ -312,6 +312,26 @@ export class WorkspaceService {
         'this user has no application workspace for the current service',
       );
     }
+    if (vdata) {
+      for (const [query, value] of Object.entries(vdata)) {
+        if (value.data) {
+          const workspaceData =
+            currentApplicationWorkspace.visualizationData[query];
+          if (
+            !(
+              workspaceData?.fetchDate.getTime() >
+              value.fetchDate.getTime()
+            )
+          ) {
+            // we have more recent data so we add our data
+            workspaceData[query] = {
+              ...workspaceData[query],
+              data: value.data,
+            };
+          }
+        }
+      }
+    }
 
     if (username === owner) {
       currentApplicationWorkspace.catalog = catalog;

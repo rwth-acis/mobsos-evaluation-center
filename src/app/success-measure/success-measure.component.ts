@@ -29,7 +29,12 @@ import {
 import { Measure } from '../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
-import { map } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  map,
+} from 'rxjs/operators';
 
 @Component({
   selector: 'app-success-measure',
@@ -62,7 +67,12 @@ export class SuccessMeasureComponent
   ) {}
 
   ngOnInit() {
-    this.measure$ = this.ngrxStore.select(MEASURE, this.measureName);
+    this.measure$ = this.ngrxStore
+      .select(MEASURE, this.measureName)
+      .pipe(
+        filter((measure) => !!measure),
+        distinctUntilKeyChanged('queries'),
+      );
     const sub = this.measure$.subscribe((measure) => {
       this.measure = cloneDeep(measure);
     });
@@ -75,7 +85,7 @@ export class SuccessMeasureComponent
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  onEditClicked(event: MouseEvent) {
+  async onEditClicked(event: MouseEvent) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -87,42 +97,25 @@ export class SuccessMeasureComponent
         factorName: this.factorName,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.ngrxStore.dispatch(
-          editMeasure({
-            measure: result,
-            factorName: this.factorName,
-            oldMeasureName: this.measure.name,
-            dimensionName: this.dimensionName,
-          }),
-        );
-        this.measure.name = result.name;
-        this.measure.queries = result.queries;
-        this.measure.visualization = result.visualization;
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.ngrxStore.dispatch(
+        editMeasure({
+          measure: result,
+          factorName: this.factorName,
+          oldMeasureName: this.measure.name,
+          dimensionName: this.dimensionName,
+        }),
+      );
+      this.measure.name = result.name;
+      this.measure.queries = result.queries;
+      this.measure.visualization = result.visualization;
+    }
+
     event.stopPropagation();
   }
 
-  public rerenderVisualizationComponent() {
-    // if (this.componentRef) {
-    //   (
-    //     this.componentRef.instance as VisualizationComponent
-    //   ).renderVisualization();
-    // }
-  }
-
-  private relayPropertiesToVisualizationComponent() {
-    // if (this.componentRef) {
-    //   (this.componentRef.instance as VisualizationComponent).service =
-    //     this.service;
-    //   (this.componentRef.instance as VisualizationComponent).measure =
-    //     this.measure;
-    // }
-  }
-
-  onDeleteClicked($event: MouseEvent) {
+  async onDeleteClicked($event: MouseEvent) {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
     );
@@ -131,14 +124,12 @@ export class SuccessMeasureComponent
       data: message,
     });
     const measure = this.measure;
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.ngrxStore.dispatch(
-          removeMeasure({ name: measure.name }),
-        );
-        // this.measureDelete.emit();
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.ngrxStore.dispatch(removeMeasure({ name: measure.name }));
+      // this.measureDelete.emit();
+    }
+
     $event.stopPropagation();
   }
 }

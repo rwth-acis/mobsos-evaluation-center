@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { combineLatest, forkJoin, of } from 'rxjs';
+import { combineLatest, forkJoin, interval, of } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -13,6 +13,9 @@ import {
   share,
   tap,
   exhaustMap,
+  throttleTime,
+  debounceTime,
+  debounce,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
@@ -341,7 +344,7 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([{ query, queryParams }, data]) => {
+      switchMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (shouldFetch(dataForQuery)) {
           return this.l2p
@@ -357,8 +360,6 @@ export class StateEffects {
               catchError((err) =>
                 of(
                   Action.storeVisualizationData({
-                    data: null,
-                    query,
                     error: err,
                   }),
                 ),
@@ -367,7 +368,13 @@ export class StateEffects {
         }
         return of(Action.failureResponse(undefined));
       }),
-      catchError((err) => of(Action.failureResponse(err))),
+      catchError((err) =>
+        of(
+          Action.storeVisualizationData({
+            error: err,
+          }),
+        ),
+      ),
     ),
   );
 
