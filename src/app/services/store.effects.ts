@@ -30,6 +30,7 @@ import {
   WORKSPACE_MODEL_XML,
   SUCCESS_MODEL_FROM_NETWORK,
   MEASURE_CATALOG_FROM_NETWORK,
+  VISUALIZATION_DATA_FROM_QVS,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -89,7 +90,7 @@ export class StateEffects {
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
-      switchMap(() =>
+      mergeMap(() =>
         forkJoin([
           this.l2p.fetchContactServiceGroupsAndObserve().pipe(
             catchError((err) => {
@@ -463,7 +464,7 @@ export class StateEffects {
         this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(_USER),
-        this.ngrxStore.select(VISUALIZATION_DATA),
+        this.ngrxStore.select(VISUALIZATION_DATA_FROM_QVS),
       ),
       switchMap(([action, model, catalog, service, user, vdata]) =>
         this.workspaceService
