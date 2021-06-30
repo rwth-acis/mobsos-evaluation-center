@@ -87,7 +87,7 @@ export class ValueVisualizationComponent
         );
         this.error$ = this.data$.pipe(map((data) => data?.error));
         this.value$ = this.data$.pipe(
-          map((visualizationData) => visualizationData.data),
+          map((visualizationData) => visualizationData?.data),
           filter((data) => !!data),
           map((data) =>
             data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0],
