@@ -10,9 +10,11 @@ import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  first,
   map,
   switchMap,
   tap,
+  throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
 import { Observable, Subscription } from 'rxjs';
@@ -59,9 +61,25 @@ export class ChartVisualizerComponent
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),
       );
+
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
       map(([measure, service]) => {
+        let query = measure.queries[0].sql;
+
+        query = this.applyVariableReplacements(query, service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query,
+          );
+
+        return query;
+      }),
+      distinctUntilChanged(),
+    );
+    this.measure$
+      .pipe(withLatestFrom(this.service$), first())
+      .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
@@ -70,10 +88,7 @@ export class ChartVisualizerComponent
             query,
           );
         super.fetchVisualizationData(query, queryParams);
-        return query;
-      }),
-      distinctUntilChanged(),
-    );
+      });
     this.data$ = this.query$.pipe(
       switchMap((query) =>
         this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
@@ -86,7 +101,7 @@ export class ChartVisualizerComponent
     this.subscriptions$.push(sub);
     sub = this.data$
       .pipe(
-        map((vdata) => vdata.data),
+        map((vdata) => vdata?.data),
         filter((data) => data instanceof Array && data.length >= 2),
         withLatestFrom(this.measure$),
       )
