@@ -223,7 +223,18 @@ export class StateEffects {
       switchMap(([action, [measureCatalogXML, groupId]]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
-          .pipe(map(() => Action.saveCatalogSuccess())),
+          .pipe(
+            tap(() =>
+              this.ngrxStore.dispatch(
+                Action.storeCatalog({ xml: measureCatalogXML }),
+              ),
+            ),
+            map(() => Action.saveCatalogSuccess()),
+            catchError((err) => {
+              console.error(err);
+              return of(Action.failureResponse(err));
+            }),
+          ),
       ),
       catchError((err) => {
         console.error(err);
