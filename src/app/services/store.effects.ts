@@ -43,7 +43,7 @@ export class StateEffects {
     private workspaceService: WorkspaceService,
   ) {}
 
-  // static visualizationCalls = {};
+  static visualizationCalls = {};
 
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
@@ -345,23 +345,21 @@ export class StateEffects {
         const dataForQuery = data[query];
 
         if (
-          // !Object.keys(StateEffects.visualizationCalls).includes(
-          //   query,
-          // ) &&
+          !Object.keys(StateEffects.visualizationCalls).includes(
+            query,
+          ) &&
           shouldFetch(dataForQuery)
         ) {
-          // StateEffects.visualizationCalls[query] =
-          //   dataForQuery?.fetchDate;
-          // console.log(
-          //   Object.keys(StateEffects.visualizationCalls).length,
-          // );
+          StateEffects.visualizationCalls[query] =
+            dataForQuery?.fetchDate;
+
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              // tap((data) => {
-              //   if (data)
-              //     delete StateEffects.visualizationCalls[query];
-              // }),
+              tap((data) => {
+                if (data)
+                  delete StateEffects.visualizationCalls[query];
+              }),
               map((vdata) =>
                 Action.storeVisualizationData({
                   data: vdata,
@@ -554,7 +552,7 @@ function shouldFetch(dataForQuery: VData): boolean {
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old
     if (
-      Date.now() - dataForQuery.fetchDate.getTime() >
+      Date.now() - Date.parse(dataForQuery.fetchDate) >
       REFETCH_INTERVAL
     ) {
       // data older than fetch interval
@@ -569,7 +567,7 @@ function shouldFetch(dataForQuery: VData): boolean {
     // the query had led to an error
     // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
-      Date.now() - dataForQuery.fetchDate.getTime() >
+      Date.now() - Date.parse(dataForQuery.fetchDate) >
       5 * ONE_MINUTE_IN_MS
     ) {
       if (!status) {

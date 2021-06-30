@@ -318,14 +318,14 @@ function updateVisualizationData(
     // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
-      fetchDate: new Date(),
+      fetchDate: new Date().toISOString(),
       error: null,
     };
   } else {
     currentVisualizationData[props.query] = {
       ...currentVisualizationData[props.query],
       error: props?.error,
-      fetchDate: new Date(),
+      fetchDate: new Date().toISOString(),
     };
   }
 

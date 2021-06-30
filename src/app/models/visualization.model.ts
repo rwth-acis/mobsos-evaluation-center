@@ -8,7 +8,7 @@ export interface VisualizationData {
   [query: string]: VData;
 }
 export interface VData {
-  fetchDate: Date;
+  fetchDate: string;
   data: any[][];
   error?: HttpErrorResponse;
 }
