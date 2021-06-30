@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { NGXLogger } from 'ngx-logger';
-import { combineLatest, forkJoin, interval, of } from 'rxjs';
+import { combineLatest, forkJoin, of } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -12,10 +12,6 @@ import {
   filter,
   share,
   tap,
-  exhaustMap,
-  throttleTime,
-  debounceTime,
-  debounce,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
@@ -24,7 +20,6 @@ import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
-  RESTRICTED_MODE,
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
@@ -47,6 +42,8 @@ export class StateEffects {
     private logger: NGXLogger,
     private workspaceService: WorkspaceService,
   ) {}
+
+  // static visualizationCalls = {};
 
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
@@ -346,10 +343,25 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
-        if (shouldFetch(dataForQuery)) {
+
+        if (
+          // !Object.keys(StateEffects.visualizationCalls).includes(
+          //   query,
+          // ) &&
+          shouldFetch(dataForQuery)
+        ) {
+          // StateEffects.visualizationCalls[query] =
+          //   dataForQuery?.fetchDate;
+          // console.log(
+          //   Object.keys(StateEffects.visualizationCalls).length,
+          // );
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
+              // tap((data) => {
+              //   if (data)
+              //     delete StateEffects.visualizationCalls[query];
+              // }),
               map((vdata) =>
                 Action.storeVisualizationData({
                   data: vdata,
@@ -538,25 +550,28 @@ const REFETCH_INTERVAL =
  * @returns true if we should make a new request
  */
 function shouldFetch(dataForQuery: VData): boolean {
-  if (!dataForQuery?.fetchDate) return true; // initial state: we dont have any data yet
-  if (dataForQuery.data) {
-    // we got data: now check if data is not too old
+  if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
+  if (dataForQuery?.data && dataForQuery?.fetchDate) {
+    // data was fetched beforehand: now check if data is not too old
     if (
       Date.now() - dataForQuery.fetchDate.getTime() >
       REFETCH_INTERVAL
     ) {
       // data older than fetch interval
       return true; // data older than
-    } else return false;
-  } else if (dataForQuery.error) {
-    const status = dataForQuery.error.status;
+    } else {
+      // data is recent enough no new call should be made
+      return false;
+    }
+  } else if (dataForQuery?.error) {
+    const status = dataForQuery.error?.status;
 
     // the query had led to an error
+    // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
       Date.now() - dataForQuery.fetchDate.getTime() >
       5 * ONE_MINUTE_IN_MS
     ) {
-      // data older than fetch interval
       if (!status) {
         // Unknown error
         return true;
@@ -567,7 +582,7 @@ function shouldFetch(dataForQuery: VData): boolean {
           // data base not configured on query visualization service
           return true;
         } else {
-          // assume SQL query error
+          // assume SQL query error so no refetch as long as user has not updated the query
           return false;
         }
       } else if (status >= 500) {
@@ -575,8 +590,9 @@ function shouldFetch(dataForQuery: VData): boolean {
         return true;
       }
     } else {
+      // dont refetch if interval is less than 5minutes
       return false;
     }
   }
-  return true;
+  return true; // should not be reached
 }
