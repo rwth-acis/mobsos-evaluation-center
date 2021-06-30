@@ -344,7 +344,7 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      switchMap(([{ query, queryParams }, data]) => {
+      mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
         if (shouldFetch(dataForQuery)) {
           return this.l2p
