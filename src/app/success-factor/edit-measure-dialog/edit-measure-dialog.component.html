@@ -237,9 +237,8 @@
     }}
   </h3>
   <app-success-measure
-    #previewMeasure
+    [preview]="true"
     [measureName]="data.measure.name"
-    [service]="data.service"
   ></app-success-measure>
 </div>
 <div mat-dialog-actions>

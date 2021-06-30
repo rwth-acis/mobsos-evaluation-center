@@ -49,7 +49,7 @@ export class SuccessMeasureComponent
   @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
-  @Input() displayTitle = true;
+  @Input() preview = false;
 
   measure: Measure;
   measure$: Observable<Measure>;
