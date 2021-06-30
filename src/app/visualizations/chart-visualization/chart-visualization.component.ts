@@ -12,12 +12,13 @@ import {
   filter,
   first,
   map,
+  mergeMap,
   switchMap,
   tap,
   throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
-import { Observable, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
   ChartVisualization,
@@ -55,47 +56,38 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit() {
+    // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
-      .select(MEASURE, this.measureName) // selects the measure from the measure catalog
+      .select(MEASURE, this.measureName)
       .pipe(
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),
       );
 
+    // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
       map(([measure, service]) => {
         let query = measure.queries[0].sql;
-
         query = this.applyVariableReplacements(query, service);
         query =
           BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
             query,
           );
-
         return query;
       }),
       distinctUntilChanged(),
     );
-    this.measure$
-      .pipe(withLatestFrom(this.service$), first())
-      .subscribe(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        const queryParams = this.getParamsForQuery(query);
-        query = this.applyVariableReplacements(query, service);
-        query =
-          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-            query,
-          );
-        super.fetchVisualizationData(query, queryParams);
-      });
+
+    // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      switchMap((query) =>
+      filter((query) => !!query),
+      mergeMap((query) =>
         this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
       ),
     );
-    const error$ = this.data$.pipe(map((data) => data?.error));
-    let sub = error$.subscribe((err) => {
+    this.error$ = this.data$.pipe(map((data) => data?.error));
+    let sub = this.error$.subscribe((err) => {
       this.error = err;
     });
     this.subscriptions$.push(sub);
@@ -107,6 +99,19 @@ export class ChartVisualizerComponent
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
+      });
+    this.subscriptions$.push(sub);
+    sub = this.measure$
+      .pipe(withLatestFrom(this.service$), first())
+      .subscribe(([measure, service]) => {
+        let query = measure.queries[0].sql;
+        const queryParams = this.getParamsForQuery(query);
+        query = this.applyVariableReplacements(query, service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query,
+          );
+        super.fetchVisualizationData(query, queryParams);
       });
     this.subscriptions$.push(sub);
   }

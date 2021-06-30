@@ -6,10 +6,10 @@
           'success-modeling.visualization.fetch-info'
             | translate: { date: data.fetchDate | date: 'short' }
         }}
-        <p *ngIf="data.error">
+        <p *ngIf="error$ | async as error">
           {{
             'success-modeling.visualization.fetch-error'
-              | translate: { error: data.error.error }
+              | translate: { error: error.error }
           }}
         </p>
       </div>
@@ -41,7 +41,7 @@
 
 <ng-template #noData>
   <span
-    *ngIf="error && !chartData; else noDataAndNoError"
+    *ngIf="(error$ | async) && !chartData; else noDataAndNoError"
     (click)="openErrorDialog()"
     class="visualization-error"
   >

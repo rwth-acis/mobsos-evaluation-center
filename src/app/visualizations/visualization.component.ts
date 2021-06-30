@@ -44,6 +44,7 @@ export class BaseVisualizationComponent
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   measure$: Observable<Measure>;
   data$: Observable<VData>;
+  error$: Observable<HttpErrorResponse>;
   subscriptions$: Subscription[] = [];
 
   service: ServiceInformation;
@@ -93,6 +94,9 @@ export class BaseVisualizationComponent
       .subscribe((service) => {
         this.service = service;
       });
+
+    const sub = this.error$.subscribe((err) => (this.error = err));
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {
