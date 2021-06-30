@@ -321,10 +321,11 @@ function updateVisualizationData(
       fetchDate: new Date(),
       error: null,
     };
-  } else if (props.error) {
+  } else {
     currentVisualizationData[props.query] = {
       ...currentVisualizationData[props.query],
-      error: props.error,
+      error: props?.error,
+      fetchDate: new Date(),
     };
   }
 
