@@ -301,16 +301,5 @@ export class AppComponent implements OnInit, OnDestroy {
       data: null,
       disableClose: true,
     });
-    const communityName = await dialogRef.afterClosed().toPromise();
-    if (communityName?.length > 0) {
-      this.ngrxStore.dispatch(addGroup({ groupName: communityName }));
-    }
-    this.effects.addGroup$.subscribe((res) => {
-      if (res['group'].id) {
-        this._snackBar.open('Group added', null, {
-          duration: 1000,
-        });
-      }
-    });
   }
 }

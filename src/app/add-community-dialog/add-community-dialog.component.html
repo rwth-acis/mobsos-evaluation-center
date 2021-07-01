@@ -3,15 +3,21 @@
 </h1>
 <div mat-dialog-content>
   <mat-form-field appearance="standard">
-    <input [(ngModel)]="name" matInput placeholder="ACIS" />
+    <input
+      required
+      [formControl]="form"
+      matInput
+      placeholder="ACIS"
+    />
+    <mat-error *ngIf="error$ | async as error">{{ error }}</mat-error>
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button
     mat-flat-button
-    [mat-dialog-close]="name"
+    (click)="onSubmit()"
     color="primary"
-    [disabled]="!(this.name?.trim().length > 0)"
+    [disabled]="!this.form.dirty || (error$ | async)"
   >
     Ok
   </button>
