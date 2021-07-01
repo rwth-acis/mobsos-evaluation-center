@@ -28,6 +28,13 @@ import {
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { ServiceInformation } from 'src/app/models/service.model';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -145,5 +152,13 @@ export class ChartVisualizerComponent
       },
     );
     // if (this.chartData) this.visualizationInitialized = true;
+  }
+
+  fadeInAnimation() {
+    if (this.chartInitialized) {
+      return 'opacity: 1;transition: opacity 1s ease-out;';
+    } else {
+      return 'opacity: 0;';
+    }
   }
 }

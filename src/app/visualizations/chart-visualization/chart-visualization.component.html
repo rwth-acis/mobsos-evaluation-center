@@ -23,7 +23,7 @@
       [options]="this.chartData.options"
       [columns]="columnNames"
       [dynamicResize]="true"
-      [style]="'display: ' + chartInitialized ? 'block' : 'none'"
+      [style]="fadeInAnimation()"
       class="content"
       style="width: 100%"
       (ready)="this.chartInitialized = true"
