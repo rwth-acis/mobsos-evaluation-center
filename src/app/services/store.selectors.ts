@@ -194,7 +194,9 @@ export const SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL_FROM_NETWORK,
   SUCCESS_MODEL_FROM_WORKSPACE,
   (editMode, successModelFromNetwork, successModelInWorkspace) =>
-    editMode ? successModelInWorkspace : successModelFromNetwork,
+    editMode && successModelInWorkspace
+      ? successModelInWorkspace
+      : successModelFromNetwork,
 );
 
 export const DIMENSIONS_IN_MODEL = createSelector(
@@ -250,7 +252,7 @@ export const MEASURE_CATALOG = createSelector(
     measureCatalogFromNetwork,
     measureCatalogFromWorkspace,
   ) =>
-    editMode
+    editMode && measureCatalogFromWorkspace
       ? measureCatalogFromWorkspace
       : measureCatalogFromNetwork,
 );
