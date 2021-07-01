@@ -26,6 +26,7 @@ import {
 import {
   catchError,
   filter,
+  isEmpty,
   map,
   timeout,
   withLatestFrom,
@@ -71,12 +72,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   editMode$ = this.ngrxStore.select(_EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  showSuccessModelEmpty$ = this.ngrxStore
-    .select(SUCCESS_MODEL_IS_EMPTY)
-    .pipe(
-      withLatestFrom(this.editMode$),
-      map(([empty, editMode]) => empty && !editMode),
-    );
+  successModelEmpty$ = this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY);
+  showSuccessModellingView$ = combineLatest([
+    this.successModelEmpty$,
+    this.editMode$,
+  ]).pipe(map(([empty, editMode]) => editMode && !empty));
+
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
@@ -128,7 +129,11 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private ngrxStore: Store,
     private actionState: StateEffects,
-  ) {}
+  ) {
+    this.showSuccessModellingView$.subscribe((data) =>
+      console.log(data),
+    );
+  }
 
   ngOnInit() {
     let sub = this.selectedService$
