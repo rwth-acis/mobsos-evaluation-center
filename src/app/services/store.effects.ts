@@ -44,6 +44,8 @@ export class StateEffects {
     private workspaceService: WorkspaceService,
   ) {}
 
+  // hardcoded map of current visualization calls to prevent sending a POST request multiple times
+  // I will leave it here for the demo but should not be necessary. Removal should not cause any problems
   static visualizationCalls = {};
 
   fetchServices$ = createEffect(() =>
@@ -368,8 +370,8 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((data) => {
-                if (data)
+              tap((success) => {
+                if (success)
                   delete StateEffects.visualizationCalls[query];
               }),
               map((vdata) =>

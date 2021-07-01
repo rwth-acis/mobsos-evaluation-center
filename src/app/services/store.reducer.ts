@@ -150,6 +150,7 @@ const _Reducer = createReducer(
   on(Actions.storeGroup, (state, { group }) => ({
     ...state,
     groups: addGroup(group, state.groups),
+    selectedGroupId: group.id,
   })),
   on(Actions.incrementLoading, (state) => ({
     ...state,
