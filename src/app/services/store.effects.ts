@@ -62,21 +62,21 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
-            catchError((err) => {
-              this.logger.error(
-                'Could not fetch services from service MobSOS:' +
-                  JSON.stringify(err),
-              );
+          // this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
+          //   catchError((err) => {
+          //     this.logger.error(
+          //       'Could not fetch services from service MobSOS:' +
+          //         JSON.stringify(err),
+          //     );
 
-              return of(undefined);
-            }),
-          ),
+          //     return of(undefined);
+          //   }),
+          // ),
         ]).pipe(
-          map(([servicesFromL2P, servicesFromMobSOS]) =>
+          map(([servicesFromL2P]) =>
             Action.storeServices({
               servicesFromL2P,
-              servicesFromMobSOS,
+              servicesFromMobSOS: undefined,
             }),
           ),
         ),
