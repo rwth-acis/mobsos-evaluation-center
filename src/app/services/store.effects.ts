@@ -19,6 +19,7 @@ import { GroupInformation } from '../models/community.model';
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
+import { fetchMeasureCatalog } from './store.actions';
 import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
@@ -103,26 +104,26 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          this.l2p.fetchMobSOSGroupsAndObserve().pipe(
-            catchError((err) => {
-              this.logger.error(
-                'Could not fetch groups from service MobSOS:' +
-                  JSON.stringify(err),
-              );
-              return of(undefined);
-            }),
-          ),
+          // this.l2p.fetchMobSOSGroupsAndObserve().pipe(
+          //   catchError((err) => {
+          //     this.logger.error(
+          //       'Could not fetch groups from service MobSOS:' +
+          //         JSON.stringify(err),
+          //     );
+          //     return of(undefined);
+          //   }),
+          // ),
         ]).pipe(
-          tap(([groupsFromContactService, groupsFromMobSOS]) =>
+          tap(([groupsFromContactService]) =>
             Action.transferMissingGroupsToMobSOS({
               groupsFromContactService,
-              groupsFromMobSOS,
+              groupsFromMobSOS: null,
             }),
           ),
-          map(([groupsFromContactService, groupsFromMobSOS]) =>
+          map(([groupsFromContactService]) =>
             Action.storeGroups({
               groupsFromContactService,
-              groupsFromMobSOS,
+              groupsFromMobSOS: null,
             }),
           ),
         ),
@@ -141,10 +142,9 @@ export class StateEffects {
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
         this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
       }),
-      switchMap(({ groupId }) =>
-        of(Action.fetchMeasureCatalog({ groupId })),
-      ),
+      switchMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());
