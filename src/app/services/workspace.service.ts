@@ -170,14 +170,16 @@ export class WorkspaceService {
 
     this.startSynchronizingWorkspace(groupId);
     // get the current workspace state from yjs
-    const communityWorkspace =
+    let communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
 
     setTimeout(() => {
+      communityWorkspace =
+        this.getCurrentCommunityWorkspaceFromYJS(groupId);
       if (communityWorkspace) {
         this.syncDone$.next(true);
       }
-    }, ONE_MINUTE_IN_MS);
+    }, 500);
 
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
@@ -319,7 +321,7 @@ export class WorkspaceService {
     if (vdata) {
       for (const [query, value] of Object.entries(vdata)) {
         if (value.data && value?.fetchDate) {
-          const workspaceData =
+          let workspaceData =
             currentApplicationWorkspace.visualizationData[query];
           if (
             !workspaceData?.fetchDate ||
@@ -329,8 +331,8 @@ export class WorkspaceService {
             )
           ) {
             // we have more recent data so we add our data
-            workspaceData[query] = {
-              ...workspaceData[query],
+            workspaceData = {
+              ...workspaceData,
               data: value.data,
             };
           }
