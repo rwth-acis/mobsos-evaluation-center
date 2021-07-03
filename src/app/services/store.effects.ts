@@ -63,21 +63,21 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          // this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
-          //   catchError((err) => {
-          //     this.logger.error(
-          //       'Could not fetch services from service MobSOS:' +
-          //         JSON.stringify(err),
-          //     );
+          this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
+            catchError((err) => {
+              this.logger.error(
+                'Could not fetch services from service MobSOS:' +
+                  JSON.stringify(err),
+              );
 
-          //     return of(undefined);
-          //   }),
-          // ),
+              return of(undefined);
+            }),
+          ),
         ]).pipe(
-          map(([servicesFromL2P]) =>
+          map(([servicesFromL2P, servicesFromMobSOS]) =>
             Action.storeServices({
               servicesFromL2P,
-              servicesFromMobSOS: undefined,
+              servicesFromMobSOS,
             }),
           ),
         ),
@@ -115,10 +115,12 @@ export class StateEffects {
           // ),
         ]).pipe(
           tap(([groupsFromContactService]) =>
-            Action.transferMissingGroupsToMobSOS({
-              groupsFromContactService,
-              groupsFromMobSOS: null,
-            }),
+            this.ngrxStore.dispatch(
+              Action.transferMissingGroupsToMobSOS({
+                groupsFromContactService,
+                groupsFromMobSOS: null,
+              }),
+            ),
           ),
           map(([groupsFromContactService]) =>
             Action.storeGroups({
@@ -280,15 +282,19 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.transferMissingGroupsToMobSOS),
       switchMap((action) => {
-        const missingGroups = action.groupsFromContactService.filter(
-          (group) =>
-            !action.groupsFromMobSOS?.find(
-              (g) => g.name === group.name,
-            ),
-        );
-        return this.l2p
-          .saveGroupsToMobSOS(missingGroups)
-          .pipe(map(() => Action.successResponse()));
+        if (action.groupsFromContactService) {
+          const missingGroups =
+            action.groupsFromContactService.filter(
+              (group) =>
+                !action.groupsFromMobSOS?.find(
+                  (g) => g.name === group.name,
+                ),
+            );
+          return this.l2p
+            .saveGroupsToMobSOS(missingGroups)
+            .pipe(map(() => Action.successResponse()));
+        }
+        return of(Action.failure());
       }),
       catchError((err) => {
         console.error(err);
