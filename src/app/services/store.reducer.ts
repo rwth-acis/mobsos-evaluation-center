@@ -198,7 +198,7 @@ const _Reducer = createReducer(
   })),
   on(Actions.addMeasureToCatalog, (state, props) => ({
     ...state,
-    communityWorkspace: addMeasureToMeasures(
+    communityWorkspace: addMeasureToMeasureCatalog(
       props.measure,
       state.communityWorkspace,
       state.currentWorkSpaceOwner,
@@ -618,7 +618,7 @@ function editFactorInDimension(
   return copy;
 }
 
-function addMeasureToMeasures(
+function addMeasureToMeasureCatalog(
   measure: Measure,
   communityWorkspace: CommunityWorkspace,
   owner: string,
@@ -630,7 +630,7 @@ function addMeasureToMeasures(
     owner,
     serviceName,
   );
-  const measureMap = appWorkspace.catalog;
+  const measureMap = appWorkspace.catalog?.measures;
   measureMap[measure.name] = measure;
   return copy;
 }

@@ -89,9 +89,6 @@
             | translate
         }} #{{ i + 1 }}"
         [(ngModel)]="query.sql"
-        (ngModelChange)="
-          previewMeasure.rerenderVisualizationComponent()
-        "
       ></textarea>
     </mat-form-field>
   </div>
@@ -152,9 +149,6 @@
         <mat-label>Operand</mat-label>
         <mat-select
           [ngModel]="$any(termPart).name"
-          (ngModelChange)="
-            previewMeasure.rerenderVisualizationComponent()
-          "
           (selectionChange)="onKpiOperandChange($event.value, i)"
         >
           <mat-option
@@ -169,9 +163,6 @@
         <mat-label>Operator</mat-label>
         <mat-select
           [ngModel]="$any(termPart).name"
-          (ngModelChange)="
-            previewMeasure.rerenderVisualizationComponent()
-          "
           (selectionChange)="onKpiOperatorChange($event.value, i)"
         >
           <mat-option
@@ -215,9 +206,6 @@
       <mat-label>Type</mat-label>
       <mat-select
         [(ngModel)]="$any(data.measure.visualization).chartType"
-        (ngModelChange)="
-          previewMeasure.rerenderVisualizationComponent()
-        "
       >
         <mat-option
           *ngFor="let item of chartTypeChoices | keyvalue"
@@ -238,7 +226,7 @@
   </h3>
   <app-success-measure
     [preview]="true"
-    [measureName]="data.measure.name"
+    [measureName]="data.measure?.name"
   ></app-success-measure>
 </div>
 <div mat-dialog-actions>

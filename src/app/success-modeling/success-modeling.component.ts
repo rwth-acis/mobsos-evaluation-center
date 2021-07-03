@@ -7,11 +7,9 @@ import {
   HttpActions,
   saveModelAndCatalog,
   setService,
-  toggleEdit,
 } from '../services/store.actions';
 import {
   MODEL_AND_CATALOG_LOADED,
-  DIMENSIONS_IN_MODEL,
   _EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
@@ -26,7 +24,6 @@ import {
 import {
   catchError,
   filter,
-  isEmpty,
   map,
   timeout,
   withLatestFrom,
@@ -129,11 +126,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private ngrxStore: Store,
     private actionState: StateEffects,
-  ) {
-    this.showSuccessModellingView$.subscribe((data) =>
-      console.log(data),
-    );
-  }
+  ) {}
 
   ngOnInit() {
     let sub = this.selectedService$

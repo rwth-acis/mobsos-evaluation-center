@@ -179,7 +179,7 @@ export class WorkspaceService {
       if (communityWorkspace) {
         this.syncDone$.next(true);
       }
-    }, 500);
+    }, 200);
 
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
@@ -217,7 +217,7 @@ export class WorkspaceService {
    * This function start synchronizing the workspace for the current community
    * @param groupId groupid for the community
    */
-  startSynchronizingWorkspace(groupId: string) {
+  private startSynchronizingWorkspace(groupId: string) {
     if (groupId !== this.currentGroupId) {
       if (this.currentGroupId) {
         this.stopSynchronizingWorkspace(this.currentGroupId);

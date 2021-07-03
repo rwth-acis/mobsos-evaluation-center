@@ -143,7 +143,7 @@ export class StateEffects {
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
-        this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
       }),
       switchMap(() => of(Action.success())),

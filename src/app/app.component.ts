@@ -44,6 +44,7 @@ import {
   SUCCESS_MODEL,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
+  APPLICATION_WORKSPACE,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
@@ -281,14 +282,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (isDevMode() || !environment.production) {
       // Logging in dev mode
-      sub = this.ngrxStore.subscribe((state) => {
-        console.log(state);
-      });
-      this.subscriptions$.push(sub);
+      // sub = this.ngrxStore.subscribe((state) => {
+      //   console.log(state);
+      // });
+      // this.subscriptions$.push(sub);
 
-      sub = this.ngrxStore.select(SUCCESS_MODEL).subscribe((a) => {
-        console.log(a);
-      });
+      sub = this.ngrxStore
+        .select(APPLICATION_WORKSPACE)
+        .subscribe((a) => {
+          console.log(a);
+        });
       this.subscriptions$.push(sub);
     }
   }

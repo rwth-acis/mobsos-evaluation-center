@@ -252,7 +252,7 @@ export const MEASURE_CATALOG = createSelector(
     measureCatalogFromNetwork,
     measureCatalogFromWorkspace,
   ) =>
-    editMode && measureCatalogFromWorkspace
+    editMode
       ? measureCatalogFromWorkspace
       : measureCatalogFromNetwork,
 );
