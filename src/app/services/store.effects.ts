@@ -283,13 +283,14 @@ export class StateEffects {
       ofType(Action.transferMissingGroupsToMobSOS),
       switchMap((action) => {
         if (action.groupsFromContactService) {
-          const missingGroups =
-            action.groupsFromContactService.filter(
-              (group) =>
-                !action.groupsFromMobSOS?.find(
-                  (g) => g.name === group.name,
-                ),
-            );
+          const missingGroups = Object.values(
+            action.groupsFromContactService,
+          )?.filter(
+            (group: GroupInformation) =>
+              !action.groupsFromMobSOS?.find(
+                (g) => g.name === group.name,
+              ),
+          );
           return this.l2p
             .saveGroupsToMobSOS(missingGroups)
             .pipe(map(() => Action.successResponse()));
