@@ -23,6 +23,7 @@ import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  first,
   map,
   mergeMap,
   tap,
@@ -101,5 +102,19 @@ export class ValueVisualizationComponent
         data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0],
       ),
     );
+
+    const sub = this.measure$
+      .pipe(withLatestFrom(this.service$), first())
+      .subscribe(([measure, service]) => {
+        let query = measure.queries[0].sql;
+        const queryParams = this.getParamsForQuery(query);
+        query = this.applyVariableReplacements(query, service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query,
+          );
+        super.fetchVisualizationData(query, queryParams);
+      });
+    this.subscriptions$.push(sub);
   }
 }
