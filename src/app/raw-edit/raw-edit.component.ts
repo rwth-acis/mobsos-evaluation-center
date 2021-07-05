@@ -32,7 +32,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
-import { combineLatest, of } from 'rxjs';
+import { combineLatest, of, Subscription } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessModel } from '../models/success.model';
 import { MeasureCatalog } from '../models/measure.catalog';
@@ -85,6 +85,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     map((groupid) => !!groupid && !this.saveInProgress),
   );
 
+  subscriptions$: Subscription[] = [];
   constructor(
     private snackBar: MatSnackBar,
     private translate: TranslateService,
@@ -99,24 +100,29 @@ export class RawEditComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.ngrxStore.dispatch(disableEdit());
-    this.selectedGroupId$
+
+    let sub = this.selectedGroupId$
       .pipe(filter((groupId) => !!groupId))
       .subscribe((groupID) => {
         this.groupID = groupID;
       });
-    this.selectedService$.subscribe((service) => {
+    this.subscriptions$.push(sub);
+    sub = this.selectedService$.subscribe((service) => {
       this.selectedServiceName = service?.name;
     });
-    this.services$.subscribe((services) => {
+    this.subscriptions$.push(sub);
+    sub = this.services$.subscribe((services) => {
       this.serviceMap = services;
     });
-    this.ngrxStore
+    this.subscriptions$.push(sub);
+    sub = this.ngrxStore
       .select(SUCCESS_MODEL_XML)
       .pipe(distinctUntilChanged())
       .subscribe((xml) => {
         this.successModelXml = RawEditComponent.prettifyXml(xml);
       });
-    this.ngrxStore
+    this.subscriptions$.push(sub);
+    sub = this.ngrxStore
       .select(MEASURE_CATALOG_XML)
       .pipe(
         distinctUntilChanged(),
@@ -125,9 +131,12 @@ export class RawEditComponent implements OnInit, OnDestroy {
       .subscribe((xml) => {
         this.measureCatalogXml = RawEditComponent.prettifyXml(xml);
       });
+    this.subscriptions$.push(sub);
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
 
   registerMeasureEditor(editor) {
     this.measureCatalogEditor = editor;

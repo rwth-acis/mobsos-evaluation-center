@@ -39,7 +39,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   user$ = this.ngrxStore.select(_USER);
   groupId$: Observable<string>;
   serviceName$: Observable<string>;
-  subscription$: Subscription;
+
   subscriptions$: Subscription[] = [];
   owner: string;
   serviceName: string;
@@ -49,7 +49,6 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   private userManager = new UserManager({});
 
   ngOnInit() {
-    this.userManager.createSigninRequest();
     let sub = this.route.params
       .pipe(withLatestFrom(this.user$))
       .subscribe(
@@ -118,7 +117,6 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           }
         },
       );
-
     this.subscriptions$.push(sub);
     sub = this.user$
       .pipe(
@@ -138,6 +136,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           this.router.navigateByUrl('');
         }
       });
+    this.subscriptions$.push(sub);
   }
 
   joinWorkspace() {

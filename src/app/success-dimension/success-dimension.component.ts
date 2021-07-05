@@ -65,23 +65,22 @@ export class SuccessDimensionComponent implements OnInit {
 
   ngOnInit() {}
 
-  openAddFactorDialog() {
+  async openAddFactorDialog() {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       // width: '250px',
       data: { factor: new SuccessFactor('', []) },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this._factors.push(result);
-        this.ngrxStore.dispatch(
-          addFactorToDimension({
-            factor: result,
-            dimensionName: this.name,
-          }),
-        );
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this._factors.push(result);
+      this.ngrxStore.dispatch(
+        addFactorToDimension({
+          factor: result,
+          dimensionName: this.name,
+        }),
+      );
+    }
   }
 
   async openRemoveFactorDialog(factorIndex: number) {
@@ -92,11 +91,10 @@ export class SuccessDimensionComponent implements OnInit {
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.removeFactor(factorIndex);
-      }
-    });
+    const result = dialogRef.afterClosed();
+    if (result) {
+      this.removeFactor(factorIndex);
+    }
   }
 
   private removeFactor(factorIndex: number) {

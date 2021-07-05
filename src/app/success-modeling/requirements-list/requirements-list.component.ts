@@ -49,6 +49,7 @@ export class RequirementsListComponent
   frontendUrl = environment.reqBazFrontendUrl;
   openedRequirement = null;
   private user: User;
+  private subscriptions$ = [];
 
   constructor(
     private dialog: MatDialog,
@@ -69,7 +70,8 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    this.user$.subscribe((user) => (this.user = user));
+    const sub = this.user$.subscribe((user) => (this.user = user));
+    this.subscriptions$.push(sub);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -78,14 +80,16 @@ export class RequirementsListComponent
     }
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
 
   openPickProjectDialog() {
     const dialogRef = this.dialog.open(PickReqbazProjectComponent, {
       minWidth: 300,
       width: '80%',
     });
-    dialogRef.afterClosed().subscribe((result) => {
+    const sub = dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.successModel = SuccessModel.fromPlainObject(
           cloneDeep(this.successModel),
@@ -106,10 +110,9 @@ export class RequirementsListComponent
             xml: this.successModel.toXml().outerHTML,
           }),
         );
-
-        this.refreshRequirements();
       }
     });
+    this.subscriptions$.push(sub);
   }
 
   async openDisconnectProjectDialog() {
