@@ -699,7 +699,7 @@ export class Las2peerService {
         `?format=${format}`,
     );
     const requestBody = {
-      cache: false,
+      cache: true,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',
@@ -707,7 +707,7 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
-      save: false,
+      save: true,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
@@ -738,7 +738,7 @@ export class Las2peerService {
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
     );
     const requestBody = {
-      cache: false,
+      cache: true,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',
@@ -746,7 +746,7 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
-      save: false,
+      save: true,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
