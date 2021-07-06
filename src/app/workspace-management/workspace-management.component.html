@@ -163,7 +163,9 @@
                       | translate
                   }}"
                   matTooltipShowDelay="0"
-                  (click)="onChangeRole(visitor.username, 'editor')"
+                  (click)="
+                    onChangeRole(visitor.username, 'editor', $event)
+                  "
                 >
                   <mat-icon>create</mat-icon>
                 </button>
@@ -176,7 +178,11 @@
                   }}"
                   matTooltipShowDelay="0"
                   (click)="
-                    onChangeRole(visitor.username, 'spectator')
+                    onChangeRole(
+                      visitor.username,
+                      'spectator',
+                      $event
+                    )
                   "
                 >
                   <mat-icon>remove_red_eye</mat-icon>
