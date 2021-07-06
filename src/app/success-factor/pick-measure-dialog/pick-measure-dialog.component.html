@@ -21,6 +21,18 @@
           <mat-panel-title>
             {{ measure.name }}
           </mat-panel-title>
+          <mat-panel-description>
+            <button
+              mat-icon-button
+              color="primary"
+              [matTooltip]="
+                'success-factor.add-measure-button' | translate
+              "
+              (click)="onMeasureClicked(measure)"
+            >
+              <mat-icon> playlist_add </mat-icon>
+            </button>
+          </mat-panel-description>
         </mat-expansion-panel-header>
 
         <ng-template matExpansionPanelContent>
@@ -46,7 +58,7 @@
           </div>
 
           <div id="edit-controls">
-            <button
+            <!-- <button
               mat-icon-button
               color="primary"
               [matTooltip]="
@@ -55,7 +67,7 @@
               (click)="onMeasureClicked(measure)"
             >
               <mat-icon> playlist_add </mat-icon>
-            </button>
+            </button> -->
             <button
               *ngIf="canEdit$ | async"
               mat-icon-button

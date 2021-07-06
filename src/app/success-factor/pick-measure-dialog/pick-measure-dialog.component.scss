@@ -1,43 +1,45 @@
-mat-card{
+mat-card {
   margin-bottom: 5px;
   cursor: pointer;
 }
 
-.no-measure-card{
+.no-measure-card {
   display: flex;
   flex-direction: row;
   align-items: center;
-  mat-icon{
+  mat-icon {
     margin-right: 10px;
   }
-  span{
+  span {
     flex-grow: 1;
   }
 }
 
-#create-measure-button{
+#create-measure-button {
   margin-top: 15px;
   width: 100%;
 }
 
-#edit-controls{
+#edit-controls {
   display: flex;
-  justify-content: space-around;
-  :last-child{
-    margin-left: auto;
-    margin-right: 0;
-  }
+  justify-content: flex-end;
 }
-.example-action-buttons{
-  margin-bottom:7px
+.example-action-buttons {
+  margin-bottom: 7px;
 }
-.example-headers-align .mat-expansion-panel-header-title,
-.example-headers-align .mat-expansion-panel-header-description {
-  flex-basis: 0;
-}
+// .example-headers-align .mat-expansion-panel-header-title,
+// .example-headers-align .mat-expansion-panel-header-description {
+//   flex-basis: 0;
+// }
 
 .example-headers-align .mat-expansion-panel-header-description {
-  justify-content: space-between;
+  align-items: center;
+}
+mat-panel-description {
+  justify-content: flex-end;
+  margin-right: 5px;
+}
+mat-panel-title {
   align-items: center;
 }
 
