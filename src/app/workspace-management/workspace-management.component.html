@@ -148,38 +148,42 @@
       <mat-list role="list">
         <mat-list-item
           *ngFor="let visitor of foreign_visitors"
-          id="visitor"
           role="listitem"
-          >{{ visitor.username }}
+        >
+          <div id="visitor">
+            <span>{{ visitor.username }}</span>
 
-          <ng-container *ngIf="userIsOwner$ | async">
-            <ng-container [ngSwitch]="visitor.role">
-              <button
-                *ngSwitchCase="'spectator'"
-                mat-icon-button
-                matTooltip="{{
-                  'success-modeling.visitors.edit-role-description'
-                    | translate
-                }}"
-                matTooltipShowDelay="0"
-                (click)="onChangeRole(visitor.username, 'editor')"
-              >
-                <mat-icon>create</mat-icon>
-              </button>
-              <button
-                *ngSwitchCase="'editor'"
-                mat-icon-button
-                matTooltip="{{
-                  'success-modeling.visitors.spectator-role-description'
-                    | translate
-                }}"
-                matTooltipShowDelay="0"
-                (click)="onChangeRole(visitor.username, 'spectator')"
-              >
-                <mat-icon>remove_red_eye</mat-icon>
-              </button>
-            </ng-container>
-          </ng-container></mat-list-item
+            <span *ngIf="userIsOwner$ | async">
+              <ng-container [ngSwitch]="visitor.role">
+                <button
+                  *ngSwitchCase="'spectator'"
+                  mat-icon-button
+                  matTooltip="{{
+                    'success-modeling.visitors.edit-role-description'
+                      | translate
+                  }}"
+                  matTooltipShowDelay="0"
+                  (click)="onChangeRole(visitor.username, 'editor')"
+                >
+                  <mat-icon>create</mat-icon>
+                </button>
+                <button
+                  *ngSwitchCase="'editor'"
+                  mat-icon-button
+                  matTooltip="{{
+                    'success-modeling.visitors.spectator-role-description'
+                      | translate
+                  }}"
+                  matTooltipShowDelay="0"
+                  (click)="
+                    onChangeRole(visitor.username, 'spectator')
+                  "
+                >
+                  <mat-icon>remove_red_eye</mat-icon>
+                </button>
+              </ng-container>
+            </span>
+          </div></mat-list-item
         >
       </mat-list>
     </mat-card-content>
