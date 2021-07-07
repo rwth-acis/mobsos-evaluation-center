@@ -54,6 +54,8 @@ export class ChartVisualizerComponent
   chartInitialized = false;
   visualization: ChartVisualization;
 
+  formatters = [];
+
   subscriptions$: Subscription[] = [];
   constructor(
     protected dialog: MatDialog,
@@ -108,6 +110,7 @@ export class ChartVisualizerComponent
         this.prepareChart(dataTable, measure.visualization);
       });
     this.subscriptions$.push(sub);
+
     sub = this.measure$
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
@@ -131,9 +134,21 @@ export class ChartVisualizerComponent
     dataTable: any[][],
     visualization: Visualization,
   ) {
+    this.formatters = [];
     visualization = visualization as ChartVisualization;
     this.error = null;
     const labelTypes = dataTable[1];
+    for (let i = 0; i < labelTypes.length; i++) {
+      if (labelTypes[i] === 'datetime' || labelTypes[i] === 'date') {
+        this.formatters.push({
+          formatter: new google.visualization.DateFormat({
+            formatType: 'long',
+          }),
+          colIndex: i,
+        });
+      }
+    }
+
     const rows = dataTable.slice(2) as any[][];
     this.chartData = new GoogleChart(
       '',
