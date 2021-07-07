@@ -1,4 +1,5 @@
 import { MeasureCatalog } from './measure.catalog';
+import { Requirement } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
 import { SuccessModel } from './success.model';
 import { Visitor } from './user.model';
@@ -12,6 +13,7 @@ export interface ApplicationWorkspace {
   catalog: MeasureCatalog;
   service: ServiceInformation;
   visualizationData: VisualizationData;
+  requirements?: Requirement[];
 }
 
 export interface UserWorkspace {

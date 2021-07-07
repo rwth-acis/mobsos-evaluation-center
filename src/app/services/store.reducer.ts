@@ -13,7 +13,7 @@ import { cloneDeep } from 'lodash-es';
 import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { isEmpty } from 'lodash-es';
-import { ReqbazProject } from '../models/reqbaz.model';
+import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import {
   GroupCollection,
   GroupInformation,
@@ -146,6 +146,7 @@ const _Reducer = createReducer(
   on(Actions.storeRequirements, (state, { requirements }) => ({
     ...state,
     requirements,
+    communityWorkspace: updateRequirements(state, requirements),
   })),
   on(Actions.storeGroup, (state, { group }) => ({
     ...state,
@@ -843,6 +844,22 @@ function removeMeasureFromCatalog(
   const catalog = appWorkspace.catalog;
 
   delete catalog.measures[measureName];
+  return copy;
+}
 
+function updateRequirements(
+  state: AppState,
+  requirements: Requirement[],
+) {
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    state.currentWorkSpaceOwner,
+    state.selectedServiceName,
+  );
+  if (!appWorkspace) return state.communityWorkspace;
+  appWorkspace.requirements = requirements;
   return copy;
 }
