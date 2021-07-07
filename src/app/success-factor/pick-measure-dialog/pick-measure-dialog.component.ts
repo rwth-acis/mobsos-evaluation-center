@@ -17,7 +17,6 @@ import { Store } from '@ngrx/store';
 import {
   addMeasureToCatalog,
   addMeasureToFactor,
-  editMeasure,
   editMeasureInCatalog,
   removeMeasureFromCatalog,
 } from 'src/app/services/store.actions';
@@ -28,14 +27,13 @@ import { Query } from 'src/app/models/query.model';
 import { MatAccordion } from '@angular/material/expansion';
 import { isEmpty } from 'lodash-es';
 import {
-  MEASURE,
   MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
 import { ConfirmationDialogComponent } from 'src/app/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 export interface DialogData {
   measures: Measure[];
