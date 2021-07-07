@@ -128,14 +128,10 @@ export const WORKSPACE_OWNER = createSelector(
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
   createSelector(
-    _COMMUNITY_WORKSPACE,
-    _SELECTED_SERVICE_NAME,
+    ALL_WORKSPACES_FOR_SELECTED_SERVICE,
     WORKSPACE_OWNER,
-    (communityWorkspace, selectedServiceName, owner) =>
-      getAllWorkspacesForService(
-        communityWorkspace,
-        selectedServiceName,
-      )?.filter(
+    (workspaces, owner) =>
+      workspaces?.filter(
         (workspace: ApplicationWorkspace) =>
           workspace?.createdBy !== owner,
       ),
@@ -143,7 +139,10 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
 
 export const VISITORS = createSelector(
   APPLICATION_WORKSPACE,
-  (workspace) => workspace?.visitors,
+  (workspace) =>
+    workspace?.visitors.sort((a, b) =>
+      a.username?.localeCompare(b.username),
+    ),
 );
 
 export const VISITORS_EXCEPT_USER = createSelector(
@@ -449,7 +448,9 @@ function getAllWorkspacesForService(
       result.push(userWorkspace[serviceName] as ApplicationWorkspace);
     }
   }
-  return result as ApplicationWorkspace[];
+  return (result as ApplicationWorkspace[])?.sort((a, b) =>
+    a.createdBy?.localeCompare(b.createdBy),
+  );
 }
 
 /**
