@@ -60,6 +60,9 @@ export class PickMeasureDialogComponent implements OnInit {
       !isEmpty(measures) ? Object.values(measures) : [],
     ),
     map((measures) => (measures?.length > 0 ? measures : undefined)),
+    map((measures) =>
+      measures?.sort((a, b) => a.name?.localeCompare(b.name)),
+    ),
   );
   service: ServiceInformation;
 
