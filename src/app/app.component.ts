@@ -63,6 +63,7 @@ import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 import { StateEffects } from './services/store.effects';
+import { StoreState } from './models/state.model';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -282,17 +283,19 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (isDevMode() || !environment.production) {
       // Logging in dev mode
-      // sub = this.ngrxStore.subscribe((state) => {
-      //   console.log(state);
-      // });
-      // this.subscriptions$.push(sub);
-
       sub = this.ngrxStore
-        .select(APPLICATION_WORKSPACE)
-        .subscribe((a) => {
-          console.log(a);
+        .pipe(map((store: StoreState) => store.Reducer))
+        .subscribe((state) => {
+          console.log(state);
         });
       this.subscriptions$.push(sub);
+
+      // sub = this.ngrxStore
+      //   .select(APPLICATION_WORKSPACE)
+      //   .subscribe((a) => {
+      //     console.log(a);
+      //   });
+      // this.subscriptions$.push(sub);
     }
   }
 
