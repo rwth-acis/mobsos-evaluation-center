@@ -236,7 +236,9 @@ export class WorkspaceManagementComponent
   }
 
   openBottomSheet(): void {
-    this._bottomSheet.open(BottomSheetComponent);
+    this._bottomSheet.open(BottomSheetComponent, {
+      autoFocus: false,
+    });
   }
 
   onChangeRole(visitorName: string, role?: string, event?) {
