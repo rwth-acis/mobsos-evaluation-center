@@ -55,7 +55,6 @@ export class PickMeasureDialogComponent implements OnInit {
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   measures$ = this.ngrxStore.select(MEASURES).pipe(
-    tap((m) => console.log(m)),
     map((measures) =>
       !isEmpty(measures) ? Object.values(measures) : [],
     ),
