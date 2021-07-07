@@ -35,7 +35,8 @@ export enum StoreActions {
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
   REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
-  REMOVE_MEASURE_FROM_FACTOR = 'remove a measure from a success factor',
+  REMOVE_MEASURE_FROM_MODEL = 'remove a measure from the success model',
+  REMOVE_MEASURE_FROM_CATALOG = 'remove a measure from the measure catalog',
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
@@ -181,8 +182,13 @@ export const removeFactor = createAction(
   props<{ name: string }>(),
 );
 
-export const removeMeasure = createAction(
-  StoreActions.REMOVE_MEASURE_FROM_FACTOR,
+export const removeMeasureFromModel = createAction(
+  StoreActions.REMOVE_MEASURE_FROM_MODEL,
+  props<{ name: string }>(),
+);
+
+export const removeMeasureFromCatalog = createAction(
+  StoreActions.REMOVE_MEASURE_FROM_CATALOG,
   props<{ name: string }>(),
 );
 

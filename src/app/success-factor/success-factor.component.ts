@@ -23,7 +23,7 @@ import {
 import {
   editFactorInDimension,
   removeFactor,
-  removeMeasure,
+  removeMeasureFromModel,
 } from '../services/store.actions';
 import { SuccessFactor } from '../models/success.model';
 import { MeasureMap } from '../models/measure.catalog';
@@ -152,7 +152,9 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
 
   private removeMeasure(measureIndex: number) {
     this.ngrxStore.dispatch(
-      removeMeasure({ name: this.factor.measures[measureIndex] }),
+      removeMeasureFromModel({
+        name: this.factor.measures[measureIndex],
+      }),
     );
     // this.factor.measures.splice(measureIndex, 1);
     // this.sendFactorToDimension.emit(this.factor);

@@ -24,7 +24,7 @@ import {
 } from '../services/store.selectors';
 import {
   editMeasure,
-  removeMeasure,
+  removeMeasureFromModel,
 } from '../services/store.actions';
 import { Measure } from '../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
@@ -126,10 +126,11 @@ export class SuccessMeasureComponent
     const measure = this.measure;
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.ngrxStore.dispatch(removeMeasure({ name: measure.name }));
+      this.ngrxStore.dispatch(
+        removeMeasureFromModel({ name: measure.name }),
+      );
       // this.measureDelete.emit();
     }
-
     $event.stopPropagation();
   }
 }

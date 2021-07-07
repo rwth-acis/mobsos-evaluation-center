@@ -19,6 +19,7 @@ import {
   addMeasureToFactor,
   editMeasure,
   editMeasureInCatalog,
+  removeMeasureFromCatalog,
 } from 'src/app/services/store.actions';
 import { Measure } from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
@@ -131,7 +132,7 @@ export class PickMeasureDialogComponent implements OnInit {
     }
   }
 
-  async deleteMeasure(measureIndex: number) {
+  async deleteMeasure(measure: Measure) {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
     );
@@ -141,8 +142,9 @@ export class PickMeasureDialogComponent implements OnInit {
     });
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.data.measures.splice(measureIndex, 1);
-      this.measuresChanged.emit(this.data.measures);
+      this.ngrxStore.dispatch(
+        removeMeasureFromCatalog({ name: measure.name }),
+      );
     }
   }
 }

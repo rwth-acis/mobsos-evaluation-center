@@ -16,22 +16,9 @@
     *ngFor="let measure of factor.measures; let i = index"
     class="measure"
   >
-    <ng-container *ngIf="canEdit$ | async">
-      <button
-        mat-icon-button
-        matTooltipShowDelay="0"
-        matTooltip="{{
-          'success-factor.remove-measure-tooltip' | translate
-        }}"
-        (click)="openRemoveMeasureDialog(i)"
-      >
-        <mat-icon color="warn">remove_circle_outline</mat-icon>
-      </button>
-    </ng-container>
     <app-success-measure
       [measureName]="measures[measure]?.name"
       [dimensionName]="this.dimensionName"
-      (measureChange)="this.measuresChange.emit(measures)"
       [service]="service"
     ></app-success-measure>
   </div>

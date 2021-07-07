@@ -205,6 +205,15 @@ const _Reducer = createReducer(
       state.selectedServiceName,
     ),
   })),
+  on(Actions.removeMeasureFromCatalog, (state, props) => ({
+    ...state,
+    communityWorkspace: removeMeasureFromCatalog(
+      props.name,
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
+  })),
   on(Actions.editMeasure, (state, props) => ({
     ...state,
     communityWorkspace: updateMeasure(
@@ -233,7 +242,7 @@ const _Reducer = createReducer(
       props,
     ),
   })),
-  on(Actions.removeMeasure, (state, { name }) => ({
+  on(Actions.removeMeasureFromModel, (state, { name }) => ({
     ...state,
     communityWorkspace: removeMeasure(
       state.communityWorkspace,
@@ -815,5 +824,25 @@ function addGroup(group: GroupInformation, groups: GroupCollection) {
   }
   const copy = cloneDeep(groups);
   copy[group.id] = group;
+  return copy;
+}
+function removeMeasureFromCatalog(
+  measureName: string,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+): CommunityWorkspace {
+  if (!measureName) return communityWorkspace;
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const catalog = appWorkspace.catalog;
+
+  delete catalog.measures[measureName];
+
   return copy;
 }
