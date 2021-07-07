@@ -62,6 +62,12 @@ export class ValueVisualizationComponent
     super(ngrxStore, dialog);
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
+  }
+
   ngOnInit() {
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore

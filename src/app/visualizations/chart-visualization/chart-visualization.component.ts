@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -43,7 +43,7 @@ import {
 })
 export class ChartVisualizerComponent
   extends BaseVisualizationComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   @Input() measureName: string;
 
@@ -60,6 +60,12 @@ export class ChartVisualizerComponent
     protected ngrxStore: Store,
   ) {
     super(ngrxStore, dialog);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
   }
 
   ngOnInit() {
