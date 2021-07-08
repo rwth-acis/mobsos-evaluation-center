@@ -170,11 +170,17 @@ export class WorkspaceService {
 
     this.startSynchronizingWorkspace(groupId);
     // get the current workspace state from yjs
-    const communityWorkspace =
+    let communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupId);
-    if (communityWorkspace) {
-      this.syncDone$.next(true);
-    }
+
+    setTimeout(() => {
+      communityWorkspace =
+        this.getCurrentCommunityWorkspaceFromYJS(groupId);
+      if (communityWorkspace) {
+        this.syncDone$.next(true);
+      }
+    }, 200);
+
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
       timeout(2 * ONE_MINUTE_IN_MS),
@@ -211,7 +217,7 @@ export class WorkspaceService {
    * This function start synchronizing the workspace for the current community
    * @param groupId groupid for the community
    */
-  startSynchronizingWorkspace(groupId: string) {
+  private startSynchronizingWorkspace(groupId: string) {
     if (groupId !== this.currentGroupId) {
       if (this.currentGroupId) {
         this.stopSynchronizingWorkspace(this.currentGroupId);
@@ -311,6 +317,27 @@ export class WorkspaceService {
       throw new Error(
         'this user has no application workspace for the current service',
       );
+    }
+    if (vdata) {
+      for (const [query, value] of Object.entries(vdata)) {
+        if (value.data && value?.fetchDate) {
+          let workspaceData =
+            currentApplicationWorkspace.visualizationData[query];
+          if (
+            !workspaceData?.fetchDate ||
+            !(
+              Date.parse(workspaceData.fetchDate as string) >
+              Date.parse(value?.fetchDate)
+            )
+          ) {
+            // we have more recent data so we add our data
+            workspaceData = {
+              ...workspaceData,
+              data: value.data,
+            };
+          }
+        }
+      }
     }
 
     if (username === owner) {

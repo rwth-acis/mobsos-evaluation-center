@@ -21,11 +21,11 @@ app-success-dimension {
     margin-bottom: auto;
   }
 }
-.card{
+.card {
   padding: 1rem;
 }
-.mat-card-content{
-  margin-bottom:0
+.mat-card-content {
+  margin-bottom: 0;
 }
 .popover-content {
   max-width: 300px;
@@ -48,13 +48,21 @@ app-success-dimension {
   }
 }
 
-#edit-controls{
-  display: flex; align-items: center
+#edit-controls {
+  display: flex;
+  align-items: center;
 }
 
-#visitor{
+#visitor {
   display: flex;
-  justify-content:space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
+  
+}
+
+.popover-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

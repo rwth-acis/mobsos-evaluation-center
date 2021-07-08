@@ -67,9 +67,8 @@ export class Interceptor implements HttpInterceptor {
         catchError((err) => {
           this.ngrxStore.dispatch(decrementLoading());
 
-          setTimeout(() => {
-            delete this.cachedRequests[req.url];
-          }, 2 * ONE_MINUTE_IN_MS);
+          delete this.cachedRequests[req.url];
+
           if (err.status >= 500) {
             this.unreachableServices[req.url] = true;
           }

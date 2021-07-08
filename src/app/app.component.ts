@@ -23,6 +23,7 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  addGroup,
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
@@ -43,6 +44,7 @@ import {
   SUCCESS_MODEL,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
+  APPLICATION_WORKSPACE,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
@@ -58,6 +60,10 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
+import { StateEffects } from './services/store.effects';
+import { StoreState } from './models/state.model';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -119,8 +125,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private logger: NGXLogger,
     public languageService: LanguageService,
     changeDetectorRef: ChangeDetectorRef,
-    media: MediaMatcher,
     private elementRef: ElementRef,
+    private dialog: MatDialog,
     private swUpdate: SwUpdate,
     private snackBar: MatSnackBar,
     private translate: TranslateService,
@@ -134,7 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = media.matchMedia('(max-width: 600px)');
+    this.mobileQuery = window.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () =>
       changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
@@ -191,7 +197,7 @@ export class AppComponent implements OnInit, OnDestroy {
         ),
         first(),
       )
-      .subscribe(([user, groupId, serviceName]) => {
+      .subscribe(([, groupId, serviceName]) => {
         // only gets called once if user is signed in
         // initial fetching
         this.ngrxStore.dispatch(fetchGroups());
@@ -226,7 +232,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       }
     });
-    hammertime.on('panleft', (event) => {
+    hammertime.on('panleft', () => {
       if (this.mobileQuery.matches) {
         this.sidenav.close();
       }
@@ -277,15 +283,26 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (isDevMode() || !environment.production) {
       // Logging in dev mode
-      sub = this.ngrxStore.subscribe((state) => {
-        console.log(state);
-      });
+      sub = this.ngrxStore
+        .pipe(map((store: StoreState) => store.Reducer))
+        .subscribe((state) => {
+          console.log(state);
+        });
       this.subscriptions$.push(sub);
 
-      sub = this.ngrxStore.select(SUCCESS_MODEL).subscribe((a) => {
-        console.log(a);
-      });
-      this.subscriptions$.push(sub);
+      // sub = this.ngrxStore
+      //   .select(APPLICATION_WORKSPACE)
+      //   .subscribe((a) => {
+      //     console.log(a);
+      //   });
+      // this.subscriptions$.push(sub);
     }
+  }
+
+  async openAddCommunityDialog() {
+    const dialogRef = this.dialog.open(AddCommunityDialogComponent, {
+      data: null,
+      disableClose: true,
+    });
   }
 }

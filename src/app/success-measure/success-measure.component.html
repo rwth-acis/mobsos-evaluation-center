@@ -1,23 +1,14 @@
 <div id="measure-header">
-  <!-- <button
-    mat-icon-button
-    *ngIf="canEdit$ | async"
-    color="warn"
-    (click)="onDeleteClicked($event)"
-    id="delete-button"
-  >
-    <mat-icon>remove_circle_outline</mat-icon>
-  </button> -->
   <button
+    *ngIf="!preview && (canEdit$ | async)"
     mat-icon-button
-    *ngIf="canEdit$ | async"
     color="primary"
     (click)="onEditClicked($event)"
     id="edit-button"
   >
     <mat-icon>edit</mat-icon>
   </button>
-  <h4 *ngIf="measure && displayTitle">
+  <h4 *ngIf="measure && !preview">
     {{ measure.name }}
   </h4>
 </div>

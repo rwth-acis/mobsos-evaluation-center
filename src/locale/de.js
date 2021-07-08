@@ -6,6 +6,7 @@ export const translations = {
       'manage-requirements': 'Anforderungen verwalten',
       'success-modeling': 'Erfolgsmodellierung',
       'raw-edit': 'Direktbearbeitung',
+      'add-community': 'Community hinzufügen',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -25,6 +26,7 @@ export const translations = {
         'Einloggen um eine Community auszuwählen',
       'your-groups-hint': 'Deine Gruppen',
       'foreign-groups-hint': 'Andere Gruppen',
+       'pick-community-name':  'Wähle einen Gruppen Namen',
     },
     'language-selector': {
       'select-language': 'Sprache auswählen',

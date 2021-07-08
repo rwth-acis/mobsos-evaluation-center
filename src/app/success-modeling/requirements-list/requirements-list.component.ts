@@ -20,11 +20,15 @@ import {
   addReqBazarProject,
   removeReqBazarProject,
   setNumberOfRequirements,
+  storeRequirements,
   storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
-import { ReqbazProject } from 'src/app/models/reqbaz.model';
+import {
+  ReqbazProject,
+  Requirement,
+} from 'src/app/models/reqbaz.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { cloneDeep } from 'lodash-es';
 @Component({
@@ -40,11 +44,12 @@ export class RequirementsListComponent
   @Output() numberOfRequirements = new EventEmitter<number>();
 
   user$ = this.ngrxStore.select(_USER);
-  requirements;
+  requirements: Requirement[];
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
   openedRequirement = null;
   private user: User;
+  private subscriptions$ = [];
 
   constructor(
     private dialog: MatDialog,
@@ -65,7 +70,8 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    this.user$.subscribe((user) => (this.user = user));
+    const sub = this.user$.subscribe((user) => (this.user = user));
+    this.subscriptions$.push(sub);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -74,14 +80,16 @@ export class RequirementsListComponent
     }
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
 
   openPickProjectDialog() {
     const dialogRef = this.dialog.open(PickReqbazProjectComponent, {
       minWidth: 300,
       width: '80%',
     });
-    dialogRef.afterClosed().subscribe((result) => {
+    const sub = dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.successModel = SuccessModel.fromPlainObject(
           cloneDeep(this.successModel),
@@ -102,10 +110,9 @@ export class RequirementsListComponent
             xml: this.successModel.toXml().outerHTML,
           }),
         );
-
-        this.refreshRequirements();
       }
     });
+    this.subscriptions$.push(sub);
   }
 
   async openDisconnectProjectDialog() {
@@ -136,14 +143,13 @@ export class RequirementsListComponent
             xml: this.successModel.toXml().outerHTML,
           }),
         );
-        this.setNumberOfRequirements(0);
+        this.ngrxStore.dispatch(
+          storeRequirements({ requirements: undefined }),
+        );
+        this.ngrxStore.dispatch(setNumberOfRequirements({ n: 0 }));
         this.numberOfRequirements.emit(0);
       }
     });
-  }
-
-  setNumberOfRequirements(n: number) {
-    this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
   }
 
   refreshRequirements() {
@@ -156,8 +162,16 @@ export class RequirementsListComponent
         this.successModel.reqBazProject.categoryId,
       )
       .then((requirements) => {
-        this.requirements = requirements;
-        this.setNumberOfRequirements((requirements as [])?.length);
+        this.requirements = cloneDeep(requirements) as [];
+        this.ngrxStore.dispatch(
+          storeRequirements({ requirements: this.requirements }),
+        );
+        this.ngrxStore.dispatch(
+          setNumberOfRequirements({
+            n: (requirements as [])?.length,
+          }),
+        );
+
         this.numberOfRequirements.emit((requirements as []).length);
       });
   }
@@ -175,14 +189,35 @@ export class RequirementsListComponent
     );
   }
 
-  realizeRequirement(requirement: any) {
-    this.las2peer.realizeRequirementOnReqBaz(requirement.id);
-    this.refreshRequirements();
+  async realizeRequirement(requirement: Requirement) {
+    await this.las2peer.realizeRequirementOnReqBaz(requirement.id);
+
+    let newRequirement = this.requirements.find(
+      (req) => req.id === requirement.id,
+    );
+    newRequirement = cloneDeep(newRequirement);
+    newRequirement.realized = new Date();
+    this.requirements = this.requirements.map((req) =>
+      req.id === newRequirement.id ? newRequirement : req,
+    );
+    setTimeout(() => {
+      this.refreshRequirements();
+    }, 1000);
   }
 
-  unrealizeRequirement(requirement: any) {
-    this.las2peer.unrealizeRequirementOnReqBaz(requirement.id);
-    this.refreshRequirements();
+  async unrealizeRequirement(requirement: Requirement) {
+    await this.las2peer.unrealizeRequirementOnReqBaz(requirement.id);
+    let newRequirement = this.requirements.find(
+      (req) => req.id === requirement.id,
+    );
+    newRequirement = cloneDeep(newRequirement);
+    newRequirement.realized = undefined;
+    this.requirements = this.requirements.map((req) =>
+      req.id === newRequirement.id ? newRequirement : req,
+    );
+    setTimeout(() => {
+      this.refreshRequirements();
+    }, 1000);
   }
 
   becomeLeaddevRequirement(requirement: any) {

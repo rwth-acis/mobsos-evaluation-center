@@ -25,12 +25,16 @@ import { ValueVisualization } from 'src/app/models/visualization.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Query } from 'src/app/models/query.model';
 import { MatAccordion } from '@angular/material/expansion';
+import { isEmpty } from 'lodash-es';
 import {
+  MEASURE,
+  MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
 import { ConfirmationDialogComponent } from 'src/app/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
+import { map, tap } from 'rxjs/operators';
 
 export interface DialogData {
   measures: Measure[];
@@ -50,6 +54,12 @@ export class PickMeasureDialogComponent implements OnInit {
   measuresChanged = new EventEmitter<Measure[]>();
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  measures$ = this.ngrxStore.select(MEASURES).pipe(
+    map((measures) =>
+      !isEmpty(measures) ? Object.values(measures) : [],
+    ),
+    map((measures) => (measures?.length > 0 ? measures : undefined)),
+  );
   service: ServiceInformation;
 
   constructor(
@@ -75,7 +85,7 @@ export class PickMeasureDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  openNewMeasureDialog() {
+  async openNewMeasureDialog() {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -90,18 +100,17 @@ export class PickMeasureDialogComponent implements OnInit {
         create: true,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.data.measures.unshift(result);
-        this.ngrxStore.dispatch(
-          addMeasureToCatalog({ measure: result }),
-        );
-        // this.measuresChanged.emit(this.data.measures);
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.data.measures.unshift(result);
+      this.ngrxStore.dispatch(
+        addMeasureToCatalog({ measure: result }),
+      );
+      // this.measuresChanged.emit(this.data.measures);
+    }
   }
 
-  onEditClicked(measure: Measure) {
+  async onEditClicked(measure: Measure) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -111,16 +120,15 @@ export class PickMeasureDialogComponent implements OnInit {
         create: false,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.ngrxStore.dispatch(
-          editMeasureInCatalog({
-            measure: result,
-            oldMeasureName: measure.name,
-          }),
-        );
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.ngrxStore.dispatch(
+        editMeasureInCatalog({
+          measure: result,
+          oldMeasureName: measure.name,
+        }),
+      );
+    }
   }
 
   async deleteMeasure(measureIndex: number) {

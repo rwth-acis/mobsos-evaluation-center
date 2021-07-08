@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>
+  {{ 'app.community-selector.pick-community-name' | translate }}
+</h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="standard">
+    <input
+      required
+      [formControl]="form"
+      matInput
+      placeholder="ACIS"
+    />
+    <mat-error *ngIf="error$ | async as error">{{ error }}</mat-error>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button
+    mat-flat-button
+    (click)="onSubmit()"
+    color="primary"
+    [disabled]="!this.form.dirty || (error$ | async)"
+  >
+    Ok
+  </button>
+  <button mat-button color="warn" [mat-dialog-close]="undefined">
+    Cancel
+  </button>
+</div>

@@ -12,15 +12,15 @@ import {
   filter,
   share,
   tap,
-  exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { GroupInformation } from '../models/community.model';
 
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
+import { fetchMeasureCatalog } from './store.actions';
 import {
-  RESTRICTED_MODE,
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
@@ -31,6 +31,7 @@ import {
   WORKSPACE_MODEL_XML,
   SUCCESS_MODEL_FROM_NETWORK,
   MEASURE_CATALOG_FROM_NETWORK,
+  VISUALIZATION_DATA_FROM_QVS,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -43,6 +44,10 @@ export class StateEffects {
     private logger: NGXLogger,
     private workspaceService: WorkspaceService,
   ) {}
+
+  // hardcoded map of current visualization calls to prevent sending a POST request multiple times
+  // I will leave it here for the demo but should not be necessary. Removal should not cause any problems
+  static visualizationCalls = {};
 
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
@@ -88,7 +93,7 @@ export class StateEffects {
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
-      switchMap(() =>
+      mergeMap(() =>
         forkJoin([
           this.l2p.fetchContactServiceGroupsAndObserve().pipe(
             catchError((err) => {
@@ -99,26 +104,28 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          this.l2p.fetchMobSOSGroupsAndObserve().pipe(
-            catchError((err) => {
-              this.logger.error(
-                'Could not fetch groups from service MobSOS:' +
-                  JSON.stringify(err),
-              );
-              return of(undefined);
-            }),
-          ),
+          // this.l2p.fetchMobSOSGroupsAndObserve().pipe(
+          //   catchError((err) => {
+          //     this.logger.error(
+          //       'Could not fetch groups from service MobSOS:' +
+          //         JSON.stringify(err),
+          //     );
+          //     return of(undefined);
+          //   }),
+          // ),
         ]).pipe(
-          tap(([groupsFromContactService, groupsFromMobSOS]) =>
-            Action.transferMissingGroupsToMobSOS({
-              groupsFromContactService,
-              groupsFromMobSOS,
-            }),
+          tap(([groupsFromContactService]) =>
+            this.ngrxStore.dispatch(
+              Action.transferMissingGroupsToMobSOS({
+                groupsFromContactService,
+                groupsFromMobSOS: null,
+              }),
+            ),
           ),
-          map(([groupsFromContactService, groupsFromMobSOS]) =>
+          map(([groupsFromContactService]) =>
             Action.storeGroups({
               groupsFromContactService,
-              groupsFromMobSOS,
+              groupsFromMobSOS: null,
             }),
           ),
         ),
@@ -136,11 +143,10 @@ export class StateEffects {
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
-        this.workspaceService.startSynchronizingWorkspace(groupId);
+        this.workspaceService.syncWithCommunnityWorkspace(groupId);
+        this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
       }),
-      switchMap(({ groupId }) =>
-        of(Action.fetchMeasureCatalog({ groupId })),
-      ),
+      switchMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());
@@ -222,7 +228,18 @@ export class StateEffects {
       switchMap(([action, [measureCatalogXML, groupId]]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
-          .pipe(map(() => Action.saveCatalogSuccess())),
+          .pipe(
+            tap(() =>
+              this.ngrxStore.dispatch(
+                Action.storeCatalog({ xml: measureCatalogXML }),
+              ),
+            ),
+            map(() => Action.saveCatalogSuccess()),
+            catchError((err) => {
+              console.error(err);
+              return of(Action.failureResponse(err));
+            }),
+          ),
       ),
       catchError((err) => {
         console.error(err);
@@ -265,15 +282,20 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.transferMissingGroupsToMobSOS),
       switchMap((action) => {
-        const missingGroups = action.groupsFromContactService.filter(
-          (group) =>
-            !action.groupsFromMobSOS?.find(
-              (g) => g.name === group.name,
-            ),
-        );
-        return this.l2p
-          .saveGroupsToMobSOS(missingGroups)
-          .pipe(map(() => Action.successResponse()));
+        if (action.groupsFromContactService) {
+          const missingGroups = Object.values(
+            action.groupsFromContactService,
+          )?.filter(
+            (group: GroupInformation) =>
+              !action.groupsFromMobSOS?.find(
+                (g) => g.name === group.name,
+              ),
+          );
+          return this.l2p
+            .saveGroupsToMobSOS(missingGroups)
+            .pipe(map(() => Action.successResponse()));
+        }
+        return of(Action.failure());
       }),
       catchError((err) => {
         console.error(err);
@@ -342,10 +364,23 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
       mergeMap(([{ query, queryParams }, data]) => {
         const dataForQuery = data[query];
-        if (shouldFetch(dataForQuery)) {
+
+        if (
+          !Object.keys(StateEffects.visualizationCalls).includes(
+            query,
+          ) &&
+          shouldFetch(dataForQuery)
+        ) {
+          StateEffects.visualizationCalls[query] =
+            dataForQuery?.fetchDate;
+
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
+              tap((success) => {
+                if (success)
+                  delete StateEffects.visualizationCalls[query];
+              }),
               map((vdata) =>
                 Action.storeVisualizationData({
                   data: vdata,
@@ -356,8 +391,6 @@ export class StateEffects {
               catchError((err) =>
                 of(
                   Action.storeVisualizationData({
-                    data: null,
-                    query,
                     error: err,
                   }),
                 ),
@@ -366,7 +399,13 @@ export class StateEffects {
         }
         return of(Action.failureResponse(undefined));
       }),
-      catchError((err) => of(Action.failureResponse(err))),
+      catchError((err) =>
+        of(
+          Action.storeVisualizationData({
+            error: err,
+          }),
+        ),
+      ),
     ),
   );
 
@@ -394,6 +433,38 @@ export class StateEffects {
     ),
   );
 
+  addGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addGroup),
+      mergeMap(({ groupName }) =>
+        this.l2p.addGroup(groupName).pipe(
+          map((id: string) => ({
+            id,
+            name: groupName,
+            member: true,
+          })),
+          tap((group: GroupInformation) =>
+            this.l2p.saveGroupsToMobSOS([group]),
+          ),
+          map((group: GroupInformation) =>
+            group?.id
+              ? Action.storeGroup({
+                  group,
+                })
+              : Action.failureResponse(null),
+          ),
+          catchError((err) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
@@ -402,9 +473,9 @@ export class StateEffects {
         this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(_USER),
-        this.ngrxStore.select(VISUALIZATION_DATA),
+        this.ngrxStore.select(VISUALIZATION_DATA_FROM_QVS),
       ),
-      exhaustMap(([action, model, catalog, service, user, vdata]) =>
+      switchMap(([action, model, catalog, service, user, vdata]) =>
         this.workspaceService
           .syncWithCommunnityWorkspace(action.groupId)
           .pipe(
@@ -498,25 +569,28 @@ const REFETCH_INTERVAL =
  * @returns true if we should make a new request
  */
 function shouldFetch(dataForQuery: VData): boolean {
-  if (!dataForQuery?.fetchDate) return true; // initial state: we dont have any data yet
-  if (dataForQuery.data) {
-    // we got data: now check if data is not too old
+  if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
+  if (dataForQuery?.data && dataForQuery?.fetchDate) {
+    // data was fetched beforehand: now check if data is not too old
     if (
-      Date.now() - dataForQuery.fetchDate.getTime() >
+      Date.now() - Date.parse(dataForQuery.fetchDate) >
       REFETCH_INTERVAL
     ) {
       // data older than fetch interval
       return true; // data older than
-    } else return false;
-  } else if (dataForQuery.error) {
-    const status = dataForQuery.error.status;
+    } else {
+      // data is recent enough no new call should be made
+      return false;
+    }
+  } else if (dataForQuery?.error) {
+    const status = dataForQuery.error?.status;
 
     // the query had led to an error
+    // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
-      Date.now() - dataForQuery.fetchDate.getTime() >
+      Date.now() - Date.parse(dataForQuery.fetchDate) >
       5 * ONE_MINUTE_IN_MS
     ) {
-      // data older than fetch interval
       if (!status) {
         // Unknown error
         return true;
@@ -527,7 +601,7 @@ function shouldFetch(dataForQuery: VData): boolean {
           // data base not configured on query visualization service
           return true;
         } else {
-          // assume SQL query error
+          // assume SQL query error so no refetch as long as user has not updated the query
           return false;
         }
       } else if (status >= 500) {
@@ -535,8 +609,9 @@ function shouldFetch(dataForQuery: VData): boolean {
         return true;
       }
     } else {
+      // dont refetch if interval is less than 5minutes
       return false;
     }
   }
-  return true;
+  return true; // should not be reached
 }

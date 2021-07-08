@@ -1,4 +1,5 @@
 import { createSelector } from '@ngrx/store';
+import { create } from 'domain';
 import {
   GroupCollection,
   GroupInformation,
@@ -62,11 +63,13 @@ export const GROUPS = (state: StoreState) =>
       )
     : undefined;
 
-export const USER_GROUPS = (state: StoreState) =>
-  _userGroups(state.Reducer?.groups);
+export const USER_GROUPS = createSelector(GROUPS, (groups) =>
+  groups?.filter((g) => g.member),
+);
 
-export const FOREIGN_GROUPS = (state: StoreState) =>
-  _foreignGroups(state.Reducer?.groups);
+export const FOREIGN_GROUPS = createSelector(GROUPS, (groups) =>
+  groups?.filter((g) => !g.member),
+);
 
 export const SELECTED_GROUP = createSelector(
   _SELECTED_GROUP_ID,
@@ -125,14 +128,10 @@ export const WORKSPACE_OWNER = createSelector(
 
 export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
   createSelector(
-    _COMMUNITY_WORKSPACE,
-    _SELECTED_SERVICE_NAME,
+    ALL_WORKSPACES_FOR_SELECTED_SERVICE,
     WORKSPACE_OWNER,
-    (communityWorkspace, selectedServiceName, owner) =>
-      getAllWorkspacesForService(
-        communityWorkspace,
-        selectedServiceName,
-      )?.filter(
+    (workspaces, owner) =>
+      workspaces?.filter(
         (workspace: ApplicationWorkspace) =>
           workspace?.createdBy !== owner,
       ),
@@ -140,7 +139,10 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
 
 export const VISITORS = createSelector(
   APPLICATION_WORKSPACE,
-  (workspace) => workspace?.visitors,
+  (workspace) =>
+    workspace?.visitors.sort((a, b) =>
+      a.username?.localeCompare(b.username),
+    ),
 );
 
 export const VISITORS_EXCEPT_USER = createSelector(
@@ -191,7 +193,9 @@ export const SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL_FROM_NETWORK,
   SUCCESS_MODEL_FROM_WORKSPACE,
   (editMode, successModelFromNetwork, successModelInWorkspace) =>
-    editMode ? successModelInWorkspace : successModelFromNetwork,
+    editMode && successModelInWorkspace
+      ? successModelInWorkspace
+      : successModelFromNetwork,
 );
 
 export const DIMENSIONS_IN_MODEL = createSelector(
@@ -284,7 +288,7 @@ export const WORKSPACE_CATALOG_XML = createSelector(
 );
 
 // VISUALIZATION_DATA
-const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
+export const VISUALIZATION_DATA_FROM_QVS = (state: StoreState) =>
   state.Reducer?.visualizationData;
 
 export const VISUALIZATION_DATA_FROM_WORKSPACE = createSelector(
@@ -301,9 +305,14 @@ export const VISUALIZATION_DATA = createSelector(
 );
 
 export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
-  VISUALIZATION_DATA,
-  (vdata, queryString: string) =>
-    vdata ? vdata[queryString] : undefined,
+  VISUALIZATION_DATA_FROM_QVS,
+  VISUALIZATION_DATA_FROM_WORKSPACE,
+  (workspacedata, qvsdata, queryString: string) =>
+    workspacedata && workspacedata[queryString]
+      ? workspacedata[queryString]
+      : qvsdata
+      ? qvsdata[queryString]
+      : undefined,
 );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
@@ -439,7 +448,9 @@ function getAllWorkspacesForService(
       result.push(userWorkspace[serviceName] as ApplicationWorkspace);
     }
   }
-  return result as ApplicationWorkspace[];
+  return (result as ApplicationWorkspace[])?.sort((a, b) =>
+    a.createdBy?.localeCompare(b.createdBy),
+  );
 }
 
 /**

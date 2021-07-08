@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -6,15 +6,35 @@ import {
   MEASURE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
-import { distinctUntilChanged, filter, tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  first,
+  map,
+  mergeMap,
+  switchMap,
+  tap,
+  throttleTime,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
   ChartVisualization,
   VData,
+  Visualization,
+  VisualizationData,
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { ServiceInformation } from 'src/app/models/service.model';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -23,17 +43,18 @@ import { ServiceInformation } from 'src/app/models/service.model';
 })
 export class ChartVisualizerComponent
   extends BaseVisualizationComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   @Input() measureName: string;
-  @Input() service: ServiceInformation;
 
-  data$: Observable<VData>;
-  measure$: Observable<Measure>;
+  query$: Observable<string>;
+
   query: string; // local copy of the sql query
   chartData: GoogleChart;
   chartInitialized = false;
+  visualization: ChartVisualization;
 
+  subscriptions$: Subscription[] = [];
   constructor(
     protected dialog: MatDialog,
     protected ngrxStore: Store,
@@ -41,78 +62,109 @@ export class ChartVisualizerComponent
     super(ngrxStore, dialog);
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
+  }
+
   ngOnInit() {
-    this.service$
-      .pipe(filter((service) => !!service))
-      .subscribe((service) => {
-        this.service = service;
-        this.measure$ = this.ngrxStore
-          .select(MEASURE, this.measureName) // selects the measure from the measure catalog
-          .pipe(
-            filter((data) => !!data),
-            distinctUntilChanged(),
+    // selects the measure from the measure catalog
+    this.measure$ = this.ngrxStore
+      .select(MEASURE, this.measureName)
+      .pipe(
+        filter((measure) => !!measure),
+        distinctUntilKeyChanged('queries'),
+      );
+
+    // gets the query string from the measure and applies variable replacements
+    this.query$ = this.measure$.pipe(
+      withLatestFrom(this.service$),
+      map(([measure, service]) => {
+        let query = measure.queries[0].sql;
+        query = this.applyVariableReplacements(query, service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query,
           );
-        this.measure$
-          .pipe(filter((data) => !!data))
-          .subscribe((measure: Measure) => {
-            this.prepareChart(measure);
-          });
+        return query;
+      }),
+      distinctUntilChanged(),
+    );
+
+    // selects the query data for the query from the store
+    this.data$ = this.query$.pipe(
+      filter((query) => !!query),
+      mergeMap((query) =>
+        this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
+      ),
+    );
+    this.error$ = this.data$.pipe(map((data) => data?.error));
+    let sub = this.error$.subscribe((err) => {
+      this.error = err;
+    });
+    this.subscriptions$.push(sub);
+    sub = this.data$
+      .pipe(
+        map((vdata) => vdata?.data),
+        filter((data) => data instanceof Array && data.length >= 2),
+        withLatestFrom(this.measure$),
+      )
+      .subscribe(([dataTable, measure]) => {
+        this.prepareChart(dataTable, measure.visualization);
       });
+    this.subscriptions$.push(sub);
+    sub = this.measure$
+      .pipe(withLatestFrom(this.service$), first())
+      .subscribe(([measure, service]) => {
+        let query = measure.queries[0].sql;
+        const queryParams = this.getParamsForQuery(query);
+        query = this.applyVariableReplacements(query, service);
+        query =
+          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+            query,
+          );
+        super.fetchVisualizationData(query, queryParams);
+      });
+    this.subscriptions$.push(sub);
   }
 
   /**
    * Prepares chart for given measure
    * @param measure success measure
    */
-  private prepareChart(measure: Measure) {
-    if (!measure) return;
-    const visualization = measure.visualization as ChartVisualization;
-    let query = measure.queries[0].sql;
-    const queryParams = this.getParamsForQuery(query);
+  private prepareChart(
+    dataTable: any[][],
+    visualization: Visualization,
+  ) {
+    visualization = visualization as ChartVisualization;
+    this.error = null;
+    const labelTypes = dataTable[1];
+    const rows = dataTable.slice(2) as any[][];
+    this.chartData = new GoogleChart(
+      '',
+      (visualization as ChartVisualization).chartType,
+      rows,
+      dataTable[0],
+      {
+        colors: [
+          '#00a895',
+          '#9500a8',
+          '#a89500',
+          '#ff5252',
+          '#ffd600',
+        ],
+        animation: { startup: true },
+      },
+    );
+    // if (this.chartData) this.visualizationInitialized = true;
+  }
 
-    query = this.applyVariableReplacements(query, this.service);
-    query =
-      BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-        query,
-      );
-
-    if (this.query !== query) {
-      this.query = query;
-      super.fetchVisualizationData(query, queryParams);
-      this.data$ = this.ngrxStore.select(
-        VISUALIZATION_DATA_FOR_QUERY,
-        query,
-      );
-      this.data$
-        .pipe(tap((data) => (this.error = data?.error)))
-        .subscribe((vdata) => {
-          if (!vdata || vdata?.error) {
-            return super.fetchVisualizationData(query, queryParams);
-          }
-          const dataTable = vdata.data;
-          if (dataTable instanceof Array && dataTable.length >= 2) {
-            this.error = null;
-            const labelTypes = dataTable[1];
-            const rows = dataTable.slice(2) as any[][];
-            this.chartData = new GoogleChart(
-              '',
-              visualization.chartType,
-              rows,
-              dataTable[0],
-              {
-                colors: [
-                  '#00a895',
-                  '#9500a8',
-                  '#a89500',
-                  '#ff5252',
-                  '#ffd600',
-                ],
-                animation: { startup: true },
-              },
-            );
-            if (this.chartData) this.visualizationInitialized = true;
-          }
-        });
+  fadeInAnimation() {
+    if (this.chartInitialized) {
+      return 'opacity: 1;transition: opacity 1s ease-out;';
+    } else {
+      return 'opacity: 0;';
     }
   }
 }

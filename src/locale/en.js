@@ -6,6 +6,7 @@ export const translations = {
       'manage-requirements': 'Manage Requirements',
       'success-modeling': 'Success Modeling',
       'raw-edit': 'Raw Edit',
+      'add-community': 'Add Community',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -24,6 +25,7 @@ export const translations = {
       'select-community-hint': 'Login to select your community',
       'your-groups-hint': 'Your Groups',
       'foreign-groups-hint': 'Foreign Groups',
+      'pick-community-name':  'Pick a unique community name',
     },
     'language-selector': {
       'select-language': 'Select Language',

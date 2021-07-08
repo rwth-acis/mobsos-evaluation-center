@@ -12,11 +12,13 @@ import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Measure } from '../models/measure.model';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   MEASURE,
   SELECTED_SERVICE,
 } from '../services/store.selectors';
+import { VData } from '../models/visualization.model';
+import { filter } from 'rxjs/operators';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -40,6 +42,11 @@ export class BaseVisualizationComponent
   ) {}
   measure: Measure;
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  measure$: Observable<Measure>;
+  data$: Observable<VData>;
+  error$: Observable<HttpErrorResponse>;
+  subscriptions$: Subscription[] = [];
+
   service: ServiceInformation;
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
@@ -81,9 +88,27 @@ export class BaseVisualizationComponent
     return query?.replace('$SERVICES$', servicesString);
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.service$
+      .pipe(filter((service) => !!service))
+      .subscribe((service) => {
+        this.service = service;
+      });
 
-  ngOnDestroy(): void {}
+    const sub = this.error$.subscribe((err) => (this.error = err));
+    this.subscriptions$.push(sub);
+  }
+
+  /** Note that lifecycle hooks are not called by components
+   * which inherit from this class
+   * Thus we need to unsubscribe from all subscriptions in the component itself
+   * as mentioned on @link https://medium.com/@saniyusuf/part-1-the-case-for-component-inheritance-in-angular-a34fe2a0f7ac
+   */
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
+  }
 
   openErrorDialog(error?: HttpErrorResponse) {
     if (error) {

@@ -4,14 +4,12 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
-  PostActions,
+  HttpActions,
   saveModelAndCatalog,
   setService,
-  toggleEdit,
 } from '../services/store.actions';
 import {
   MODEL_AND_CATALOG_LOADED,
-  DIMENSIONS_IN_MODEL,
   _EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
@@ -71,12 +69,12 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
 
   editMode$ = this.ngrxStore.select(_EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  showSuccessModelEmpty$ = this.ngrxStore
-    .select(SUCCESS_MODEL_IS_EMPTY)
-    .pipe(
-      withLatestFrom(this.editMode$),
-      map(([empty, editMode]) => empty && !editMode),
-    );
+  successModelEmpty$ = this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY);
+  showSuccessModellingView$ = combineLatest([
+    this.successModelEmpty$,
+    this.editMode$,
+  ]).pipe(map(([empty, editMode]) => editMode && !empty));
+
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
@@ -198,7 +196,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
         )
         .subscribe((result) => {
           this.saveInProgress = false;
-          if (result.type === PostActions.SAVE_CATALOG_SUCCESS) {
+          if (result.type === HttpActions.SAVE_CATALOG_SUCCESS) {
             const message = this.translate.instant(
               'success-modeling.snackbar-save-success',
             );

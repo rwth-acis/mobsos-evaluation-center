@@ -239,13 +239,14 @@ export class WorkspaceManagementComponent
     this._bottomSheet.open(BottomSheetComponent);
   }
 
-  onChangeRole(visitorName: string, role?: string) {
+  onChangeRole(visitorName: string, role?: string, event?) {
     this.workspaceService.changeVisitorRole(
       visitorName,
       this.workspaceOwner,
       this.selectedServiceName,
       role,
     );
+    event.stopPropagation();
   }
 
   shareWorkspaceLink() {

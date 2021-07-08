@@ -13,6 +13,7 @@ import {
   ValueVisualization,
 } from 'src/app/models/visualization.model';
 import { Query } from 'src/app/models/query.model';
+import { SuccessMeasureComponent } from 'src/app/success-measure/success-measure.component';
 
 export interface DialogData {
   measure: Measure;
@@ -26,7 +27,6 @@ export interface DialogData {
   styleUrls: ['./edit-measure-dialog.component.scss'],
 })
 export class EditMeasureDialogComponent implements OnInit {
-  @ViewChild('previewMeasure') public previewMeasure;
   visualizationChoices = {
     Value: 'success-modeling.edit-measure-dialog.choice-value',
     Chart: 'success-modeling.edit-measure-dialog.choice-chart',
@@ -70,7 +70,6 @@ export class EditMeasureDialogComponent implements OnInit {
     }
     this.data.measure.visualization =
       this.visualizationBuffer[visualizationType];
-    this.previewMeasure.refreshVisualization();
   }
 
   onAddQueryClicked() {
@@ -88,7 +87,6 @@ export class EditMeasureDialogComponent implements OnInit {
       operandName,
       index,
     );
-    this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onKpiOperatorChange(operatorName: string, index: number) {
@@ -98,7 +96,6 @@ export class EditMeasureDialogComponent implements OnInit {
       operatorName,
       index,
     );
-    this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onAddOperationClicked() {
@@ -125,7 +122,6 @@ export class EditMeasureDialogComponent implements OnInit {
       kpiVisualization.operationsElements.pop();
       kpiVisualization.operationsElements.pop();
     }
-    this.previewMeasure.rerenderVisualizationComponent();
   }
 
   onQueryNameChanged(value: string, i: number) {
@@ -141,7 +137,6 @@ export class EditMeasureDialogComponent implements OnInit {
       });
     }
     this.data.measure.queries[i].name = value;
-    this.previewMeasure.rerenderVisualizationComponent();
   }
 
   prettifyCustomMessageName(messageName: string) {

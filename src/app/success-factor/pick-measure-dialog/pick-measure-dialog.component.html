@@ -2,93 +2,99 @@
   {{ 'success-modeling.pick-measure-dialog.title' | translate }}
 </h1>
 <div mat-dialog-content>
-  <mat-card
-    *ngIf="!data.measures || data.measures.length == 0"
-    class="no-measure-card"
+  <ng-container
+    *ngIf="measures$ | async as measures; else noMeasures"
   >
-    <mat-icon color="primary">info_outline</mat-icon>
-    <span>{{
-      'success-modeling.pick-measure-dialog.no-measures' | translate
-    }}</span>
-  </mat-card>
-  <div class="example-action-buttons">
-    <button mat-button (click)="accordion.openAll()">
-      Expand All
-    </button>
-    <button mat-button (click)="accordion.closeAll()">
-      Collapse All
-    </button>
-  </div>
-  <mat-accordion class="example-headers-align" multi>
-    <mat-expansion-panel
-      *ngFor="let measure of data.measures; let i = index"
-    >
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ measure.name }}
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+    <div class="example-action-buttons">
+      <button mat-button (click)="accordion.openAll()">
+        Expand All
+      </button>
+      <button mat-button (click)="accordion.closeAll()">
+        Collapse All
+      </button>
+    </div>
+    <mat-accordion class="example-headers-align" multi>
+      <mat-expansion-panel
+        *ngFor="let measure of measures; let i = index"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ measure.name }}
+          </mat-panel-title>
+          <mat-panel-description>
+            <button
+              mat-icon-button
+              color="primary"
+              [matTooltip]="
+                'success-factor.add-measure-button' | translate
+              "
+              (click)="onMeasureClicked(measure)"
+            >
+              <mat-icon> playlist_add </mat-icon>
+            </button>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
 
-      <ng-template matExpansionPanelContent>
-        <div [ngSwitch]="measure.visualization.type">
-          <app-kpi-visualization
-            [measure]="measure"
-            [service]="service"
-            *ngSwitchCase="'KPI'"
-          ></app-kpi-visualization>
-          <app-value-visualization
-            [measureName]="measure.name"
-            [service]="service"
-            *ngSwitchCase="'Value'"
-          ></app-value-visualization>
-          <app-chart-visualization
-            *ngSwitchCase="'Chart'"
-            [measureName]="measure.name"
-            [service]="service"
-          ></app-chart-visualization>
-          <div *ngSwitchDefault>
-            Unknown chartType: {{ measureAsync.visualization.type }}
+        <ng-template matExpansionPanelContent>
+          <div [ngSwitch]="measure.visualization.type">
+            <app-kpi-visualization
+              [measure]="measure"
+              [service]="service"
+              *ngSwitchCase="'KPI'"
+            ></app-kpi-visualization>
+            <app-value-visualization
+              [measureName]="measure.name"
+              [service]="service"
+              *ngSwitchCase="'Value'"
+            ></app-value-visualization>
+            <app-chart-visualization
+              *ngSwitchCase="'Chart'"
+              [measureName]="measure.name"
+              [service]="service"
+            ></app-chart-visualization>
+            <div *ngSwitchDefault>
+              Unknown chartType: {{ measureAsync.visualization.type }}
+            </div>
           </div>
-        </div>
 
-        <div id="edit-controls">
-          <button
-            mat-icon-button
-            color="primary"
-            [matTooltip]="
-              'success-factor.add-measure-button' | translate
-            "
-            (click)="onMeasureClicked(measure)"
-          >
-            <mat-icon> playlist_add </mat-icon>
-          </button>
-          <button
-            *ngIf="canEdit$ | async"
-            mat-icon-button
-            color="primary"
-            [matTooltip]="
-              'success-modeling.edit-mode-toggle' | translate
-            "
-            (click)="onEditClicked(measure)"
-          >
-            <mat-icon> edit </mat-icon>
-          </button>
-          <button
-            *ngIf="canEdit$ | async"
-            mat-icon-button
-            color="warn"
-            [matTooltip]="
-              'success-factor.remove-measure-tooltip' | translate
-            "
-            (click)="deleteMeasure(i)"
-          >
-            <mat-icon> delete_forever </mat-icon>
-          </button>
-        </div>
-      </ng-template>
-    </mat-expansion-panel>
-  </mat-accordion>
-
+          <div id="edit-controls">
+            <!-- <button
+              mat-icon-button
+              color="primary"
+              [matTooltip]="
+                'success-factor.add-measure-button' | translate
+              "
+              (click)="onMeasureClicked(measure)"
+            >
+              <mat-icon> playlist_add </mat-icon>
+            </button> -->
+            <button
+              *ngIf="canEdit$ | async"
+              mat-icon-button
+              color="primary"
+              [matTooltip]="
+                'success-modeling.edit-mode-toggle' | translate
+              "
+              (click)="onEditClicked(measure)"
+            >
+              <mat-icon> edit </mat-icon>
+            </button>
+            <button
+              *ngIf="canEdit$ | async"
+              mat-icon-button
+              color="warn"
+              [matTooltip]="
+                'success-factor.remove-measure-tooltip' | translate
+              "
+              (click)="deleteMeasure(i)"
+            >
+              <mat-icon> delete_forever </mat-icon>
+            </button>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </ng-container>
   <button
     mat-raised-button
     color="primary"
@@ -101,3 +107,12 @@
     }}
   </button>
 </div>
+
+<ng-template #noMeasures>
+  <mat-card class="no-measure-card">
+    <mat-icon color="primary">info_outline</mat-icon>
+    <span>{{
+      'success-modeling.pick-measure-dialog.no-measures' | translate
+    }}</span>
+  </mat-card>
+</ng-template>

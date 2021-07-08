@@ -82,14 +82,13 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.removeMeasure(measureIndex);
-      }
-    });
+    const result = await dialogRef.afterClosed();
+    if (result) {
+      this.removeMeasure(measureIndex);
+    }
   }
 
-  openPickMeasureDialog() {
+  async openPickMeasureDialog() {
     const dialogRef = this.dialog.open(PickMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -100,19 +99,19 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         dimensionName: this.dimensionName,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.factor.measures.push((result as Measure).name);
-        this.ngrxStore.dispatch(
-          editFactorInDimension({
-            factor: this.factor,
-            oldFactorName: this.factor.name,
-            dimensionName: this.dimensionName,
-          }),
-        );
-      }
-    });
-    dialogRef.componentInstance.measuresChanged.subscribe(
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.factor.measures.push((result as Measure).name);
+      this.ngrxStore.dispatch(
+        editFactorInDimension({
+          factor: this.factor,
+          oldFactorName: this.factor.name,
+          dimensionName: this.dimensionName,
+        }),
+      );
+    }
+
+    const sub = dialogRef.componentInstance.measuresChanged.subscribe(
       (measures) => {
         const existingMeasures = [];
         for (const measure of measures) {
@@ -129,26 +128,26 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         this.sendMeasuresToDimension.emit(this.measures);
       },
     );
+    this.subscriptions$.push(sub);
   }
 
-  onEditClicked() {
+  async onEditClicked() {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       width: '250px',
       data: { factor: { ...this.factor } },
     });
 
-    dialogRef.afterClosed().subscribe((result: SuccessFactor) => {
-      if (result) {
-        this.ngrxStore.dispatch(
-          editFactorInDimension({
-            factor: result,
-            oldFactorName: this.factor.name,
-            dimensionName: this.dimensionName,
-          }),
-        );
-        this.factor = result;
-      }
-    });
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.ngrxStore.dispatch(
+        editFactorInDimension({
+          factor: result,
+          oldFactorName: this.factor.name,
+          dimensionName: this.dimensionName,
+        }),
+      );
+      this.factor = result;
+    }
   }
 
   private removeMeasure(measureIndex: number) {

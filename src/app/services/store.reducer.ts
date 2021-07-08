@@ -14,6 +14,10 @@ import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { isEmpty } from 'lodash-es';
 import { ReqbazProject } from '../models/reqbaz.model';
+import {
+  GroupCollection,
+  GroupInformation,
+} from '../models/community.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -139,7 +143,15 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: removeReqBazarProject(state),
   })),
-
+  on(Actions.storeRequirements, (state, { requirements }) => ({
+    ...state,
+    requirements,
+  })),
+  on(Actions.storeGroup, (state, { group }) => ({
+    ...state,
+    groups: addGroup(group, state.groups),
+    selectedGroupId: group.id,
+  })),
   on(Actions.incrementLoading, (state) => ({
     ...state,
     currentNumberOfHttpCalls: state.currentNumberOfHttpCalls + 1,
@@ -186,7 +198,7 @@ const _Reducer = createReducer(
   })),
   on(Actions.addMeasureToCatalog, (state, props) => ({
     ...state,
-    communityWorkspace: addMeasureToMeasures(
+    communityWorkspace: addMeasureToMeasureCatalog(
       props.measure,
       state.communityWorkspace,
       state.currentWorkSpaceOwner,
@@ -294,22 +306,27 @@ function removeReqBazarProject(state: AppState) {
 
 function updateVisualizationData(
   currentVisualizationData: VisualizationData,
-  props: { data: any[][]; query: string; error: HttpErrorResponse },
+  props: {
+    data?: any[][];
+    query?: string;
+    error?: HttpErrorResponse;
+  },
 ) {
-  if (!props.query || (!props.data && !props.error)) {
+  if (!props.query || props?.error?.status < 200) {
     return currentVisualizationData;
   }
-
-  if (props.error?.status >= 400 && props.error?.status < 500) {
+  if (props.data) {
+    // overwrite existing data
     currentVisualizationData[props.query] = {
-      ...currentVisualizationData[props.query],
-      error: props.error,
+      data: props.data,
+      fetchDate: new Date().toISOString(),
+      error: null,
     };
   } else {
     currentVisualizationData[props.query] = {
-      data: props.data,
-      fetchDate: new Date(),
-      error: props.error,
+      ...currentVisualizationData[props.query],
+      error: props?.error,
+      fetchDate: new Date().toISOString(),
     };
   }
 
@@ -432,6 +449,7 @@ function mergeGroupData(
 ) {
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
+    groups = {};
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       groups[groupID] = {
@@ -600,7 +618,7 @@ function editFactorInDimension(
   return copy;
 }
 
-function addMeasureToMeasures(
+function addMeasureToMeasureCatalog(
   measure: Measure,
   communityWorkspace: CommunityWorkspace,
   owner: string,
@@ -612,7 +630,7 @@ function addMeasureToMeasures(
     owner,
     serviceName,
   );
-  const measureMap = appWorkspace.catalog;
+  const measureMap = appWorkspace.catalog?.measures;
   measureMap[measure.name] = measure;
   return copy;
 }
@@ -740,34 +758,34 @@ function getSelectedService(state: AppState) {
   if (!state.services || !state.selectedServiceName) return undefined;
   return state.services[state.selectedServiceName];
 }
-function addVisitor(
-  communityWorkspace: CommunityWorkspace,
-  username: string,
-  owner: string,
-  serviceName: string,
-  role: UserRole,
-): CommunityWorkspace {
-  const copy = cloneDeep(communityWorkspace); // copy workspace first
-  const userWorkspace = copy[owner];
-  if (!userWorkspace) return communityWorkspace;
-  const appWorkspace: ApplicationWorkspace =
-    userWorkspace[serviceName];
-  if (!appWorkspace) return communityWorkspace;
-  let visitor = appWorkspace.visitors?.find(
-    (v) => v.username === username,
-  );
-  if (role === UserRole.LURKER) {
-    if (visitor) {
-      username =
-        username + ' (guest ' + appWorkspace.visitors.length + ')';
-    }
-    appWorkspace.visitors.push(new Visitor(username, role));
-  } else if (!visitor) {
-    visitor = new Visitor(username, role);
-    appWorkspace.visitors.push(visitor);
-  }
-  return copy;
-}
+// function addVisitor(
+//   communityWorkspace: CommunityWorkspace,
+//   username: string,
+//   owner: string,
+//   serviceName: string,
+//   role: UserRole,
+// ): CommunityWorkspace {
+//   const copy = cloneDeep(communityWorkspace); // copy workspace first
+//   const userWorkspace = copy[owner];
+//   if (!userWorkspace) return communityWorkspace;
+//   const appWorkspace: ApplicationWorkspace =
+//     userWorkspace[serviceName];
+//   if (!appWorkspace) return communityWorkspace;
+//   let visitor = appWorkspace.visitors?.find(
+//     (v) => v.username === username,
+//   );
+//   if (role === UserRole.LURKER) {
+//     if (visitor) {
+//       username =
+//         username + ' (guest ' + appWorkspace.visitors.length + ')';
+//     }
+//     appWorkspace.visitors.push(new Visitor(username, role));
+//   } else if (!visitor) {
+//     visitor = new Visitor(username, role);
+//     appWorkspace.visitors.push(visitor);
+//   }
+//   return copy;
+// }
 
 function getWorkspaceByUserAndService(
   communityWorkspace: CommunityWorkspace,
@@ -789,5 +807,13 @@ function removeVisualizationData(
 ): VisualizationData {
   const copy = { ...visualizationData };
   delete copy[query];
+  return copy;
+}
+function addGroup(group: GroupInformation, groups: GroupCollection) {
+  if (!group?.id) {
+    return groups;
+  }
+  const copy = cloneDeep(groups);
+  copy[group.id] = group;
   return copy;
 }

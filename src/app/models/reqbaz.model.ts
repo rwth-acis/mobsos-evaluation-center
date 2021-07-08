@@ -51,8 +51,10 @@ export interface Requirement {
   numberOfAttachments: number;
   numberOfFollowers: number;
   upVotes: number;
+
   downVotes: number;
   userVoted: string;
+  realized?: Date;
 }
 
 export interface Category {
