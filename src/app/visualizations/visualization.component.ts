@@ -99,6 +99,11 @@ export class BaseVisualizationComponent
     this.subscriptions$.push(sub);
   }
 
+  /** Note that lifecycle hooks are not called by components
+   * which inherit from this class
+   * Thus we need to unsubscribe from all subscriptions in the component itself
+   * as mentioned on @link https://medium.com/@saniyusuf/part-1-the-case-for-component-inheritance-in-angular-a34fe2a0f7ac
+   */
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) =>
       subscription.unsubscribe(),
