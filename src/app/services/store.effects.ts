@@ -15,6 +15,7 @@ import {
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
+import { Questionnaire } from '../models/questionnaire.model';
 
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -428,6 +429,28 @@ export class StateEffects {
       ),
       catchError((err) => {
         return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
+  );
+
+  fetchQuestionnaires$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchQuestionnaires),
+      mergeMap(() =>
+        this.l2p.fetchMobSOSQuestionnairesAndObserve().pipe(
+          map((questionnaires: Questionnaire[]) =>
+            Action.storeQuestionnaires({
+              questionnaires,
+            }),
+          ),
+          catchError((err) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err) => {
+        return of(Action.failure());
       }),
       share(),
     ),
