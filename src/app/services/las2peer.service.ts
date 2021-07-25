@@ -387,6 +387,26 @@ export class Las2peerService {
       });
   }
 
+  fetchMobSOSQuestionnairesAndObserve() {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.SURVEYS_SERVICE_PATH,
+      this.SURVEYS_QUESTIONNAIRES_PATH,
+    );
+    return this.makeRequestAndObserve<{
+      questionnaires: Questionnaire[];
+    }>(url).pipe(
+      map((response) => {
+        for (const questionnaire of response) {
+          questionnaire.name = decodeURIComponent(questionnaire.name);
+          questionnaire.description = decodeURIComponent(
+            questionnaire.description,
+          );
+        }
+        return response;
+      }),
+    );
+  }
   async fetchQuestionnaireForms(questionnaires: Questionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = Las2peerService.joinAbsoluteUrlPath(
