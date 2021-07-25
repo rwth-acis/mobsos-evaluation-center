@@ -1,6 +1,6 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
-import { IQuestionnaire } from './questionnaire.model';
+import { IQuestionnaire, Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
@@ -18,7 +18,6 @@ export interface AppState {
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
-  questionnaires: IQuestionnaire[];
   messageDescriptions: object;
   visualizationData: VisualizationData;
   successModel: SuccessModel;
@@ -41,7 +40,6 @@ export const INITIAL_APP_STATE: AppState = {
   selectedGroupId: undefined,
   selectedServiceName: undefined,
   editMode: false,
-  questionnaires: [],
   messageDescriptions: undefined,
   visualizationData: {},
   measureCatalog: undefined,
