@@ -1,4 +1,4 @@
-import { createSelector } from '@ngrx/store';
+import { createSelector, State } from '@ngrx/store';
 import { create } from 'domain';
 import {
   GroupCollection,
@@ -208,6 +208,11 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
   DIMENSIONS_IN_MODEL,
   (dimensions) =>
     !dimensions?.find((dimension) => dimension.length > 0),
+);
+
+export const QUESTIONNAIRES = createSelector(
+  SUCCESS_MODEL,
+  (model) => model?.questionnaires,
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>

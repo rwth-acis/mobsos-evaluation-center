@@ -6,8 +6,6 @@ import {
   Output,
 } from '@angular/core';
 
-
-
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { environment } from '../../../environments/environment';
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
@@ -16,8 +14,13 @@ import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
+  MEASURES,
+  QUESTIONNAIRES,
   SELECTED_GROUP,
+  SELECTED_SERVICE,
+  SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
+  _EDIT_MODE,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -35,6 +38,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-questionnaires',
@@ -42,24 +46,28 @@ import { Las2peerService } from 'src/app/services/las2peer.service';
   styleUrls: ['./questionnaires.component.scss'],
 })
 export class QuestionnairesComponent implements OnInit {
-  @Input() availableQuestionnaires: Questionnaire[];
-  @Input() measures: MeasureMap;
-  @Input() model: SuccessModel;
-  @Input() service: ServiceInformation;
-  @Input() editMode = false;
-  @Input() groupID: string;
-  @Output() measuresChange = new EventEmitter<MeasureMap>();
-  @Output() modelChange = new EventEmitter<SuccessModel>();
+  availableQuestionnaires: Questionnaire[];
+  measures: MeasureMap;
+  model: SuccessModel;
+  service: ServiceInformation;
+  editMode = false;
+  groupID: string;
+
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   group$ = this.ngrxStore.select(SELECTED_GROUP);
+  model$ = this.ngrxStore.select(SUCCESS_MODEL);
+  measures$ = this.ngrxStore.select(MEASURES);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   group: GroupInformation;
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
+  subscriptions$: Subscription[] = [];
   constructor(
     private dialog: MatDialog,
     private las2peer: Las2peerService,
     private logger: NGXLogger,
-
     private ngrxStore: Store,
   ) {}
 
@@ -81,9 +89,34 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.group$.subscribe((group) => {
+    let sub = this.group$.subscribe((group) => {
       this.group = group;
+      this.groupID = group.id;
     });
+    this.subscriptions$.push(sub);
+
+    sub = this.questionnaires$.subscribe((qs) => {
+      this.availableQuestionnaires = qs;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.measures$.subscribe(
+      (measures) => (this.measures = measures),
+    );
+    this.subscriptions$.push(sub);
+
+    sub = this.model$.subscribe((model) => (this.model = model));
+    this.subscriptions$.push(sub);
+
+    sub = this.service$.subscribe((service) => {
+      this.service = service;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.editMode$.subscribe(
+      (editMode) => (this.editMode = editMode),
+    );
+    this.subscriptions$.push(sub);
   }
 
   openPickQuestionnaireDialog() {
@@ -208,9 +241,6 @@ export class QuestionnairesComponent implements OnInit {
                     }
                   }
                 }
-
-                this.measuresChange.emit(this.measures);
-                this.modelChange.emit(this.model);
               });
           });
       }
@@ -265,7 +295,6 @@ export class QuestionnairesComponent implements OnInit {
           }
         }
         this.model.questionnaires.splice(questionnaireIndex, 1);
-        this.modelChange.emit(this.model);
       }
     });
   }
