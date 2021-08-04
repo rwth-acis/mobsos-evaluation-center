@@ -10,26 +10,8 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share } from 'rxjs/operators';
 import { merge } from 'lodash-es';
 import { environment } from 'src/environments/environment';
-
-interface SuccessModel {
-  xml: string;
-}
-
-interface MeasureCatalog {
-  xml: string;
-}
-
-interface Questionnaire {
-  id: number;
-  description: string;
-  lang: string;
-  logo: string;
-  name: string;
-  organization: string;
-  owner: string;
-  url: string;
-  formXML: string;
-}
+import { SuccessModel } from '../models/success.model';
+import { IQuestionnaire } from '../models/questionnaire.model';
 
 @Injectable({
   providedIn: 'root',
@@ -326,7 +308,7 @@ export class Las2peerService {
       service,
     );
     return new Promise((resolve, reject) => {
-      this.makeRequest<SuccessModel>(url)
+      this.makeRequest<{ xml: string }>(url)
         .then((response) => resolve(response.xml))
         .catch((response) => {
           reject(response);
@@ -372,7 +354,7 @@ export class Las2peerService {
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
-    return this.makeRequest<{ questionnaires: Questionnaire[] }>(url)
+    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
       .then((response) =>
         this.fetchQuestionnaireForms(response.questionnaires),
       )
@@ -393,9 +375,7 @@ export class Las2peerService {
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
-    return this.makeRequestAndObserve<{
-      questionnaires: Questionnaire[];
-    }>(url).pipe(
+    return this.makeRequestAndObserve<IQuestionnaire[]>(url).pipe(
       map((response) => {
         for (const questionnaire of response) {
           questionnaire.name = decodeURIComponent(questionnaire.name);
@@ -407,7 +387,7 @@ export class Las2peerService {
       }),
     );
   }
-  async fetchQuestionnaireForms(questionnaires: Questionnaire[]) {
+  async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = Las2peerService.joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
@@ -565,7 +545,7 @@ export class Las2peerService {
       groupID,
       service,
     );
-    return this.makeRequest<SuccessModel>(url, {
+    return this.makeRequest<{ xml: string }>(url, {
       method,
       body: JSON.stringify({ xml }),
     })
@@ -602,7 +582,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    return this.makeRequest<MeasureCatalog>(url)
+    return this.makeRequest<{ xml: string }>(url)
       .then((response) => response?.xml)
       .catch((response) => {
         throw response;
@@ -618,7 +598,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    const req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+    const req = this.makeRequestAndObserve<{ xml: string }>(url, {
       observe: 'body',
     }).pipe(
       map((response: { xml?: string }) =>
@@ -637,7 +617,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    const req = this.makeRequestAndObserve<MeasureCatalog>(url, {
+    const req = this.makeRequestAndObserve<{ xml: string }>(url, {
       observe: 'response',
     });
     return req.pipe(
@@ -664,7 +644,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    return this.makeRequest<MeasureCatalog>(url, {
+    return this.makeRequest<{ xml: string }>(url, {
       method,
       body: JSON.stringify({ xml }),
     })
@@ -684,7 +664,7 @@ export class Las2peerService {
       groupID,
     );
     method = 'PUT';
-    return this.makeRequestAndObserve<MeasureCatalog>(url, {
+    return this.makeRequestAndObserve<{ xml: string }>(url, {
       method,
       body: JSON.stringify({ xml }),
       observe: 'response',
