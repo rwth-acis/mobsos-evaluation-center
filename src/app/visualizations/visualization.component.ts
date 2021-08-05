@@ -43,7 +43,7 @@ export class BaseVisualizationComponent
   measure: Measure;
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   measure$: Observable<Measure>;
-  data$: Observable<VData>;
+
   error$: Observable<HttpErrorResponse>;
   subscriptions$: Subscription[] = [];
 
@@ -51,7 +51,6 @@ export class BaseVisualizationComponent
   visualizationInitialized = false;
   public serviceNotFoundInMobSOS = false;
   error: HttpErrorResponse;
-  refreshVisualizationHandle;
 
   static htmlDecode(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');

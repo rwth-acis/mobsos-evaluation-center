@@ -53,6 +53,7 @@ export class ChartVisualizerComponent
   chartData: GoogleChart;
   chartInitialized = false;
   visualization: ChartVisualization;
+  data$: Observable<VData>;
 
   formatters = [];
 

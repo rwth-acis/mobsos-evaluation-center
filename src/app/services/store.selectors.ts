@@ -1,4 +1,4 @@
-import { createSelector, State } from '@ngrx/store';
+import { createSelector, Selector, State } from '@ngrx/store';
 import { create } from 'domain';
 import {
   GroupCollection,
@@ -12,6 +12,7 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
+import { VData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
