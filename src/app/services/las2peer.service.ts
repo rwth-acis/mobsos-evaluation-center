@@ -371,8 +371,8 @@ export class Las2peerService {
 
   fetchMobSOSQuestionnairesAndObserve() {
     const url = Las2peerService.joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
+
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
     return this.makeRequestAndObserve<IQuestionnaire[]>(url).pipe(
