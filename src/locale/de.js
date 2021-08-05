@@ -26,7 +26,7 @@ export const translations = {
         'Einloggen um eine Community auszuwählen',
       'your-groups-hint': 'Deine Gruppen',
       'foreign-groups-hint': 'Andere Gruppen',
-       'pick-community-name':  'Wähle einen Gruppen Namen',
+      'pick-community-name': 'Wähle einen Gruppen Namen',
     },
     'language-selector': {
       'select-language': 'Sprache auswählen',
@@ -191,7 +191,9 @@ export const translations = {
         title: 'Fragenbogen entfernen?',
       },
       'no-questionnaires':
-        'Du hast noch keine Fragebögen ausgewählt. Aktiviere den Bearbeitungsmodus um welche hinzuzufügen.',
+        'Du hast noch keine Fragebögen ausgewählt. ',
+      'activate-edit':
+        'Aktiviere den Bearbeitungsmodus um welche hinzuzufügen.',
       'pick-questionnaire-dialog': {
         'add-measures':
           'Automatisch Messungen für die Antworten hinzufügen.',
