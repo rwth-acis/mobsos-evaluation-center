@@ -39,6 +39,7 @@ import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { Subscription } from 'rxjs';
+import { fetchQuestionnaires } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-questionnaires',
@@ -89,6 +90,7 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.ngrxStore.dispatch(fetchQuestionnaires());
     let sub = this.group$.subscribe((group) => {
       this.group = group;
       this.groupID = group.id;
@@ -119,17 +121,13 @@ export class QuestionnairesComponent implements OnInit {
     this.subscriptions$.push(sub);
   }
 
-  openPickQuestionnaireDialog() {
+  async openPickQuestionnaireDialog() {
     // remove questionnaires that already have been chosen
     const questionnaires = this.availableQuestionnaires.filter(
-      (questionnaire) => {
-        for (const modelQuestionnaire of this.model.questionnaires) {
-          if (modelQuestionnaire.id === questionnaire.id) {
-            return false;
-          }
-        }
-        return true;
-      },
+      (questionnaire) =>
+        !!this.model.questionnaires.find(
+          (q) => q.id === questionnaire.id,
+        ),
     );
     const dialogRef = this.dialog.open(
       PickQuestionnaireDialogComponent,
@@ -139,112 +137,15 @@ export class QuestionnairesComponent implements OnInit {
         data: questionnaires,
       },
     );
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const questionnaire =
-          result.selectedQuestionnaire as IQuestionnaire;
-        let serviceName = this.service.name;
-        if (serviceName.includes('@')) {
-          serviceName = serviceName.split('@')[0];
-        }
-        const surveyName =
-          this.service.alias +
-          ': ' +
-          questionnaire.name +
-          '(' +
-          QuestionnairesComponent.nowAsIsoDate() +
-          ')';
-        this.las2peer
-          .createSurvey(
-            surveyName,
-            questionnaire.description,
-            this.group.name,
-            questionnaire.logo,
-            QuestionnairesComponent.nowAsIsoDate(),
-            QuestionnairesComponent.in100YearsAsIsoDate(),
-            serviceName,
-            this.service.alias,
-            questionnaire.lang,
-          )
-          .then((response) => {
-            const surveyId = parseInt(
-              (response as { id: string }).id,
-              10,
-            );
-            this.las2peer
-              .setQuestionnaireForSurvey(questionnaire.id, surveyId)
-              .then(() => {
-                this.model.questionnaires.push(
-                  new QuestionnaireModel(
-                    questionnaire.name,
-                    questionnaire.id,
-                    surveyId,
-                  ),
-                );
+    const result = await dialogRef.afterClosed().toPromise();
 
-                if (result.addMeasures) {
-                  const questions = this.extractQuestions(
-                    questionnaire.formXML,
-                  );
-                  for (const question of questions) {
-                    const measureName =
-                      questionnaire.name +
-                      ': ' +
-                      question.instructions;
-                    const query =
-                      'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
-                      'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' +
-                      SqlString.escape(surveyId) +
-                      ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' +
-                      question.code +
-                      '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
-                    const measure = new Measure(
-                      measureName,
-                      [new Query('Answer Distribution', query)],
-                      new ChartVisualization(
-                        'BarChart',
-                        measureName,
-                        measureName,
-                        '300px',
-                        '300px',
-                      ),
-                      ['surveyId=' + surveyId, 'generated'],
-                    );
-                    this.measures[measureName] = measure;
-                    if (
-                      result.assignMeasures &&
-                      question.dimensionRecommendation &&
-                      question.factorRecommendation
-                    ) {
-                      const dimension =
-                        this.model.dimensions[
-                          question.dimensionRecommendation
-                        ];
-                      let targetFactor: SuccessFactor;
-                      for (const factor of dimension as SuccessFactor[]) {
-                        if (
-                          factor.name ===
-                          question.factorRecommendation
-                        ) {
-                          targetFactor = factor;
-                          break;
-                        }
-                      }
-                      if (!targetFactor) {
-                        targetFactor = new SuccessFactor(
-                          question.factorRecommendation,
-                          [],
-                        );
-                      }
-                      targetFactor.measures.push(measureName);
-                      dimension.push(targetFactor);
-                    }
-                  }
-                }
-              });
-          });
-      }
-    });
+    if (result) {
+      this.createNewSurvey(
+        result.selectedQuestionnaire as IQuestionnaire,
+        result.addMeasures,
+        result.assignMeasures,
+      );
+    }
   }
 
   async openRemoveQuestionnaireDialog(questionnaireIndex: number) {
@@ -362,5 +263,109 @@ export class QuestionnairesComponent implements OnInit {
       });
     }
     return result;
+  }
+
+  createNewSurvey(
+    questionnaire: IQuestionnaire,
+    addMeasures: boolean,
+    assignMeasures: boolean,
+  ) {
+    let serviceName = this.service.name;
+    if (serviceName.includes('@')) {
+      serviceName = serviceName.split('@')[0];
+    }
+    const surveyName =
+      this.service.alias +
+      ': ' +
+      questionnaire.name +
+      '(' +
+      QuestionnairesComponent.nowAsIsoDate() +
+      ')';
+    this.las2peer
+      .createSurvey(
+        surveyName,
+        questionnaire.description,
+        this.group.name,
+        questionnaire.logo,
+        QuestionnairesComponent.nowAsIsoDate(),
+        QuestionnairesComponent.in100YearsAsIsoDate(),
+        serviceName,
+        this.service.alias,
+        questionnaire.lang,
+      )
+      .then((response) => {
+        const surveyId = parseInt(
+          (response as { id: string }).id,
+          10,
+        );
+        this.las2peer
+          .setQuestionnaireForSurvey(questionnaire.id, surveyId)
+          .then(() => {
+            this.model.questionnaires.push(
+              new QuestionnaireModel(
+                questionnaire.name,
+                questionnaire.id,
+                surveyId,
+              ),
+            );
+
+            if (addMeasures) {
+              const questions = this.extractQuestions(
+                questionnaire.formXML,
+              );
+              for (const question of questions) {
+                const measureName =
+                  questionnaire.name + ': ' + question.instructions;
+                const query =
+                  'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
+                  'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' +
+                  SqlString.escape(surveyId) +
+                  ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' +
+                  question.code +
+                  '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
+                const measure = new Measure(
+                  measureName,
+                  [new Query('Answer Distribution', query)],
+                  new ChartVisualization(
+                    'BarChart',
+                    measureName,
+                    measureName,
+                    '300px',
+                    '300px',
+                  ),
+                  ['surveyId=' + surveyId, 'generated'],
+                );
+                this.measures[measureName] = measure;
+                if (
+                  assignMeasures &&
+                  question.dimensionRecommendation &&
+                  question.factorRecommendation
+                ) {
+                  const dimension =
+                    this.model.dimensions[
+                      question.dimensionRecommendation
+                    ];
+                  let targetFactor: SuccessFactor;
+                  for (const factor of dimension as SuccessFactor[]) {
+                    if (
+                      factor.name === question.factorRecommendation
+                    ) {
+                      targetFactor = factor;
+                      break;
+                    }
+                  }
+                  if (!targetFactor) {
+                    targetFactor = new SuccessFactor(
+                      question.factorRecommendation,
+                      [],
+                    );
+                  }
+                  targetFactor.measures.push(measureName);
+                  dimension.push(targetFactor);
+                }
+              }
+            }
+          });
+      });
   }
 }
