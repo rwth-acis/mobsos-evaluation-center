@@ -13,6 +13,13 @@ export class Measure {
   static fromXml(xml: Element): Measure {
     const measureName = xml.getAttribute('name');
     const queryNodes = Array.from(xml.getElementsByTagName('query'));
+    let description = '';
+    if (xml.getElementsByTagName('description')?.length > 0) {
+      description = xml
+        .getElementsByTagName('description')[0]
+        .textContent.trim();
+    }
+
     const queries = [];
     for (const queryNode of queryNodes) {
       queries.push(Query.fromXml(queryNode));
@@ -26,7 +33,13 @@ export class Measure {
     if (tagsCsv) {
       tags = tagsCsv.split(';');
     }
-    return new Measure(measureName, queries, visualization, tags);
+    return new Measure(
+      measureName,
+      queries,
+      visualization,
+      tags,
+      description,
+    );
   }
 
   public static fromPlainObject(obj: Measure): Measure {
@@ -38,7 +51,14 @@ export class Measure {
     const visualization = Visualization.fromPlainObject(
       obj.visualization,
     );
-    return new Measure(obj.name, queries, visualization, obj.tags);
+    const description = obj.description;
+    return new Measure(
+      obj.name,
+      queries,
+      visualization,
+      obj.tags,
+      description,
+    );
   }
 
   toXml(): Element {
@@ -46,6 +66,10 @@ export class Measure {
     const measure = doc.createElement('measure');
     measure.setAttribute('name', this.name);
     measure.setAttribute('tags', this.tags.join(';'));
+    const description = doc.createElement('description');
+    description.textContent = this.description;
+    measure.appendChild(description);
+
     for (const query of this.queries) {
       measure.appendChild(query.toXml());
     }
