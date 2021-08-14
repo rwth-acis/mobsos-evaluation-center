@@ -20,7 +20,7 @@ import { Questionnaire } from '../models/questionnaire.model';
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
-import { fetchMeasureCatalog } from './store.actions';
+import { disableEdit, fetchMeasureCatalog } from './store.actions';
 import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
@@ -139,6 +139,14 @@ export class StateEffects {
     ),
   );
 
+  /*******************************
+   * This effect is called whenever the user selects a new group
+   * In this case we do the following:
+   * - join the yjs room for that group
+   * - fetch the measure catalog for that group
+   * - reset the success model
+   * - disable the edit mode
+   */
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
@@ -146,6 +154,10 @@ export class StateEffects {
       tap(({ groupId }) => {
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(() => of(Action.success())),
       catchError((err) => {
