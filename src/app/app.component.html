@@ -135,11 +135,7 @@
         <mat-icon>menu</mat-icon>
       </button>
       <h2 slot="title">
-        {{
-          mobileQuery.matches
-            ? 'MobSOS EC'
-            : 'MobSOS Evaluation Center'
-        }}
+        {{ mobileQuery.matches ? 'MobSOS EC' : title }}
       </h2>
     </las2peer-frontend-statusbar>
     <mat-progress-bar

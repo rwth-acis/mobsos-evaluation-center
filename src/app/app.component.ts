@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
+
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void;
   environment = environment;
@@ -134,6 +135,13 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
   ) {
+    if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'OK',
+      );
+    }
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
