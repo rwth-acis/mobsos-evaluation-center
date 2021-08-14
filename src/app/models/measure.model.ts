@@ -41,7 +41,12 @@ export class Measure {
       description,
     );
   }
-
+  /**
+   * Transforms a JSON representation of the measure into JavaScript object.
+   * The  JSON object is missing the transformation function toXML() thus we transform it to later transform it into XML format
+   * @param obj JSON representation of the Measure
+   * @returns JavaScript object representation
+   */
   public static fromPlainObject(obj: Measure): Measure {
     if (!obj) return;
     const queries: Query[] = [];
@@ -61,6 +66,10 @@ export class Measure {
     );
   }
 
+  /**
+   * Transforms the javascript representation into xml representation
+   * @returns XML element
+   */
   toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
     const measure = doc.createElement('measure');
