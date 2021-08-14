@@ -84,7 +84,7 @@ export const fetchMeasureCatalog = createAction(
 );
 export const fetchSuccessModel = createAction(
   HttpActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
-  props<{ groupId; serviceName }>(),
+  props<{ groupId: string; serviceName?: string }>(),
 );
 
 export const fetchQuestionnaires = createAction(
