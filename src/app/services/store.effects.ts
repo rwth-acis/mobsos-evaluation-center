@@ -181,8 +181,41 @@ export class StateEffects {
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
         );
+        this.ngrxStore.dispatch(
+          Action.fetchMessageDescriptions({
+            serviceName: service?.name,
+          }),
+        );
       }),
       switchMap(() => of(Action.success())),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
+      share(),
+    ),
+  );
+
+  /******************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
+  fetchMessageDescriptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchMessageDescriptions),
+      filter(({ serviceName }) => !!serviceName),
+      switchMap(({ serviceName }) =>
+        this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
+          map((descriptions) =>
+            Action.storeMessageDescriptions(descriptions),
+          ),
+          catchError((err) => {
+            console.error(err);
+            return of(Action.failure());
+          }),
+        ),
+      ),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());

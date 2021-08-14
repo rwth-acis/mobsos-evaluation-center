@@ -12,7 +12,7 @@ import { CommunityWorkspace } from '../models/workspace.model';
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
   FETCH_GROUPS = 'fetch groups from the network',
-  FETCH_SERVICE_MESSAGE_DESCRIPTION = 'fetch service descriptions for a service from the network ',
+  FETCH_SERVICE_MESSAGE_DESCRIPTIONS = 'fetch service descriptions for a service from the network ',
   FETCH_MEASURE_CATALOG_FOR_GROUP = 'fetch measure catalog for current Group',
   FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE = 'fetch success model for current Group and current service',
   FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
@@ -25,7 +25,7 @@ export enum HttpActions {
 }
 
 export enum StoreActions {
-  STORE_SERVICE_MESSAGE_DESCRIPTION = 'store the service descriptions for a service from the network',
+  STORE_SERVICE_MESSAGE_DESCRIPTIONS = 'store the service descriptions for a service from the network',
   STORE_SERVICES = 'store services',
   STORE_GROUPS = 'store groups',
   STORE_USER = 'Store the user',
@@ -78,6 +78,10 @@ export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
   props<{ query: string; queryParams: string[] }>(),
 );
+export const fetchMessageDescriptions = createAction(
+  HttpActions.FETCH_SERVICE_MESSAGE_DESCRIPTIONS,
+  props<{ serviceName: string }>(),
+);
 export const fetchMeasureCatalog = createAction(
   HttpActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
   props<{ groupId: string }>(),
@@ -92,6 +96,13 @@ export const fetchQuestionnaires = createAction(
 );
 
 // storing
+export const storeMessageDescriptions = createAction(
+  StoreActions.STORE_SERVICE_MESSAGE_DESCRIPTIONS,
+  props<{
+    descriptions: { [key: string]: string };
+    serviceName: string;
+  }>(),
+);
 export const storeQuestionnaires = createAction(
   StoreActions.STORE_QUESTIONNAIRES,
   props<{ questionnaires: Questionnaire[] }>(),
