@@ -4,6 +4,5 @@
   window['env']['las2peerWebConnectorUrl'] = '${BOOTSTRAP}';
   window['env']['yJsWebsocketUrl'] = '${Y_WEBSOCKET}';
   window['env']['openIdClientId'] = '${OIDC_CLIENT_ID}';
-  window['env']['production'] =
-    JSON.parse('${PRODUCTION}'.toLowerCase()) === 'true';
+  window['env']['production'] = '${PRODUCTION}';
 })(this);

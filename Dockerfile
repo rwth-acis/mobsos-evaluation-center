@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN npm ci  && npm run build:prod 
-# Comment out the line above and uncomment the one below to build for app running on https://example.org/monitor/
+# Comment out the line above and uncomment the one below manually to build for app running on https://example.org/monitor/
 # RUN npm ci  && npm run build:prod-sbf-dev 
 
 # stage 2

@@ -8,7 +8,7 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
-      production: boolean;
+      production: string;
     };
   }
 }
