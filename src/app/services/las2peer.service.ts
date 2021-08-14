@@ -7,7 +7,7 @@ import {
   HttpParams,
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map, share } from 'rxjs/operators';
+import { catchError, map, share, timeout } from 'rxjs/operators';
 import { merge } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
@@ -317,6 +317,10 @@ export class Las2peerService {
   }
 
   fetchSuccessModelAsObservable(groupID: string, service: string) {
+    if (!service || !groupID) {
+      console.error('Service or group not specified!');
+      return of(undefined);
+    }
     const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
@@ -384,6 +388,7 @@ export class Las2peerService {
         }
         return response;
       }),
+      timeout(60000),
     );
   }
   async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
