@@ -2,16 +2,11 @@
   <ng-container *ngIf="data$ | async as data; else noData">
     <mat-menu #menu="matMenu" yPosition="above">
       <div id="chart-info">
-        {{
-          'success-modeling.visualization.fetch-info'
-            | translate: { date: data.fetchDate | date: 'short' }
-        }}
-        <p *ngIf="error$ | async as error">
-          {{
-            'success-modeling.visualization.fetch-error'
-              | translate: { error: error.error }
-          }}
-        </p>
+        <app-visualization-info
+          [fetchDate]="data.fetchDate"
+          [fetchError]="data.error?.error"
+          [description]="(measure$ | async)?.description"
+        ></app-visualization-info>
       </div>
     </mat-menu>
     <div *ngIf="chartInitialized; else noData"></div>

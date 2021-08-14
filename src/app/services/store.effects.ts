@@ -15,11 +15,16 @@ import {
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
+import { Questionnaire } from '../models/questionnaire.model';
 
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
-import { fetchMeasureCatalog } from './store.actions';
+import {
+  disableEdit,
+  fetchMeasureCatalog,
+  fetchSuccessModel,
+} from './store.actions';
 import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
@@ -104,15 +109,6 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          // this.l2p.fetchMobSOSGroupsAndObserve().pipe(
-          //   catchError((err) => {
-          //     this.logger.error(
-          //       'Could not fetch groups from service MobSOS:' +
-          //         JSON.stringify(err),
-          //     );
-          //     return of(undefined);
-          //   }),
-          // ),
         ]).pipe(
           tap(([groupsFromContactService]) =>
             this.ngrxStore.dispatch(
@@ -138,6 +134,14 @@ export class StateEffects {
     ),
   );
 
+  /*******************************
+   * This effect is called whenever the user selects a new group
+   * In this case we do the following:
+   * - join the yjs room for that group
+   * - fetch the measure catalog for that group
+   * - reset the success model and fetch the new one
+   * - disable the edit mode
+   */
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
@@ -145,6 +149,11 @@ export class StateEffects {
       tap(({ groupId }) => {
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(fetchSuccessModel({ groupId }));
+        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(() => of(Action.success())),
       catchError((err) => {
@@ -155,16 +164,61 @@ export class StateEffects {
     ),
   );
 
+  /******************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
-      filter(([{ service }, groupId]) => !!service),
-      switchMap(([{ service }, groupId]) =>
-        of(
-          Action.fetchSuccessModel({
-            groupId,
-            serviceName: service.name,
+      withLatestFrom(
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+      ),
+      filter(
+        ([{ service }, groupId, currentServiceName]) =>
+          !!service && service.name !== currentServiceName,
+      ),
+      tap(([{ service }, groupId]) => {
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(
+          fetchSuccessModel({ groupId, serviceName: service.name }),
+        );
+        this.ngrxStore.dispatch(
+          Action.fetchMessageDescriptions({
+            serviceName: service?.name,
+          }),
+        );
+      }),
+      switchMap(() => of(Action.success())),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
+      share(),
+    ),
+  );
+
+  /******************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
+  fetchMessageDescriptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchMessageDescriptions),
+      filter(({ serviceName }) => !!serviceName),
+      switchMap(({ serviceName }) =>
+        this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
+          map((descriptions) =>
+            Action.storeMessageDescriptions(descriptions),
+          ),
+          catchError((err) => {
+            console.error(err);
+            return of(Action.failure());
           }),
         ),
       ),
@@ -412,9 +466,13 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      mergeMap(({ groupId, serviceName }) =>
+      withLatestFrom(this.ngrxStore.select(SELECTED_SERVICE)),
+      mergeMap(([{ groupId, serviceName }, service]) =>
         this.l2p
-          .fetchSuccessModelAsObservable(groupId, serviceName)
+          .fetchSuccessModelAsObservable(
+            groupId,
+            serviceName ? serviceName : service?.name,
+          )
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
@@ -428,6 +486,28 @@ export class StateEffects {
       ),
       catchError((err) => {
         return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
+  );
+
+  fetchQuestionnaires$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchQuestionnaires),
+      mergeMap(() =>
+        this.l2p.fetchMobSOSQuestionnairesAndObserve().pipe(
+          map((questionnaires: Questionnaire[]) =>
+            Action.storeQuestionnaires({
+              questionnaires,
+            }),
+          ),
+          catchError((err) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err) => {
+        return of(Action.failure());
       }),
       share(),
     ),

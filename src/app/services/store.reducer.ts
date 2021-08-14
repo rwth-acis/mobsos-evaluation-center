@@ -18,6 +18,7 @@ import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
+import { ServiceCollection } from '../models/service.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -43,6 +44,17 @@ const _Reducer = createReducer(
         { ...state.groups },
         groupsFromContactService,
         groupsFromMobSOS,
+      ),
+    }),
+  ),
+  on(
+    Actions.storeMessageDescriptions,
+    (state, { descriptions, serviceName }) => ({
+      ...state,
+      services: addServiceDescriptions(
+        state.services,
+        descriptions,
+        serviceName,
       ),
     }),
   ),
@@ -861,5 +873,20 @@ function updateRequirements(
   );
   if (!appWorkspace) return state.communityWorkspace;
   appWorkspace.requirements = requirements;
+  return copy;
+}
+function addServiceDescriptions(
+  services: ServiceCollection,
+  descriptions: { [key: string]: string },
+  serviceName: string,
+) {
+  const copy = cloneDeep(services) as ServiceCollection;
+  if (!serviceName) return services;
+  if (serviceName in copy) {
+    copy[serviceName] = {
+      ...copy[serviceName],
+      serviceMessageDescriptions: descriptions,
+    };
+  }
   return copy;
 }

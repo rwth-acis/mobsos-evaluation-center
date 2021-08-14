@@ -25,7 +25,7 @@ export const translations = {
       'select-community-hint': 'Login to select your community',
       'your-groups-hint': 'Your Groups',
       'foreign-groups-hint': 'Foreign Groups',
-      'pick-community-name':  'Pick a unique community name',
+      'pick-community-name': 'Pick a unique community name',
     },
     'language-selector': {
       'select-language': 'Select Language',
@@ -131,6 +131,8 @@ export const translations = {
       'choice-radarchart': 'Radar Chart',
       'choice-value': 'Value',
       'name-placeholder': 'Name',
+      'description-placeholder':
+        'Describe your visualization here in more detail',
       'preview-title': 'Preview',
       'query-name-placeholder': 'Query Name',
       'query-placeholder': 'SQL',
@@ -188,7 +190,8 @@ export const translations = {
         title: 'Remove Questionnaire?',
       },
       'no-questionnaires':
-        'You have not picked any questionnaires yet. Activate the edit mode to add one.',
+        'You have not picked any questionnaires yet.',
+      'activate-edit': ' Activate the edit mode to add one.',
       'pick-questionnaire-dialog': {
         'add-measures':
           'Automatically add measures for questionnaire answers.',

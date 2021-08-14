@@ -22,7 +22,6 @@ import {
 } from '../services/store.selectors';
 import {
   editFactorInDimension,
-  removeFactor,
   removeMeasureFromModel,
 } from '../services/store.actions';
 import { SuccessFactor } from '../models/success.model';
@@ -110,25 +109,6 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         }),
       );
     }
-
-    const sub = dialogRef.componentInstance.measuresChanged.subscribe(
-      (measures) => {
-        const existingMeasures = [];
-        for (const measure of measures) {
-          this.measures[measure.name] = measure;
-          existingMeasures.push(measure.name);
-        }
-        // remove measures that have been deleted
-        for (const measureName of Object.keys(this.measures)) {
-          if (!existingMeasures.includes(measureName)) {
-            delete this.measures[measureName];
-          }
-        }
-        // console.error(this.measures);
-        this.sendMeasuresToDimension.emit(this.measures);
-      },
-    );
-    this.subscriptions$.push(sub);
   }
 
   async onEditClicked() {

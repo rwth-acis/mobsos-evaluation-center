@@ -1,21 +1,32 @@
-<span
-  *ngIf="!visualizationInitialized && !error"
-  class="loading-placeholder"
->
-  <mat-spinner></mat-spinner>
-</span>
-<span
-  *ngIf="error"
-  class="loading-placeholder"
-  (click)="openErrorDialog()"
->
-  <button mat-button>
-    <mat-icon>error_outline</mat-icon>
-  </button>
-</span>
-<span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet. A visualization should
-  be shown as soon as you interact with it.
-</span>
-<div>{{ abstractTerm.join(' ') }}</div>
-<div class="value-visualization">{{ term.join(' ') }}</div>
+<ng-container *ngIf="dataArray$ | async; else noDataAndNoError">
+  <ng-container *ngIf="kpi$ | async as kpi; else noData">
+    <div>{{ kpi.abstractTerm.join(' ') }}</div>
+    <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="chart-info">
+        <app-visualization-info
+          [fetchError]="(error$ | async)?.error"
+          [description]="(measure$ | async)?.description"
+        ></app-visualization-info>
+      </div>
+    </mat-menu>
+  </ng-container>
+</ng-container>
+
+<ng-template #noData>
+  <span
+    *ngIf="error$ | async as error; else noDataAndNoError"
+    class="visualization-error"
+    (click)="openErrorDialog(error)"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
+    </button>
+  </span>
+</ng-template>
+
+<ng-template #noDataAndNoError>
+  <div class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>

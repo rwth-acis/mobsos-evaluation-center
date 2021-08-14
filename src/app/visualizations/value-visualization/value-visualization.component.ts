@@ -56,8 +56,6 @@ export class ValueVisualizationComponent
 
   subscriptions$: Subscription[] = [];
 
-  service: ServiceInformation;
-
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
   }

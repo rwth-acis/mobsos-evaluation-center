@@ -37,7 +37,7 @@
   <div *ngIf="measure$ | async as measureAsync">
     <div [ngSwitch]="measureAsync.visualization.type">
       <app-kpi-visualization
-        [measure]="measureAsync"
+        [measureName]="measureAsync.name"
         [service]="service"
         *ngSwitchCase="'KPI'"
       ></app-kpi-visualization>

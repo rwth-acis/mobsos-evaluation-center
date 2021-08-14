@@ -19,6 +19,7 @@ export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
   create: boolean;
+  description: string;
 }
 
 @Component({

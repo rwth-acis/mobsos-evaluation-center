@@ -1,14 +1,12 @@
-<!-- <span *ngIf="serviceNotFoundInMobSOS">
-  This service has not generated any data yet. A visualization should
-  be shown as soon as you interact with it.
-</span> -->
 <div id="value-row">
   <ng-container *ngIf="data$ | async as data; else noDataAndNoError">
     <ng-container *ngIf="value$ | async as value; else noData">
       <span class="value-visualization">
         {{ value }}
-        <ng-container *ngIf="measure?.visualization?.unit">
-          {{ measure.visualization.unit }}
+        <ng-container
+          *ngIf="(measure$ | async)?.visualization?.unit as unit"
+        >
+          {{ unit }}
         </ng-container>
       </span>
 
@@ -18,16 +16,11 @@
       </button>
       <mat-menu #menu="matMenu" yPosition="above">
         <div id="value-info">
-          {{
-            'success-modeling.visualization.fetch-info'
-              | translate: { date: data.fetchDate | date: 'short' }
-          }}
-          <p *ngIf="data.error?.error">
-            {{
-              'success-modeling.visualization.fetch-error'
-                | translate: { error: data.error.error }
-            }}
-          </p>
+          <app-visualization-info
+            [fetchDate]="data.fetchDate"
+            [fetchError]="data.error?.error"
+            [description]="(measure$ | async)?.description"
+          ></app-visualization-info>
         </div>
       </mat-menu>
     </ng-container>

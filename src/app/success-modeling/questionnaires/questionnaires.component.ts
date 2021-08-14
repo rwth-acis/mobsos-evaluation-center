@@ -6,8 +6,6 @@ import {
   Output,
 } from '@angular/core';
 
-
-
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { environment } from '../../../environments/environment';
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
@@ -16,8 +14,13 @@ import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
+  MEASURES,
+  QUESTIONNAIRES,
   SELECTED_GROUP,
+  SELECTED_SERVICE,
+  SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
+  _EDIT_MODE,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -35,6 +38,8 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
+import { Subscription } from 'rxjs';
+import { fetchQuestionnaires } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-questionnaires',
@@ -42,24 +47,28 @@ import { Las2peerService } from 'src/app/services/las2peer.service';
   styleUrls: ['./questionnaires.component.scss'],
 })
 export class QuestionnairesComponent implements OnInit {
-  @Input() availableQuestionnaires: Questionnaire[];
-  @Input() measures: MeasureMap;
-  @Input() model: SuccessModel;
-  @Input() service: ServiceInformation;
-  @Input() editMode = false;
-  @Input() groupID: string;
-  @Output() measuresChange = new EventEmitter<MeasureMap>();
-  @Output() modelChange = new EventEmitter<SuccessModel>();
+  availableQuestionnaires: Questionnaire[];
+  measures: MeasureMap;
+  model: SuccessModel;
+  service: ServiceInformation;
+  editMode = false;
+  groupID: string;
+
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   group$ = this.ngrxStore.select(SELECTED_GROUP);
+  model$ = this.ngrxStore.select(SUCCESS_MODEL);
+  measures$ = this.ngrxStore.select(MEASURES);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   group: GroupInformation;
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
+  subscriptions$: Subscription[] = [];
   constructor(
     private dialog: MatDialog,
     private las2peer: Las2peerService,
     private logger: NGXLogger,
-
     private ngrxStore: Store,
   ) {}
 
@@ -81,22 +90,44 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.group$.subscribe((group) => {
+    this.ngrxStore.dispatch(fetchQuestionnaires());
+    let sub = this.group$.subscribe((group) => {
       this.group = group;
+      this.groupID = group.id;
     });
+    this.subscriptions$.push(sub);
+
+    sub = this.questionnaires$.subscribe((qs) => {
+      this.availableQuestionnaires = qs;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.measures$.subscribe(
+      (measures) => (this.measures = measures),
+    );
+    this.subscriptions$.push(sub);
+
+    sub = this.model$.subscribe((model) => (this.model = model));
+    this.subscriptions$.push(sub);
+
+    sub = this.service$.subscribe((service) => {
+      this.service = service;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.editMode$.subscribe(
+      (editMode) => (this.editMode = editMode),
+    );
+    this.subscriptions$.push(sub);
   }
 
-  openPickQuestionnaireDialog() {
+  async openPickQuestionnaireDialog() {
     // remove questionnaires that already have been chosen
     const questionnaires = this.availableQuestionnaires.filter(
-      (questionnaire) => {
-        for (const modelQuestionnaire of this.model.questionnaires) {
-          if (modelQuestionnaire.id === questionnaire.id) {
-            return false;
-          }
-        }
-        return true;
-      },
+      (questionnaire) =>
+        !!this.model.questionnaires.find(
+          (q) => q.id === questionnaire.id,
+        ),
     );
     const dialogRef = this.dialog.open(
       PickQuestionnaireDialogComponent,
@@ -106,115 +137,15 @@ export class QuestionnairesComponent implements OnInit {
         data: questionnaires,
       },
     );
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const questionnaire =
-          result.selectedQuestionnaire as IQuestionnaire;
-        let serviceName = this.service.name;
-        if (serviceName.includes('@')) {
-          serviceName = serviceName.split('@')[0];
-        }
-        const surveyName =
-          this.service.alias +
-          ': ' +
-          questionnaire.name +
-          '(' +
-          QuestionnairesComponent.nowAsIsoDate() +
-          ')';
-        this.las2peer
-          .createSurvey(
-            surveyName,
-            questionnaire.description,
-            this.group.name,
-            questionnaire.logo,
-            QuestionnairesComponent.nowAsIsoDate(),
-            QuestionnairesComponent.in100YearsAsIsoDate(),
-            serviceName,
-            this.service.alias,
-            questionnaire.lang,
-          )
-          .then((response) => {
-            const surveyId = parseInt(
-              (response as { id: string }).id,
-              10,
-            );
-            this.las2peer
-              .setQuestionnaireForSurvey(questionnaire.id, surveyId)
-              .then(() => {
-                this.model.questionnaires.push(
-                  new QuestionnaireModel(
-                    questionnaire.name,
-                    questionnaire.id,
-                    surveyId,
-                  ),
-                );
+    const result = await dialogRef.afterClosed().toPromise();
 
-                if (result.addMeasures) {
-                  const questions = this.extractQuestions(
-                    questionnaire.formXML,
-                  );
-                  for (const question of questions) {
-                    const measureName =
-                      questionnaire.name +
-                      ': ' +
-                      question.instructions;
-                    const query =
-                      'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
-                      'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' +
-                      SqlString.escape(surveyId) +
-                      ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' +
-                      question.code +
-                      '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
-                    const measure = new Measure(
-                      measureName,
-                      [new Query('Answer Distribution', query)],
-                      new ChartVisualization(
-                        'BarChart',
-                        measureName,
-                        measureName,
-                        '300px',
-                        '300px',
-                      ),
-                      ['surveyId=' + surveyId, 'generated'],
-                    );
-                    this.measures[measureName] = measure;
-                    if (
-                      result.assignMeasures &&
-                      question.dimensionRecommendation &&
-                      question.factorRecommendation
-                    ) {
-                      const dimension =
-                        this.model.dimensions[
-                          question.dimensionRecommendation
-                        ];
-                      let targetFactor: SuccessFactor;
-                      for (const factor of dimension as SuccessFactor[]) {
-                        if (
-                          factor.name ===
-                          question.factorRecommendation
-                        ) {
-                          targetFactor = factor;
-                          break;
-                        }
-                      }
-                      if (!targetFactor) {
-                        targetFactor = new SuccessFactor(
-                          question.factorRecommendation,
-                          [],
-                        );
-                      }
-                      targetFactor.measures.push(measureName);
-                      dimension.push(targetFactor);
-                    }
-                  }
-                }
-
-                this.measuresChange.emit(this.measures);
-                this.modelChange.emit(this.model);
-              });
-          });
-      }
-    });
+    if (result) {
+      this.createNewSurvey(
+        result.selectedQuestionnaire as IQuestionnaire,
+        result.addMeasures,
+        result.assignMeasures,
+      );
+    }
   }
 
   async openRemoveQuestionnaireDialog(questionnaireIndex: number) {
@@ -265,7 +196,6 @@ export class QuestionnairesComponent implements OnInit {
           }
         }
         this.model.questionnaires.splice(questionnaireIndex, 1);
-        this.modelChange.emit(this.model);
       }
     });
   }
@@ -333,5 +263,109 @@ export class QuestionnairesComponent implements OnInit {
       });
     }
     return result;
+  }
+
+  createNewSurvey(
+    questionnaire: IQuestionnaire,
+    addMeasures: boolean,
+    assignMeasures: boolean,
+  ) {
+    let serviceName = this.service.name;
+    if (serviceName.includes('@')) {
+      serviceName = serviceName.split('@')[0];
+    }
+    const surveyName =
+      this.service.alias +
+      ': ' +
+      questionnaire.name +
+      '(' +
+      QuestionnairesComponent.nowAsIsoDate() +
+      ')';
+    this.las2peer
+      .createSurvey(
+        surveyName,
+        questionnaire.description,
+        this.group.name,
+        questionnaire.logo,
+        QuestionnairesComponent.nowAsIsoDate(),
+        QuestionnairesComponent.in100YearsAsIsoDate(),
+        serviceName,
+        this.service.alias,
+        questionnaire.lang,
+      )
+      .then((response) => {
+        const surveyId = parseInt(
+          (response as { id: string }).id,
+          10,
+        );
+        this.las2peer
+          .setQuestionnaireForSurvey(questionnaire.id, surveyId)
+          .then(() => {
+            this.model.questionnaires.push(
+              new QuestionnaireModel(
+                questionnaire.name,
+                questionnaire.id,
+                surveyId,
+              ),
+            );
+
+            if (addMeasures) {
+              const questions = this.extractQuestions(
+                questionnaire.formXML,
+              );
+              for (const question of questions) {
+                const measureName =
+                  questionnaire.name + ': ' + question.instructions;
+                const query =
+                  'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
+                  'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' +
+                  SqlString.escape(surveyId) +
+                  ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' +
+                  question.code +
+                  '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
+                const measure = new Measure(
+                  measureName,
+                  [new Query('Answer Distribution', query)],
+                  new ChartVisualization(
+                    'BarChart',
+                    measureName,
+                    measureName,
+                    '300px',
+                    '300px',
+                  ),
+                  ['surveyId=' + surveyId, 'generated'],
+                );
+                this.measures[measureName] = measure;
+                if (
+                  assignMeasures &&
+                  question.dimensionRecommendation &&
+                  question.factorRecommendation
+                ) {
+                  const dimension =
+                    this.model.dimensions[
+                      question.dimensionRecommendation
+                    ];
+                  let targetFactor: SuccessFactor;
+                  for (const factor of dimension as SuccessFactor[]) {
+                    if (
+                      factor.name === question.factorRecommendation
+                    ) {
+                      targetFactor = factor;
+                      break;
+                    }
+                  }
+                  if (!targetFactor) {
+                    targetFactor = new SuccessFactor(
+                      question.factorRecommendation,
+                      [],
+                    );
+                  }
+                  targetFactor.measures.push(measureName);
+                  dimension.push(targetFactor);
+                }
+              }
+            }
+          });
+      });
   }
 }
