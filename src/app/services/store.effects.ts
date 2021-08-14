@@ -139,7 +139,7 @@ export class StateEffects {
    * In this case we do the following:
    * - join the yjs room for that group
    * - fetch the measure catalog for that group
-   * - reset the success model
+   * - reset the success model and fetch the new one
    * - disable the edit mode
    */
   setGroup$ = createEffect(() =>
@@ -164,19 +164,25 @@ export class StateEffects {
     ),
   );
 
+  /******************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
       withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       filter(([{ service }, groupId]) => !!service),
-      switchMap(([{ service }, groupId]) =>
-        of(
-          Action.fetchSuccessModel({
-            groupId,
-            serviceName: service.name,
-          }),
-        ),
-      ),
+      tap(([{ service }, groupId]) => {
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(
+          fetchSuccessModel({ groupId, serviceName: service.name }),
+        );
+      }),
+      switchMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());
