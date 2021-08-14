@@ -172,8 +172,14 @@ export class StateEffects {
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
-      filter(([{ service }, groupId]) => !!service),
+      withLatestFrom(
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+      ),
+      filter(
+        ([{ service }, groupId, currentServiceName]) =>
+          !!service && service.name !== currentServiceName,
+      ),
       tap(([{ service }, groupId]) => {
         this.ngrxStore.dispatch(
           Action.storeSuccessModel({ xml: undefined }),
