@@ -20,7 +20,11 @@ import { Questionnaire } from '../models/questionnaire.model';
 import { VData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
-import { disableEdit, fetchMeasureCatalog } from './store.actions';
+import {
+  disableEdit,
+  fetchMeasureCatalog,
+  fetchSuccessModel,
+} from './store.actions';
 import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
@@ -105,15 +109,6 @@ export class StateEffects {
               return of(undefined);
             }),
           ),
-          // this.l2p.fetchMobSOSGroupsAndObserve().pipe(
-          //   catchError((err) => {
-          //     this.logger.error(
-          //       'Could not fetch groups from service MobSOS:' +
-          //         JSON.stringify(err),
-          //     );
-          //     return of(undefined);
-          //   }),
-          // ),
         ]).pipe(
           tap(([groupsFromContactService]) =>
             this.ngrxStore.dispatch(
@@ -157,6 +152,7 @@ export class StateEffects {
         this.ngrxStore.dispatch(
           Action.storeSuccessModel({ xml: undefined }),
         );
+        this.ngrxStore.dispatch(fetchSuccessModel({ groupId }));
         this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(() => of(Action.success())),
@@ -425,9 +421,13 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      mergeMap(({ groupId, serviceName }) =>
+      withLatestFrom(this.ngrxStore.select(SELECTED_SERVICE)),
+      mergeMap(([{ groupId, serviceName }, service]) =>
         this.l2p
-          .fetchSuccessModelAsObservable(groupId, serviceName)
+          .fetchSuccessModelAsObservable(
+            groupId,
+            serviceName ? serviceName : service?.name,
+          )
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
