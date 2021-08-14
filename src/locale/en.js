@@ -131,6 +131,8 @@ export const translations = {
       'choice-radarchart': 'Radar Chart',
       'choice-value': 'Value',
       'name-placeholder': 'Name',
+      'description-placeholder':
+        'Describe your visualization here in more detail',
       'preview-title': 'Preview',
       'query-name-placeholder': 'Query Name',
       'query-placeholder': 'SQL',

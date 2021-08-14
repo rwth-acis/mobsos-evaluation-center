@@ -134,6 +134,8 @@ export const translations = {
       'choice-radarchart': 'Netzdiagramm',
       'choice-value': 'Wert',
       'name-placeholder': 'Name',
+      'description-placeholder':
+        'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',

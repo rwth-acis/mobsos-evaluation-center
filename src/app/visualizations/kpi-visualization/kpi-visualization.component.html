@@ -2,6 +2,14 @@
   <ng-container *ngIf="kpi$ | async as kpi; else noData">
     <div>{{ kpi.abstractTerm.join(' ') }}</div>
     <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="chart-info">
+        <app-visualization-info
+          [fetchError]="(error$ | async)?.error"
+          [description]="(measure$ | async)?.description"
+        ></app-visualization-info>
+      </div>
+    </mat-menu>
   </ng-container>
 </ng-container>
 

@@ -6,7 +6,8 @@ export class Measure {
     public name: string,
     public queries: Query[],
     public visualization: Visualization,
-    public tags: string[]
+    public tags: string[],
+    public description?: string,
   ) {}
 
   static fromXml(xml: Element): Measure {
@@ -17,7 +18,7 @@ export class Measure {
       queries.push(Query.fromXml(queryNode));
     }
     const visualizationNode = Array.from(
-      xml.getElementsByTagName('visualization')
+      xml.getElementsByTagName('visualization'),
     )[0];
     const visualization = Visualization.fromXml(visualizationNode);
     const tagsCsv = xml.getAttribute('tags');
@@ -34,7 +35,9 @@ export class Measure {
     for (const objQuery of obj.queries) {
       queries.push(Query.fromPlainObject(objQuery));
     }
-    const visualization = Visualization.fromPlainObject(obj.visualization);
+    const visualization = Visualization.fromPlainObject(
+      obj.visualization,
+    );
     return new Measure(obj.name, queries, visualization, obj.tags);
   }
 
