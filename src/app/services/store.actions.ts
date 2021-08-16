@@ -148,9 +148,6 @@ export const storeGroup = createAction(
 );
 export const removeReqBazarProject = createAction(
   StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
-  props<{
-    id: number;
-  }>(),
 );
 export const storeRequirements = createAction(
   StoreActions.STORE_REQUIREMENTS,

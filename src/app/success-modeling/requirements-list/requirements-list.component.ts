@@ -34,16 +34,15 @@ import {
 } from 'src/app/models/reqbaz.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { cloneDeep } from 'lodash-es';
+import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-requirements-list',
   templateUrl: './requirements-list.component.html',
   styleUrls: ['./requirements-list.component.scss'],
 })
 export class RequirementsListComponent implements OnInit, OnDestroy {
-  @Input() successModel: SuccessModel;
+  successModel: SuccessModel;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-
-  @Output() numberOfRequirements = new EventEmitter<number>();
 
   user$ = this.ngrxStore.select(_USER);
   requirements$ = this.ngrxStore.select(REQUIREMENTS);
@@ -99,34 +98,25 @@ export class RequirementsListComponent implements OnInit, OnDestroy {
     });
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.successModel = SuccessModel.fromPlainObject(
-        cloneDeep(this.successModel),
-      );
-      this.successModel.reqBazProject = new ReqbazProject(
+      const project = new ReqbazProject(
         result.selectedProject.name,
         result.selectedProject.id,
         result.selectedCategory.id,
       );
-      this.ngrxStore.dispatch(
-        addReqBazarProject({
-          project: this.successModel.reqBazProject,
-        }),
-      );
 
       this.ngrxStore.dispatch(
-        storeSuccessModel({
-          xml: this.successModel.toXml().outerHTML,
+        addReqBazarProject({
+          project,
         }),
       );
     }
   }
 
   async openDisconnectProjectDialog() {
-    const message = await this.translate
-      .get(
-        'success-modeling.requirements-list.disconnect-project-prompt',
-      )
-      .toPromise();
+    const message = this.translate.instant(
+      'success-modeling.requirements-list.disconnect-project-prompt',
+    );
+
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
@@ -136,24 +126,12 @@ export class RequirementsListComponent implements OnInit, OnDestroy {
       this.successModel = SuccessModel.fromPlainObject(
         cloneDeep(this.successModel),
       );
-      const id = this.successModel.reqBazProject.id;
-      this.ngrxStore.dispatch(
-        removeReqBazarProject({
-          id,
-        }),
-      );
 
-      this.successModel.reqBazProject = null;
-      this.ngrxStore.dispatch(
-        storeSuccessModel({
-          xml: this.successModel.toXml().outerHTML,
-        }),
-      );
+      this.ngrxStore.dispatch(removeReqBazarProject());
+
       this.ngrxStore.dispatch(
         storeRequirements({ requirements: undefined }),
       );
-      this.ngrxStore.dispatch(setNumberOfRequirements({ n: 0 }));
-      this.numberOfRequirements.emit(0);
     }
   }
 
