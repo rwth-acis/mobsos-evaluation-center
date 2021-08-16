@@ -29,7 +29,6 @@ export interface AppState {
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
   restricted: boolean;
-  numberOfRequirements: number;
   requirements: Requirement[];
 }
 
@@ -51,7 +50,6 @@ export const INITIAL_APP_STATE: AppState = {
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
   restricted: false,
-  numberOfRequirements: 0,
   requirements: undefined,
 };
 /**
