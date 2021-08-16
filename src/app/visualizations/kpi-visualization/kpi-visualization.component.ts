@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
   KpiVisualization,
-  VData,
+  VisualizationData,
 } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
@@ -43,7 +43,7 @@ export class KpiVisualizationComponent
   @Input() measureName: string;
   measure$: Observable<Measure>;
   queries$: Observable<string[]>;
-  dataArray$: Observable<VData[]>;
+  dataArray$: Observable<VisualizationData[]>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
 
   async ngOnInit() {
@@ -79,7 +79,7 @@ export class KpiVisualizationComponent
       mergeMap((queries) =>
         forkJoin(
           queries.map(
-            (query: string): Observable<VData> =>
+            (query: string): Observable<VisualizationData> =>
               this.ngrxStore.select(
                 VISUALIZATION_DATA_FOR_QUERY,
                 query,

@@ -31,7 +31,7 @@ import {
   throttleTime,
   timeout,
 } from 'rxjs/operators';
-import { VisualizationData } from '../models/visualization.model';
+import { VisualizationCollection } from '../models/visualization.model';
 
 const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
@@ -117,7 +117,7 @@ export class WorkspaceService {
     selectedService: ServiceInformation,
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
-    visualizationData?: VisualizationData,
+    visualizationData?: VisualizationCollection,
   ) {
     if (!username) {
       throw new Error('user cannot be null');
@@ -292,7 +292,7 @@ export class WorkspaceService {
     model?: SuccessModel,
     catalog?: MeasureCatalog,
     role?: UserRole,
-    vdata?: VisualizationData,
+    vdata?: VisualizationCollection,
   ) {
     if (!owner) {
       throw new Error('owner cannot be null');

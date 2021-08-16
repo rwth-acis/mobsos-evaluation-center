@@ -17,13 +17,14 @@ import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
 
-import { VData } from '../models/visualization.model';
+import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
   disableEdit,
   fetchMeasureCatalog,
   fetchSuccessModel,
+  resetFetchDate,
 } from './store.actions';
 import {
   _SELECTED_GROUP_ID,
@@ -545,6 +546,23 @@ export class StateEffects {
     ),
   );
 
+  refreshVisualization$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.refreshVisualization),
+      tap(({ query }) => {
+        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
+        this.ngrxStore.dispatch(resetFetchDate({ query }));
+      }),
+      mergeMap(({ query, queryParams }) =>
+        of(Action.fetchVisualizationData({ query, queryParams })),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
@@ -648,7 +666,7 @@ const REFETCH_INTERVAL =
  * @param dataForQuery the current data from the store
  * @returns true if we should make a new request
  */
-function shouldFetch(dataForQuery: VData): boolean {
+function shouldFetch(dataForQuery: VisualizationData): boolean {
   if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old

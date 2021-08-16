@@ -17,7 +17,7 @@ import {
   MEASURE,
   SELECTED_SERVICE,
 } from '../services/store.selectors';
-import { VData } from '../models/visualization.model';
+import { VisualizationData } from '../models/visualization.model';
 import { filter } from 'rxjs/operators';
 
 export interface VisualizationComponent {

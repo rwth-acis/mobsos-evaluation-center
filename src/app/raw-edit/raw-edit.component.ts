@@ -7,6 +7,7 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
+  HttpActions,
   saveCatalog,
   saveModel,
   setService,
@@ -196,7 +197,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          if (result?.type === StateActions.SUCCESS_RESPONSE) {
+          if (result?.type === HttpActions.SUCCESS_RESPONSE) {
             const message = this.translate.instant(
               'raw-edit.measures.snackbar-success',
             );
@@ -238,10 +239,10 @@ export class RawEditComponent implements OnInit, OnDestroy {
         )
         .subscribe(
           (
-            result: { type: StateActions } | typeof failureResponse,
+            result: { type: HttpActions } | typeof failureResponse,
           ) => {
             this.saveInProgress = false;
-            if (result?.type === StateActions.SUCCESS_RESPONSE) {
+            if (result?.type === HttpActions.SUCCESS_RESPONSE) {
               const message = this.translate.instant(
                 'raw-edit.success-models.snackbar-success',
               );

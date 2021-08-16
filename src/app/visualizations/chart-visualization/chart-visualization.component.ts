@@ -13,28 +13,16 @@ import {
   first,
   map,
   mergeMap,
-  switchMap,
-  tap,
-  throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, Observable, Subscription } from 'rxjs';
-import { Measure } from 'src/app/models/measure.model';
+import { Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
-  VData,
-  Visualization,
   VisualizationData,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
-import { ServiceInformation } from 'src/app/models/service.model';
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { refreshVisualization } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -53,7 +41,8 @@ export class ChartVisualizerComponent
   chartData: GoogleChart;
   chartInitialized = false;
   visualization: ChartVisualization;
-  data$: Observable<VData>;
+  data$: Observable<VisualizationData>;
+  dataIsLoading$: Observable<boolean>;
 
   formatters = [];
 
@@ -106,6 +95,9 @@ export class ChartVisualizerComponent
     let sub = this.error$.subscribe((err) => {
       this.error = err;
     });
+    this.dataIsLoading$ = this.data$.pipe(
+      map((data) => data === undefined || data?.loading),
+    );
     this.subscriptions$.push(sub);
     sub = this.data$
       .pipe(
@@ -182,5 +174,14 @@ export class ChartVisualizerComponent
     } else {
       return 'opacity: 0;';
     }
+  }
+
+  onRefreshClicked(query: string) {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
   }
 }

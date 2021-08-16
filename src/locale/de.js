@@ -89,6 +89,7 @@ export const translations = {
         'Die Daten wurden am {{date}} vom Server geladen.',
       'fetch-error':
         ' Folgender Fehler ist beim Laden von rezenteren Daten aufgetreten: {{ error }}',
+      'refresh-data': 'Neu laden',
     },
     'community-workspace':
       'Arbeitsbereich der {{community}} Community',

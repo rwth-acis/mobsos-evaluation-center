@@ -5,7 +5,7 @@ import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
-import { VisualizationData } from './visualization.model';
+import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
 
 /**
@@ -19,7 +19,7 @@ export interface AppState {
   selectedServiceName: string;
   editMode: boolean;
   messageDescriptions: object;
-  visualizationData: VisualizationData;
+  visualizationData: VisualizationCollection;
   successModel: SuccessModel;
   successModelInitialized: boolean;
   measureCatalog: MeasureCatalog;

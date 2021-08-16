@@ -3,7 +3,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
-import { VisualizationData } from '../models/visualization.model';
+import { VisualizationCollection } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
@@ -19,6 +19,7 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
+import { resetFetchDate } from './store.actions';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -255,6 +256,14 @@ const _Reducer = createReducer(
       props,
     ),
   })),
+  on(Actions.resetFetchDate, (state, { query }) => ({
+    ...state,
+    visualizationData: resetFetchDateForQuery(
+      state.visualizationData,
+      query,
+    ),
+  })),
+
   on(Actions.removeMeasureFromModel, (state, { name }) => ({
     ...state,
     communityWorkspace: removeMeasure(
@@ -327,7 +336,7 @@ function removeReqBazarProject(state: AppState) {
 }
 
 function updateVisualizationData(
-  currentVisualizationData: VisualizationData,
+  currentVisualizationData: VisualizationCollection,
   props: {
     data?: any[][];
     query?: string;
@@ -343,12 +352,14 @@ function updateVisualizationData(
       data: props.data,
       fetchDate: new Date().toISOString(),
       error: null,
+      loading: false,
     };
   } else {
     currentVisualizationData[props.query] = {
       ...currentVisualizationData[props.query],
       error: props?.error,
       fetchDate: new Date().toISOString(),
+      loading: false,
     };
   }
 
@@ -824,9 +835,9 @@ function getWorkspaceByUserAndService(
   return userWorkspace[service];
 }
 function removeVisualizationData(
-  visualizationData: VisualizationData,
+  visualizationData: VisualizationCollection,
   query: string,
-): VisualizationData {
+): VisualizationCollection {
   const copy = { ...visualizationData };
   delete copy[query];
   return copy;
@@ -888,5 +899,29 @@ function addServiceDescriptions(
       serviceMessageDescriptions: descriptions,
     };
   }
+  return copy;
+}
+function replaceValueInObject<T>(obj: object, key: string, value: T) {
+  if (!(key in obj)) return obj;
+  const copy = cloneDeep(obj);
+
+  copy[key] = value;
+  return copy;
+}
+
+function resetFetchDateForQuery(
+  visualizationData: VisualizationCollection,
+  query: string,
+): VisualizationCollection {
+  if (!(query in visualizationData)) return visualizationData;
+  const copy = cloneDeep(
+    visualizationData,
+  ) as VisualizationCollection;
+
+  copy[query] = {
+    ...copy[query],
+    fetchDate: undefined,
+    loading: true,
+  };
   return copy;
 }

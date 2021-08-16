@@ -21,7 +21,10 @@ export enum HttpActions {
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
-  ADD_GROUP = 'adds a new group',
+  REFRESH_VISUALIZATION = 'Refresh the current visualization manually',
+  ADD_GROUP = 'adds a new group on the server',
+  SUCCESS_RESPONSE = 'response was successfully',
+  FAILURE_RESPONSE = 'response was not successfully',
 }
 
 export enum StoreActions {
@@ -66,9 +69,8 @@ export enum StateActions {
   INCREMENT_LOADING = 'Increase the number of current http calls',
   DECREMENT_LOADING = 'Decrease the number of current http calls',
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
+  RESET_FETCH_DATE = 'set the fetch date to null',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
-  SUCCESS_RESPONSE = 'response was successfully',
-  FAILURE_RESPONSE = 'response was not successfully',
 }
 
 // fetching
@@ -305,8 +307,15 @@ export const setUserName = createAction(
   StoreActions.STORE_USERNAME,
   props<{ username: string }>(),
 );
+export const refreshVisualization = createAction(
+  HttpActions.REFRESH_VISUALIZATION,
+  props<{ query: string; queryParams?: string[] }>(),
+);
+export const resetFetchDate = createAction(
+  StateActions.RESET_FETCH_DATE,
+  props<{ query: string }>(),
+);
 
-// modes
 export const incrementLoading = createAction(
   StateActions.INCREMENT_LOADING,
 );
@@ -323,13 +332,13 @@ export const toggleExpertMode = createAction(
 
 // http results
 export const successResponse = createAction(
-  StateActions.SUCCESS_RESPONSE,
+  HttpActions.SUCCESS_RESPONSE,
 );
 export const saveCatalogSuccess = createAction(
   HttpActions.SAVE_CATALOG_SUCCESS,
 );
 export const failureResponse = createAction(
-  StateActions.FAILURE_RESPONSE,
+  HttpActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
 );
 

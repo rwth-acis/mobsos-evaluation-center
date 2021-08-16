@@ -57,7 +57,7 @@ import { ServiceInformation } from '../models/service.model';
 import { ApplicationWorkspace } from '../models/workspace.model';
 import { GroupInformation } from '../models/community.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { VisualizationData } from '../models/visualization.model';
+import { VisualizationCollection } from '../models/visualization.model';
 import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
 import { Las2peerService } from '../services/las2peer.service';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';

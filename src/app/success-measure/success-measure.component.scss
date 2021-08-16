@@ -20,8 +20,10 @@
 #measure-header {
   display: flex;
   flex-direction: row;
+  vertical-align: middle;
   #edit-button,
   #delete-button {
     margin-top: 5px;
   }
+  
 }

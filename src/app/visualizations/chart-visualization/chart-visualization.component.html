@@ -1,14 +1,5 @@
-<div id="chart-row">
+<div id="chart-row" *ngIf="!(dataIsLoading$ | async); else loading">
   <ng-container *ngIf="data$ | async as data; else noData">
-    <mat-menu #menu="matMenu" yPosition="above">
-      <div id="chart-info">
-        <app-visualization-info
-          [fetchDate]="data.fetchDate"
-          [fetchError]="data.error?.error"
-          [description]="(measure$ | async)?.description"
-        ></app-visualization-info>
-      </div>
-    </mat-menu>
     <div *ngIf="chartInitialized; else noData"></div>
     <google-chart
       *ngIf="chartData"
@@ -31,13 +22,34 @@
       [matMenuTriggerFor]="menu"
     >
       <mat-icon> info_outline </mat-icon>
-    </button></ng-container
-  >
+    </button>
+
+    <button
+      *ngIf="query$ | async as query"
+      mat-icon-button
+      matTooltipShowDelay="0"
+      matTooltip="{{
+        'success-modeling.visualization.refresh-data' | translate
+      }}"
+      (click)="onRefreshClicked(query)"
+    >
+      <mat-icon color="primary">sync</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" yPosition="above">
+      <div id="chart-info">
+        <app-visualization-info
+          [fetchDate]="data.fetchDate"
+          [fetchError]="data.error?.error"
+          [description]="(measure$ | async)?.description"
+        ></app-visualization-info>
+      </div>
+    </mat-menu>
+  </ng-container>
 </div>
 
 <ng-template #noData>
   <span
-    *ngIf="(error$ | async) && !chartData; else noDataAndNoError"
+    *ngIf="error$ | async; else noError"
     (click)="openErrorDialog()"
     class="visualization-error"
   >
@@ -47,7 +59,7 @@
   </span>
 </ng-template>
 
-<ng-template #noDataAndNoError>
+<ng-template #loading>
   <span class="loading-placeholder">
     <mat-spinner></mat-spinner>
   </span>

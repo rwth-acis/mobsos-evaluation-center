@@ -41,9 +41,7 @@ import {
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() measureName: string;
   @Input() service: ServiceInformation;
   @Input() canDelete = false;
@@ -78,8 +76,6 @@ export class SuccessMeasureComponent
     });
     this.subscriptions$.push(sub);
   }
-
-  ngOnChanges(changes: SimpleChanges): void {}
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());

@@ -12,7 +12,7 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
-import { VData } from '../models/visualization.model';
+import { VisualizationData } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
