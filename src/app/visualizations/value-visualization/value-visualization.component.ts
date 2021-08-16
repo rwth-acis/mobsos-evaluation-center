@@ -31,6 +31,7 @@ import {
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
+import { refreshVisualization } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-value-visualization',
@@ -55,6 +56,7 @@ export class ValueVisualizationComponent
     );
 
   subscriptions$: Subscription[] = [];
+  dataIsLoading$: Observable<boolean>;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -98,7 +100,9 @@ export class ValueVisualizationComponent
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
-
+    this.dataIsLoading$ = this.data$.pipe(
+      map((data) => data === undefined || data?.loading),
+    );
     this.value$ = this.data$.pipe(
       map((visualizationData) => visualizationData?.data),
       filter((data) => !!data),
@@ -120,5 +124,14 @@ export class ValueVisualizationComponent
         super.fetchVisualizationData(query, queryParams);
       });
     this.subscriptions$.push(sub);
+  }
+
+  onRefreshClicked(query: string) {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
   }
 }

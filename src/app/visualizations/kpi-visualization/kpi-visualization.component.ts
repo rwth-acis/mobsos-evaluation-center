@@ -23,6 +23,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
+import { refreshVisualization } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -44,6 +45,7 @@ export class KpiVisualizationComponent
   measure$: Observable<Measure>;
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
+  dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
 
   async ngOnInit() {
@@ -86,6 +88,14 @@ export class KpiVisualizationComponent
               ),
           ),
         ),
+      ),
+    );
+
+    // true if any query is still loading
+    this.dataIsLoading$ = this.dataArray$.pipe(
+      map(
+        (data: VisualizationData[]) =>
+          data === undefined || data.some((v) => v.loading),
       ),
     );
 
@@ -158,5 +168,14 @@ export class KpiVisualizationComponent
         });
       });
     this.subscriptions$.push(sub);
+  }
+
+  onRefreshClicked(query: string) {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
   }
 }

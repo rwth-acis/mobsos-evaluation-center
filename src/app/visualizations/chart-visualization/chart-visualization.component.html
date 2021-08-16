@@ -49,8 +49,8 @@
 
 <ng-template #noData>
   <span
-    *ngIf="error$ | async; else noError"
-    (click)="openErrorDialog()"
+    *ngIf="error$ | async as error"
+    (click)="openErrorDialog(error)"
     class="visualization-error"
   >
     <button mat-button>

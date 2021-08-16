@@ -1,21 +1,37 @@
-<ng-container *ngIf="dataArray$ | async; else noDataAndNoError">
-  <ng-container *ngIf="kpi$ | async as kpi; else noData">
-    <div>{{ kpi.abstractTerm.join(' ') }}</div>
-    <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
-    <mat-menu #menu="matMenu" yPosition="above">
-      <div id="chart-info">
-        <app-visualization-info
-          [fetchError]="(error$ | async)?.error"
-          [description]="(measure$ | async)?.description"
-        ></app-visualization-info>
-      </div>
-    </mat-menu>
+<ng-container *ngIf="!(dataIsLoading$ | async); else loading">
+  <ng-container *ngIf="dataArray$ | async; else noData">
+    <ng-container *ngIf="kpi$ | async as kpi; else noData">
+      <div>{{ kpi.abstractTerm.join(' ') }}</div>
+      <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon> info_outline </mat-icon>
+      </button>
+
+      <button
+        *ngIf="query$ | async as query"
+        mat-icon-button
+        matTooltipShowDelay="0"
+        matTooltip="{{
+          'success-modeling.visualization.refresh-data' | translate
+        }}"
+        (click)="onRefreshClicked(query)"
+      >
+        <mat-icon color="primary">sync</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" yPosition="above">
+        <div id="chart-info">
+          <app-visualization-info
+            [fetchError]="(error$ | async)?.error"
+            [description]="(measure$ | async)?.description"
+          ></app-visualization-info>
+        </div>
+      </mat-menu>
+    </ng-container>
   </ng-container>
 </ng-container>
-
 <ng-template #noData>
   <span
-    *ngIf="error$ | async as error; else noDataAndNoError"
+    *ngIf="error$ | async as error"
     class="visualization-error"
     (click)="openErrorDialog(error)"
   >
@@ -25,7 +41,7 @@
   </span>
 </ng-template>
 
-<ng-template #noDataAndNoError>
+<ng-template #loading>
   <div class="loading-placeholder">
     <mat-spinner></mat-spinner>
   </div>
