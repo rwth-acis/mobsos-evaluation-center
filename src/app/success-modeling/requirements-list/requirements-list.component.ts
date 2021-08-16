@@ -6,7 +6,6 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
@@ -15,7 +14,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { _USER } from 'src/app/services/store.selectors';
+import {
+  REQUIREMENTS,
+  SUCCESS_MODEL,
+  _USER,
+} from 'src/app/services/store.selectors';
 import {
   addReqBazarProject,
   removeReqBazarProject,
@@ -36,14 +39,14 @@ import { cloneDeep } from 'lodash-es';
   templateUrl: './requirements-list.component.html',
   styleUrls: ['./requirements-list.component.scss'],
 })
-export class RequirementsListComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+export class RequirementsListComponent implements OnInit, OnDestroy {
   @Input() successModel: SuccessModel;
+  successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
 
   @Output() numberOfRequirements = new EventEmitter<number>();
 
   user$ = this.ngrxStore.select(_USER);
+  requirements$ = this.ngrxStore.select(REQUIREMENTS);
   requirements: Requirement[];
   refreshRequirementsHandle;
   frontendUrl = environment.reqBazFrontendUrl;
@@ -70,49 +73,52 @@ export class RequirementsListComponent
   }
 
   ngOnInit() {
-    const sub = this.user$.subscribe((user) => (this.user = user));
+    let sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (Object.keys(changes).includes('successModel')) {
-      this.refreshRequirements();
-    }
+    sub = this.successModel$.subscribe((model) => {
+      this.successModel = model;
+      if (!this.requirements) {
+        this.refreshRequirements();
+      }
+    });
+    this.subscriptions$.push(sub);
+    sub = this.requirements$.subscribe((requirements) => {
+      this.requirements = requirements;
+    });
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  openPickProjectDialog() {
+  async openPickProjectDialog() {
     const dialogRef = this.dialog.open(PickReqbazProjectComponent, {
       minWidth: 300,
       width: '80%',
     });
-    const sub = dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.successModel = SuccessModel.fromPlainObject(
-          cloneDeep(this.successModel),
-        );
-        this.successModel.reqBazProject = new ReqbazProject(
-          result.selectedProject.name,
-          result.selectedProject.id,
-          result.selectedCategory.id,
-        );
-        this.ngrxStore.dispatch(
-          addReqBazarProject({
-            project: this.successModel.reqBazProject,
-          }),
-        );
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.successModel = SuccessModel.fromPlainObject(
+        cloneDeep(this.successModel),
+      );
+      this.successModel.reqBazProject = new ReqbazProject(
+        result.selectedProject.name,
+        result.selectedProject.id,
+        result.selectedCategory.id,
+      );
+      this.ngrxStore.dispatch(
+        addReqBazarProject({
+          project: this.successModel.reqBazProject,
+        }),
+      );
 
-        this.ngrxStore.dispatch(
-          storeSuccessModel({
-            xml: this.successModel.toXml().outerHTML,
-          }),
-        );
-      }
-    });
-    this.subscriptions$.push(sub);
+      this.ngrxStore.dispatch(
+        storeSuccessModel({
+          xml: this.successModel.toXml().outerHTML,
+        }),
+      );
+    }
   }
 
   async openDisconnectProjectDialog() {
@@ -125,54 +131,42 @@ export class RequirementsListComponent
       minWidth: 300,
       data: message,
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.successModel = SuccessModel.fromPlainObject(
-          cloneDeep(this.successModel),
-        );
-        const id = this.successModel.reqBazProject.id;
-        this.ngrxStore.dispatch(
-          removeReqBazarProject({
-            id,
-          }),
-        );
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.successModel = SuccessModel.fromPlainObject(
+        cloneDeep(this.successModel),
+      );
+      const id = this.successModel.reqBazProject.id;
+      this.ngrxStore.dispatch(
+        removeReqBazarProject({
+          id,
+        }),
+      );
 
-        this.successModel.reqBazProject = null;
-        this.ngrxStore.dispatch(
-          storeSuccessModel({
-            xml: this.successModel.toXml().outerHTML,
-          }),
-        );
-        this.ngrxStore.dispatch(
-          storeRequirements({ requirements: undefined }),
-        );
-        this.ngrxStore.dispatch(setNumberOfRequirements({ n: 0 }));
-        this.numberOfRequirements.emit(0);
-      }
-    });
+      this.successModel.reqBazProject = null;
+      this.ngrxStore.dispatch(
+        storeSuccessModel({
+          xml: this.successModel.toXml().outerHTML,
+        }),
+      );
+      this.ngrxStore.dispatch(
+        storeRequirements({ requirements: undefined }),
+      );
+      this.ngrxStore.dispatch(setNumberOfRequirements({ n: 0 }));
+      this.numberOfRequirements.emit(0);
+    }
   }
 
   refreshRequirements() {
     if (!this.successModel || !this.successModel.reqBazProject) {
-      this.requirements = [];
       return;
     }
     this.las2peer
       .fetchRequirementsOnReqBaz(
         this.successModel.reqBazProject.categoryId,
       )
-      .then((requirements) => {
-        this.requirements = cloneDeep(requirements) as [];
-        this.ngrxStore.dispatch(
-          storeRequirements({ requirements: this.requirements }),
-        );
-        this.ngrxStore.dispatch(
-          setNumberOfRequirements({
-            n: (requirements as [])?.length,
-          }),
-        );
-
-        this.numberOfRequirements.emit((requirements as []).length);
+      .then((requirements: Requirement[]) => {
+        this.ngrxStore.dispatch(storeRequirements({ requirements }));
       });
   }
 

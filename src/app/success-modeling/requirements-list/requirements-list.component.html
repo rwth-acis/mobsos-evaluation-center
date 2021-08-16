@@ -2,7 +2,7 @@
   {{ 'success-modeling.requirements-list.heading' | translate }}
 </h3>
 
-<div *ngIf="successModel && successModel.reqBazProject">
+<div *ngIf="requirements$ | async as requirements">
   <mat-accordion>
     <mat-expansion-panel
       *ngFor="let requirement of requirements"

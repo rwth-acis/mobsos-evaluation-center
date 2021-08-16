@@ -7,9 +7,10 @@ import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
 import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
 import { VisitorComponent } from './visitor/visitor.component';
+import { WorkspaceComponent } from './workspace/workspace.component';
 
 const routes: Routes = [
-  { path: '', component: SuccessModelingComponent },
+  { path: '', component: WorkspaceComponent },
   { path: 'raw-edit', component: RawEditComponent },
   { path: 'oidc-signin', component: OidcSigninComponent },
   { path: 'oidc-signout', component: OidcSignoutComponent },

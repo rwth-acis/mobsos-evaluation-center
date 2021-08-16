@@ -289,7 +289,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     this.subscriptions$.push(sub);
 
-    if (isDevMode() || !environment.production) {
+    if (!environment.production) {
       // Logging in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))

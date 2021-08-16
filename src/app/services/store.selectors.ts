@@ -23,8 +23,11 @@ import {
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
+export const REQUIREMENTS = (state: StoreState) =>
+  state.Reducer.requirements;
+
 export const NUMBER_OF_REQUIREMENTS = (state: StoreState) =>
-  state.Reducer?.numberOfRequirements;
+  state.Reducer?.requirements?.length;
 
 export const _EDIT_MODE = (state: StoreState) =>
   state.Reducer?.editMode;

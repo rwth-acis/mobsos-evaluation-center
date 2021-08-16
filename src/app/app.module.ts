@@ -95,6 +95,8 @@ import { PickUsernameDialogComponent } from './pick-username-dialog/pick-usernam
 import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 import { VisualizationInfoComponent } from './visualizations/visualization-info/visualization-info.component';
+import { RequirementsComponent } from './requirements/requirements.component';
+import { WorkspaceComponent } from './workspace/workspace.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -175,6 +177,8 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     BottomSheetComponent,
     AddCommunityDialogComponent,
     VisualizationInfoComponent,
+    RequirementsComponent,
+    WorkspaceComponent,
   ],
   imports: [
     BrowserModule,

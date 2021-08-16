@@ -225,7 +225,7 @@ export const translations = {
       'disconnect-project': 'Projekt trennen',
       'disconnect-project-prompt':
         'Bist du sicher, dass du das Project vom Model trennen möchtest?',
-      heading: 'Anforderungen',
+      heading: 'Anforderungen vom Requirements Bazaar',
       'no-project':
         'Dieses Modell ist zur Zeit mit keinem Projekt aus dem Requirements Bazaar verbunden. Klicke den Button um Anforderungen bearbeiten zu können.',
       'pick-reqbaz-project': {

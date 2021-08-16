@@ -40,23 +40,6 @@
     <div id="workspace-controls" *ngIf="editMode$ | async">
       <button
         mat-icon-button
-        (click)="openBottomSheet()"
-        aria-label="Requirements Bazaar"
-        matTooltip="{{
-          'success-modeling.reqbaz.tooltip' | translate
-        }}"
-      >
-        <mat-icon
-          color="primary"
-          svgIcon="reqbaz-logo"
-          [matBadge]="numberOfRequirements$ | async"
-          matBadgeColor="accent"
-        >
-        </mat-icon>
-      </button>
-
-      <button
-        mat-icon-button
         aria-label="Spectators"
         [matMenuTriggerFor]="groupMenu"
         matTooltip="{{
