@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 @import '../../../styles';
 @import '../visualization.component';
@@ -7,5 +8,5 @@ $primary: map-get($mobsos-evaluation-center-theme, primary);
 .value-visualization {
   font-size: 4em;
   font-weight: bold;
-  color: mat-color($primary);
+  color: mat.get-color-from-palette($primary);
 }

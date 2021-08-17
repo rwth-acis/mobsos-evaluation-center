@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 @import '../styles';
 
@@ -9,7 +10,7 @@ mat-sidenav-container {
   mat-sidenav {
     width: 250px;
     height: 100vh;
-    background-color: mat-color($primary, darker);
+    background-color: mat.get-color-from-palette($primary, darker);
     color: white;
     display: flex;
     flex-direction: column;
@@ -70,7 +71,7 @@ mat-sidenav-container {
       z-index: 999;
     }
     #las2peer-statusbar {
-      --statusbar-background: #{mat-color($primary)};
+      --statusbar-background: #{mat.get-color-from-palette($primary)};
       --user-widget-button-background: white;
       color: white;
 
