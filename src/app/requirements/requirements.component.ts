@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
-import { setNumberOfRequirements } from '../services/store.actions';
 import { SUCCESS_MODEL } from '../services/store.selectors';
 
 @Component({
@@ -17,10 +16,5 @@ export class RequirementsComponent implements OnInit {
   ngOnInit(): void {}
   openLink(event: MouseEvent): void {
     event.preventDefault();
-  }
-
-  setNumberOfRequirements(n: number) {
-    this.numberOfRequirements = n;
-    // this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
   }
 }
