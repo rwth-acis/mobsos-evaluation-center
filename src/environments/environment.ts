@@ -37,6 +37,8 @@ export const environment = {
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
+  githubClientId: '9ab8c866981527fe882e',
+  githubClientSecret: '',
 };
 
 /*

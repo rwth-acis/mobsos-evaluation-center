@@ -101,6 +101,7 @@ import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { GraphQLModule } from './graphql.module';
 import { InMemoryCache } from '@apollo/client/core';
+import { OathComponent } from './oath/oath.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -183,6 +184,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     VisualizationInfoComponent,
     RequirementsComponent,
     WorkspaceComponent,
+    OathComponent,
   ],
   imports: [
     BrowserModule,

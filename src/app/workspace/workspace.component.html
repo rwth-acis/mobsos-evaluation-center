@@ -15,12 +15,15 @@
     <!-- workspace management -->
     <app-workspace-management></app-workspace-management>
 
-    <mat-tab-group mat-align-tabs="start">
-      <mat-tab label="Success modeling">
+    <mat-tab-group
+      mat-align-tabs="start"
+      [selectedIndex]="selectedTab"
+    >
+      <mat-tab label="Success modeling" routerLink="/modeling">
         <!-- success modeling -->
         <app-success-modeling></app-success-modeling>
       </mat-tab>
-      <mat-tab>
+      <mat-tab routerLink="/requirements">
         <ng-template mat-tab-label>
           <span
             [matBadge]="numberOfRequirements$ | async"
