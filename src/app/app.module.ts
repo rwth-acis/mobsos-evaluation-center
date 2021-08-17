@@ -97,6 +97,8 @@ import { AddCommunityDialogComponent } from './add-community-dialog/add-communit
 import { VisualizationInfoComponent } from './visualizations/visualization-info/visualization-info.component';
 import { RequirementsComponent } from './requirements/requirements.component';
 import { WorkspaceComponent } from './workspace/workspace.component';
+import { APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -243,6 +245,18 @@ const metaReducers: Array<MetaReducer<any, any>> = [
       provide: HTTP_INTERCEPTORS,
       useClass: Interceptor,
       multi: true,
+    },
+    {
+      provide: APOLLO_OPTIONS,
+      useFactory: (httpLink: HttpLink) => {
+        return {
+          cache: new InMemoryCache(),
+          link: httpLink.create({
+            uri: 'https://api.github.com/graphql',
+          }),
+        };
+      },
+      deps: [HttpLink],
     },
   ],
   bootstrap: [AppComponent],

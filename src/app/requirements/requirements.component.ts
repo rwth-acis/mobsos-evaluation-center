@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Apollo } from 'apollo-angular';
 import { setNumberOfRequirements } from '../services/store.actions';
 import { SUCCESS_MODEL } from '../services/store.selectors';
 
@@ -11,7 +12,7 @@ import { SUCCESS_MODEL } from '../services/store.selectors';
 export class RequirementsComponent implements OnInit {
   numberOfRequirements = 0;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  constructor(private ngrxStore: Store) {}
+  constructor(private ngrxStore: Store, private apollo: Apollo) {}
 
   ngOnInit(): void {}
   openLink(event: MouseEvent): void {
