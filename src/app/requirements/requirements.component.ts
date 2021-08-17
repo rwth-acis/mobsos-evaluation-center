@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Apollo } from 'apollo-angular';
+import { Apollo, gql } from 'apollo-angular';
+import { Observable } from 'rxjs';
 import { SUCCESS_MODEL } from '../services/store.selectors';
 
 @Component({
@@ -9,11 +10,24 @@ import { SUCCESS_MODEL } from '../services/store.selectors';
   styleUrls: ['./requirements.component.scss'],
 })
 export class RequirementsComponent implements OnInit {
-  numberOfRequirements = 0;
+  repositories$: Observable<object>;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   constructor(private ngrxStore: Store, private apollo: Apollo) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.repositories$ = this.apollo.query({
+      query: gql`
+        {
+          organization(login: "rwth-acis") {
+            description
+            repository(name: "mobsos-evaluation-center") {
+              description
+            }
+          }
+        }
+      `,
+    });
+  }
   openLink(event: MouseEvent): void {
     event.preventDefault();
   }

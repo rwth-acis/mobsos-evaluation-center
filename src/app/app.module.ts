@@ -100,6 +100,7 @@ import { WorkspaceComponent } from './workspace/workspace.component';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { GraphQLModule } from './graphql.module';
+import { InMemoryCache } from '@apollo/client/core';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {

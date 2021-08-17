@@ -1,4 +1,4 @@
 <div class="container">
-  <app-requirements-list [successModel]="successModel$ | async">
-  </app-requirements-list>
+  <app-requirements-list> </app-requirements-list>
+  {{ repositories$ | async | json }}
 </div>
