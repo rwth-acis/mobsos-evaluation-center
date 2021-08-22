@@ -1,9 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
-import { StateEffects } from '../services/store.effects';
 import {
   NUMBER_OF_REQUIREMENTS,
   SELECTED_GROUP,
