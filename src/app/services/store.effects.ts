@@ -357,12 +357,10 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.saveModel),
       withLatestFrom(
-        combineLatest([
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-        ]),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
-      switchMap(([action, [groupId, serviceName]]) =>
+      switchMap(([action, groupId, serviceName]) =>
         this.l2p
           .saveSuccessModelAndObserve(
             groupId,
