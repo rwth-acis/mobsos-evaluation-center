@@ -502,21 +502,19 @@ export class Las2peerService {
       throw response;
     });
   }
-
+  /**
+   * @deprecated MobSOS groups might be outdated. We should not rely on them.
+   * Thus there is no need to transfer groups from the contact service to mobsos
+   */
   saveGroupsToMobSOS(groups) {
-    let method;
-    let url;
-
-    method = 'POST';
-    url = Las2peerService.joinAbsoluteUrlPath(
+    const method = 'POST';
+    const url = Las2peerService.joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
     );
-
-    const requests = [];
-    for (const group of groups) {
-      requests.push(
+    return forkJoin(
+      groups.map((group) =>
         this.makeRequestAndObserve(url, {
           method,
           body: JSON.stringify({
@@ -524,9 +522,8 @@ export class Las2peerService {
             name: group.groupName,
           }),
         }),
-      );
-    }
-    return forkJoin(requests);
+      ),
+    );
   }
 
   async saveSuccessModel(
