@@ -100,31 +100,20 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchGroups),
       mergeMap(() =>
-        forkJoin([
-          this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-            catchError((err) => {
-              this.logger.error(
-                'Could not groups services from Contact service:' +
-                  JSON.stringify(err),
-              );
-              return of(undefined);
-            }),
-          ),
-        ]).pipe(
-          tap(([groupsFromContactService]) =>
-            this.ngrxStore.dispatch(
-              Action.transferMissingGroupsToMobSOS({
-                groupsFromContactService,
-                groupsFromMobSOS: null,
-              }),
-            ),
-          ),
-          map(([groupsFromContactService]) =>
+        this.l2p.fetchContactServiceGroupsAndObserve().pipe(
+          map((groupsFromContactService) =>
             Action.storeGroups({
               groupsFromContactService,
               groupsFromMobSOS: null,
             }),
           ),
+          catchError((err) => {
+            this.logger.error(
+              'Could not groups services from Contact service:' +
+                JSON.stringify(err),
+            );
+            return of(undefined);
+          }),
         ),
       ),
       catchError((err) => {
@@ -333,6 +322,10 @@ export class StateEffects {
     ),
   );
 
+  /**
+   * @deprecated MobSOS groups might be outdated. We should not rely on them.
+   * Thus there is no need to transfer groups from the contact service to mobsos
+   */
   transferMissingGroupsToMobSOS$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.transferMissingGroupsToMobSOS),
