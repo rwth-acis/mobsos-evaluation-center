@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import {
   NUMBER_OF_REQUIREMENTS,
   SELECTED_GROUP,
-  _USER,
+  USER,
 } from '../services/store.selectors';
 
 @Component({
@@ -13,7 +13,7 @@ import {
 })
 export class WorkspaceComponent implements OnInit {
   @Input() restricted = false;
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   numberOfRequirements$ = this.ngrxStore.select(
     NUMBER_OF_REQUIREMENTS,

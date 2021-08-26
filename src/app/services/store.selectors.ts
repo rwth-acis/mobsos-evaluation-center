@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { createSelector, Selector, State } from '@ngrx/store';
 import { create } from 'domain';
 import {
@@ -29,14 +30,13 @@ export const REQUIREMENTS = (state: StoreState) =>
 export const NUMBER_OF_REQUIREMENTS = (state: StoreState) =>
   state.Reducer?.requirements?.length;
 
-export const _EDIT_MODE = (state: StoreState) =>
+export const EDIT_MODE = (state: StoreState) =>
   state.Reducer?.editMode;
 
-export const _EXPERT_MODE = (state: StoreState) =>
+export const EXPERT_MODE = (state: StoreState) =>
   state.Reducer?.expertMode;
 
-export const _USER = (state: StoreState) =>
-  state.Reducer?.user as User;
+export const USER = (state: StoreState) => state.Reducer?.user;
 
 // SERVICES
 export const _SELECTED_SERVICE_NAME = (state: StoreState) =>
@@ -83,7 +83,7 @@ export const SELECTED_GROUP = createSelector(
 
 export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   SELECTED_GROUP,
-  _USER,
+  USER,
   (group, user) => !!user && group?.member,
 );
 
@@ -100,7 +100,7 @@ export const _COMMUNITY_WORKSPACE = (state: StoreState) =>
 export const CURRENT_USER_WORKSPACE = createSelector(
   _COMMUNITY_WORKSPACE,
   _CURRENT_WORKSPACE_OWNER,
-  _USER,
+  USER,
   (communityWorkspace, owner, user) =>
     getCurrentUserWorkspace(
       owner,
@@ -151,7 +151,7 @@ export const VISITORS = createSelector(
 
 export const VISITORS_EXCEPT_USER = createSelector(
   VISITORS,
-  _USER,
+  USER,
   (visitors, user) =>
     visitors?.filter(
       (visitor) =>
@@ -161,7 +161,7 @@ export const VISITORS_EXCEPT_USER = createSelector(
 
 export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  _USER,
+  USER,
   (appWorkspace, user) =>
     getUserRoleInWorkspace(
       appWorkspace,
@@ -170,7 +170,7 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
-  _EDIT_MODE,
+  EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   (editMode, role) =>
     editMode && (role === 'owner' || role === 'editor'),
@@ -178,7 +178,7 @@ export const USER_HAS_EDIT_RIGHTS = createSelector(
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
-  _USER,
+  USER,
   (workspace, user) =>
     workspace?.createdBy === user?.profile.preferred_username,
 );
@@ -193,7 +193,7 @@ const SUCCESS_MODEL_FROM_WORKSPACE = createSelector(
 );
 
 export const SUCCESS_MODEL = createSelector(
-  _EDIT_MODE,
+  EDIT_MODE,
   SUCCESS_MODEL_FROM_NETWORK,
   SUCCESS_MODEL_FROM_WORKSPACE,
   (editMode, successModelFromNetwork, successModelInWorkspace) =>
@@ -252,7 +252,7 @@ const MEASURE_CATALOG_FROM_WORKSPACE = createSelector(
 );
 
 export const MEASURE_CATALOG = createSelector(
-  _EDIT_MODE,
+  EDIT_MODE,
   MEASURE_CATALOG_FROM_NETWORK,
   MEASURE_CATALOG_FROM_WORKSPACE,
   (
@@ -308,7 +308,7 @@ export const VISUALIZATION_DATA_FROM_WORKSPACE = createSelector(
 export const VISUALIZATION_DATA = createSelector(
   VISUALIZATION_DATA_FROM_QVS,
   VISUALIZATION_DATA_FROM_WORKSPACE,
-  _EDIT_MODE,
+  EDIT_MODE,
   (datafromQVS, dataFromWorkspace, editMode) =>
     editMode && dataFromWorkspace ? dataFromWorkspace : datafromQVS,
 );
@@ -332,7 +332,7 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
 
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
-  _EDIT_MODE,
+  EDIT_MODE,
   APPLICATION_WORKSPACE,
   (service, editMode, workspace) =>
     editMode && workspace?.service ? workspace.service : service,

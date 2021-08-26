@@ -19,7 +19,7 @@ import {
   setServiceName,
   setUserName,
 } from '../services/store.actions';
-import { _USER } from '../services/store.selectors';
+import { USER } from '../services/store.selectors';
 
 /**
  * Used to join the workspace of another user by url. Url should be of the following format: /join/:groupId/:serviceName/:username
@@ -36,7 +36,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
   ) {}
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   groupId$: Observable<string>;
   serviceName$: Observable<string>;
 

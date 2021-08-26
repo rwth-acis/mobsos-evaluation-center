@@ -20,7 +20,7 @@ import {
   SELECTED_SERVICE,
   SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
-  _EDIT_MODE,
+  EDIT_MODE,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -59,7 +59,7 @@ export class QuestionnairesComponent implements OnInit {
   model$ = this.ngrxStore.select(SUCCESS_MODEL);
   measures$ = this.ngrxStore.select(MEASURES);
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
-  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   group: GroupInformation;
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);

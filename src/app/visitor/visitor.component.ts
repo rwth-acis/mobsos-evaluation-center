@@ -23,7 +23,7 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   SUCCESS_MODEL,
-  _USER,
+  USER,
   WORKSPACE_OWNER,
   SUCCESS_MODEL_FROM_NETWORK,
   SUCCESS_MODEL_IS_EMPTY,
@@ -41,7 +41,7 @@ export class VisitorComponent implements OnInit, OnDestroy {
   );
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
   showSuccessModelEmpty$ = this.ngrxStore.select(
     SUCCESS_MODEL_IS_EMPTY,

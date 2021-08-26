@@ -19,7 +19,7 @@ import { FormControl } from '@angular/forms';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   VISITORS_EXCEPT_USER,
-  _EDIT_MODE,
+  EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
@@ -27,7 +27,7 @@ import {
   SELECTED_SERVICE,
   _SERVICES,
   SUCCESS_MODEL,
-  _USER,
+  USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   APPLICATION_WORKSPACE,
   MODEL_AND_CATALOG_LOADED,
@@ -81,14 +81,14 @@ export class WorkspaceManagementComponent
     APPLICATION_WORKSPACE,
   );
   services$ = this.ngrxStore.select(_SERVICES);
-  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
   roleInWorkspace$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
   selectedOwner$ = this.ngrxStore.select(SELECTED_WORKSPACE_OWNER); // holds the owner of the workspace which the user wants to join
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   numberOfRequirements$ = this.ngrxStore
     .select(NUMBER_OF_REQUIREMENTS)
     .pipe(map((n) => (n === 0 ? null : n)));
@@ -138,14 +138,14 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
 
     this.ngrxStore
-      .select(_EDIT_MODE)
+      .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-          this.ngrxStore.select(_USER),
+          this.ngrxStore.select(USER),
         ),
       )
       .subscribe(([editMode, groupId, owner, serviceName, user]) => {

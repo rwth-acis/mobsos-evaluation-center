@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -30,8 +31,8 @@ import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
-  _EDIT_MODE,
-  _USER,
+  EDIT_MODE,
+  USER,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   WORKSPACE_MODEL_XML,
@@ -43,14 +44,6 @@ import { WorkspaceService } from './workspace.service';
 
 @Injectable()
 export class StateEffects {
-  constructor(
-    private actions$: Actions,
-    private l2p: Las2peerService,
-    private ngrxStore: Store,
-    private logger: NGXLogger,
-    private workspaceService: WorkspaceService,
-  ) {}
-
   // hardcoded map of current visualization calls to prevent sending a POST request multiple times
   // I will leave it here for the demo but should not be necessary. Removal should not cause any problems
   static visualizationCalls = {};
@@ -561,7 +554,7 @@ export class StateEffects {
         this.ngrxStore.select(SUCCESS_MODEL_FROM_NETWORK),
         this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
         this.ngrxStore.select(SELECTED_SERVICE),
-        this.ngrxStore.select(_USER),
+        this.ngrxStore.select(USER),
         this.ngrxStore.select(VISUALIZATION_DATA_FROM_QVS),
       ),
       switchMap(([action, model, catalog, service, user, vdata]) =>
@@ -645,6 +638,14 @@ export class StateEffects {
       share(),
     ),
   );
+
+  constructor(
+    private actions$: Actions,
+    private l2p: Las2peerService,
+    private ngrxStore: Store,
+    private logger: NGXLogger,
+    private workspaceService: WorkspaceService,
+  ) {}
 }
 
 const ONE_MINUTE_IN_MS = 60000;
@@ -653,9 +654,12 @@ const REFETCH_INTERVAL =
     ? environment.visualizationRefreshInterval
     : 30) * ONE_MINUTE_IN_MS;
 /**
+ *
  * Determines whether a new visualization data request should be made
+ *
  * @param dataForQuery the current data from the store
  * @returns true if we should make a new request
+ *
  */
 function shouldFetch(dataForQuery: VisualizationData): boolean {
   if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet

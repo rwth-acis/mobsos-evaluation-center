@@ -17,7 +17,7 @@ import { Store } from '@ngrx/store';
 import {
   REQUIREMENTS,
   SUCCESS_MODEL,
-  _USER,
+  USER,
 } from 'src/app/services/store.selectors';
 import {
   addReqBazarProject,
@@ -44,7 +44,7 @@ export class RequirementsListComponent implements OnInit, OnDestroy {
   successModel: SuccessModel;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
 
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   requirements$ = this.ngrxStore.select(REQUIREMENTS);
   requirements: Requirement[];
   refreshRequirementsHandle;
