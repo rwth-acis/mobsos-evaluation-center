@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -23,6 +24,7 @@ import {
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
+import { RawDataDialogComponent } from 'src/app/raw-data-dialog/raw-data-dialog.component';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -125,9 +127,34 @@ export class ChartVisualizerComponent
     this.subscriptions$.push(sub);
   }
 
+  fadeInAnimation(): string {
+    if (this.chartInitialized) {
+      return 'opacity: 1;transition: opacity 1s ease-out;';
+    } else {
+      return 'opacity: 0;';
+    }
+  }
+
+  openRawDataDialog(data: any[][]): void {
+    this.dialog.open(RawDataDialogComponent, {
+      data,
+    });
+  }
+
+  onRefreshClicked(query: string): void {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
+  }
+
   /**
    * Prepares chart for given measure
+   *
    * @param measure success measure
+   *
    */
   private prepareChart(
     dataTable: any[][],
@@ -148,7 +175,7 @@ export class ChartVisualizerComponent
       }
     }
 
-    const rows = dataTable.slice(2) as any[][];
+    const rows = dataTable.slice(2);
     this.chartData = new GoogleChart(
       '',
       (visualization as ChartVisualization).chartType,
@@ -166,22 +193,5 @@ export class ChartVisualizerComponent
       },
     );
     // if (this.chartData) this.visualizationInitialized = true;
-  }
-
-  fadeInAnimation() {
-    if (this.chartInitialized) {
-      return 'opacity: 1;transition: opacity 1s ease-out;';
-    } else {
-      return 'opacity: 0;';
-    }
-  }
-
-  onRefreshClicked(query: string) {
-    this.ngrxStore.dispatch(
-      refreshVisualization({
-        query,
-        queryParams: this.getParamsForQuery(query),
-      }),
-    );
   }
 }

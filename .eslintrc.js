@@ -28,7 +28,7 @@ module.exports = {
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
       ],
       parserOptions: {
-        project: ['tsconfig.json', 'eslintrc.js'], // Specify it only for TypeScript files
+        project: ['tsconfig.json', '.eslintrc.js'], // Specify it only for TypeScript files
       },
       rules: {
         quotes: [2, 'single', { avoidEscape: true }],

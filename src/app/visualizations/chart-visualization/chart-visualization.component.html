@@ -31,6 +31,18 @@
       matTooltip="{{
         'success-modeling.visualization.refresh-data' | translate
       }}"
+      (click)="openRawDataDialog(data)"
+    >
+      <mat-icon color="primary">sync</mat-icon>
+    </button>
+
+    <button
+      *ngIf="query$ | async as query"
+      mat-icon-button
+      matTooltipShowDelay="0"
+      matTooltip="{{
+        'success-modeling.visualization.refresh-data' | translate
+      }}"
       (click)="onRefreshClicked(query)"
     >
       <mat-icon color="primary">sync</mat-icon>

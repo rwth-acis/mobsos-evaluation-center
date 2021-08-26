@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
@@ -97,6 +98,8 @@ import { AddCommunityDialogComponent } from './add-community-dialog/add-communit
 import { VisualizationInfoComponent } from './visualizations/visualization-info/visualization-info.component';
 import { RequirementsComponent } from './requirements/requirements.component';
 import { WorkspaceComponent } from './workspace/workspace.component';
+import { MatSortModule } from '@angular/material/sort';
+import { RawDataDialogComponent } from './raw-data-dialog/raw-data-dialog.component';
 
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -108,7 +111,7 @@ class ImportLoader implements TranslateLoader {
   }
 }
 
-export function createTranslateLoader() {
+export function createTranslateLoader(): ImportLoader {
   return new ImportLoader();
 }
 
@@ -179,6 +182,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     VisualizationInfoComponent,
     RequirementsComponent,
     WorkspaceComponent,
+    RawDataDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -210,6 +214,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatButtonModule,
     MatBottomSheetModule,
     MatTabsModule,
+    MatSortModule,
     MatFormFieldModule,
     MatProgressBarModule,
     MatSelectModule,
