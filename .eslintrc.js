@@ -21,11 +21,30 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'prettier',
   ],
-  parser: '@typescript-eslint/parser',
+  overrides: [
+    {
+      files: ['*.ts'], // Your TypeScript files extension
+      extends: [
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+      ],
+      parserOptions: {
+        project: ['tsconfig.json', 'eslintrc.js'], // Specify it only for TypeScript files
+      },
+      rules: {
+        quotes: [2, 'single', { avoidEscape: true }],
+      },
+    },
+  ],
+
   parserOptions: {
-    project: 'tsconfig.json',
+    project: [
+      './tsconfig.json',
+      './tsconfig.eslint.json',
+      '.eslintrc.js',
+    ],
     sourceType: 'module',
   },
+  parser: '@typescript-eslint/parser',
   plugins: [
     'eslint-plugin-import',
     'eslint-plugin-jsdoc',
@@ -34,6 +53,7 @@ module.exports = {
     '@typescript-eslint',
     '@typescript-eslint/tslint',
   ],
+
   rules: {
     '@angular-eslint/component-class-suffix': 'error',
     '@angular-eslint/directive-class-suffix': 'error',
@@ -109,7 +129,7 @@ module.exports = {
     '@typescript-eslint/prefer-for-of': 'error',
     '@typescript-eslint/prefer-function-type': 'error',
     '@typescript-eslint/prefer-namespace-keyword': 'error',
-    '@typescript-eslint/quotes': ['error', 'single'],
+    '@typescript-eslint/quotes': ['warn', 'single'],
     '@typescript-eslint/triple-slash-reference': [
       'error',
       {
