@@ -30,7 +30,12 @@
               {
                 "glob": "**/*",
                 "input": "node_modules/ngx-monaco-editor/assets/monaco",
-                "output": "/assets/monaco/"
+                "output": "./assets/monaco/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor/assets/monaco",
+                "output": "./assets/min-maps/"
               },
               "src/favicon.ico",
               "src/assets",
@@ -119,8 +124,13 @@
               "src/assets",
               {
                 "glob": "**/*",
-                "input": "node_modules/ngx-monaco-editor/assets/monaco",
-                "output": "./assets/monaco/"
+                "input": "node_modules/ngx-monaco-editor/assets",
+                "output": "assets/monaco-editor"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
               },
               "src/manifest.json"
             ]
@@ -129,10 +139,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -158,9 +165,7 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": "e2e/tsconfig.e2e.json",
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
