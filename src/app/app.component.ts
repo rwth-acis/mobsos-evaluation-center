@@ -132,7 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
         'OK',
-        { duration: 2000 },
+        { duration: 10000 },
       );
     }
     this.matIconRegistry.addSvgIcon(

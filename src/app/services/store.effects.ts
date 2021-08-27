@@ -1,4 +1,5 @@
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -503,27 +504,23 @@ export class StateEffects {
       ofType(Action.addGroup),
       mergeMap(({ groupName }) =>
         this.l2p.addGroup(groupName).pipe(
-          map((id: string) => ({
-            id,
-            name: groupName,
-            member: true,
-          })),
-          tap((group: GroupInformation) =>
-            this.l2p.saveGroupsToMobSOS([group]),
-          ),
-          map((group: GroupInformation) =>
-            group?.id
+          map((id: string) =>
+            id
               ? Action.storeGroup({
-                  group,
+                  group: {
+                    id,
+                    name: groupName,
+                    member: true,
+                  },
                 })
               : Action.failureResponse(null),
           ),
-          catchError((err) => {
+          catchError((err: HttpErrorResponse) => {
             return of(Action.failureResponse({ reason: err }));
           }),
         ),
       ),
-      catchError((err) => {
+      catchError((err: HttpErrorResponse) => {
         return of(Action.failureResponse({ reason: err }));
       }),
       share(),

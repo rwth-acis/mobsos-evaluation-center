@@ -13,12 +13,12 @@ import {
 } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription } from 'rxjs';
-import { map, withLatestFrom } from 'rxjs/operators';
+import { combineLatest, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
-import { addGroup } from '../services/store.actions';
+import { addGroup, storeGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
-import { USER_GROUPS } from '../services/store.selectors';
+import { GROUPS, USER_GROUPS } from '../services/store.selectors';
 
 @Component({
   selector: 'app-add-community-dialog',
@@ -29,6 +29,7 @@ export class AddCommunityDialogComponent
   implements OnInit, OnDestroy
 {
   form = new FormControl('', [
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     Validators.required,
     this.forbiddenNameValidator(),
   ]);
@@ -52,8 +53,10 @@ export class AddCommunityDialogComponent
         this.groups = groups;
       });
     this.subscriptions$.push(sub);
-    this.error$ = this.form.valueChanges.pipe(
-      withLatestFrom(this.ngrxStore.select(USER_GROUPS)),
+    this.error$ = combineLatest([
+      this.form.valueChanges,
+      this.ngrxStore.select(GROUPS),
+    ]).pipe(
       map(([input, groups]: [string, GroupInformation[]]) => {
         const group = groups.find((g) => g.name === input);
         let error: string;
@@ -67,30 +70,29 @@ export class AddCommunityDialogComponent
     );
   }
 
-  onSubmit() {
+  onSubmit(): void {
     const name = (this.form.value as string)?.trim();
-    const group = this.groups.find((g) => g.name === name);
-    if (group) {
-      this.error = 'This group name is already taken';
-    } else {
-      this.error = null;
-      this.ngrxStore.dispatch(addGroup({ groupName: name }));
-      this.effects.addGroup$.subscribe((res) => {
-        if ('group' in res && res.group.id) {
-          this._snackBar.open('Group added', null, {
-            duration: 1000,
-          });
-        } else if (
-          'reason' in res &&
-          (res.reason as HttpErrorResponse).status === 400
-        ) {
-          console.log(res);
-          this.error = 'This group name is already taken';
-          return;
-        }
-        this.dialogRef.close();
-      });
-    }
+
+    this.effects.addGroup$.subscribe((res) => {
+      if ('group' in res && res.group.id) {
+        this._snackBar.open('Group added', null, {
+          duration: 1000,
+        });
+      } else if (
+        'reason' in res &&
+        (res.reason as HttpErrorResponse).status === 400
+      ) {
+        this.ngrxStore.dispatch(
+          storeGroup({
+            group: { name, id: 'unknown', member: false },
+          }),
+        );
+        console.log(res);
+        this.error = 'This group name is already taken';
+        return;
+      }
+      this.dialogRef.close();
+    });
   }
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
