@@ -87,6 +87,7 @@ export const translations = {
       'fetch-error':
         ' The following error was encountered, while fetching more recent data: {{ error }}',
       'refresh-data': 'Refresh',
+      raw: 'Raw data fetched from server',
     },
     'community-workspace': 'Workspace of the {{community}} Community',
     'community-success-model':

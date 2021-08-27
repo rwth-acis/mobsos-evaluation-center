@@ -23,7 +23,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.ts'], // Your TypeScript files extension
+      files: ['*.ts', '*.js'], // Your TypeScript files extension
       extends: [
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
       ],

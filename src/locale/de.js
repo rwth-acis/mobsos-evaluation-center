@@ -90,6 +90,7 @@ export const translations = {
       'fetch-error':
         ' Folgender Fehler ist beim Laden von rezenteren Daten aufgetreten: {{ error }}',
       'refresh-data': 'Neu laden',
+      raw: 'Rohe Daten',
     },
     'community-workspace':
       'Arbeitsbereich der {{community}} Community',
