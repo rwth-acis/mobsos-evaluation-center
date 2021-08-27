@@ -4,6 +4,7 @@ import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
+  EXPERT_MODE,
   MEASURE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
@@ -38,6 +39,7 @@ export class ChartVisualizerComponent
   @Input() measureName: string;
 
   query$: Observable<string>;
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
 
   query: string; // local copy of the sql query
   chartData: GoogleChart;
@@ -62,7 +64,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)

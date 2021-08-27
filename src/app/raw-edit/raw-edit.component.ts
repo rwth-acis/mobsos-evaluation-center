@@ -151,30 +151,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  fetchXml() {
-    // if (this.groupID) {
-    //   this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
-    //     if (!xml) {
-    //       xml = '';
-    //     }
-    //     xml = RawEditComponent.prettifyXml(xml);
-    //     this.measureCatalogXml = xml;
-    //   });
-    //   if (this.selectedService) {
-    //     const setServiceXml = (xml) => {
-    //       if (!xml) {
-    //         xml = '';
-    //       }
-    //       this.successModelXml = RawEditComponent.prettifyXml(xml);
-    //     };
-    //     this.las2peer
-    //       .fetchSuccessModel(this.groupID, this.selectedService)
-    //       .then(setServiceXml)
-    //       .catch(() => setServiceXml(null));
-    //   }
-    // }
-  }
-
   _onCatalogSaveClicked() {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(
@@ -200,14 +176,14 @@ export class RawEditComponent implements OnInit, OnDestroy {
           if (result?.type === HttpActions.SUCCESS_RESPONSE) {
             const message = this.translate.instant(
               'raw-edit.measures.snackbar-success',
-            );
+            ) as string;
             this.snackBar.open(message, null, {
               duration: 2000,
             });
           } else {
             let message = this.translate.instant(
               'raw-edit.measures.snackbar-failure',
-            );
+            ) as string;
             if (result && result instanceof failureResponse) {
               message += (result as { reason: Error }).reason.message;
             }
@@ -245,17 +221,21 @@ export class RawEditComponent implements OnInit, OnDestroy {
             if (result?.type === HttpActions.SUCCESS_RESPONSE) {
               const message = this.translate.instant(
                 'raw-edit.success-models.snackbar-success',
-              );
+              ) as string;
               this.snackBar.open(message, null, {
                 duration: 2000,
               });
             } else {
               let message = this.translate.instant(
                 'raw-edit.success-models.snackbar-failure',
-              );
-              if (result && result instanceof failureResponse)
+              ) as string;
+              if (
+                result &&
+                result instanceof failureResponse &&
+                'reason' in result
+              )
                 message += (result as { type; reason }).reason
-                  .message;
+                  .message as string;
               this.snackBar.open(message, 'Ok');
             }
             sub.unsubscribe();

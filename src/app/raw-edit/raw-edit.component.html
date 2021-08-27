@@ -5,7 +5,7 @@
     >
       <ngx-monaco-editor
         id="measure-editor"
-        (onInit)="registerMeasureEditor($event)"
+        (init)="registerMeasureEditor($event)"
         [options]="editorOptions"
         [(ngModel)]="measureCatalogXml"
       ></ngx-monaco-editor>
@@ -54,7 +54,7 @@
     <ng-container *ngIf="canSaveSuccessModel$ | async; else notReady">
       <ngx-monaco-editor
         id="model-editor"
-        (onInit)="registerSuccessModelEditor($event)"
+        (init)="registerSuccessModelEditor($event)"
         [options]="editorOptions"
         [(ngModel)]="successModelXml"
       ></ngx-monaco-editor>

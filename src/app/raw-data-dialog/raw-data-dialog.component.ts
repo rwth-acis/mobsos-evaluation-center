@@ -39,14 +39,27 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort: MatSort;
 
   dataSource: MatTableDataSource<any>;
+  displayedColumns: string[];
+  res;
   constructor(
     public dialogRef: MatDialogRef<RawDataDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public rawData: any[][],
   ) {}
 
   ngOnInit(): void {
-    this.dataSource = new MatTableDataSource(ELEMENT_DATA);
     if (this.rawData.length > 2) {
+      this.displayedColumns = this.rawData[0] as string[];
+      const arr = [];
+      for (const items of this.rawData.slice(2)) {
+        const obj = {};
+        for (let index = 0; index < items.length; index++) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          obj[this.displayedColumns[index]] = items[index];
+        }
+        arr.push(obj);
+      }
+      this.dataSource = new MatTableDataSource(arr);
+      this.res = arr;
     }
   }
   ngAfterViewInit(): void {

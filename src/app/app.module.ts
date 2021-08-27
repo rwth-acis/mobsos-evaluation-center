@@ -100,7 +100,7 @@ import { RequirementsComponent } from './requirements/requirements.component';
 import { WorkspaceComponent } from './workspace/workspace.component';
 import { MatSortModule } from '@angular/material/sort';
 import { RawDataDialogComponent } from './raw-data-dialog/raw-data-dialog.component';
-
+import { MatTableModule } from '@angular/material/table';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -213,6 +213,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatSlideToggleModule,
     MatButtonModule,
     MatBottomSheetModule,
+    MatTableModule,
     MatTabsModule,
     MatSortModule,
     MatFormFieldModule,
