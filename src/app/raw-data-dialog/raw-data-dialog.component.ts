@@ -9,6 +9,7 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 @Component({
@@ -18,7 +19,7 @@ import { MatTableDataSource } from '@angular/material/table';
 })
 export class RawDataDialogComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort: MatSort;
-
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   dataSource: MatTableDataSource<any>;
   displayedColumns: string[];
   res;
@@ -29,21 +30,30 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     if (this.rawData.length > 2) {
-      this.displayedColumns = this.rawData[0] as string[];
-      const arr = [];
-      for (const items of this.rawData.slice(2)) {
-        const obj = {};
-        for (let index = 0; index < items.length; index++) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          obj[this.displayedColumns[index]] = items[index];
-        }
-        arr.push(obj);
+      this.displayedColumns = [...(this.rawData[0] as string[])]; // contains the labels
+      for (let i = 0; i < this.rawData[1].length; i++) {
+        this.displayedColumns[i] =
+          this.displayedColumns[i] +
+          ` (type: ${this.rawData[1][i] as string})`; // add type of the column
       }
+      const arr = this.rawData.slice(2).map((row) => {
+        // for the table we need to transform each row in our array to an object with the corresponding label as key
+        const obj = {};
+        for (let index = 0; index < row.length; index++) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          obj[this.displayedColumns[index]] = row[index];
+        }
+        return obj;
+      });
+
       this.dataSource = new MatTableDataSource(arr);
       this.res = arr;
+    } else {
+      console.error('Invalid data input');
     }
   }
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
   }
 }
