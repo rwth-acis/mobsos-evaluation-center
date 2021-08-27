@@ -15,37 +15,48 @@
       style="width: 100%"
       (ready)="this.chartInitialized = true"
     ></google-chart>
-
-    <button
-      *ngIf="chartInitialized"
-      mat-icon-button
-      [matMenuTriggerFor]="menu"
-    >
-      <mat-icon> info_outline </mat-icon>
-    </button>
-
-    <button
-      *ngIf="query$ | async as query"
-      mat-icon-button
-      matTooltipShowDelay="0"
-      matTooltip="{{
-        'success-modeling.visualization.refresh-data' | translate
-      }}"
-      (click)="onRefreshClicked(query)"
-    >
-      <mat-icon color="primary">sync</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu" yPosition="above">
-      <div id="chart-info">
-        <app-visualization-info
-          [fetchDate]="data.fetchDate"
-          [fetchError]="data.error?.error"
-          [description]="(measure$ | async)?.description"
-        ></app-visualization-info>
-      </div>
-    </mat-menu>
   </ng-container>
 </div>
+<button
+  *ngIf="chartInitialized"
+  mat-icon-button
+  [matMenuTriggerFor]="menu"
+>
+  <mat-icon> info_outline </mat-icon>
+</button>
+<ng-container *ngIf="expertMode$ | async">
+  <button
+    *ngIf="data$ | async as data"
+    mat-icon-button
+    matTooltip="{{
+      'success-modeling.visualization.refresh-data' | translate
+    }}"
+    (click)="openRawDataDialog(data.data)"
+  >
+    <mat-icon>poll</mat-icon>
+  </button>
+</ng-container>
+
+<button
+  *ngIf="query$ | async as query"
+  mat-icon-button
+  matTooltipShowDelay="0"
+  matTooltip="{{
+    'success-modeling.visualization.refresh-data' | translate
+  }}"
+  (click)="onRefreshClicked(query)"
+>
+  <mat-icon color="primary">sync</mat-icon>
+</button>
+<mat-menu #menu="matMenu" yPosition="above">
+  <div id="chart-info" *ngIf="data$ | async as data">
+    <app-visualization-info
+      [fetchDate]="data.fetchDate"
+      [fetchError]="data.error?.error"
+      [description]="(measure$ | async)?.description"
+    ></app-visualization-info>
+  </div>
+</mat-menu>
 
 <ng-template #noData>
   <span

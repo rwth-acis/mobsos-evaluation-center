@@ -1,3 +1,6 @@
+@use '~@angular/material' as mat;
+
+@include mat.core();
 @import '~material-design-icons/iconfont/material-icons.css';
 
 // Custom Theming for Angular Material
@@ -8,13 +11,13 @@
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat-core();
+
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$mobsos-evaluation-center-primary: mat-palette($mat-teal);
-$mobsos-evaluation-center-accent: mat-palette($mat-pink, A200, A100, A400);
+$mobsos-evaluation-center-primary:  mat.define-palette($mat-teal);
+$mobsos-evaluation-center-accent:  mat.define-palette($mat-pink, A200, A100, A400);
 
 h2 {
   margin: 5px;
@@ -24,10 +27,10 @@ svg > g > g:last-child {
   pointer-events: none;
 } //prevent google charts label flickering
 // The warn palette is optional (defaults to red).
-$mobsos-evaluation-center-warn: mat-palette($mat-red);
+$mobsos-evaluation-center-warn:  mat.define-palette($mat-red);
 
 // Create the theme object (a Sass map containing all of the palettes).
-$mobsos-evaluation-center-theme: mat-light-theme(
+$mobsos-evaluation-center-theme:  mat.define-light-theme(
   $mobsos-evaluation-center-primary,
   $mobsos-evaluation-center-accent,
   $mobsos-evaluation-center-warn
@@ -36,7 +39,7 @@ $mobsos-evaluation-center-theme: mat-light-theme(
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
-@include angular-material-theme($mobsos-evaluation-center-theme);
+@include mat.all-component-themes($mobsos-evaluation-center-theme);
 
 /* You can add global styles to this file, and also import other style files */
 
