@@ -194,7 +194,7 @@ export const editMeasureInCatalog = createAction(
   }>(),
 );
 export const storeGroups = createAction(
-  StoreActions.STORE_SERVICES,
+  StoreActions.STORE_GROUPS,
   props<{ groupsFromContactService; groupsFromMobSOS }>(),
 );
 

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -15,7 +16,7 @@ import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { map, withLatestFrom } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
-import { addGroup, storeGroup } from '../services/store.actions';
+import { addGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
 import { USER_GROUPS } from '../services/store.selectors';
 
@@ -53,7 +54,7 @@ export class AddCommunityDialogComponent
     this.subscriptions$.push(sub);
     this.error$ = this.form.valueChanges.pipe(
       withLatestFrom(this.ngrxStore.select(USER_GROUPS)),
-      map(([input, groups]) => {
+      map(([input, groups]: [string, GroupInformation[]]) => {
         const group = groups.find((g) => g.name === input);
         let error: string;
         if (group) {
@@ -67,7 +68,7 @@ export class AddCommunityDialogComponent
   }
 
   onSubmit() {
-    const name = this.form.value?.trim();
+    const name = (this.form.value as string)?.trim();
     const group = this.groups.find((g) => g.name === name);
     if (group) {
       this.error = 'This group name is already taken';
@@ -79,8 +80,13 @@ export class AddCommunityDialogComponent
           this._snackBar.open('Group added', null, {
             duration: 1000,
           });
-        } else if ('reason' in res) {
-          this._snackBar.open(res.reason.message, 'Ok');
+        } else if (
+          'reason' in res &&
+          (res.reason as HttpErrorResponse).status === 400
+        ) {
+          console.log(res);
+          this.error = 'This group name is already taken';
+          return;
         }
         this.dialogRef.close();
       });
@@ -89,14 +95,14 @@ export class AddCommunityDialogComponent
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const group = this.groups?.find(
-        (g) => g.name === control.value?.trim(),
+        (g) => g.name === (control.value as string)?.trim(),
       );
       return !control.value || !!group
-        ? { forbiddenName: { value: control.value } }
+        ? { forbiddenName: { value: control.value as string } }
         : null;
     };
   }
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

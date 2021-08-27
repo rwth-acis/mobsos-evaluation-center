@@ -1,25 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { createReducer, on } from '@ngrx/store';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VisualizationCollection } from '../models/visualization.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
-import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { isEmpty } from 'lodash-es';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
-import { resetFetchDate } from './store.actions';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -41,6 +36,7 @@ const _Reducer = createReducer(
     Actions.storeGroups,
     (state, { groupsFromContactService, groupsFromMobSOS }) => ({
       ...state,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       groups: mergeGroupData(
         { ...state.groups },
         groupsFromContactService,
@@ -48,6 +44,7 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+
   on(
     Actions.storeMessageDescriptions,
     (state, { descriptions, serviceName }) => ({
@@ -374,11 +371,11 @@ function updateVisualizationData(
  *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
  */
 function mergeServiceData(
-  serviceCollection,
+  serviceCollection: ServiceCollection,
   servicesFromL2P,
   messageDescriptions,
   servicesFromMobSOS,
-) {
+): ServiceCollection {
   serviceCollection = { ...serviceCollection };
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
@@ -842,11 +839,14 @@ function removeVisualizationData(
   delete copy[query];
   return copy;
 }
-function addGroup(group: GroupInformation, groups: GroupCollection) {
+function addGroup(
+  group: GroupInformation,
+  groups: GroupCollection,
+): GroupCollection {
   if (!group?.id) {
     return groups;
   }
-  const copy = cloneDeep(groups);
+  const copy = cloneDeep(groups) as GroupCollection;
   copy[group.id] = group;
   return copy;
 }

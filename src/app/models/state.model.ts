@@ -1,6 +1,5 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
-import { IQuestionnaire, Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
@@ -18,7 +17,7 @@ export interface AppState {
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
-  messageDescriptions: object;
+  messageDescriptions: any;
   visualizationData: VisualizationCollection;
   successModel: SuccessModel;
   successModelInitialized: boolean;
