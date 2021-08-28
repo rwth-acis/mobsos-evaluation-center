@@ -26,6 +26,7 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
+            "aot": true,
             "assets": [
               {
                 "glob": "**/*",
@@ -61,13 +62,11 @@
                 }
               ],
               "optimization": true,
-              "outputHashing": "none",
+              "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
-              "vendorChunk": true,
+              "vendorChunk": false,
               "buildOptimizer": true,
               "budgets": [
                 {
@@ -82,9 +81,41 @@
               ],
               "serviceWorker": true,
               "ngswConfigPath": "src/ngsw-config.json"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "develop": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "7mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "80kb"
+                }
+              ],
+              "serviceWorker": true,
+              "ngswConfigPath": "src/ngsw-config.json"
             }
           }
         },
+
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
@@ -93,8 +124,12 @@
           "configurations": {
             "production": {
               "browserTarget": "mobsos-evaluation-center:build:production"
+            },
+            "development": {
+              "browserTarget": "mobsos-evaluation-center:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
