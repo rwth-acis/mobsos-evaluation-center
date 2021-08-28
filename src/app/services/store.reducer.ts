@@ -148,6 +148,10 @@ const _Reducer = createReducer(
   on(Actions.addReqBazarProject, (state, { project }) => ({
     ...state,
     communityWorkspace: addReqBazarProject(state, project),
+    successModel: {
+      ...state.successModel,
+      reqBazProject: project,
+    } as SuccessModel,
   })),
   on(Actions.removeReqBazarProject, (state) => ({
     ...state,
@@ -368,7 +372,7 @@ function updateVisualizationData(
  *
  * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
  * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
- *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
+ * {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
  */
 function mergeServiceData(
   serviceCollection: ServiceCollection,

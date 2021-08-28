@@ -12,7 +12,14 @@ import { merge } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { IQuestionnaire } from '../models/questionnaire.model';
-
+interface HttpOptions {
+  method?: string;
+  headers?: {
+    [header: string]: string | string[];
+  };
+  body?: string;
+  responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -38,25 +45,29 @@ export class Las2peerService {
   SURVEYS_SURVEY_PATH = 'surveys';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
-  userCredentials;
+  userCredentials: { token: string; preferred_username: string };
 
   constructor(private http: HttpClient, private logger: NGXLogger) {}
 
   static joinAbsoluteUrlPath(...args) {
     return args
-      .map((pathPart) => {
+      .map((pathPart: string | number) => {
         if (typeof pathPart === 'number') {
           pathPart = pathPart.toString();
         }
-        return pathPart?.replace(/(^\/|\/$)/g, '');
+        return pathPart.toString()?.replace(/(^\/|\/$)/g, '');
       })
       .join('/');
   }
 
-  setCredentials(username, password, accessToken) {
+  setCredentials(
+    username: string,
+    password: string,
+    accessToken: string,
+  ): void {
     this.userCredentials = {
-      user: username,
-      password,
+      preferred_username: username,
+      // password,
       token: accessToken,
     };
   }
@@ -67,14 +78,7 @@ export class Las2peerService {
 
   async makeRequest<T>(
     url: string,
-    options: {
-      method?: string;
-      headers?: {
-        [header: string]: string | string[];
-      };
-      body?: string;
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-    } = {},
+    options: HttpOptions = {},
   ): Promise<T> {
     options = merge(
       {
@@ -85,7 +89,7 @@ export class Las2peerService {
         },
       },
       options,
-    );
+    ) as HttpOptions;
 
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
@@ -155,15 +159,18 @@ export class Las2peerService {
       options,
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.userCredentials = JSON.parse(
       localStorage.getItem('profile'),
     );
     const username = this.userCredentials?.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const sub = JSON.parse(localStorage.getItem('profile'))
+      ?.sub as string;
     const token = localStorage.getItem('access_token');
     if (username) {
       options.headers.Authorization =
-        'Basic ' + btoa(username + ':' + sub);
+        'Basic ' + btoa(`${username}:${sub}`);
       options.headers.access_token = token;
     }
 
@@ -816,6 +823,23 @@ export class Las2peerService {
         'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
+  }
+
+  fetchRequirementsOnReqBazAndObserve(categoryId: number) {
+    const url = Las2peerService.joinAbsoluteUrlPath(
+      environment.reqBazUrl,
+      this.REQBAZ_CATEGORIES_PATH,
+      categoryId,
+      this.REQBAZ_REQUIREMENTS_PATH,
+    );
+    const options: { headers: { [key: string]: string } } = {
+      headers: {},
+    };
+    if (this.userCredentials) {
+      options.headers.Authorization =
+        'Bearer ' + this.userCredentials.token;
+    }
+    return this.makeRequestAndObserve(url, options);
   }
 
   async realizeRequirementOnReqBaz(requirementId: number) {

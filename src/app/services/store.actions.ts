@@ -20,6 +20,7 @@ export enum HttpActions {
   SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
+  UPDATE_MODEL = 'This action takes the current local success model and saves it on the server',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
   REFRESH_VISUALIZATION = 'Refresh the current visualization manually',
   ADD_GROUP = 'adds a new group on the server',
@@ -333,6 +334,9 @@ export const successResponse = createAction(
 );
 export const saveCatalogSuccess = createAction(
   HttpActions.SAVE_CATALOG_SUCCESS,
+);
+export const updateSuccessModel = createAction(
+  HttpActions.UPDATE_MODEL,
 );
 export const failureResponse = createAction(
   HttpActions.FAILURE_RESPONSE,

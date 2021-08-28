@@ -1,4 +1,3 @@
-/* eslint-disable prefer-arrow/prefer-arrow-functions */
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -14,6 +13,7 @@ import {
   filter,
   share,
   tap,
+  delay,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
@@ -32,14 +32,13 @@ import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
-  EDIT_MODE,
   USER,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
-  WORKSPACE_MODEL_XML,
   SUCCESS_MODEL_FROM_NETWORK,
   MEASURE_CATALOG_FROM_NETWORK,
   VISUALIZATION_DATA_FROM_QVS,
+  SUCCESS_MODEL_XML,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -118,7 +117,7 @@ export class StateEffects {
     ),
   );
 
-  /*******************************
+  /** *****************************
    * This effect is called whenever the user selects a new group
    * In this case we do the following:
    * - join the yjs room for that group
@@ -148,7 +147,7 @@ export class StateEffects {
     ),
   );
 
-  /******************************
+  /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
    * - reset the success model and fetch the new success model
@@ -186,7 +185,7 @@ export class StateEffects {
     ),
   );
 
-  /******************************
+  /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
    * - reset the success model and fetch the new success model
@@ -289,9 +288,9 @@ export class StateEffects {
 
   saveModelAndCatalogResult$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(Action.saveCatalogSuccess),
+      ofType(Action.saveCatalogSuccess, Action.updateSuccessModel),
       withLatestFrom(
-        this.ngrxStore.select(WORKSPACE_MODEL_XML),
+        this.ngrxStore.select(SUCCESS_MODEL_XML),
         this.ngrxStore.select(_SELECTED_GROUP_ID),
         this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
@@ -465,12 +464,12 @@ export class StateEffects {
                 xml,
               }),
             ),
-            catchError((err) => {
+            catchError(() => {
               return of(Action.storeSuccessModel({ xml: null }));
             }),
           ),
       ),
-      catchError((err) => {
+      catchError(() => {
         return of(Action.storeSuccessModel({ xml: null }));
       }),
       share(),
@@ -487,12 +486,12 @@ export class StateEffects {
               questionnaires,
             }),
           ),
-          catchError((err) => {
+          catchError((err:Error) => {
             return of(Action.failureResponse({ reason: err }));
           }),
         ),
       ),
-      catchError((err) => {
+      catchError(() => {
         return of(Action.failure());
       }),
       share(),
@@ -520,6 +519,18 @@ export class StateEffects {
           }),
         ),
       ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  addRequirementsBazarProject$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addReqBazarProject),
+      delay(1000),
+      map(() => Action.updateSuccessModel()),
       catchError((err: HttpErrorResponse) => {
         return of(Action.failureResponse({ reason: err }));
       }),

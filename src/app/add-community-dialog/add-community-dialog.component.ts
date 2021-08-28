@@ -13,13 +13,14 @@ import {
 } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
+import { of } from 'rxjs';
 import {
   BehaviorSubject,
   combineLatest,
   Observable,
   Subscription,
 } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map, timeout } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
 import { storeGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
@@ -38,8 +39,12 @@ export class AddCommunityDialogComponent
     Validators.required,
     this.forbiddenNameValidator(),
   ]);
-  errorSubject$: BehaviorSubject<string> =
-    new BehaviorSubject<string>(undefined);
+  errorSubject$: BehaviorSubject<{
+    groupName: string;
+    message: string;
+  }> = new BehaviorSubject<{ groupName: string; message: string }>(
+    undefined,
+  );
   groups: GroupInformation[] = [];
   subscriptions$: Subscription[] = [];
   error$: Observable<string>;
@@ -68,19 +73,21 @@ export class AddCommunityDialogComponent
         ([input, groups, error]: [
           string,
           GroupInformation[],
-          string,
+          { groupName: string; message: string },
         ]) => {
           if (input?.trim().length === 0) {
             return 'Group name cannot be empty';
           }
-          if (error?.trim().length === 0) {
+
+          if (error?.groupName === input?.trim()) {
             return 'This name is already taken';
           }
+
           const group = groups.find((g) => g.name === input);
           if (group) {
             return 'This name is already taken';
           }
-          return error;
+          return undefined;
         },
       ),
     );
@@ -89,32 +96,42 @@ export class AddCommunityDialogComponent
   onSubmit(): void {
     const name = (this.form.value as string)?.trim();
 
-    const sub = this.effects.addGroup$.subscribe((res) => {
-      if ('group' in res && res.group.id) {
-        this._snackBar.open('Group added', null, {
-          duration: 1000,
-        });
-        sub.unsubscribe();
-        this.dialogRef.close();
-      } else if (
-        'reason' in res &&
-        (res.reason as HttpErrorResponse).status === 400
-      ) {
-        this.ngrxStore.dispatch(
-          storeGroup({
-            group: { name, id: 'unknown', member: false },
-          }),
-        );
+    const sub = this.effects.addGroup$
+      .pipe(
+        timeout(3000),
+        catchError(() =>
+          of({ reason: 'Service request Timeout', status: 504 }),
+        ),
+      )
+      .subscribe((res) => {
+        if ('group' in res && res.group.id) {
+          this._snackBar.open('Group added', null, {
+            duration: 1000,
+          });
+          sub.unsubscribe();
+          this.dialogRef.close();
+        } else if (
+          'reason' in res &&
+          (res.reason as HttpErrorResponse).status === 400
+        ) {
+          this.ngrxStore.dispatch(
+            storeGroup({
+              group: { name, id: 'unknown', member: false },
+            }),
+          );
 
-        this.errorSubject$.next('This group name is already taken');
-        sub.unsubscribe();
-        return;
-      } else {
-        console.error(res);
-        sub.unsubscribe();
-        return;
-      }
-    });
+          this.errorSubject$.next({
+            groupName: name,
+            message: 'This group name is already taken',
+          });
+          sub.unsubscribe();
+          return;
+        } else {
+          console.error(res);
+          sub.unsubscribe();
+          return;
+        }
+      });
   }
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {

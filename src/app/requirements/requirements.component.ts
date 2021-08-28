@@ -9,7 +9,6 @@ import { SUCCESS_MODEL } from '../services/store.selectors';
   styleUrls: ['./requirements.component.scss'],
 })
 export class RequirementsComponent implements OnInit {
-  numberOfRequirements = 0;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   constructor(private ngrxStore: Store) {}
 
@@ -18,8 +17,5 @@ export class RequirementsComponent implements OnInit {
     event.preventDefault();
   }
 
-  setNumberOfRequirements(n: number) {
-    this.numberOfRequirements = n;
-    // this.ngrxStore.dispatch(setNumberOfRequirements({ n }));
-  }
+
 }

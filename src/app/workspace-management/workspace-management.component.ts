@@ -10,6 +10,7 @@ import {
   setCommunityWorkspace,
   setNumberOfRequirements,
   setService,
+  storeRequirements,
   toggleEdit,
 } from '../services/store.actions';
 
@@ -44,6 +45,7 @@ import {
   filter,
   first,
   map,
+  switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
 import {
@@ -188,24 +190,13 @@ export class WorkspaceManagementComponent
       if (mode !== this.checked) this.checked = mode;
     });
     this.subscriptions$.push(sub);
-    sub = this.successModel$.subscribe((model) => {
-      if (model?.reqBazProject) {
-        this.las2peer
-          .fetchRequirementsOnReqBaz(model.reqBazProject.categoryId)
-          .then((requirements: Requirement[]) => {
-            if (requirements) {
-              this.ngrxStore.dispatch(
-                setNumberOfRequirements({ n: requirements?.length }),
-              );
-            }
-          });
-      }
-    });
-    this.subscriptions$.push(sub);
   }
 
-  async onServiceSelected(service: ServiceInformation) {
-    const confirmation = await this.openClearWorkspaceDialog();
+  async onServiceSelected(
+    service: ServiceInformation,
+  ): Promise<void> {
+    const confirmation =
+      (await this.openClearWorkspaceDialog()) as boolean;
     if (confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
@@ -216,15 +207,16 @@ export class WorkspaceManagementComponent
     }
   }
 
-  onEditModeChanged() {
+  onEditModeChanged(): void {
     this.ngrxStore.dispatch(toggleEdit());
   }
 
   /**
    * Switch the workspace to that of another user
+   *
    * @param owner the owner of the workspace which we want to view
    */
-  onSwitchWorkspace(owner: string) {
+  onSwitchWorkspace(owner: string): void {
     this.ngrxStore.dispatch(
       joinWorkSpace({
         groupId: this.selectedGroupId,
@@ -241,7 +233,11 @@ export class WorkspaceManagementComponent
     });
   }
 
-  onChangeRole(visitorName: string, role?: string, event?) {
+  onChangeRole(
+    visitorName: string,
+    role?: string,
+    event?: Event,
+  ): void {
     this.workspaceService.changeVisitorRole(
       visitorName,
       this.workspaceOwner,
@@ -251,7 +247,7 @@ export class WorkspaceManagementComponent
     event.stopPropagation();
   }
 
-  shareWorkspaceLink() {
+  shareWorkspaceLink(): void {
     if (this.selectedGroupId && this.selectedService && this.user) {
       const link =
         window.location.href +
@@ -261,16 +257,18 @@ export class WorkspaceManagementComponent
         this.selectedService.name +
         '/' +
         this.user.profile.preferred_username;
-      navigator.clipboard.writeText(link);
-      const message = this.translate.instant('copied-to-clipboard');
+      void navigator.clipboard.writeText(link);
+      const message = this.translate.instant(
+        'copied-to-clipboard',
+      ) as string;
       this._snackBar.open(message, null, { duration: 3000 });
     }
   }
 
-  openCopyWorkspaceDialog(owner: string) {
+  openCopyWorkspaceDialog(owner: string): void {
     const message = this.translate.instant(
       'success-modeling.copy-workspace-prompt',
-    );
+    ) as string;
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
@@ -287,12 +285,22 @@ export class WorkspaceManagementComponent
     });
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
+    this.workspaceService.removeWorkspace(
+      this.user?.profile.preferred_username,
+      this.selectedServiceName,
+    );
+  }
+
   private openClearWorkspaceDialog() {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
     if (this.user) {
       const message = this.translate.instant(
         'success-modeling.discard-changes-prompt',
-      );
+      ) as string;
       const dialogRef = this.dialog.open(
         ConfirmationDialogComponent,
         {
@@ -302,15 +310,5 @@ export class WorkspaceManagementComponent
       );
       return dialogRef.afterClosed().toPromise();
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions$.forEach((subscription) => {
-      subscription.unsubscribe();
-    });
-    this.workspaceService.removeWorkspace(
-      this.user?.profile.preferred_username,
-      this.selectedServiceName,
-    );
   }
 }
