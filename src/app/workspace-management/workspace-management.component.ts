@@ -19,7 +19,6 @@ import { User } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
-  VISITORS_EXCEPT_USER,
   EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
@@ -38,6 +37,7 @@ import {
   _SELECTED_SERVICE_NAME,
   _SELECTED_GROUP_ID,
   NUMBER_OF_REQUIREMENTS,
+  VISITORS,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
@@ -78,7 +78,7 @@ export class WorkspaceManagementComponent
   workspacesForServiceExceptActive$ = this.ngrxStore.select(
     ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   );
-  visitorsExcpetUser$ = this.ngrxStore.select(VISITORS_EXCEPT_USER);
+  visitors$ = this.ngrxStore.select(VISITORS);
   currentApplicationWorkspace$ = this.ngrxStore.select(
     APPLICATION_WORKSPACE,
   );
