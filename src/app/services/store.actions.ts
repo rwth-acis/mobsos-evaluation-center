@@ -6,8 +6,12 @@ import { Questionnaire } from '../models/questionnaire.model';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
-import { User, UserRole } from '../models/user.model';
-import { CommunityWorkspace } from '../models/workspace.model';
+import { User } from '../models/user.model';
+
+import {
+  CommunityWorkspace,
+  UserRole,
+} from '../models/workspace.model';
 
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',

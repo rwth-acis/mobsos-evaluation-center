@@ -826,7 +826,10 @@ function getWorkspaceByUserAndService(
   user: string,
   service: string,
 ) {
-  if (!Object.keys(communityWorkspace).includes(user)) {
+  if (
+    !communityWorkspace ||
+    !Object.keys(communityWorkspace).includes(user)
+  ) {
     return;
   }
   const userWorkspace = communityWorkspace[user];

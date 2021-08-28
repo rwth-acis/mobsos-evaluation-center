@@ -6,6 +6,7 @@ import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,
   MEASURE,
+  RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
@@ -47,6 +48,7 @@ export class ChartVisualizerComponent
   visualization: ChartVisualization;
   data$: Observable<VisualizationData>;
   dataIsLoading$: Observable<boolean>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
 
   formatters = [];
 

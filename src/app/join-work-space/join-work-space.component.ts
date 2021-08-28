@@ -9,7 +9,8 @@ import {
   filter,
   withLatestFrom,
 } from 'rxjs/operators';
-import { User, UserRole } from '../models/user.model';
+import { User } from '../models/user.model';
+import { UserRole } from '../models/workspace.model';
 import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
 import {
   joinWorkSpace,

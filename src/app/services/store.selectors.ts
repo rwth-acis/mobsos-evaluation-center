@@ -143,8 +143,10 @@ export const ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE =
 
 export const VISITORS = createSelector(
   APPLICATION_WORKSPACE,
-  (workspace) =>
-    workspace?.visitors.sort((a, b) =>
+  (
+    workspace, // need to copy visitors because object is readonly
+  ) =>
+    [...workspace?.visitors].sort((a, b) =>
       a.username?.localeCompare(b.username),
     ),
 );
@@ -163,10 +165,12 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
   USER,
   (appWorkspace, user) =>
-    getUserRoleInWorkspace(
-      appWorkspace,
-      user?.profile?.preferred_username,
-    ),
+    user?.signedIn
+      ? getUserRoleInWorkspace(
+          appWorkspace,
+          user?.profile?.preferred_username,
+        )
+      : 'lurker',
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
@@ -220,7 +224,7 @@ export const QUESTIONNAIRES = createSelector(
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
-  state.Reducer?.restricted;
+  !state.Reducer?.user.signedIn;
 
 export const SUCCESS_MODEL_XML = (state: StoreState) =>
   state.Reducer.successModel

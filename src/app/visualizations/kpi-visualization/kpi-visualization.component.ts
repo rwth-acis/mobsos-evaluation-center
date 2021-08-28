@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
+  RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import { Observable } from 'rxjs';
@@ -34,21 +35,20 @@ export class KpiVisualizationComponent
   extends BaseVisualizationComponent
   implements OnInit
 {
-  abstractTerm = [];
-  term = [];
-
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
-    super(ngrxStore, dialog);
-  }
-
   @Input() measureName: string;
+
   measure$: Observable<Measure>;
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
 
-  async ngOnInit() {
+  constructor(dialog: MatDialog, protected ngrxStore: Store) {
+    super(ngrxStore, dialog);
+  }
+
+  ngOnInit(): void {
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)

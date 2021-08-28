@@ -36,18 +36,19 @@
     <mat-icon>poll</mat-icon>
   </button>
 </ng-container>
-
-<button
-  *ngIf="query$ | async as query"
-  mat-icon-button
-  matTooltipShowDelay="0"
-  matTooltip="{{
-    'success-modeling.visualization.refresh-data' | translate
-  }}"
-  (click)="onRefreshClicked(query)"
+<ng-container *ngIf="!(restricted$ | async)">
+  <button
+    *ngIf="query$ | async as query"
+    mat-icon-button
+    matTooltipShowDelay="0"
+    matTooltip="{{
+      'success-modeling.visualization.refresh-data' | translate
+    }}"
+    (click)="onRefreshClicked(query)"
+  >
+    <mat-icon color="primary">sync</mat-icon>
+  </button></ng-container
 >
-  <mat-icon color="primary">sync</mat-icon>
-</button>
 <mat-menu #menu="matMenu" yPosition="above">
   <div id="chart-info" *ngIf="data$ | async as data">
     <app-visualization-info

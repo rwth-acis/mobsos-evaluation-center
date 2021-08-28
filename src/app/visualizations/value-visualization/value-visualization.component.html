@@ -18,17 +18,21 @@
   <button mat-icon-button [matMenuTriggerFor]="menu">
     <mat-icon> info_outline </mat-icon>
   </button>
-  <button
-    *ngIf="query$ | async as query"
-    mat-icon-button
-    matTooltipShowDelay="0"
-    matTooltip="{{
-      'success-modeling.visualization.refresh-data' | translate
-    }}"
-    (click)="onRefreshClicked(query)"
-  >
-    <mat-icon color="primary">sync</mat-icon>
-  </button>
+  {{ role$ | async }}
+  <ng-container *ngIf="!(restricted$ | async)">
+    <button
+      *ngIf="query$ | async as query"
+      mat-icon-button
+      matTooltipShowDelay="0"
+      matTooltip="{{
+        'success-modeling.visualization.refresh-data' | translate
+      }}"
+      (click)="onRefreshClicked(query)"
+    >
+      <mat-icon color="primary">sync</mat-icon>
+    </button>
+  </ng-container>
+
   <mat-menu #menu="matMenu" yPosition="above">
     <div id="value-info">
       <app-visualization-info

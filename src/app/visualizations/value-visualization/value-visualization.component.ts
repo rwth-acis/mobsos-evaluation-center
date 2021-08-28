@@ -14,6 +14,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
+  RESTRICTED_MODE,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
@@ -48,6 +50,7 @@ export class ValueVisualizationComponent
   measure$: Observable<Measure>;
   query$: Observable<string>;
   value$: Observable<string>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   service$: Observable<ServiceInformation> = this.ngrxStore
     .select(SELECTED_SERVICE)
     .pipe(
