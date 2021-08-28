@@ -97,8 +97,12 @@ export class ValueVisualizationComponent
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
       filter((query) => !!query),
-      mergeMap((query) =>
-        this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
+      mergeMap(
+        (query) =>
+          this.ngrxStore.select(
+            VISUALIZATION_DATA_FOR_QUERY,
+            query,
+          ) as Observable<VisualizationData>,
       ),
     );
 
@@ -107,10 +111,15 @@ export class ValueVisualizationComponent
       map((data) => data === undefined || data?.loading),
     );
     this.value$ = this.data$.pipe(
-      map((visualizationData) => visualizationData?.data),
+      map(
+        (visualizationData: VisualizationData) =>
+          visualizationData?.data,
+      ),
       filter((data) => !!data),
       map((data) =>
-        data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0],
+        data.slice(-1)[0].length === 0
+          ? '0'
+          : (data.slice(-1)[0][0] as string),
       ),
     );
 
@@ -129,7 +138,7 @@ export class ValueVisualizationComponent
     this.subscriptions$.push(sub);
   }
 
-  onRefreshClicked(query: string) {
+  onRefreshClicked(query: string): void {
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
