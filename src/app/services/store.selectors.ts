@@ -146,19 +146,11 @@ export const VISITORS = createSelector(
   (
     workspace, // need to copy visitors because object is readonly
   ) =>
-    [...workspace?.visitors].sort((a, b) =>
-      a.username?.localeCompare(b.username),
-    ),
-);
-
-export const VISITORS_EXCEPT_USER = createSelector(
-  VISITORS,
-  USER,
-  (visitors, user) =>
-    visitors?.filter(
-      (visitor) =>
-        user?.profile.preferred_username !== visitor.username,
-    ),
+    workspace?.visitors
+      ? [...workspace?.visitors].sort((a, b) =>
+          a.username?.localeCompare(b.username),
+        )
+      : undefined,
 );
 
 export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
