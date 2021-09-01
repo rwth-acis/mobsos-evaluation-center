@@ -286,7 +286,7 @@ export class StateEffects {
     ),
   );
 
-  saveModelAndCatalogResult$ = createEffect(() =>
+  saveSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveCatalogSuccess, Action.updateSuccessModel),
       withLatestFrom(
@@ -486,7 +486,7 @@ export class StateEffects {
               questionnaires,
             }),
           ),
-          catchError((err:Error) => {
+          catchError((err: Error) => {
             return of(Action.failureResponse({ reason: err }));
           }),
         ),

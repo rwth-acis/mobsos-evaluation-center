@@ -218,12 +218,13 @@ export const QUESTIONNAIRES = createSelector(
 export const RESTRICTED_MODE = (state: StoreState) =>
   !state.Reducer?.user.signedIn;
 
-export const SUCCESS_MODEL_XML = (state: StoreState) =>
-  state.Reducer.successModel
-    ? SuccessModel.fromPlainObject(
-        state.Reducer.successModel,
-      )?.toXml()?.outerHTML
-    : undefined;
+export const SUCCESS_MODEL_XML = createSelector(
+  SUCCESS_MODEL,
+  (model) =>
+    model
+      ? SuccessModel.fromPlainObject(model)?.toXml()?.outerHTML
+      : undefined,
+);
 
 export const WORKSPACE_MODEL = createSelector(
   APPLICATION_WORKSPACE,

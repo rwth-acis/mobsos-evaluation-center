@@ -38,6 +38,11 @@
                 "input": "node_modules/monaco-editor/assets/monaco",
                 "output": "./assets/min-maps/"
               },
+              {
+                "glob": "**/*",
+                "input": "node_modules/ngx-monaco-editor/assets/monaco/vs/base/worker/workerMain.js",
+                "output": "./assets/min-maps/vs/base/worker/workerMain.js.map"
+              },
               "src/favicon.ico",
               "src/assets",
               "src/manifest.json"
