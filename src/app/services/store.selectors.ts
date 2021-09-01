@@ -326,12 +326,14 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
   (model, catalog) => !!model && !!catalog,
 );
 
+/**
+ * gets the service which is currently selected by the user.
+ * Visitors dont have access to all service so the selected service is deduced from the application workspace
+ */
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
-  EDIT_MODE,
   APPLICATION_WORKSPACE,
-  (service, editMode, workspace) =>
-    editMode && workspace?.service ? workspace.service : service,
+  (service, workspace) => (service ? service : workspace.service),
 );
 
 function parseXml(xml: string) {

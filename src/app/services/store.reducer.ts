@@ -236,6 +236,7 @@ const _Reducer = createReducer(
       state.currentWorkSpaceOwner,
       state.selectedServiceName,
       props,
+      props.catalogOnly,
     ),
   })),
   on(Actions.editMeasureInCatalog, (state, props) => ({
@@ -740,13 +741,14 @@ function updateMeasure(
 
   // update the success model
   let factors = successModel.dimensions[props.dimensionName];
-  factors = factors.map((factor) =>
+  factors = factors.map((factor: SuccessFactor) =>
     factor.name === props.factorName
-      ? updateMeasureInFactor(
-          factor,
-          props.measure,
-          props.oldMeasureName,
-        )
+      ? {
+          ...factor,
+          measures: factor.measures.map((m: string) =>
+            m === props.oldMeasureName ? props.measure.name : m,
+          ),
+        }
       : factor,
   );
   successModel.dimensions[props.dimensionName] = factors;

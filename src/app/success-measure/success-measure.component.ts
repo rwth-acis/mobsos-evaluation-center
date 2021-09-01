@@ -71,9 +71,11 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),
       );
-    const sub = this.measure$.subscribe((measure) => {
-      this.measure = cloneDeep(measure);
-    });
+    const sub = this.measure$
+      .pipe(distinctUntilChanged())
+      .subscribe((measure) => {
+        this.measure = cloneDeep(measure);
+      });
     this.subscriptions$.push(sub);
   }
 
@@ -82,6 +84,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   }
 
   async onEditClicked(event: MouseEvent) {
+    const oldMeasureName = this.measure.name;
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -93,19 +96,24 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
         factorName: this.factorName,
       },
     });
+
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.ngrxStore.dispatch(
         editMeasure({
           measure: result,
           factorName: this.factorName,
-          oldMeasureName: this.measure.name,
+          oldMeasureName: oldMeasureName,
           dimensionName: this.dimensionName,
+          catalogOnly: false,
         }),
       );
-      this.measure.name = result.name;
-      this.measure.queries = result.queries;
-      this.measure.visualization = result.visualization;
+      this.measure = {
+        ...this.measure,
+        name: result.name,
+        queries: result.queries,
+        visualization: result.visualization,
+      } as Measure;
     }
 
     event.stopPropagation();
