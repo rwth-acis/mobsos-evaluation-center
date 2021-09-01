@@ -36,7 +36,7 @@
     </ng-container>
     <ng-container *ngIf="successModel$ | async as successModel">
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-        <app-questionnaires></app-questionnaires>
+        <app-questionnaires *ngIf="!production"></app-questionnaires>
         <div id="dimensions">
           <app-success-dimension
             *ngFor="let dimension of dimensions"

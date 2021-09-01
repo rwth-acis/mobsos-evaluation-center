@@ -42,6 +42,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../models/service.model';
 import { IQuestionnaire } from '../models/questionnaire.model';
+import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -66,7 +67,7 @@ import { IQuestionnaire } from '../models/questionnaire.model';
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   @Input() restricted = false;
-
+  production = environment.production;
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   successModelEmpty$ = this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY);
