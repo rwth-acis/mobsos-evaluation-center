@@ -3,8 +3,15 @@
 </h1>
 <div mat-dialog-content>
   <ng-container
-    *ngIf="measures$ | async as measures; else noMeasures"
+    *ngIf="filteredMeasures$ | async as measures; else noMeasures"
   >
+    <mat-form-field appearance="standard">
+      <mat-label>{{
+        'success-modeling.pick-measure-dialog.search' | translate
+      }}</mat-label>
+      <input matInput [formControl]="input" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
     <div class="example-action-buttons">
       <button mat-button (click)="accordion.openAll()">
         Expand All

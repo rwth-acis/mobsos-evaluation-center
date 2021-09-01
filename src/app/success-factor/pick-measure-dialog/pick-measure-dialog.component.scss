@@ -41,6 +41,11 @@ mat-panel-description {
 }
 mat-panel-title {
   align-items: center;
+  margin:10px 0 10px 0;
+}
+
+mat-expansion-panel-header{
+  height: 100%;
 }
 
 .example-headers-align .mat-form-field + .mat-form-field {

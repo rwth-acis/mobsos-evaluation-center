@@ -33,7 +33,9 @@ import {
 } from 'src/app/services/store.selectors';
 import { ConfirmationDialogComponent } from 'src/app/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { map } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
+import { combineLatest } from 'rxjs';
 
 export interface DialogData {
   measures: Measure[];
@@ -49,6 +51,7 @@ export interface DialogData {
 })
 export class PickMeasureDialogComponent implements OnInit {
   @ViewChild(MatAccordion) accordion: MatAccordion;
+  input = new FormControl('');
 
   measuresChanged = new EventEmitter<Measure[]>();
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
@@ -60,6 +63,18 @@ export class PickMeasureDialogComponent implements OnInit {
     map((measures) => (measures?.length > 0 ? measures : undefined)),
     map((measures) =>
       measures?.sort((a, b) => a.name?.localeCompare(b.name)),
+    ),
+  );
+  filteredMeasures$ = combineLatest([
+    this.measures$,
+    this.input.valueChanges.pipe(startWith('')),
+  ]).pipe(
+    map(([measures, input]) =>
+      input?.trim().length > 0
+        ? measures.filter((measure) =>
+            measure.name.toLowerCase().includes(input.toLowerCase()),
+          )
+        : measures,
     ),
   );
   service: ServiceInformation;

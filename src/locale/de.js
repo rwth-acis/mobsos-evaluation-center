@@ -183,6 +183,7 @@ export const translations = {
       'no-measures':
         'Es sind keine Messungen vorhanden. Erstelle eine Messung mit dem obigen Button.',
       title: 'Wähle eine Messung aus',
+      search: 'Suchen',
     },
     questionnaires: {
       'add-questionnaire-tooltip':

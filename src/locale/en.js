@@ -180,6 +180,7 @@ export const translations = {
       'no-measures':
         'No measures exist yet. Create one with the button above.',
       title: 'Pick a Measure',
+      search: 'Search',
     },
     questionnaires: {
       'add-questionnaire-tooltip':
