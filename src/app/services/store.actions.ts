@@ -188,6 +188,7 @@ export const editMeasure = createAction(
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
+    catalogOnly?: boolean;
   }>(),
 );
 

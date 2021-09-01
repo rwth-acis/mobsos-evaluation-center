@@ -218,12 +218,13 @@ export const QUESTIONNAIRES = createSelector(
 export const RESTRICTED_MODE = (state: StoreState) =>
   !state.Reducer?.user.signedIn;
 
-export const SUCCESS_MODEL_XML = (state: StoreState) =>
-  state.Reducer.successModel
-    ? SuccessModel.fromPlainObject(
-        state.Reducer.successModel,
-      )?.toXml()?.outerHTML
-    : undefined;
+export const SUCCESS_MODEL_XML = createSelector(
+  SUCCESS_MODEL,
+  (model) =>
+    model
+      ? SuccessModel.fromPlainObject(model)?.toXml()?.outerHTML
+      : undefined,
+);
 
 export const WORKSPACE_MODEL = createSelector(
   APPLICATION_WORKSPACE,
@@ -326,12 +327,14 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
   (model, catalog) => !!model && !!catalog,
 );
 
+/**
+ * gets the service which is currently selected by the user.
+ * Visitors dont have access to all service so the selected service is deduced from the application workspace
+ */
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
-  EDIT_MODE,
   APPLICATION_WORKSPACE,
-  (service, editMode, workspace) =>
-    editMode && workspace?.service ? workspace.service : service,
+  (service, workspace) => (service ? service : workspace.service),
 );
 
 function parseXml(xml: string) {
