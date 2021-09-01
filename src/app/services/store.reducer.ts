@@ -733,7 +733,8 @@ function updateMeasure(
   const successModel = appWorkspace.model;
   // update the measure catalog
 
-  delete measureCatalog.measures[props.oldMeasureName];
+  // commented out because of an issue with success modeling service - ONLY HOTFIX
+  // delete measureCatalog.measures[props.oldMeasureName];
   measureCatalog.measures[props.measure.name] = props.measure;
   if (catalogOnly) {
     return copy;
