@@ -1,5 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ChartType,
+  getPackageForChart,
+  ScriptLoaderService,
+} from 'angular-google-charts';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -16,9 +27,11 @@ import {
   first,
   map,
   mergeMap,
+  takeWhile,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { Observable, Subscription } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
@@ -35,7 +48,7 @@ import { RawDataDialogComponent } from 'src/app/raw-data-dialog/raw-data-dialog.
 })
 export class ChartVisualizerComponent
   extends BaseVisualizationComponent
-  implements OnInit, OnDestroy
+  implements OnInit, OnDestroy, AfterViewInit
 {
   @Input() measureName: string;
 
@@ -47,6 +60,9 @@ export class ChartVisualizerComponent
   chartInitialized = false;
   visualization: ChartVisualization;
   data$: Observable<VisualizationData>;
+  googleChartsIsReady$ = interval(100).pipe(
+    map(() => this.scriptLoader.isGoogleChartsAvailable()),
+  );
   dataIsLoading$: Observable<boolean>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
 
@@ -56,6 +72,7 @@ export class ChartVisualizerComponent
   constructor(
     protected dialog: MatDialog,
     protected ngrxStore: Store,
+    private scriptLoader: ScriptLoaderService,
   ) {
     super(ngrxStore, dialog);
   }
@@ -105,19 +122,22 @@ export class ChartVisualizerComponent
       map((data) => data === undefined || data?.loading),
     );
     this.subscriptions$.push(sub);
-    sub = this.data$
+
+    sub = this.measure$
       .pipe(
-        map((vdata) => vdata?.data),
-        filter((data) => data instanceof Array && data.length >= 2),
-        withLatestFrom(this.measure$),
+        map(
+          (measure) =>
+            (measure.visualization as ChartVisualization).chartType,
+        ),
       )
-      .subscribe(([dataTable, measure]) => {
-        this.prepareChart(dataTable, measure.visualization);
+      .subscribe((chartType) => {
+        const type = getPackageForChart(ChartType[chartType]);
+        this.scriptLoader.loadChartPackages(type);
       });
     this.subscriptions$.push(sub);
 
     sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
+      .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);
@@ -127,6 +147,20 @@ export class ChartVisualizerComponent
             query,
           );
         super.fetchVisualizationData(query, queryParams);
+      });
+    this.subscriptions$.push(sub);
+  }
+
+  ngAfterViewInit() {
+    const sub = this.data$
+      .pipe(
+        map((vdata) => vdata?.data),
+        filter((data) => data instanceof Array && data.length >= 2),
+        withLatestFrom(this.measure$, this.googleChartsIsReady$),
+        filter(([dataTable, measure, ready]) => ready),
+      )
+      .subscribe(([dataTable, measure]) => {
+        this.prepareChart(dataTable, measure.visualization);
       });
     this.subscriptions$.push(sub);
   }
@@ -180,6 +214,7 @@ export class ChartVisualizerComponent
     }
 
     const rows = dataTable.slice(2);
+
     this.chartData = new GoogleChart(
       '',
       (visualization as ChartVisualization).chartType,

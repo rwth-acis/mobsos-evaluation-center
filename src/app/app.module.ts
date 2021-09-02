@@ -192,7 +192,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     ReactiveFormsModule,
     MatMenuModule,
     MatExpansionModule,
-    GoogleChartsModule,
+    GoogleChartsModule.forRoot(),
     BrowserAnimationsModule,
     TranslateModule.forRoot({
       loader: {
