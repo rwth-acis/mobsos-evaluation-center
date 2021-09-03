@@ -65,7 +65,7 @@ export class ChartVisualizerComponent
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
 
-  formatter_medium;
+  formatter_medium; // holds the formatter for the date with format type medium
 
   chartData: GoogleChart; // data which is needed to build the chart.
   chartInitialized = false; // used for the fadein animation of charts
@@ -234,6 +234,14 @@ export class ChartVisualizerComponent
           formatter: this.formatter_medium,
           colIndex: i,
         });
+        rows = rows.map((row) =>
+          row.map((entry, index) => {
+            if (index === i) {
+              return new Date(parseInt(entry));
+            }
+            return entry;
+          }),
+        );
       }
     }
 
