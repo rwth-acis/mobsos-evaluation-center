@@ -84,7 +84,6 @@ export class ChartVisualizerComponent
     private scriptLoader: ScriptLoaderService,
   ) {
     super(ngrxStore, dialog);
-    this.scriptLoader.loadChartPackages('corechart');
   }
 
   ngOnDestroy(): void {
@@ -94,6 +93,13 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit(): void {
+    let sub = this.scriptLoader.loadChartPackages().subscribe(
+      () =>
+        (this.formatter_medium = new google.visualization.DateFormat({
+          formatType: 'medium',
+        })),
+    );
+    this.subscriptions$.push(sub);
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)
@@ -124,7 +130,7 @@ export class ChartVisualizerComponent
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
-    let sub = this.error$.subscribe((err) => {
+    sub = this.error$.subscribe((err) => {
       this.error = err;
     });
     this.subscriptions$.push(sub);
@@ -140,12 +146,6 @@ export class ChartVisualizerComponent
       ),
       timeout(5000),
     );
-
-    sub = this.googleChartsIsReady$.subscribe(() => {
-      this.formatter_medium = new google.visualization.DateFormat({
-        formatType: 'medium',
-      });
-    });
 
     sub = this.measure$
       .pipe(
@@ -182,8 +182,7 @@ export class ChartVisualizerComponent
         map((vdata) => vdata?.data),
         filter((data) => data instanceof Array && data.length >= 2),
         withLatestFrom(this.measure$),
-        sample(this.googleChartsIsReady$),
-        retry(),
+        sample(this.scriptLoader.loadChartPackages()),
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
@@ -235,11 +234,6 @@ export class ChartVisualizerComponent
           formatter: this.formatter_medium,
           colIndex: i,
         });
-        // rows = rows.map((row) =>
-        //   row.map((entry, index) =>
-        //     index === i ? new Date(entry * 1000) : entry,
-        //   ),
-        // );
       }
     }
 
@@ -259,6 +253,5 @@ export class ChartVisualizerComponent
         animation: { startup: true },
       },
     );
-    // if (this.chartData) this.visualizationInitialized = true;
   }
 }
