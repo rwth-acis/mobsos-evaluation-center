@@ -8,7 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Measure } from '../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
 import { SELECTED_SERVICE } from '../services/store.selectors';
-import { filter } from 'rxjs/operators';
+import { distinctUntilKeyChanged, filter } from 'rxjs/operators';
 
 export interface VisualizationComponent {
   service: ServiceInformation;
@@ -27,7 +27,9 @@ export class BaseVisualizationComponent
   implements VisualizationComponent, OnInit, OnDestroy
 {
   measure: Measure;
-  service$ = this.ngrxStore.select(SELECTED_SERVICE);
+  service$ = this.ngrxStore
+    .select(SELECTED_SERVICE)
+    .pipe(distinctUntilKeyChanged('name'));
   measure$: Observable<Measure>;
 
   error$: Observable<HttpErrorResponse>;
