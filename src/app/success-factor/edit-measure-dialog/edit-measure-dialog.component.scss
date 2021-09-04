@@ -10,13 +10,28 @@ mat-divider {
 #hints-accordion {
   mat-expansion-panel {
     margin-bottom: 5px;
+    margin-top: 8px;
   }
 }
-
-app-sql-table{
+#dialog_header {
+  display: flex;
+  justify-content: space-between;
+}
+app-sql-table {
   display: block;
   overflow-y: scroll;
 }
-#sqlInput{
+#sqlInput {
   font-family: 'Roboto Mono';
+}
+.navig {
+  height: 80%;
+  display: flex;
+  justify-content: space-between;
+}
+button {
+  margin-right: 7px;
+}
+.EditMeasureForm {
+  height: 80%;
 }

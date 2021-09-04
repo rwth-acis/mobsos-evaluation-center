@@ -1,5 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ChartType,
+  getPackageForChart,
+  ScriptLoaderService,
+} from 'angular-google-charts';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -10,15 +22,26 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
+  delayWhen,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   first,
   map,
   mergeMap,
+  retry,
+  sample,
+  takeWhile,
+  tap,
+  timeout,
   withLatestFrom,
 } from 'rxjs/operators';
-import { Observable, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  interval,
+  Observable,
+  Subscription,
+} from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
@@ -35,27 +58,31 @@ import { RawDataDialogComponent } from 'src/app/raw-data-dialog/raw-data-dialog.
 })
 export class ChartVisualizerComponent
   extends BaseVisualizationComponent
-  implements OnInit, OnDestroy
+  implements OnInit, OnDestroy, AfterViewInit
 {
   @Input() measureName: string;
 
-  query$: Observable<string>;
+  query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
-
-  query: string; // local copy of the sql query
-  chartData: GoogleChart;
-  chartInitialized = false;
-  visualization: ChartVisualization;
-  data$: Observable<VisualizationData>;
-  dataIsLoading$: Observable<boolean>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
 
-  formatters = [];
+  formatter_medium; // holds the formatter for the date with format type medium
+
+  chartData: GoogleChart; // data which is needed to build the chart.
+  chartInitialized = false; // used for the fadein animation of charts
+  data$: Observable<VisualizationData>; // visualization data fetched from the store
+  googleChartsIsReady$ = interval(10).pipe(
+    map(() => this.scriptLoader.isGoogleChartsAvailable()),
+  ); // Observable which periodically checks wheter the google charts library is ready
+  dataIsLoading$: Observable<boolean>; // Observable which is true when data is currently loading from the server
+
+  formatters = []; // formatters are used to format js dates into human readable format
 
   subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    public dialog: MatDialog,
     protected ngrxStore: Store,
+    private scriptLoader: ScriptLoaderService,
   ) {
     super(ngrxStore, dialog);
   }
@@ -67,6 +94,13 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit(): void {
+    let sub = this.scriptLoader.loadChartPackages().subscribe(
+      () =>
+        (this.formatter_medium = new google.visualization.DateFormat({
+          formatType: 'medium',
+        })),
+    );
+    this.subscriptions$.push(sub);
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)
@@ -78,46 +112,57 @@ export class ChartVisualizerComponent
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
-      map(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        query = this.applyVariableReplacements(query, service);
-        query =
-          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-            query,
-          );
-        return query;
-      }),
+      map(([measure, service]) =>
+        BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
+          this.applyVariableReplacements(
+            measure.queries[0].sql,
+            service,
+          ),
+        ),
+      ),
       distinctUntilChanged(),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      filter((query) => !!query),
       mergeMap((query) =>
         this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
       ),
     );
+
     this.error$ = this.data$.pipe(map((data) => data?.error));
-    let sub = this.error$.subscribe((err) => {
+    sub = this.error$.subscribe((err) => {
       this.error = err;
     });
-    this.dataIsLoading$ = this.data$.pipe(
-      map((data) => data === undefined || data?.loading),
-    );
     this.subscriptions$.push(sub);
-    sub = this.data$
+    this.dataIsLoading$ = combineLatest([
+      this.data$.pipe(
+        map((data) => data === undefined || data?.loading),
+      ),
+      this.googleChartsIsReady$,
+    ]).pipe(
+      map(
+        ([dataLoaded, chartLibLoaded]) =>
+          chartLibLoaded && dataLoaded,
+      ),
+      timeout(5000),
+    );
+
+    sub = this.measure$
       .pipe(
-        map((vdata) => vdata?.data),
-        filter((data) => data instanceof Array && data.length >= 2),
-        withLatestFrom(this.measure$),
+        map(
+          (measure) =>
+            (measure.visualization as ChartVisualization).chartType,
+        ),
       )
-      .subscribe(([dataTable, measure]) => {
-        this.prepareChart(dataTable, measure.visualization);
+      .subscribe((chartType) => {
+        const type = getPackageForChart(ChartType[chartType]);
+        this.scriptLoader.loadChartPackages(type);
       });
     this.subscriptions$.push(sub);
 
     sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
+      .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);
@@ -127,6 +172,21 @@ export class ChartVisualizerComponent
             query,
           );
         super.fetchVisualizationData(query, queryParams);
+      });
+    this.subscriptions$.push(sub);
+  }
+
+  ngAfterViewInit() {
+    const sub = this.data$
+      .pipe(
+        distinctUntilChanged(),
+        map((vdata) => vdata?.data),
+        filter((data) => data instanceof Array && data.length >= 2),
+        withLatestFrom(this.measure$),
+        sample(this.scriptLoader.loadChartPackages()),
+      )
+      .subscribe(([dataTable, measure]) => {
+        this.prepareChart(dataTable, measure.visualization);
       });
     this.subscriptions$.push(sub);
   }
@@ -168,18 +228,24 @@ export class ChartVisualizerComponent
     visualization = visualization as ChartVisualization;
     this.error = null;
     const labelTypes = dataTable[1];
+    let rows = dataTable.slice(2);
     for (let i = 0; i < labelTypes.length; i++) {
       if (labelTypes[i] === 'datetime' || labelTypes[i] === 'date') {
         this.formatters.push({
-          formatter: new google.visualization.DateFormat({
-            formatType: 'long',
-          }),
+          formatter: this.formatter_medium,
           colIndex: i,
         });
+        rows = rows.map((row) =>
+          row.map((entry, index) => {
+            if (index === i) {
+              return new Date(parseInt(entry));
+            }
+            return entry;
+          }),
+        );
       }
     }
 
-    const rows = dataTable.slice(2);
     this.chartData = new GoogleChart(
       '',
       (visualization as ChartVisualization).chartType,
@@ -196,6 +262,5 @@ export class ChartVisualizerComponent
         animation: { startup: true },
       },
     );
-    // if (this.chartData) this.visualizationInitialized = true;
   }
 }

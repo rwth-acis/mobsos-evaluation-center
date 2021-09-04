@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -192,7 +193,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     ReactiveFormsModule,
     MatMenuModule,
     MatExpansionModule,
-    GoogleChartsModule,
+    GoogleChartsModule.forRoot(),
     BrowserAnimationsModule,
     TranslateModule.forRoot({
       loader: {
@@ -211,6 +212,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatIconModule,
     MatListModule,
     MatSlideToggleModule,
+    MatStepperModule,
     MatButtonModule,
     MatBottomSheetModule,
     MatTabsModule,

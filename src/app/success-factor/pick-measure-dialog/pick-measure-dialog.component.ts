@@ -104,7 +104,7 @@ export class PickMeasureDialogComponent implements OnInit {
 
   async openNewMeasureDialog() {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
-      minWidth: 300,
+      maxHeight: '90vh',
       width: '80%',
       data: {
         measure: new Measure(
@@ -129,8 +129,8 @@ export class PickMeasureDialogComponent implements OnInit {
 
   async onEditClicked(measure: Measure) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
-      minWidth: 300,
       width: '80%',
+      maxHeight: '90vh',
       data: {
         measure,
         service: this.service,
