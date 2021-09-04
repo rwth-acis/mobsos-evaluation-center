@@ -2,6 +2,7 @@
 import {
   AfterViewInit,
   Component,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -79,7 +80,7 @@ export class ChartVisualizerComponent
 
   subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    public dialog: MatDialog,
     protected ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
   ) {

@@ -86,8 +86,8 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   async onEditClicked(event: MouseEvent) {
     const oldMeasureName = this.measure.name;
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
-      minWidth: 300,
       width: '80%',
+      maxHeight: '90vh',
       data: {
         measure: this.measure,
         service: this.service,
