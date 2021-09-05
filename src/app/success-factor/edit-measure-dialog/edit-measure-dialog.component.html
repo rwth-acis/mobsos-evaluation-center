@@ -1,3 +1,4 @@
+<!-- header  -->
 <div id="dialog_header">
   <h1 mat-dialog-title *ngIf="data.create">
     {{
@@ -13,277 +14,269 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
-
-<div>
-  <mat-stepper linear #stepper>
-    <mat-step editable="true">
-      <!-- name of the success measure -->
-      <div class="EditMeasureForm">
-        <mat-form-field>
-          <input
-            matInput
-            placeholder="{{
-              'success-modeling.edit-measure-dialog.name-placeholder'
-                | translate
-            }}"
-            [(ngModel)]="data.measure.name"
-          />
-        </mat-form-field>
-
-        <!-- type of visualization -->
-        <mat-form-field>
-          <mat-label>{{
-            'success-modeling.edit-measure-dialog.visualization-select'
+<!-- content -->
+<mat-stepper linear #stepper>
+  <!-- first step: choose a name and visualization type -->
+  <mat-step editable="true">
+    <!-- name of the success measure -->
+    <div class="EditMeasureForm">
+      <mat-form-field>
+        <input
+          matInput
+          placeholder="{{
+            'success-modeling.edit-measure-dialog.name-placeholder'
               | translate
-          }}</mat-label>
-          <mat-select
-            [ngModel]="data.measure.visualization.type"
-            (selectionChange)="onVisualizationChange($event.value)"
-          >
-            <mat-option
-              *ngFor="let item of visualizationChoices | keyvalue"
-              [value]="item.key"
-            >
-              {{ item.value | translate }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+          }}"
+          [(ngModel)]="data.measure.name"
+        />
+      </mat-form-field>
 
-        <mat-form-field
-          *ngIf="data.measure.visualization.type === 'Value'"
+      <!-- type of visualization -->
+      <mat-form-field>
+        <mat-label>{{
+          'success-modeling.edit-measure-dialog.visualization-select'
+            | translate
+        }}</mat-label>
+        <mat-select
+          [ngModel]="data.measure.visualization.type"
+          (selectionChange)="onVisualizationChange($event.value)"
         >
-          <input
-            matInput
-            placeholder="{{
-              'success-modeling.edit-measure-dialog.unit-placeholder'
-                | translate
-            }}"
-            [(ngModel)]="$any(data.measure.visualization).unit"
-          />
-        </mat-form-field>
-
-        <div *ngIf="data.measure.visualization.type === 'KPI'">
-          <div
-            *ngFor="
-              let termPart of $any(data.measure.visualization)
-                .operationsElements;
-              let i = index
-            "
+          <mat-option
+            *ngFor="let item of visualizationChoices | keyvalue"
+            [value]="item.key"
           >
-            <mat-form-field *ngIf="i % 2 === 0">
-              <mat-label>Operand</mat-label>
-              <mat-select
-                [ngModel]="$any(termPart).name"
-                (selectionChange)="
-                  onKpiOperandChange($event.value, i)
-                "
-              >
-                <mat-option
-                  *ngFor="let query of data.measure.queries"
-                  [value]="query.name"
-                >
-                  {{ query.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field *ngIf="i % 2 !== 0">
-              <mat-label>Operator</mat-label>
-              <mat-select
-                [ngModel]="$any(termPart).name"
-                (selectionChange)="
-                  onKpiOperatorChange($event.value, i)
-                "
-              >
-                <mat-option
-                  *ngFor="let operator of ['+', '-', '*', '/']"
-                  [value]="operator"
-                >
-                  {{ operator }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+            {{ item.value | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-          <button
-            mat-button
-            color="primary"
-            (click)="onAddOperationClicked()"
-          >
-            {{
-              'success-modeling.edit-measure-dialog.add-operation'
-                | translate
-            }}
-          </button>
-          <button
-            mat-button
-            color="warn"
-            (click)="onRemoveOperationClicked()"
-            [disabled]="
-              $any(data.measure.visualization).operationsElements
-                .length <= 1
-            "
-          >
-            {{
-              'success-modeling.edit-measure-dialog.remove-operation'
-                | translate
-            }}
-          </button>
-        </div>
+      <mat-form-field
+        *ngIf="data.measure.visualization.type === 'Value'"
+      >
+        <input
+          matInput
+          placeholder="{{
+            'success-modeling.edit-measure-dialog.unit-placeholder'
+              | translate
+          }}"
+          [(ngModel)]="$any(data.measure.visualization).unit"
+        />
+      </mat-form-field>
 
-        <div *ngIf="data.measure.visualization.type === 'Chart'">
-          <mat-form-field>
-            <mat-label>Type</mat-label>
+      <div *ngIf="data.measure.visualization.type === 'KPI'">
+        <div
+          *ngFor="
+            let termPart of $any(data.measure.visualization)
+              .operationsElements;
+            let i = index
+          "
+        >
+          <mat-form-field *ngIf="i % 2 === 0">
+            <mat-label>Operand</mat-label>
             <mat-select
-              [(ngModel)]="$any(data.measure.visualization).chartType"
+              [ngModel]="$any(termPart).name"
+              (selectionChange)="onKpiOperandChange($event.value, i)"
             >
               <mat-option
-                *ngFor="let item of chartTypeChoices | keyvalue"
-                [value]="item.key"
+                *ngFor="let query of data.measure.queries"
+                [value]="query.name"
               >
-                {{ item.value | translate }}
+                {{ query.name }}
               </mat-option>
             </mat-select>
           </mat-form-field>
-        </div>
-      </div>
-      <div class="navig">
-        <button mat-stroked-button matStepperNext>Next</button>
-      </div>
-    </mat-step>
-
-    <mat-step editable="true">
-      <div class="EditMeasureForm">
-        <mat-accordion id="hints-accordion">
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title>Hints</mat-panel-title>
-              <mat-panel-description>
-                See descriptions and examples of the logged data.
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <ng-template matExpansionPanelContent>
-              <div
-                *ngFor="
-                  let item of data.service.serviceMessageDescriptions
-                    | keyvalue
-                "
+          <mat-form-field *ngIf="i % 2 !== 0">
+            <mat-label>Operator</mat-label>
+            <mat-select
+              [ngModel]="$any(termPart).name"
+              (selectionChange)="onKpiOperatorChange($event.value, i)"
+            >
+              <mat-option
+                *ngFor="let operator of ['+', '-', '*', '/']"
+                [value]="operator"
               >
-                <h2>{{ prettifyCustomMessageName(item.key) }}</h2>
-                <mat-accordion [multi]="true">
-                  <mat-expansion-panel [expanded]="false">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>Description</mat-panel-title>
-                    </mat-expansion-panel-header>
-                    <ng-template matExpansionPanelContent>
-                      <markdown ngPreserveWhitespaces>
-                        {{ item.value }}
-                      </markdown>
-                    </ng-template>
-                  </mat-expansion-panel>
-                  <mat-expansion-panel [expanded]="false">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title
-                        >Latest Log Entries</mat-panel-title
-                      >
-                    </mat-expansion-panel-header>
-                    <ng-template matExpansionPanelContent>
-                      <app-sql-table
-                        [service]="data.service"
-                        [query]="
-                          'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
-                          item.key +
-                          '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
-                        "
-                      >
-                      </app-sql-table>
-                    </ng-template>
-                  </mat-expansion-panel>
-                </mat-accordion>
-              </div>
-            </ng-template>
-          </mat-expansion-panel>
-        </mat-accordion>
-
-        <div
-          *ngFor="let query of data.measure.queries; let i = index"
-        >
-          <mat-form-field>
-            <input
-              matInput
-              placeholder="{{
-                'success-modeling.edit-measure-dialog.query-name-placeholder'
-                  | translate
-              }} #{{ i + 1 }}"
-              [ngModel]="query.name"
-              (change)="
-                onQueryNameChanged($any($event.target).value, i)
-              "
-            />
-          </mat-form-field>
-          <mat-form-field>
-            <textarea
-              matInput
-              rows="3"
-              id="sqlInput"
-              placeholder="{{
-                'success-modeling.edit-measure-dialog.query-placeholder'
-                  | translate
-              }} #{{ i + 1 }}"
-              [(ngModel)]="query.sql"
-            ></textarea>
+                {{ operator }}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
         </div>
 
         <button
           mat-button
           color="primary"
-          (click)="onAddQueryClicked()"
+          (click)="onAddOperationClicked()"
         >
           {{
-            'success-modeling.edit-measure-dialog.add-query'
+            'success-modeling.edit-measure-dialog.add-operation'
               | translate
           }}
         </button>
         <button
           mat-button
           color="warn"
-          (click)="onRemoveQueryClicked()"
-          [disabled]="data.measure.queries.length <= 1"
+          (click)="onRemoveOperationClicked()"
+          [disabled]="
+            $any(data.measure.visualization).operationsElements
+              .length <= 1
+          "
         >
           {{
-            'success-modeling.edit-measure-dialog.remove-query'
+            'success-modeling.edit-measure-dialog.remove-operation'
               | translate
           }}
         </button>
+      </div>
 
-        <mat-divider></mat-divider>
+      <div *ngIf="data.measure.visualization.type === 'Chart'">
+        <mat-form-field>
+          <mat-label>Type</mat-label>
+          <mat-select
+            [(ngModel)]="$any(data.measure.visualization).chartType"
+          >
+            <mat-option
+              *ngFor="let item of chartTypeChoices | keyvalue"
+              [value]="item.key"
+            >
+              {{ item.value | translate }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="navig">
+      <button mat-stroked-button matStepperNext>Next</button>
+    </div>
+  </mat-step>
+  <!-- second step: query input -->
+  <mat-step editable="true">
+    <div class="EditMeasureForm">
+      <mat-accordion id="hints-accordion">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Hints</mat-panel-title>
+            <mat-panel-description>
+              See descriptions and examples of the logged data.
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <ng-template matExpansionPanelContent>
+            <div
+              *ngFor="
+                let item of data.service.serviceMessageDescriptions
+                  | keyvalue
+              "
+            >
+              <h2>{{ prettifyCustomMessageName(item.key) }}</h2>
+              <mat-accordion [multi]="true">
+                <mat-expansion-panel [expanded]="false">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>Description</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <ng-template matExpansionPanelContent>
+                    <markdown ngPreserveWhitespaces>
+                      {{ item.value }}
+                    </markdown>
+                  </ng-template>
+                </mat-expansion-panel>
+                <mat-expansion-panel [expanded]="false">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title
+                      >Latest Log Entries</mat-panel-title
+                    >
+                  </mat-expansion-panel-header>
+                  <ng-template matExpansionPanelContent>
+                    <app-sql-table
+                      [service]="data.service"
+                      [query]="
+                        'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
+                        item.key +
+                        '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
+                      "
+                    >
+                    </app-sql-table>
+                  </ng-template>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </div>
+          </ng-template>
+        </mat-expansion-panel>
+      </mat-accordion>
 
+      <div *ngFor="let query of data.measure.queries; let i = index">
+        <mat-form-field>
+          <input
+            matInput
+            placeholder="{{
+              'success-modeling.edit-measure-dialog.query-name-placeholder'
+                | translate
+            }} #{{ i + 1 }}"
+            [ngModel]="query.name"
+            (change)="
+              onQueryNameChanged($any($event.target).value, i)
+            "
+          />
+        </mat-form-field>
         <mat-form-field>
           <textarea
             matInput
-            maxlength="500"
-            rows="4"
+            rows="3"
+            id="sqlInput"
             placeholder="{{
-              'success-modeling.edit-measure-dialog.description-placeholder'
+              'success-modeling.edit-measure-dialog.query-placeholder'
                 | translate
-            }} 
-      "
-            [(ngModel)]="data.measure.description"
+            }} #{{ i + 1 }}"
+            [(ngModel)]="query.sql"
           ></textarea>
-          <mat-hint *ngIf="data.measure.description"
-            >{{
-              data.measure.description.trim().length
-            }}/500</mat-hint
-          >
         </mat-form-field>
       </div>
-      <div class="navig">
-        <button mat-stroked-button matStepperPrevious>Back</button>
-        <button mat-stroked-button matStepperNext>Next</button>
-      </div>
-    </mat-step>
 
-    <mat-step editable="false">
+      <button
+        mat-button
+        color="primary"
+        (click)="onAddQueryClicked()"
+      >
+        {{
+          'success-modeling.edit-measure-dialog.add-query' | translate
+        }}
+      </button>
+      <button
+        mat-button
+        color="warn"
+        (click)="onRemoveQueryClicked()"
+        [disabled]="data.measure.queries.length <= 1"
+      >
+        {{
+          'success-modeling.edit-measure-dialog.remove-query'
+            | translate
+        }}
+      </button>
+
+      <mat-divider></mat-divider>
+
+      <mat-form-field>
+        <textarea
+          matInput
+          maxlength="500"
+          rows="4"
+          placeholder="{{
+            'success-modeling.edit-measure-dialog.description-placeholder'
+              | translate
+          }} 
+      "
+          [(ngModel)]="data.measure.description"
+        ></textarea>
+        <mat-hint *ngIf="data.measure.description"
+          >{{ data.measure.description.trim().length }}/500</mat-hint
+        >
+      </mat-form-field>
+    </div>
+    <div class="navig">
+      <button mat-stroked-button matStepperPrevious>Back</button>
+      <button mat-stroked-button matStepperNext>Next</button>
+    </div>
+  </mat-step>
+  <!-- last step: preview of the visualization -->
+  <mat-step editable="false" state="analytics">
+    <ng-template matStepContent>
       <div class="EditMeasureForm">
         <h3>
           {{
@@ -307,6 +300,6 @@
           {{ 'shared.elements.save-label' | translate }}
         </button>
       </div>
-    </mat-step>
-  </mat-stepper>
-</div>
+    </ng-template>
+  </mat-step>
+</mat-stepper>
