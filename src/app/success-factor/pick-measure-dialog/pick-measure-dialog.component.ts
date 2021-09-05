@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   Inject,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -35,7 +36,7 @@ import { ConfirmationDialogComponent } from 'src/app/confirmation-dialog/confirm
 import { TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
-import { combineLatest } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 export interface DialogData {
   measures: Measure[];
@@ -49,7 +50,7 @@ export interface DialogData {
   templateUrl: './pick-measure-dialog.component.html',
   styleUrls: ['./pick-measure-dialog.component.scss'],
 })
-export class PickMeasureDialogComponent implements OnInit {
+export class PickMeasureDialogComponent implements OnInit, OnDestroy {
   @ViewChild(MatAccordion) accordion: MatAccordion;
   input = new FormControl('');
 
@@ -78,6 +79,7 @@ export class PickMeasureDialogComponent implements OnInit {
     ),
   );
   service: ServiceInformation;
+  subscriptions$: Subscription[] = [];
 
   constructor(
     private dialogRef: MatDialogRef<PickMeasureDialogComponent>,
@@ -88,7 +90,14 @@ export class PickMeasureDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.service$.subscribe((service) => (this.service = service));
+    const sub = this.service$.subscribe(
+      (service) => (this.service = service),
+    );
+    this.subscriptions$.push(sub);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   onMeasureClicked(measure: Measure) {

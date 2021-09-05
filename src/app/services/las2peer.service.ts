@@ -613,7 +613,7 @@ export class Las2peerService {
         response ? response.xml : null,
       ),
     );
-    req.subscribe();
+    req.subscribe(() => {});
 
     return req;
   }

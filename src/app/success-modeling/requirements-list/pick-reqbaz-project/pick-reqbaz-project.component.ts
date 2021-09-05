@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { startWith, throttleTime } from 'rxjs/operators';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 
@@ -33,20 +33,23 @@ export class PickReqbazProjectComponent implements OnInit {
   >([]);
   availableCategories =
     this.availableCategoriesSubject.asObservable();
+  subscriptions$: Subscription[] = [];
 
   constructor(private las2peer: Las2peerService) {}
 
   ngOnInit() {
-    this.selectedProjectControl.valueChanges
+    let sub = this.selectedProjectControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
       .subscribe((value) => {
         this._filterProject(value);
       });
-    this.selectedCategoryControl.valueChanges
+    this.subscriptions$.push(sub);
+    sub = this.selectedCategoryControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
       .subscribe((value) => {
         this._filterCategory(value);
       });
+    this.subscriptions$.push(sub);
   }
 
   projectDisplay(project?: Project): string | undefined {

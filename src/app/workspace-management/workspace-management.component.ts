@@ -139,7 +139,7 @@ export class WorkspaceManagementComponent
       });
     this.subscriptions$.push(sub);
 
-    this.ngrxStore
+    sub = this.ngrxStore
       .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),

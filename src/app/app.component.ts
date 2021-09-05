@@ -238,27 +238,27 @@ export class AppComponent implements OnInit, OnDestroy {
     //     this.sidenav.close();
     //   }
     // });
-    if (this.swUpdate.isEnabled) {
-      sub = this.swUpdate.available.subscribe((): void => {
-        const message = this.translate.instant(
-          'app.update.message',
-        ) as string;
+    // if (this.swUpdate.isEnabled) {
+    //   sub = this.swUpdate.available.subscribe((): void => {
+    //     const message = this.translate.instant(
+    //       'app.update.message',
+    //     ) as string;
 
-        const reloadAction = this.translate.instant(
-          'app.update.reload',
-        ) as string;
+    //     const reloadAction = this.translate.instant(
+    //       'app.update.reload',
+    //     ) as string;
 
-        const snackBarRef = this.snackBar.open(
-          message,
-          reloadAction,
-          null,
-        );
-        snackBarRef.onAction().subscribe(() => {
-          window.location.reload();
-        });
-      });
-      this.subscriptions$.push(sub);
-    }
+    //     const snackBarRef = this.snackBar.open(
+    //       message,
+    //       reloadAction,
+    //       null,
+    //     );
+    //     snackBarRef.onAction().subscribe(() => {
+    //       window.location.reload();
+    //     });
+    //   });
+    //   this.subscriptions$.push(sub);
+    // }
 
     const silentLoginFunc = () => {
       this.userManager

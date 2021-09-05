@@ -155,7 +155,7 @@ export class QuestionnairesComponent implements OnInit {
         minWidth: 300,
       },
     );
-    dialogRef.afterClosed().subscribe((result) => {
+    const sub = dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const surveyId =
           this.model.questionnaires[questionnaireIndex].surveyId;
@@ -198,6 +198,7 @@ export class QuestionnairesComponent implements OnInit {
         this.model.questionnaires.splice(questionnaireIndex, 1);
       }
     });
+    this.subscriptions$.push(sub);
   }
 
   private getQuestionnaireByName(name: string): Questionnaire {

@@ -105,13 +105,13 @@ export class BaseVisualizationComponent
     );
   }
   ngOnInit(): void {
-    this.service$
+    let sub = this.service$
       .pipe(filter((service) => !!service))
       .subscribe((service) => {
         this.service = service;
       });
-
-    const sub = this.error$.subscribe((err) => (this.error = err));
+    this.subscriptions$.push(sub);
+    sub = this.error$.subscribe((err) => (this.error = err));
     this.subscriptions$.push(sub);
   }
 

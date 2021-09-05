@@ -19,7 +19,7 @@ import {
   CommunityWorkspace,
 } from '../models/workspace.model';
 
-// use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe((services)=>{...})
+// use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe(callbackFn)
 
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
