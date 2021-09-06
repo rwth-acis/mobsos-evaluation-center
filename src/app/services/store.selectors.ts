@@ -21,6 +21,11 @@ import {
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe(callbackFn)
 
+/**
+ * Function which returns true if any http call is currently loading
+ * @param state state of the store
+ * @returns true if any http call is being processed
+ */
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
@@ -70,7 +75,9 @@ export const GROUPS = (state: StoreState) =>
 export const USER_GROUPS = createSelector(GROUPS, (groups) =>
   groups?.filter((g) => g.member),
 );
-
+/**
+ * @deprecated we can only fetch our own groups using the contact service
+ */
 export const FOREIGN_GROUPS = createSelector(GROUPS, (groups) =>
   groups?.filter((g) => !g.member),
 );
