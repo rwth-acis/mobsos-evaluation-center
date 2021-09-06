@@ -84,15 +84,15 @@ export class AppComponent
   title = 'MobSOS Evaluation Center';
 
   mobileQuery: MediaQueryList;
-  mobileQueryListener: () => void;
-  environment = environment;
+  mobileQueryListener: () => void; // what is this used for? Do we still need it?
+  environment = environment; // set it so that it can be accessed in the template
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
-  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+
   role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
   userGroups$: Observable<GroupInformation[]> =
@@ -100,44 +100,32 @@ export class AppComponent
   user$: Observable<User> = this.ngrxStore
     .select(USER)
     .pipe(filter((user) => !!user));
-  foreignGroups$: Observable<GroupInformation[]> =
-    this.ngrxStore.select(FOREIGN_GROUPS);
+
   groupsAreLoaded$: Observable<boolean> = combineLatest([
     this.userGroups$,
-    this.foreignGroups$,
     this.user$,
-  ]).pipe(
-    map(
-      ([userGroups, foreignGroups, user]) =>
-        user && (!!userGroups || !!foreignGroups),
-    ),
+  ]).pipe(map(([userGroups, user]) => user && !!userGroups));
+
+  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP).pipe(
+    filter((group) => !!group),
+    distinctUntilKeyChanged('id'),
+    map((group) => group.id),
   );
+
   selectedGroupId: string; // used to show the selected group in the form field
 
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
 
   constructor(
-    private logger: NGXLogger,
-    public languageService: LanguageService,
-    changeDetectorRef: ChangeDetectorRef,
-    private elementRef: ElementRef,
+    public languageService: LanguageService, //public so that we can access it in the template
+    private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
-    private swUpdate: SwUpdate,
     private snackBar: MatSnackBar,
-    private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
   ) {
-    if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
-        'OK',
-        { duration: 10000 },
-      );
-    }
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -146,7 +134,7 @@ export class AppComponent
     );
     this.mobileQuery = window.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () =>
-      changeDetectorRef.detectChanges();
+      this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
       'change',
       this.mobileQueryListener,
@@ -194,7 +182,6 @@ export class AppComponent
   }
 
   useLanguage(language: string): void {
-    this.logger.debug(`Changing language to ${language}`);
     this.languageService.changeLanguage(language);
   }
 
@@ -214,30 +201,24 @@ export class AppComponent
 
   menuItemClicked(): void {
     if (this.mobileQuery.matches) {
-      void this.sidenav.toggle();
+      void this.sidenav.toggle(); // closes the menu if an item is clicked on mobile devices
     }
   }
 
   ngOnInit(): void {
-    let sub = this.selectedGroup$
-      .pipe(
-        filter((group) => !!group),
-        distinctUntilKeyChanged('id'),
-      )
-      .subscribe((group) => {
-        this.selectedGroupId = group.id;
-      });
+    let sub = this.selectedGroupId$.subscribe((id) => {
+      this.selectedGroupId = id;
+    });
     this.subscriptions$.push(sub);
 
-    const silentLoginFunc = () => {
+    const silentLoginFunc = () =>
       this.userManager
         .signinSilentCallback()
         .then(() => {})
         .catch(() => {
           this.setUser(null);
-          this.logger.debug('Silent login failed');
+          console.error('Silent login failed');
         });
-    };
     silentLoginFunc();
 
     sub = this.user$
@@ -254,6 +235,12 @@ export class AppComponent
     this.subscriptions$.push(sub);
 
     if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
       // Logging in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
