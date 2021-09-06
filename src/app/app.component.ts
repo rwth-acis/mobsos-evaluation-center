@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -74,7 +75,9 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
@@ -151,6 +154,36 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  ngAfterViewInit() {
+    const sub = this.ngrxStore
+      .select(USER)
+      .pipe(
+        filter((user) => !!user),
+        distinctUntilKeyChanged('signedIn'),
+        filter((user) => !!user?.signedIn),
+        withLatestFrom(
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+        ),
+        first(),
+      )
+      .subscribe(([, groupId, serviceName]) => {
+        // only gets called once if user is signed in
+        // initial fetching
+        this.ngrxStore.dispatch(fetchGroups());
+        this.ngrxStore.dispatch(fetchServices());
+        if (groupId) {
+          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+          if (serviceName) {
+            this.ngrxStore.dispatch(
+              fetchSuccessModel({ groupId, serviceName }),
+            );
+          }
+        }
+      });
+    this.subscriptions$.push(sub);
+  }
+
   ngOnDestroy(): void {
     this.mobileQuery.removeEventListener(
       'change',
@@ -186,35 +219,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    let sub = this.ngrxStore
-      .select(USER)
-      .pipe(
-        filter((user) => !!user),
-        distinctUntilKeyChanged('signedIn'),
-        filter((user) => !!user?.signedIn),
-        withLatestFrom(
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-        ),
-        first(),
-      )
-      .subscribe(([, groupId, serviceName]) => {
-        // only gets called once if user is signed in
-        // initial fetching
-        this.ngrxStore.dispatch(fetchGroups());
-        this.ngrxStore.dispatch(fetchServices());
-        if (groupId) {
-          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-          if (serviceName) {
-            this.ngrxStore.dispatch(
-              fetchSuccessModel({ groupId, serviceName }),
-            );
-          }
-        }
-      });
-    this.subscriptions$.push(sub);
-
-    sub = this.selectedGroup$
+    let sub = this.selectedGroup$
       .pipe(
         filter((group) => !!group),
         distinctUntilKeyChanged('id'),
@@ -223,42 +228,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selectedGroupId = group.id;
       });
     this.subscriptions$.push(sub);
-
-    // swipe navigation
-    // const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    // hammertime.on('panright', (event) => {
-    //   if (this.mobileQuery.matches) {
-    //     if (event.center.x >= 1 && event.center.x <= 20) {
-    //       this.sidenav.open();
-    //     }
-    //   }
-    // });
-    // hammertime.on('panleft', () => {
-    //   if (this.mobileQuery.matches) {
-    //     this.sidenav.close();
-    //   }
-    // });
-    // if (this.swUpdate.isEnabled) {
-    //   sub = this.swUpdate.available.subscribe((): void => {
-    //     const message = this.translate.instant(
-    //       'app.update.message',
-    //     ) as string;
-
-    //     const reloadAction = this.translate.instant(
-    //       'app.update.reload',
-    //     ) as string;
-
-    //     const snackBarRef = this.snackBar.open(
-    //       message,
-    //       reloadAction,
-    //       null,
-    //     );
-    //     snackBarRef.onAction().subscribe(() => {
-    //       window.location.reload();
-    //     });
-    //   });
-    //   this.subscriptions$.push(sub);
-    // }
 
     const silentLoginFunc = () => {
       this.userManager
