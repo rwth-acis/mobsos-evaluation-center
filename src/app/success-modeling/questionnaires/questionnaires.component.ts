@@ -38,7 +38,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { fetchQuestionnaires } from 'src/app/services/store.actions';
 
 @Component({
@@ -148,57 +148,149 @@ export class QuestionnairesComponent implements OnInit {
     }
   }
 
-  async openRemoveQuestionnaireDialog(questionnaireIndex: number) {
+  async openRemoveQuestionnaireDialog(
+    questionnaireIndex: number,
+  ): Promise<void> {
     const dialogRef = this.dialog.open(
       DeleteQuestionnaireDialogComponent,
       {
         minWidth: 300,
       },
     );
-    const sub = dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const surveyId =
-          this.model.questionnaires[questionnaireIndex].surveyId;
-        if (result.deleteSurvey) {
-          this.las2peer
-            .deleteSurvey(surveyId)
-            .catch((error) => console.error(error));
-        }
-        if (result.deleteMeasures) {
-          const measureTag = 'surveyId=' + surveyId;
-          const measureNamesToBeRemoved = Object.keys(
-            this.measures,
-          ).filter((measureName) =>
-            this.measures[measureName].tags.includes(measureTag),
-          );
-          for (const dimension of Object.values(
-            this.model.dimensions,
-          )) {
-            // collect empty factors here
-            const factorsToBeRemoved = [];
-            for (const factor of dimension as SuccessFactor[]) {
-              for (const measureName of measureNamesToBeRemoved) {
-                if (factor.measures.includes(measureName)) {
-                  const index = factor.measures.indexOf(measureName);
-                  factor.measures.splice(index, 1);
-                  if (factor.measures.length === 0) {
-                    factorsToBeRemoved.push(factor);
-                  }
+    const result = (await dialogRef.afterClosed().toPromise()) as {
+      deleteSurvey: boolean;
+      deleteMeasures: boolean;
+    };
+    if (result) {
+      const surveyId =
+        this.model.questionnaires[questionnaireIndex].surveyId;
+      if (result.deleteSurvey) {
+        this.las2peer
+          .deleteSurvey(surveyId)
+          .catch((error) => console.error(error));
+      }
+      if (result.deleteMeasures) {
+        const measureTag = `surveyId=${surveyId}`;
+        const measureNamesToBeRemoved = Object.keys(
+          this.measures,
+        ).filter((measureName) =>
+          this.measures[measureName].tags.includes(measureTag),
+        );
+        for (const dimension of Object.values(
+          this.model.dimensions,
+        )) {
+          // collect empty factors here
+          const factorsToBeRemoved = [];
+          for (const factor of dimension as SuccessFactor[]) {
+            for (const measureName of measureNamesToBeRemoved) {
+              if (factor.measures.includes(measureName)) {
+                const index = factor.measures.indexOf(measureName);
+                factor.measures.splice(index, 1);
+                if (factor.measures.length === 0) {
+                  factorsToBeRemoved.push(factor);
                 }
               }
             }
-            for (const factor of factorsToBeRemoved) {
-              const index = (dimension as SuccessFactor[]).indexOf(
-                factor,
-              );
-              (dimension as SuccessFactor[]).splice(index, 1);
-            }
+          }
+          for (const factor of factorsToBeRemoved) {
+            const index = (dimension as SuccessFactor[]).indexOf(
+              factor,
+            );
+            (dimension as SuccessFactor[]).splice(index, 1);
           }
         }
-        this.model.questionnaires.splice(questionnaireIndex, 1);
       }
-    });
-    this.subscriptions$.push(sub);
+      this.model.questionnaires.splice(questionnaireIndex, 1);
+    }
+  }
+
+  async createNewSurvey(
+    questionnaire: IQuestionnaire,
+    addMeasures: boolean,
+    assignMeasures: boolean,
+  ): Promise<void> {
+    let serviceName = this.service.name;
+    if (serviceName.includes('@')) {
+      serviceName = serviceName.split('@')[0];
+    }
+    const surveyName =
+      this.service.alias +
+      ': ' +
+      questionnaire.name +
+      '(' +
+      QuestionnairesComponent.nowAsIsoDate() +
+      ')';
+
+    const response = await this.las2peer.createSurvey(
+      surveyName,
+      questionnaire.description,
+      this.group.name,
+      questionnaire.logo,
+      QuestionnairesComponent.nowAsIsoDate(),
+      QuestionnairesComponent.in100YearsAsIsoDate(),
+      serviceName,
+      this.service.alias,
+      questionnaire.lang,
+    );
+
+    const surveyId = parseInt((response as { id: string }).id, 10);
+    await this.las2peer.setQuestionnaireForSurvey(
+      questionnaire.id,
+      surveyId,
+    );
+
+    this.model.questionnaires.push(
+      new QuestionnaireModel(
+        questionnaire.name,
+        questionnaire.id,
+        surveyId,
+      ),
+    );
+
+    if (addMeasures) {
+      const questions = this.extractQuestions(questionnaire.formXML);
+      for (const question of questions) {
+        const measureName =
+          questionnaire.name + ': ' + question.instructions;
+        const query = this.getSQL(surveyId, question);
+        const measure = new Measure(
+          measureName,
+          [new Query('Answer Distribution', query)],
+          new ChartVisualization(
+            'BarChart',
+            measureName,
+            measureName,
+            '300px',
+            '300px',
+          ),
+          ['surveyId=' + surveyId, 'generated'],
+        );
+        this.measures[measureName] = measure;
+        if (
+          assignMeasures &&
+          question.dimensionRecommendation &&
+          question.factorRecommendation
+        ) {
+          const dimension =
+            this.model.dimensions[question.dimensionRecommendation];
+          let targetFactor: SuccessFactor;
+          for (const factor of dimension as SuccessFactor[]) {
+            if (factor.name === question.factorRecommendation) {
+              targetFactor = factor;
+              break;
+            }
+          }
+          if (!targetFactor) {
+            targetFactor = new SuccessFactor(
+              question.factorRecommendation,
+              [],
+            );
+          }
+          targetFactor.measures.push(measureName);
+          dimension.push(targetFactor);
+        }
+      }
+    }
   }
 
   private getQuestionnaireByName(name: string): Questionnaire {
@@ -266,107 +358,12 @@ export class QuestionnairesComponent implements OnInit {
     return result;
   }
 
-  createNewSurvey(
-    questionnaire: IQuestionnaire,
-    addMeasures: boolean,
-    assignMeasures: boolean,
-  ) {
-    let serviceName = this.service.name;
-    if (serviceName.includes('@')) {
-      serviceName = serviceName.split('@')[0];
-    }
-    const surveyName =
-      this.service.alias +
-      ': ' +
-      questionnaire.name +
-      '(' +
-      QuestionnairesComponent.nowAsIsoDate() +
-      ')';
-    this.las2peer
-      .createSurvey(
-        surveyName,
-        questionnaire.description,
-        this.group.name,
-        questionnaire.logo,
-        QuestionnairesComponent.nowAsIsoDate(),
-        QuestionnairesComponent.in100YearsAsIsoDate(),
-        serviceName,
-        this.service.alias,
-        questionnaire.lang,
-      )
-      .then((response) => {
-        const surveyId = parseInt(
-          (response as { id: string }).id,
-          10,
-        );
-        this.las2peer
-          .setQuestionnaireForSurvey(questionnaire.id, surveyId)
-          .then(() => {
-            this.model.questionnaires.push(
-              new QuestionnaireModel(
-                questionnaire.name,
-                questionnaire.id,
-                surveyId,
-              ),
-            );
-
-            if (addMeasures) {
-              const questions = this.extractQuestions(
-                questionnaire.formXML,
-              );
-              for (const question of questions) {
-                const measureName =
-                  questionnaire.name + ': ' + question.instructions;
-                const query =
-                  'SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m ' +
-                  'WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ' +
-                  SqlString.escape(surveyId) +
-                  ' AND JSON_EXTRACT(REMARKS,"$.qkey") = "' +
-                  question.code +
-                  '" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")';
-                const measure = new Measure(
-                  measureName,
-                  [new Query('Answer Distribution', query)],
-                  new ChartVisualization(
-                    'BarChart',
-                    measureName,
-                    measureName,
-                    '300px',
-                    '300px',
-                  ),
-                  ['surveyId=' + surveyId, 'generated'],
-                );
-                this.measures[measureName] = measure;
-                if (
-                  assignMeasures &&
-                  question.dimensionRecommendation &&
-                  question.factorRecommendation
-                ) {
-                  const dimension =
-                    this.model.dimensions[
-                      question.dimensionRecommendation
-                    ];
-                  let targetFactor: SuccessFactor;
-                  for (const factor of dimension as SuccessFactor[]) {
-                    if (
-                      factor.name === question.factorRecommendation
-                    ) {
-                      targetFactor = factor;
-                      break;
-                    }
-                  }
-                  if (!targetFactor) {
-                    targetFactor = new SuccessFactor(
-                      question.factorRecommendation,
-                      [],
-                    );
-                  }
-                  targetFactor.measures.push(measureName);
-                  dimension.push(targetFactor);
-                }
-              }
-            }
-          });
-      });
+  private getSQL(surveyId: number, question: { code: string }) {
+    // eslint-disable-next-line max-len
+    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${SqlString.escape(
+      surveyId,
+    )} AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
+      question.code
+    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
   }
 }

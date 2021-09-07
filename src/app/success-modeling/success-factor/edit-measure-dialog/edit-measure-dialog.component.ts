@@ -58,9 +58,9 @@ export class EditMeasureDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 
-  onVisualizationChange(visualizationType: string) {
+  onVisualizationChange(visualizationType: string): void {
     if (
       this.data.measure.visualization &&
       this.data.measure.visualization.type
@@ -68,19 +68,20 @@ export class EditMeasureDialogComponent implements OnInit {
       this.visualizationBuffer[this.data.measure.visualization.type] =
         this.data.measure.visualization;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.data.measure.visualization =
       this.visualizationBuffer[visualizationType];
   }
 
-  onAddQueryClicked() {
+  onAddQueryClicked(): void {
     this.data.measure.queries.push(new Query('', ''));
   }
 
-  onRemoveQueryClicked() {
+  onRemoveQueryClicked(): void {
     this.data.measure.queries.pop();
   }
 
-  onKpiOperandChange(operandName: string, index: number) {
+  onKpiOperandChange(operandName: string, index: number): void {
     (
       this.data.measure.visualization as KpiVisualization
     ).operationsElements[index] = new KpiVisualizationOperand(
@@ -89,7 +90,7 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  onKpiOperatorChange(operatorName: string, index: number) {
+  onKpiOperatorChange(operatorName: string, index: number): void {
     (
       this.data.measure.visualization as KpiVisualization
     ).operationsElements[index] = new KpiVisualizationOperator(
@@ -98,7 +99,7 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  onAddOperationClicked() {
+  onAddOperationClicked(): void {
     const kpiVisualization = this.data.measure
       .visualization as KpiVisualization;
     kpiVisualization.operationsElements.push(
@@ -115,7 +116,7 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  onRemoveOperationClicked() {
+  onRemoveOperationClicked(): void {
     const kpiVisualization = this.data.measure
       .visualization as KpiVisualization;
     if (kpiVisualization.operationsElements.length >= 3) {
@@ -124,7 +125,7 @@ export class EditMeasureDialogComponent implements OnInit {
     }
   }
 
-  onQueryNameChanged(value: string, i: number) {
+  onQueryNameChanged(value: string, i: number): void {
     const currentName = this.data.measure.queries[i].name;
     const visualizationType = this.data.measure.visualization.type;
     if (visualizationType === 'KPI') {
@@ -139,7 +140,7 @@ export class EditMeasureDialogComponent implements OnInit {
     this.data.measure.queries[i].name = value;
   }
 
-  prettifyCustomMessageName(messageName: string) {
+  prettifyCustomMessageName(messageName: string): string {
     return messageName.replace(/_/g, ' ');
   }
 }
