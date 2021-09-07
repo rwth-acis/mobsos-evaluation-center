@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatStepperModule } from '@angular/material/stepper';
-import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
@@ -19,11 +18,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -34,7 +31,6 @@ import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SuccessModelingComponent } from './success-modeling/success-modeling.component';
-import { RawEditComponent } from './raw-edit/raw-edit.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { Observable, of } from 'rxjs';
 import {
@@ -45,7 +41,6 @@ import { translations as en } from '../locale/en';
 import { translations as de } from '../locale/de';
 import {
   MonacoEditorModule,
-  NGX_MONACO_EDITOR_CONFIG,
   NgxMonacoEditorConfig,
 } from 'ngx-monaco-editor';
 
@@ -102,6 +97,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { RawDataDialogComponent } from './raw-data-dialog/raw-data-dialog.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { SharedModule } from './shared/shared.module';
+import { RawEditModule } from './raw-edit/raw-edit.module';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -154,7 +151,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     OidcSilentComponent,
     DashboardComponent,
     SuccessModelingComponent,
-    RawEditComponent,
     SuccessDimensionComponent,
     SuccessMeasureComponent,
     SuccessFactorComponent,
@@ -189,6 +185,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    RawEditModule,
     FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
@@ -213,15 +210,13 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatListModule,
     MatSlideToggleModule,
     MatStepperModule,
-    MatButtonModule,
     MatBottomSheetModule,
-    MatTabsModule,
     MatSortModule,
     MatPaginatorModule,
     MatTableModule,
     MatFormFieldModule,
     MatProgressBarModule,
-    MatSelectModule,
+    SharedModule,
     MatSnackBarModule,
     MonacoEditorModule.forRoot(),
     FormsModule,
@@ -243,11 +238,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     ReactiveFormsModule,
   ],
   providers: [
-    {
-      provide: NGX_MONACO_EDITOR_CONFIG,
-      useFactory: getMonacoConfig,
-      deps: [PlatformLocation],
-    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: Interceptor,

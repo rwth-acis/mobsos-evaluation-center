@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { SuccessModelingComponent } from './success-modeling/success-modeling.component';
 import { RawEditComponent } from './raw-edit/raw-edit.component';
 import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
@@ -12,6 +11,13 @@ import { WorkspaceComponent } from './workspace/workspace.component';
 const routes: Routes = [
   { path: '', component: WorkspaceComponent },
   { path: 'raw-edit', component: RawEditComponent },
+  {
+    path: 'raw-edit',
+    loadChildren: () =>
+      import('./raw-edit/raw-edit.module').then(
+        (m) => m.RawEditModule,
+      ),
+  },
   { path: 'oidc-signin', component: OidcSigninComponent },
   { path: 'oidc-signout', component: OidcSignoutComponent },
   { path: 'oidc-silent', component: OidcSilentComponent },
