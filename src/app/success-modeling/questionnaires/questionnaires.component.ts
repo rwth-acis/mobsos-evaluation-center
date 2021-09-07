@@ -9,7 +9,7 @@ import {
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { environment } from '../../../environments/environment';
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-import { NGXLogger } from 'ngx-logger';
+
 import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -68,7 +68,7 @@ export class QuestionnairesComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private las2peer: Las2peerService,
-    private logger: NGXLogger,
+
     private ngrxStore: Store,
   ) {}
 
@@ -162,7 +162,7 @@ export class QuestionnairesComponent implements OnInit {
         if (result.deleteSurvey) {
           this.las2peer
             .deleteSurvey(surveyId)
-            .catch((error) => this.logger.error(error));
+            .catch((error) => console.error(error));
         }
         if (result.deleteMeasures) {
           const measureTag = 'surveyId=' + surveyId;

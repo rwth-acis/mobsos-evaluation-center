@@ -14,27 +14,27 @@ import { cloneDeep } from 'lodash-es';
 import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { select, Store } from '@ngrx/store';
-import {
-  EDIT_MODE,
-  MEASURE,
-  USER_HAS_EDIT_RIGHTS,
-} from '../services/store.selectors';
-import {
-  editMeasure,
-  removeMeasureFromModel,
-} from '../services/store.actions';
-import { Measure } from '../models/measure.model';
+
+import { Measure } from '../../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
-import { ServiceInformation } from '../models/service.model';
+import { ServiceInformation } from '../../models/service.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
 } from 'rxjs/operators';
+import {
+  MEASURE,
+  USER_HAS_EDIT_RIGHTS,
+} from 'src/app/services/store.selectors';
+import {
+  editMeasure,
+  removeMeasureFromModel,
+} from 'src/app/services/store.actions';
+import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-success-measure',
@@ -74,6 +74,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     const sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.measure = cloneDeep(measure);
       });
     this.subscriptions$.push(sub);
@@ -98,12 +99,13 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     });
 
     const result = await dialogRef.afterClosed().toPromise();
+
     if (result) {
       this.ngrxStore.dispatch(
         editMeasure({
           measure: result,
           factorName: this.factorName,
-          oldMeasureName: oldMeasureName,
+          oldMeasureName,
           dimensionName: this.dimensionName,
           catalogOnly: false,
         }),

@@ -1,14 +1,17 @@
-import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { fetchVisualizationData } from '../services/store.actions';
-import { ServiceInformation } from '../models/service.model';
+
 import { HttpErrorResponse } from '@angular/common/http';
-import { Measure } from '../models/measure.model';
+
 import { Observable, Subscription } from 'rxjs';
-import { SELECTED_SERVICE } from '../services/store.selectors';
+
 import { distinctUntilKeyChanged, filter } from 'rxjs/operators';
+import { ServiceInformation } from 'src/app/models/service.model';
+import { Measure } from 'src/app/models/measure.model';
+import { SELECTED_SERVICE } from 'src/app/services/store.selectors';
+import { fetchVisualizationData } from 'src/app/services/store.actions';
+import { ErrorDialogComponent } from 'src/app/error-dialog/error-dialog.component';
 
 export interface VisualizationComponent {
   service: ServiceInformation;

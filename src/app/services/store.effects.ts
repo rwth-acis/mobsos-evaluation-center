@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { NGXLogger } from 'ngx-logger';
+
 import { combineLatest, forkJoin, of } from 'rxjs';
 import {
   map,
@@ -55,7 +55,7 @@ export class StateEffects {
         forkJoin([
           this.l2p.fetchServicesFromDiscoveryAndObserve().pipe(
             catchError((err) => {
-              this.logger.error(
+              console.error(
                 'Could not fetch services from service discovery:' +
                   JSON.stringify(err),
               );
@@ -64,7 +64,7 @@ export class StateEffects {
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
             catchError((err) => {
-              this.logger.error(
+              console.error(
                 'Could not fetch services from service MobSOS:' +
                   JSON.stringify(err),
               );
@@ -101,7 +101,7 @@ export class StateEffects {
             }),
           ),
           catchError((err) => {
-            this.logger.error(
+            console.error(
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
             );
@@ -651,7 +651,6 @@ export class StateEffects {
     private actions$: Actions,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private logger: NGXLogger,
     private workspaceService: WorkspaceService,
   ) {}
 }

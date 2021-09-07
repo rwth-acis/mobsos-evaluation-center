@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import { NGXLogger } from 'ngx-logger';
 import {
   HttpClient,
   HttpHeaders,
@@ -47,7 +46,7 @@ export class Las2peerService {
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
   userCredentials: { token: string; preferred_username: string };
 
-  constructor(private http: HttpClient, private logger: NGXLogger) {}
+  constructor(private http: HttpClient) {}
 
   static joinAbsoluteUrlPath(...args) {
     return args
@@ -210,10 +209,7 @@ export class Las2peerService {
       this.SERVICES_PATH,
     );
     return this.makeRequest(url).catch((response) =>
-      this.logger.error(
-        'Could not fetch services from service discovery:' +
-          JSON.stringify(response),
-      ),
+      console.error(response),
     );
   }
 
@@ -224,10 +220,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
     return this.makeRequest(url).catch((response) =>
-      this.logger.error(
-        'Could not fetch services from service MobSOS:' +
-          JSON.stringify(response),
-      ),
+      console.error(response),
     );
   }
 
@@ -266,7 +259,7 @@ export class Las2peerService {
   async fetchContactServiceGroups() {
     return this.fetchContactServiceGroupsAndObserve()
       .toPromise()
-      .catch((response) => this.logger.error(response));
+      .catch((response) => console.error(response));
   }
 
   fetchMobSOSGroupsAndObserve() {
@@ -505,7 +498,7 @@ export class Las2peerService {
       method,
       body: JSON.stringify({ groupID, name: groupName }),
     }).catch((response) => {
-      this.logger.error(response);
+      console.error(response);
       throw response;
     });
   }
@@ -559,7 +552,7 @@ export class Las2peerService {
     })
       .then((response) => response.xml)
       .catch((response) => {
-        this.logger.error(response);
+        console.error(response);
         throw response;
       });
   }
@@ -658,7 +651,7 @@ export class Las2peerService {
     })
       .then((response) => response.xml)
       .catch((response) => {
-        this.logger.error(response);
+        console.error(response);
         throw response;
       });
   }

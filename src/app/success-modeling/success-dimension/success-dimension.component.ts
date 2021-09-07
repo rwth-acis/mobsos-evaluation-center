@@ -8,23 +8,23 @@ import {
 
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
   EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   USER_HAS_EDIT_RIGHTS,
-} from '../services/store.selectors';
+} from '../../services/store.selectors';
 import {
   addFactorToDimension,
   removeFactor,
-} from '../services/store.actions';
-import { ServiceInformation } from '../models/service.model';
+} from '../../services/store.actions';
+import { ServiceInformation } from '../../models/service.model';
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { SuccessFactor } from '../models/success.model';
-import { MeasureMap } from '../models/measure.catalog';
+import { SuccessFactor } from '../../models/success.model';
+import { MeasureMap } from '../../models/measure.catalog';
+import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-success-dimension',
@@ -40,20 +40,13 @@ export class SuccessDimensionComponent implements OnInit {
 
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
-  @Output() sendFactorsToSuccessModel = new EventEmitter<{
-    factors: SuccessFactor[];
-    dimensionName: string;
-  }>();
-  @Output() sendMeasuresToSuccessModel =
-    new EventEmitter<MeasureMap>();
+  private _factors: SuccessFactor[];
 
   constructor(
     private dialog: MatDialog,
     private translate: TranslateService,
     private ngrxStore: Store,
   ) {}
-
-  private _factors: SuccessFactor[];
 
   get factors() {
     return this._factors;

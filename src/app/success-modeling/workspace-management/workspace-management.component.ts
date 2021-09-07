@@ -3,20 +3,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import {
   disableEdit,
   joinWorkSpace,
-  setCommunityWorkspace,
-  setNumberOfRequirements,
   setService,
-  storeRequirements,
   toggleEdit,
-} from '../services/store.actions';
+} from '../../services/store.actions';
 
-import { cloneDeep } from 'lodash-es';
-import { User } from '../models/user.model';
-import { FormControl } from '@angular/forms';
+import { User } from '../../models/user.model';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   EDIT_MODE,
@@ -33,36 +28,24 @@ import {
   MODEL_AND_CATALOG_LOADED,
   WORKSPACE_OWNER,
   SELECTED_WORKSPACE_OWNER,
-  VISUALIZATION_DATA,
   _SELECTED_SERVICE_NAME,
   _SELECTED_GROUP_ID,
   NUMBER_OF_REQUIREMENTS,
   VISITORS,
-} from '../services/store.selectors';
+} from '../../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
   first,
   map,
-  switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
-import {
-  MatBottomSheet,
-  MatBottomSheetRef,
-} from '@angular/material/bottom-sheet';
-import { WorkspaceService } from '../services/workspace.service';
-import { SuccessModel } from '../models/success.model';
-import { MeasureCatalog } from '../models/measure.catalog';
-import { ServiceInformation } from '../models/service.model';
-import { ApplicationWorkspace } from '../models/workspace.model';
-import { GroupInformation } from '../models/community.model';
+
+import { WorkspaceService } from '../../services/workspace.service';
+import { ServiceInformation } from '../../models/service.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { VisualizationCollection } from '../models/visualization.model';
-import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
-import { Las2peerService } from '../services/las2peer.service';
-import { ReqbazProject, Requirement } from '../models/reqbaz.model';
+import { Las2peerService } from '../../services/las2peer.service';
 
 @Component({
   selector: 'app-workspace-management',
@@ -126,7 +109,6 @@ export class WorkspaceManagementComponent
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
     private ngrxStore: Store,
-    private _bottomSheet: MatBottomSheet,
     private las2peer: Las2peerService,
   ) {}
 
@@ -225,12 +207,6 @@ export class WorkspaceManagementComponent
         username: this.user.profile.preferred_username,
       }),
     );
-  }
-
-  openBottomSheet(): void {
-    this._bottomSheet.open(BottomSheetComponent, {
-      autoFocus: false,
-    });
   }
 
   onChangeRole(

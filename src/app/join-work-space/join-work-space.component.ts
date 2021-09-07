@@ -11,7 +11,7 @@ import {
 } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { UserRole } from '../models/workspace.model';
-import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
+
 import {
   joinWorkSpace,
   setCommunityWorkspaceOwner,
@@ -20,6 +20,7 @@ import {
   setUserName,
 } from '../services/store.actions';
 import { USER } from '../services/store.selectors';
+import { PickUsernameDialogComponent } from '../success-modeling/pick-username-dialog/pick-username-dialog.component';
 
 /**
  * Used to join the workspace of another user by url. Url should be of the following format: /join/:groupId/:serviceName/:username

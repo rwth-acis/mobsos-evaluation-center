@@ -12,23 +12,19 @@ import {
   takeWhile,
   timeout,
 } from 'rxjs/operators';
-import { User } from '../models/user.model';
+import { User } from 'src/app/models/user.model';
+// eslint-disable-next-line max-len
 import {
-  APPLICATION_WORKSPACE,
-  MODEL_AND_CATALOG_LOADED,
-  _COMMUNITY_WORKSPACE,
-  DIMENSIONS_IN_MODEL,
   MEASURE_CATALOG,
-  _SELECTED_GROUP_ID,
-  SELECTED_SERVICE,
-  _SELECTED_SERVICE_NAME,
+  MODEL_AND_CATALOG_LOADED,
   SUCCESS_MODEL,
+  SUCCESS_MODEL_IS_EMPTY,
   USER,
   WORKSPACE_OWNER,
-  SUCCESS_MODEL_FROM_NETWORK,
-  SUCCESS_MODEL_IS_EMPTY,
-} from '../services/store.selectors';
-import { iconMap, translationMap } from '../success-modeling/config';
+  _SELECTED_GROUP_ID,
+  _SELECTED_SERVICE_NAME,
+} from 'src/app/services/store.selectors';
+import { iconMap, translationMap } from '../config';
 
 @Component({
   selector: 'app-visitor',
@@ -74,7 +70,7 @@ export class VisitorComponent implements OnInit, OnDestroy {
         if (!link) {
           link = '/';
         }
-        this.router.navigateByUrl(link);
+        void this.router.navigateByUrl(link);
       }
     }, 3000);
   }

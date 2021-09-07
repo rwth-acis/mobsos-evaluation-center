@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
-import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';

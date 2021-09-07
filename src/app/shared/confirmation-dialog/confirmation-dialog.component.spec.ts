@@ -7,8 +7,11 @@ import {
 
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { createTranslateLoader } from '../app.module';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
+import { createTranslateLoader } from '../../app.module';
 import {
   MatDialogModule,
   MatDialogRef,
@@ -37,7 +40,7 @@ describe('ConfirmationDialogComponent', () => {
           { provide: MAT_DIALOG_DATA, useValue: 'test' },
         ],
       }).compileComponents();
-    })
+    }),
   );
 
   beforeEach(() => {

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogRef,
@@ -13,7 +13,6 @@ import {
   ValueVisualization,
 } from 'src/app/models/visualization.model';
 import { Query } from 'src/app/models/query.model';
-import { SuccessMeasureComponent } from 'src/app/success-measure/success-measure.component';
 
 export interface DialogData {
   measure: Measure;

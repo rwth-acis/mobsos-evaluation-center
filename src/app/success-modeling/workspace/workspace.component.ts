@@ -4,7 +4,7 @@ import {
   NUMBER_OF_REQUIREMENTS,
   SELECTED_GROUP,
   USER,
-} from '../services/store.selectors';
+} from '../../services/store.selectors';
 
 @Component({
   selector: 'app-workspace',

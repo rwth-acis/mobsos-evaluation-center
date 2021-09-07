@@ -10,7 +10,6 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-dialog.component';
 
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
@@ -19,17 +18,18 @@ import {
   MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
-} from '../services/store.selectors';
+} from '../../services/store.selectors';
 import {
   editFactorInDimension,
   removeMeasureFromModel,
-} from '../services/store.actions';
-import { SuccessFactor } from '../models/success.model';
-import { MeasureMap } from '../models/measure.catalog';
-import { Measure } from '../models/measure.model';
-import { ServiceInformation } from '../models/service.model';
+} from '../../services/store.actions';
+import { SuccessFactor } from '../../models/success.model';
+import { MeasureMap } from '../../models/measure.catalog';
+import { Measure } from '../../models/measure.model';
+import { ServiceInformation } from '../../models/service.model';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
+import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-success-factor',
@@ -48,16 +48,13 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     .select(MEASURES)
     .pipe(distinctUntilChanged());
 
-  @Output() sendFactorToDimension = new EventEmitter<SuccessFactor>();
-  @Output() sendMeasuresToDimension = new EventEmitter<MeasureMap>();
+  subscriptions$: Subscription[] = [];
 
   constructor(
     private translate: TranslateService,
     private dialog: MatDialog,
     private ngrxStore: Store,
   ) {}
-
-  subscriptions$: Subscription[] = [];
 
   ngOnInit() {
     let sub = this.measures$.subscribe(

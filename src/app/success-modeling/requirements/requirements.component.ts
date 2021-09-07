@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { setNumberOfRequirements } from '../services/store.actions';
-import { SUCCESS_MODEL } from '../services/store.selectors';
+
+import { SUCCESS_MODEL } from '../../services/store.selectors';
 
 @Component({
   selector: 'app-requirements',
@@ -16,6 +16,4 @@ export class RequirementsComponent implements OnInit {
   openLink(event: MouseEvent): void {
     event.preventDefault();
   }
-
-
 }
