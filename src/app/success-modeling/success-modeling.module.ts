@@ -4,8 +4,7 @@ import { SharedModule } from '../shared/shared.module';
 
 // eslint-disable-next-line max-len
 // eslint-disable-next-line max-len
-import { RequirementsListComponent } from '../success-modeling/requirements-list/requirements-list.component';
-import { PickReqbazProjectComponent } from '../success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
+
 import { WorkspaceManagementComponent } from '../success-modeling/workspace-management/workspace-management.component';
 import { VisitorComponent } from '../success-modeling/visitor/visitor.component';
 import { RequirementsComponent } from '../success-modeling/requirements/requirements.component';
@@ -29,6 +28,7 @@ import { DeleteQuestionnaireDialogComponent } from './success-model/questionnair
 import { SqlTableComponent } from './success-model/success-dimension/success-factor/edit-measure-dialog/sql-table/sql-table.component';
 import { VisualizationInfoComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization-info/visualization-info.component';
 import { RawDataDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/raw-data-dialog/raw-data-dialog.component';
+import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +49,6 @@ import { RawDataDialogComponent } from './success-model/success-dimension/succes
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
     SqlTableComponent,
-    RequirementsListComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
     VisitorComponent,

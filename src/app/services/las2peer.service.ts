@@ -48,17 +48,6 @@ export class Las2peerService {
 
   constructor(private http: HttpClient) {}
 
-  static joinAbsoluteUrlPath(...args) {
-    return args
-      .map((pathPart: string | number) => {
-        if (typeof pathPart === 'number') {
-          pathPart = pathPart.toString();
-        }
-        return pathPart.toString()?.replace(/(^\/|\/$)/g, '');
-      })
-      .join('/');
-  }
-
   setCredentials(
     username: string,
     password: string,
@@ -204,7 +193,7 @@ export class Las2peerService {
   }
 
   async fetchServicesFromDiscovery() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
     );
@@ -214,7 +203,7 @@ export class Las2peerService {
   }
 
   async fetchServicesFromMobSOS() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
@@ -227,7 +216,7 @@ export class Las2peerService {
   fetchServicesFromDiscoveryAndObserve() {
     if (!environment.useLas2peerServiceDiscovery)
       return of(undefined);
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
     );
@@ -235,7 +224,7 @@ export class Las2peerService {
   }
 
   addGroup(groupName: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH,
@@ -248,7 +237,7 @@ export class Las2peerService {
   }
 
   fetchServicesFromMobSOSAndObserve() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
@@ -263,7 +252,7 @@ export class Las2peerService {
   }
 
   fetchMobSOSGroupsAndObserve() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
@@ -272,7 +261,7 @@ export class Las2peerService {
   }
 
   fetchContactServiceGroupsAndObserve() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH,
@@ -281,7 +270,7 @@ export class Las2peerService {
   }
 
   async fetchMobSOSGroups(): Promise<[]> {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
@@ -290,7 +279,7 @@ export class Las2peerService {
   }
 
   async fetchMobSOSGroup(groupID: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
@@ -300,7 +289,7 @@ export class Las2peerService {
   }
 
   async fetchSuccessModel(groupID: string, service: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
@@ -321,7 +310,7 @@ export class Las2peerService {
       console.error('Service or group not specified!');
       return of(undefined);
     }
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
@@ -334,7 +323,7 @@ export class Las2peerService {
   }
 
   checkIfSuccessModelPresent(groupID: string, service: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
@@ -353,7 +342,7 @@ export class Las2peerService {
   }
 
   async fetchMobSOSQuestionnaires() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_QUESTIONNAIRES_PATH,
@@ -374,7 +363,7 @@ export class Las2peerService {
   }
 
   fetchMobSOSQuestionnairesAndObserve() {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
@@ -393,7 +382,7 @@ export class Las2peerService {
   }
   async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
     for (const questionnaire of questionnaires) {
-      const formUrl = Las2peerService.joinAbsoluteUrlPath(
+      const formUrl = joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SURVEYS_SERVICE_PATH,
         this.SURVEYS_QUESTIONNAIRES_PATH,
@@ -421,7 +410,7 @@ export class Las2peerService {
     resourceLabel: string,
     lang: string,
   ) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_SURVEY_PATH,
@@ -446,7 +435,7 @@ export class Las2peerService {
     questionnaireId: number,
     surveyId: number,
   ) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_SURVEY_PATH,
@@ -461,7 +450,7 @@ export class Las2peerService {
   }
 
   async deleteSurvey(surveyId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SURVEYS_SERVICE_PATH,
       this.SURVEYS_SURVEY_PATH,
@@ -479,7 +468,7 @@ export class Las2peerService {
     try {
       await this.fetchMobSOSGroup(groupID);
       method = 'PUT';
-      url = Las2peerService.joinAbsoluteUrlPath(
+      url = joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
         this.SUCCESS_MODELING_GROUP_PATH,
@@ -487,7 +476,7 @@ export class Las2peerService {
       );
     } catch (e) {
       method = 'POST';
-      url = Las2peerService.joinAbsoluteUrlPath(
+      url = joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
         this.SUCCESS_MODELING_GROUP_PATH,
@@ -508,7 +497,7 @@ export class Las2peerService {
    */
   saveGroupsToMobSOS(groups) {
     const method = 'POST';
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_GROUP_PATH,
@@ -539,7 +528,7 @@ export class Las2peerService {
       method = 'POST';
     }
 
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
@@ -562,7 +551,7 @@ export class Las2peerService {
     service: string,
     xml: string,
   ) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MODELS_PATH,
@@ -577,7 +566,7 @@ export class Las2peerService {
   }
 
   async fetchMeasureCatalog(groupID: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
@@ -593,7 +582,7 @@ export class Las2peerService {
   fetchMeasureCatalogAsObservable(
     groupID: string,
   ): Observable<string> {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
@@ -612,7 +601,7 @@ export class Las2peerService {
   }
 
   checkIfMeasureCatalogPresent(groupID: string): Observable<boolean> {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
@@ -639,7 +628,7 @@ export class Las2peerService {
       method = 'POST';
     }
 
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
@@ -658,7 +647,7 @@ export class Las2peerService {
 
   saveMeasureCatalogAndObserve(groupID: string, xml: string) {
     let method: string;
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
@@ -679,7 +668,7 @@ export class Las2peerService {
   }
 
   fetchMessageDescriptionsAndObserve(serviceName: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH,
@@ -693,7 +682,7 @@ export class Las2peerService {
     queryParams: string[],
     format: string = 'JSON',
   ) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH +
@@ -733,7 +722,7 @@ export class Las2peerService {
     queryParams: string[],
     format: string = 'JSON',
   ) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.QUERY_VISUALIZATION_SERVICE_PATH,
       this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
@@ -770,7 +759,7 @@ export class Las2peerService {
 
   async searchProjectOnReqBaz(project: string) {
     if (project.length === 0) return;
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_PROJECTS_PATH + `?search=${project}`,
     );
@@ -785,7 +774,7 @@ export class Las2peerService {
   }
 
   async searchCategoryOnReqBaz(projectId: number, category: string) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_PROJECTS_PATH,
       projectId,
@@ -802,7 +791,7 @@ export class Las2peerService {
   }
 
   async fetchRequirementsOnReqBaz(categoryId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
       categoryId,
@@ -819,7 +808,7 @@ export class Las2peerService {
   }
 
   fetchRequirementsOnReqBazAndObserve(categoryId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
       categoryId,
@@ -836,7 +825,7 @@ export class Las2peerService {
   }
 
   async realizeRequirementOnReqBaz(requirementId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
@@ -857,7 +846,7 @@ export class Las2peerService {
   }
 
   async becomeLeaddeveloperOnReqBaz(requirementId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
@@ -878,7 +867,7 @@ export class Las2peerService {
   }
 
   async stopBeingLeaddeveloperOnReqBaz(requirementId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
@@ -899,7 +888,7 @@ export class Las2peerService {
   }
 
   async unrealizeRequirementOnReqBaz(requirementId: number) {
-    const url = Las2peerService.joinAbsoluteUrlPath(
+    const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_REQUIREMENTS_PATH,
       requirementId,
@@ -988,4 +977,15 @@ export class Las2peerService {
       environment.servicePollingInterval * 1000,
     );
   }
+}
+
+export function joinAbsoluteUrlPath(...args) {
+  return args
+    .map((pathPart: string | number) => {
+      if (typeof pathPart === 'number') {
+        pathPart = pathPart.toString();
+      }
+      return pathPart.toString()?.replace(/(^\/|\/$)/g, '');
+    })
+    .join('/');
 }

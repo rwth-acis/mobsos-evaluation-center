@@ -1,10 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 
@@ -38,7 +32,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { fetchQuestionnaires } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 
@@ -73,7 +67,7 @@ export class QuestionnairesComponent implements OnInit {
     private ngrxStore: Store,
   ) {}
 
-  static parseXml(xml) {
+  static parseXml(xml: string): Document {
     const parser = new DOMParser();
     return parser.parseFromString(xml, 'text/xml');
   }
@@ -90,7 +84,7 @@ export class QuestionnairesComponent implements OnInit {
     return new Date(year + 100, month, day).toISOString();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.ngrxStore.dispatch(fetchQuestionnaires());
     let sub = this.group$.subscribe((group) => {
       this.group = group;
@@ -122,7 +116,7 @@ export class QuestionnairesComponent implements OnInit {
     this.subscriptions$.push(sub);
   }
 
-  async openPickQuestionnaireDialog() {
+  async openPickQuestionnaireDialog(): Promise<void> {
     // remove questionnaires that already have been chosen
     const questionnaires = this.availableQuestionnaires.filter(
       (questionnaire) =>
@@ -141,7 +135,7 @@ export class QuestionnairesComponent implements OnInit {
     const result = await dialogRef.afterClosed().toPromise();
 
     if (result) {
-      this.createNewSurvey(
+      void this.createNewSurvey(
         result.selectedQuestionnaire as IQuestionnaire,
         result.addMeasures,
         result.assignMeasures,

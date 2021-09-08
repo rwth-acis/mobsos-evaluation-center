@@ -45,7 +45,7 @@ export class SuccessDimensionComponent implements OnInit {
     this._factors = [...factors];
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 
   async openAddFactorDialog(): Promise<void> {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
@@ -65,7 +65,7 @@ export class SuccessDimensionComponent implements OnInit {
     }
   }
 
-  openRemoveFactorDialog(factorIndex: number) {
+  openRemoveFactorDialog(factorIndex: number): void {
     const message = this.translate.instant(
       'success-dimension.remove-factor-prompt',
     ) as string;
@@ -79,7 +79,7 @@ export class SuccessDimensionComponent implements OnInit {
     }
   }
 
-  private removeFactor(factorIndex: number) {
+  private removeFactor(factorIndex: number): void {
     this.ngrxStore.dispatch(
       removeFactor({ name: this._factors[factorIndex].name }),
     );
