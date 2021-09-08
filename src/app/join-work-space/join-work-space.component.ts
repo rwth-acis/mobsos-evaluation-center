@@ -20,7 +20,6 @@ import {
   setUserName,
 } from '../services/store.actions';
 import { USER } from '../services/store.selectors';
-import { PickUsernameDialogComponent } from '../success-modeling/pick-username-dialog/pick-username-dialog.component';
 
 /**
  * Used to join the workspace of another user by url. Url should be of the following format: /join/:groupId/:serviceName/:username
@@ -158,17 +157,6 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
     );
 
     void this.router.navigateByUrl('/visitor');
-  }
-
-  openDialog(): Promise<any> {
-    const dialogRef = this.dialog.open(PickUsernameDialogComponent, {
-      width: '250px',
-      data: { name: undefined },
-      disableClose: true,
-      minWidth: 300,
-    });
-
-    return dialogRef.afterClosed().toPromise();
   }
 
   ngOnDestroy(): void {

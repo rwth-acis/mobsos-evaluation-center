@@ -22,12 +22,10 @@ import { SqlTableComponent } from '../success-modeling/success-factor/edit-measu
 import { RequirementsListComponent } from '../success-modeling/requirements-list/requirements-list.component';
 import { PickReqbazProjectComponent } from '../success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
 import { WorkspaceManagementComponent } from '../success-modeling/workspace-management/workspace-management.component';
-import { JoinWorkSpaceComponent } from '../join-work-space/join-work-space.component';
 import { VisitorComponent } from '../success-modeling/visitor/visitor.component';
 import { VisualizationInfoComponent } from '../success-modeling/visualizations/visualization-info/visualization-info.component';
 import { RequirementsComponent } from '../success-modeling/requirements/requirements.component';
 import { RawDataDialogComponent } from './visualizations/raw-data-dialog/raw-data-dialog.component';
-import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { SuccessModelingComponent } from './success-modeling.component';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { SuccessModelComponent } from './success-model/success-model.component';
@@ -46,7 +44,6 @@ import { SuccessModelComponent } from './success-model/success-model.component';
     EditFactorDialogComponent,
     EditMeasureDialogComponent,
     PickMeasureDialogComponent,
-    PickUsernameDialogComponent,
     EditMeasureDialogComponent,
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
@@ -55,7 +52,6 @@ import { SuccessModelComponent } from './success-model/success-model.component';
     RequirementsListComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
-    JoinWorkSpaceComponent,
     VisitorComponent,
     VisualizationInfoComponent,
     RequirementsComponent,
