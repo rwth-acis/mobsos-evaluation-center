@@ -11,7 +11,7 @@ import {
 } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { UserRole } from '../models/workspace.model';
-import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
+
 import {
   joinWorkSpace,
   setCommunityWorkspaceOwner,
@@ -157,17 +157,6 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
     );
 
     void this.router.navigateByUrl('/visitor');
-  }
-
-  openDialog(): Promise<any> {
-    const dialogRef = this.dialog.open(PickUsernameDialogComponent, {
-      width: '250px',
-      data: { name: undefined },
-      disableClose: true,
-      minWidth: 300,
-    });
-
-    return dialogRef.afterClosed().toPromise();
   }
 
   ngOnDestroy(): void {

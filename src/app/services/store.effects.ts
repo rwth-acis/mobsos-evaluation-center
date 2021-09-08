@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { NGXLogger } from 'ngx-logger';
+
 import { combineLatest, forkJoin, of } from 'rxjs';
 import {
   map,
@@ -55,7 +55,7 @@ export class StateEffects {
         forkJoin([
           this.l2p.fetchServicesFromDiscoveryAndObserve().pipe(
             catchError((err) => {
-              this.logger.error(
+              console.error(
                 'Could not fetch services from service discovery:' +
                   JSON.stringify(err),
               );
@@ -64,7 +64,7 @@ export class StateEffects {
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
             catchError((err) => {
-              this.logger.error(
+              console.error(
                 'Could not fetch services from service MobSOS:' +
                   JSON.stringify(err),
               );
@@ -101,7 +101,7 @@ export class StateEffects {
             }),
           ),
           catchError((err) => {
-            this.logger.error(
+            console.error(
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
             );
@@ -160,7 +160,7 @@ export class StateEffects {
         this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
       filter(
-        ([{ service }, groupId, currentServiceName]) =>
+        ([{ service }, , currentServiceName]) =>
           !!service && service.name !== currentServiceName,
       ),
       tap(([{ service }, groupId]) => {
@@ -241,7 +241,7 @@ export class StateEffects {
               xml,
             }),
           ),
-          catchError((err) => {
+          catchError(() => {
             return of(Action.storeCatalog({ xml: null }));
           }),
         ),
@@ -262,7 +262,7 @@ export class StateEffects {
           this.ngrxStore.select(_SELECTED_GROUP_ID),
         ]),
       ),
-      switchMap(([action, [measureCatalogXML, groupId]]) =>
+      switchMap(([, [measureCatalogXML, groupId]]) =>
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
           .pipe(
@@ -294,7 +294,7 @@ export class StateEffects {
         this.ngrxStore.select(_SELECTED_GROUP_ID),
         this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
-      switchMap(([action, successModelXML, groupId, serviceName]) =>
+      switchMap(([, successModelXML, groupId, serviceName]) =>
         this.l2p
           .saveSuccessModelAndObserve(
             groupId,
@@ -383,7 +383,7 @@ export class StateEffects {
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, action.xml)
           .pipe(
-            tap((res) => {
+            tap(() => {
               Action.storeCatalog({ xml: action.xml });
             }),
             map(() => Action.successResponse()),
@@ -651,7 +651,6 @@ export class StateEffects {
     private actions$: Actions,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private logger: NGXLogger,
     private workspaceService: WorkspaceService,
   ) {}
 }
