@@ -1,13 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { CustomersComponent } from './customers.component';
-import { WorkspaceComponent } from './workspace/workspace.component';
+import { RawEditComponent } from './raw-edit.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: WorkspaceComponent,
+    component: RawEditComponent,
   },
 ];
 
@@ -15,4 +14,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class SuccessModelingRoutingModule {}
+export class RawEditRoutingModule {}
