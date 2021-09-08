@@ -1,77 +1,40 @@
-<!-- Success modeling -->
+<!-- Only show component if authorized -->
 <ng-container
-  *ngIf="
-    selectedService$ | async as selectedService;
-    else noServiceSelect
-  "
+  *ngIf="(user$ | async)?.signedIn || restricted; else notAuthorized"
 >
-  <ng-container *ngIf="assetsLoaded$ | async; else notInitialized">
-    <h3 *ngIf="group?.name">
-      {{
-        'success-modeling.community-success-model'
-          | translate
-            : {
-                service: selectedService.alias
-                  ? selectedService.alias
-                  : selectedService.name
-              }
-      }}
-    </h3>
-    <ng-container *ngIf="!(editMode$ | async)">
-      <ng-container *ngIf="successModelEmpty$ | async">
-        <mat-card
-          id="model-empty-info"
-          *ngIf="
-            memberOfGroup$ | async;
-            else notMemberOfSelectedGroup
-          "
-        >
-          <mat-icon color="accent"> info_outline </mat-icon>
-          {{
-            'success-modeling.message-no-success-model-found'
-              | translate
-          }}
-        </mat-card>
-      </ng-container>
-    </ng-container>
-    <ng-container *ngIf="successModel$ | async as successModel">
-      <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-        <app-questionnaires></app-questionnaires>
-        <div id="dimensions">
-          <app-success-dimension
-            *ngFor="let dimension of dimensions"
-            [factors]="successModel.dimensions[dimension]"
-            [measures]="measureCatalog.measures"
-            name="{{
-              'success-modeling.dimensions.name.' +
-                translationMap[dimension] | translate
-            }}"
-            description="{{
-              'success-modeling.dimensions.description.' +
-                translationMap[dimension] | translate
-            }}"
-            icon="{{ iconMap[dimension] }}"
-          ></app-success-dimension>
-        </div>
-        <button
-          id="save-model-button"
-          mat-raised-button
-          *ngIf="saveEnabled$ | async"
-          color="primary"
-          [disabled]="saveInProgress"
-          (click)="onSaveClicked()"
-        >
-          <mat-spinner
-            *ngIf="saveInProgress"
-            color="warn"
-            [diameter]="25"
-          >
-          </mat-spinner>
-          {{ 'success-modeling.save-model-button' | translate }}
-        </button>
-      </ng-container>
-    </ng-container></ng-container
+  <ng-container
+    *ngIf="selectedGroup$ | async as group; else noGroupSelect"
   >
+    <h2 *ngIf="group?.name">
+      {{
+        'success-modeling.community-workspace'
+          | translate: { community: group.name }
+      }}
+    </h2>
+
+    <!-- workspace management -->
+    <app-workspace-management></app-workspace-management>
+
+    <mat-tab-group mat-align-tabs="start">
+      <mat-tab label="Success modeling">
+        <!-- success model -->
+        <app-success-model></app-success-model>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span
+            [matBadge]="numberOfRequirements$ | async"
+            matBadgeColor="accent"
+            matBadgeOverlap="false"
+            matTooltip="{{
+              'success-modeling.reqbaz.tooltip' | translate
+            }}"
+            >Requirements and issues</span
+          > </ng-template
+        ><app-requirements></app-requirements>
+      </mat-tab>
+    </mat-tab-group>
+  </ng-container>
 </ng-container>
 
 <ng-template #noGroupSelect>
@@ -89,15 +52,6 @@
 <ng-template #notInitialized>
   <!-- success model still loading -->
   <mat-spinner style="margin: auto"> </mat-spinner>
-</ng-template>
-
-<ng-template #notPartOfCommunity>
-  <mat-card>
-    {{
-      'not-part-of-selected-community'
-        | translate: { community: (selectedGroup$ | async).name }
-    }}
-  </mat-card>
 </ng-template>
 
 <ng-template #notAuthorized>

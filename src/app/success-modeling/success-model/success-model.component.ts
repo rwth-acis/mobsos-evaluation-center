@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 import {
@@ -128,7 +128,7 @@ export class SuccessModelComponent implements OnInit {
     private actionState: StateEffects,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     let sub = this.selectedService$
       .pipe(filter((service) => service !== undefined))
       .subscribe((service) => {
@@ -172,12 +172,12 @@ export class SuccessModelComponent implements OnInit {
     this.ngrxStore.dispatch(disableEdit());
   }
 
-  onServiceSelected(service: ServiceInformation) {
+  onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(disableEdit());
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  onSaveClicked() {
+  onSaveClicked(): void {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(saveModelAndCatalog());
     if (this.saveInProgress) {
@@ -199,7 +199,7 @@ export class SuccessModelComponent implements OnInit {
           if (result.type === HttpActions.SAVE_CATALOG_SUCCESS) {
             const message = this.translate.instant(
               'success-modeling.snackbar-save-success',
-            );
+            ) as string;
             this.snackBar.open(message, null, {
               duration: 2000,
             });
@@ -207,7 +207,7 @@ export class SuccessModelComponent implements OnInit {
           } else {
             let message = this.translate.instant(
               'success-modeling.snackbar-save-failure',
-            );
+            ) as string;
             if (result instanceof failureResponse) {
               message += (result as { reason: Error }).reason.message;
             }

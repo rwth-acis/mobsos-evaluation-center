@@ -5,11 +5,11 @@ import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component
 import { OidcSilentComponent } from './oidc/oidc-silent/oidc-silent.component';
 import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
 
-import { WorkspaceComponent } from './success-modeling/workspace/workspace.component';
 import { VisitorComponent } from './success-modeling/visitor/visitor.component';
+import { SuccessModelingComponent } from './success-modeling/success-modeling.component';
 
 const routes: Routes = [
-  { path: '', component: WorkspaceComponent },
+  { path: '', component: SuccessModelingComponent },
   {
     path: 'raw-edit',
     loadChildren: () =>

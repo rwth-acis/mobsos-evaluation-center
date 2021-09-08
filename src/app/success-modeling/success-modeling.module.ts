@@ -26,7 +26,6 @@ import { JoinWorkSpaceComponent } from '../join-work-space/join-work-space.compo
 import { VisitorComponent } from '../success-modeling/visitor/visitor.component';
 import { VisualizationInfoComponent } from '../success-modeling/visualizations/visualization-info/visualization-info.component';
 import { RequirementsComponent } from '../success-modeling/requirements/requirements.component';
-import { WorkspaceComponent } from '../success-modeling/workspace/workspace.component';
 import { RawDataDialogComponent } from './visualizations/raw-data-dialog/raw-data-dialog.component';
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { SuccessModelingComponent } from './success-modeling.component';
@@ -60,7 +59,6 @@ import { SuccessModelComponent } from './success-model/success-model.component';
     VisitorComponent,
     VisualizationInfoComponent,
     RequirementsComponent,
-    WorkspaceComponent,
     RawDataDialogComponent,
     SuccessModelComponent,
   ],
