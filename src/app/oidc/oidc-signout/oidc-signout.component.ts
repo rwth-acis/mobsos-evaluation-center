@@ -12,13 +12,15 @@ import { storeUser } from '../../services/store.actions';
 })
 export class OidcSignoutComponent implements OnInit {
   constructor(private ngrxStore: Store, private router: Router) {
-    new UserManager({}).signoutRedirectCallback().then((user) => {
-      this.ngrxStore.dispatch(
-        storeUser({ user: user as unknown as User }),
-      );
-      this.router.navigate(['/']);
-    });
+    void new UserManager({})
+      .signoutRedirectCallback()
+      .then((user) => {
+        this.ngrxStore.dispatch(
+          storeUser({ user: user as unknown as User }),
+        );
+        void this.router.navigate(['/']);
+      });
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 }

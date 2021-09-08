@@ -12,11 +12,11 @@ import { User as UserInfo } from '../../models/user.model';
 })
 export class OidcSigninComponent implements OnInit {
   constructor(private router: Router, private ngrxStore: Store) {
-    new UserManager({}).signinRedirectCallback().then((user) => {
+    void new UserManager({}).signinRedirectCallback().then((user) => {
       this.ngrxStore.dispatch(storeUser({ user: user as UserInfo }));
-      this.router.navigateByUrl('/');
+      void this.router.navigateByUrl('/');
     });
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 }

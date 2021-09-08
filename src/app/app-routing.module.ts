@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { RawEditComponent } from './raw-edit/raw-edit.component';
 import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './oidc/oidc-silent/oidc-silent.component';
