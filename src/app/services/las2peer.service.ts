@@ -10,12 +10,17 @@ import { catchError, map, share, timeout } from 'rxjs/operators';
 import { merge } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
-import { IQuestionnaire } from '../models/questionnaire.model';
+import {
+  IQuestionnaire,
+  Questionnaire,
+} from '../models/questionnaire.model';
 interface HttpOptions {
   method?: string;
-  headers?: {
-    [header: string]: string | string[];
-  };
+  headers?:
+    | {
+        [header: string]: string | string[];
+      }
+    | HttpHeaders;
   body?: string;
   responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
 }
@@ -60,7 +65,7 @@ export class Las2peerService {
     };
   }
 
-  resetCredentials() {
+  resetCredentials(): void {
     this.userCredentials = null;
   }
 
@@ -83,12 +88,13 @@ export class Las2peerService {
       localStorage.getItem('profile'),
     );
     const username = this.userCredentials?.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile'))?.sub;
+    const sub = JSON.parse(localStorage.getItem('profile'))
+      ?.sub as string;
     const token = localStorage.getItem('access_token');
     if (username) {
-      options.headers.Authorization =
-        'Basic ' + btoa(username + ':' + sub);
-      options.headers.access_token = token;
+      options.headers['Authorization'] =
+        'Basic ' + btoa(`${username}:${sub}`);
+      options.headers['access_token'] = token;
     }
 
     const ngHttpOptions: {
@@ -109,7 +115,7 @@ export class Las2peerService {
       withCredentials?: boolean;
     } = {};
     if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders(options.headers);
+      ngHttpOptions.headers = new HttpHeaders({ ...options.headers });
     }
     if (options.body) {
       ngHttpOptions.body = options.body;
@@ -118,6 +124,7 @@ export class Las2peerService {
       ngHttpOptions.responseType = options.responseType;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.http
       .request(options.method, url, ngHttpOptions)
       .pipe(share())
@@ -162,23 +169,8 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
-    const ngHttpOptions: {
-      body?: any;
-      headers?:
-        | HttpHeaders
-        | {
-            [header: string]: string | string[];
-          };
-      observe?: 'body';
-      params?:
-        | HttpParams
-        | {
-            [param: string]: string | string[];
-          };
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      reportProgress?: boolean;
-      withCredentials?: boolean;
-    } = {};
+    const ngHttpOptions: HttpOptions = {};
+
     if (options.headers) {
       ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
@@ -318,7 +310,7 @@ export class Las2peerService {
       service,
     );
     return this.makeRequestAndObserve<SuccessModel>(url).pipe(
-      map((response) => response.xml),
+      map((response: { xml: string }) => response.xml),
     );
   }
 
@@ -375,7 +367,7 @@ export class Las2peerService {
             questionnaire.description,
           );
         }
-        return response;
+        return response as Questionnaire[];
       }),
       timeout(60000),
     );
@@ -646,16 +638,15 @@ export class Las2peerService {
   }
 
   saveMeasureCatalogAndObserve(groupID: string, xml: string) {
-    let method: string;
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    method = 'PUT';
+
     return this.makeRequestAndObserve<{ xml: string }>(url, {
-      method,
+      method: 'PUT',
       body: JSON.stringify({ xml }),
       observe: 'response',
     });
@@ -674,7 +665,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH,
       serviceName,
     );
-    return this.makeRequestAndObserve<object>(url);
+    return this.makeRequestAndObserve(url);
   }
 
   async visualizeQuery(
@@ -705,7 +696,11 @@ export class Las2peerService {
       authorHeader = {
         Authorization:
           'Basic ' +
-          btoa(profile.preferred_username + ':' + profile.sub),
+          btoa(
+            `${profile.preferred_username as string}:${
+              profile.sub as string
+            }`,
+          ),
       };
     }
 
@@ -744,7 +739,11 @@ export class Las2peerService {
       authorHeader = {
         Authorization:
           'Basic ' +
-          btoa(profile.preferred_username + ':' + profile.sub),
+          btoa(
+            `${profile.preferred_username as string}:${
+              profile.sub as string
+            }`,
+          ),
       };
     }
 
@@ -906,76 +905,6 @@ export class Las2peerService {
         'Bearer ' + this.userCredentials.token;
     }
     return this.makeRequest(url, options);
-  }
-
-  pollL2PServiceDiscovery(successCallback, failureCallback) {
-    const pollingFunc = () =>
-      this.fetchServicesFromDiscovery()
-        .then((response) => {
-          successCallback(response);
-        })
-        .catch((error) => failureCallback(error));
-    pollingFunc();
-    return setInterval(
-      pollingFunc,
-      environment.servicePollingInterval * 1000,
-    );
-  }
-
-  pollMobSOSServiceDiscovery(successCallback, failureCallback) {
-    const pollingFunc = () =>
-      this.fetchServicesFromMobSOS()
-        .then((response) => {
-          successCallback(response);
-        })
-        .catch((error) => failureCallback(error));
-    pollingFunc();
-    return setInterval(
-      pollingFunc,
-      environment.servicePollingInterval * 1000,
-    );
-  }
-
-  pollContactServiceGroups(successCallback, failureCallback) {
-    const pollingFunc = () =>
-      this.fetchContactServiceGroups()
-        .then((response) => {
-          successCallback(response);
-        })
-        .catch((error) => failureCallback(error));
-    pollingFunc();
-    return setInterval(
-      pollingFunc,
-      environment.servicePollingInterval * 1000,
-    );
-  }
-
-  pollMobSOSGroups(successCallback, failureCallback) {
-    const pollingFunc = () =>
-      this.fetchMobSOSGroups()
-        .then((response) => {
-          successCallback(response);
-        })
-        .catch((error) => failureCallback(error));
-    pollingFunc();
-    return setInterval(
-      pollingFunc,
-      environment.servicePollingInterval * 1000,
-    );
-  }
-
-  pollMobSOSQuestionnaires(successCallback, failureCallback) {
-    const pollingFunc = () =>
-      this.fetchMobSOSQuestionnaires()
-        .then((response) => {
-          successCallback(response);
-        })
-        .catch((error) => failureCallback(error));
-    pollingFunc();
-    return setInterval(
-      pollingFunc,
-      environment.servicePollingInterval * 1000,
-    );
   }
 }
 
