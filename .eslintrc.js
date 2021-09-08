@@ -158,12 +158,7 @@ module.exports = {
     'jsdoc/newline-after-description': 'error',
     'jsdoc/no-types': 'error',
     'max-classes-per-file': 'off',
-    'max-len': [
-      'error',
-      {
-        code: 140,
-      },
-    ],
+    'max-len': 'off',
     'new-parens': 'error',
     'no-bitwise': 'error',
     'no-caller': 'error',
