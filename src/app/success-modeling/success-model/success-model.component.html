@@ -1,0 +1,107 @@
+<!-- Success modeling -->
+<ng-container
+  *ngIf="
+    selectedService$ | async as selectedService;
+    else noServiceSelect
+  "
+>
+  <ng-container *ngIf="assetsLoaded$ | async; else notInitialized">
+    <h3 *ngIf="group?.name">
+      {{
+        'success-modeling.community-success-model'
+          | translate
+            : {
+                service: selectedService.alias
+                  ? selectedService.alias
+                  : selectedService.name
+              }
+      }}
+    </h3>
+    <ng-container *ngIf="!(editMode$ | async)">
+      <ng-container *ngIf="successModelEmpty$ | async">
+        <mat-card
+          id="model-empty-info"
+          *ngIf="
+            memberOfGroup$ | async;
+            else notMemberOfSelectedGroup
+          "
+        >
+          <mat-icon color="accent"> info_outline </mat-icon>
+          {{
+            'success-modeling.message-no-success-model-found'
+              | translate
+          }}
+        </mat-card>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="successModel$ | async as successModel">
+      <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
+        <app-questionnaires></app-questionnaires>
+        <div id="dimensions">
+          <app-success-dimension
+            *ngFor="let dimension of dimensions"
+            [factors]="successModel.dimensions[dimension]"
+            [measures]="measureCatalog.measures"
+            name="{{
+              'success-modeling.dimensions.name.' +
+                translationMap[dimension] | translate
+            }}"
+            description="{{
+              'success-modeling.dimensions.description.' +
+                translationMap[dimension] | translate
+            }}"
+            icon="{{ iconMap[dimension] }}"
+          ></app-success-dimension>
+        </div>
+        <button
+          id="save-model-button"
+          mat-raised-button
+          *ngIf="saveEnabled$ | async"
+          color="primary"
+          [disabled]="saveInProgress"
+          (click)="onSaveClicked()"
+        >
+          <mat-spinner
+            *ngIf="saveInProgress"
+            color="warn"
+            [diameter]="25"
+          >
+          </mat-spinner>
+          {{ 'success-modeling.save-model-button' | translate }}
+        </button>
+      </ng-container>
+    </ng-container></ng-container
+  >
+</ng-container>
+
+<ng-template #noGroupSelect>
+  <mat-card>
+    {{ 'success-modeling.no-group-selected' | translate }}
+  </mat-card>
+</ng-template>
+
+<ng-template #noServiceSelect>
+  <mat-card>{{
+    'success-modeling.message-no-application-selected' | translate
+  }}</mat-card>
+</ng-template>
+
+<ng-template #notInitialized>
+  <!-- success model still loading -->
+  <mat-spinner style="margin: auto"> </mat-spinner>
+</ng-template>
+
+<ng-template #notPartOfCommunity>
+  <mat-card>
+    {{
+      'not-part-of-selected-community'
+        | translate: { community: (selectedGroup$ | async).name }
+    }}
+  </mat-card>
+</ng-template>
+
+<ng-template #notAuthorized>
+  <mat-card>
+    {{ 'not-logged-in' | translate }}
+  </mat-card>
+</ng-template>

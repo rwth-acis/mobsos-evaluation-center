@@ -31,6 +31,7 @@ import { RawDataDialogComponent } from './visualizations/raw-data-dialog/raw-dat
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { SuccessModelingComponent } from './success-modeling.component';
 import { GoogleChartsModule } from 'angular-google-charts';
+import { SuccessModelComponent } from './success-model/success-model.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { GoogleChartsModule } from 'angular-google-charts';
     RequirementsComponent,
     WorkspaceComponent,
     RawDataDialogComponent,
+    SuccessModelComponent,
   ],
   imports: [CommonModule, SharedModule, GoogleChartsModule],
 })
