@@ -4,7 +4,7 @@ import { SharedModule } from '../shared/shared.module';
 import { SuccessDimensionComponent } from '../success-modeling/success-dimension/success-dimension.component';
 import { SuccessMeasureComponent } from '../success-modeling/success-measure/success-measure.component';
 import { SuccessFactorComponent } from '../success-modeling/success-factor/success-factor.component';
-import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { ErrorDialogComponent } from './visualizations/error-dialog/error-dialog.component';
 import { BaseVisualizationComponent } from '../success-modeling/visualizations/visualization.component';
 import { ValueVisualizationComponent } from '../success-modeling/visualizations/value-visualization/value-visualization.component';
 import { ChartVisualizerComponent } from '../success-modeling/visualizations/chart-visualization/chart-visualization.component';
@@ -30,6 +30,7 @@ import { WorkspaceComponent } from '../success-modeling/workspace/workspace.comp
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { SuccessModelingComponent } from './success-modeling.component';
+import { GoogleChartsModule } from 'angular-google-charts';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,6 @@ import { SuccessModelingComponent } from './success-modeling.component';
     WorkspaceComponent,
     RawDataDialogComponent,
   ],
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, GoogleChartsModule],
 })
 export class SuccessModelingModule {}
