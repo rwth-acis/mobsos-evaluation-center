@@ -10,9 +10,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { OidcSigninComponent } from './oidc-signin/oidc-signin.component';
-import { OidcSignoutComponent } from './oidc-signout/oidc-signout.component';
-import { OidcSilentComponent } from './oidc-silent/oidc-silent.component';
+import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
+import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
+import { OidcSilentComponent } from './oidc/oidc-silent/oidc-silent.component';
 import { Observable, of } from 'rxjs';
 import {
   TranslateLoader,

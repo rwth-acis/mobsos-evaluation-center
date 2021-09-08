@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { UserManager } from 'oidc-client';
 import { Router } from '@angular/router';
-import { User } from '../models/user.model';
+import { User } from '../../models/user.model';
 import { Store } from '@ngrx/store';
-import { storeUser } from '../services/store.actions';
+import { storeUser } from '../../services/store.actions';
 
 @Component({
   selector: 'app-oidc-signout',

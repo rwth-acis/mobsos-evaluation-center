@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { UserManager } from 'oidc-client';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { storeUser } from '../services/store.actions';
-import { User as UserInfo } from '../models/user.model';
+import { storeUser } from '../../services/store.actions';
+import { User as UserInfo } from '../../models/user.model';
 
 @Component({
   selector: 'app-oidc-signin',
