@@ -1,13 +1,15 @@
 import {
-  async,
   ComponentFixture,
   TestBed,
   waitForAsync,
 } from '@angular/core/testing';
 
 import { ErrorDialogComponent } from './error-dialog.component';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { createTranslateLoader } from '../app.module';
+import {
+  TranslateLoader,
+  TranslateModule,
+} from '@ngx-translate/core';
+import { createTranslateLoader } from '../../../app.module';
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -38,7 +40,7 @@ describe('ErrorDialogComponent', () => {
           },
         ],
       }).compileComponents();
-    })
+    }),
   );
 
   beforeEach(() => {
