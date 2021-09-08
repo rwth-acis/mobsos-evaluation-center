@@ -49,7 +49,7 @@ import {
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
-import { RawDataDialogComponent } from 'src/app/raw-data-dialog/raw-data-dialog.component';
+import { RawDataDialogComponent } from 'src/app/success-modeling/visualizations/raw-data-dialog/raw-data-dialog.component';
 
 @Component({
   selector: 'app-chart-visualization',
