@@ -1,5 +1,4 @@
-@import '~@angular/material/theming';
-@import '../../../styles';
+@import 'src/styles';
 @import '../visualization.component';
 
 $primary: map-get($mobsos-evaluation-center-theme, primary);
