@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-import { environment } from '../../../environments/environment';
+
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 
 import * as SqlString from 'sqlstring';
@@ -40,6 +40,7 @@ import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { Observable, Subscription } from 'rxjs';
 import { fetchQuestionnaires } from 'src/app/services/store.actions';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-questionnaires',

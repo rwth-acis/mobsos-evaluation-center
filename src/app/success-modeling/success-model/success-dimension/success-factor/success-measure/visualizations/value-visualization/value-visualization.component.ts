@@ -1,10 +1,4 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   BaseVisualizationComponent,
   VisualizationComponent,
@@ -15,7 +9,6 @@ import { Store } from '@ngrx/store';
 import {
   MEASURE,
   RESTRICTED_MODE,
-  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
@@ -28,7 +21,6 @@ import {
   first,
   map,
   mergeMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';

@@ -1,30 +1,19 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
-import {
-  EDIT_MODE,
-  ROLE_IN_CURRENT_WORKSPACE,
-  USER_HAS_EDIT_RIGHTS,
-} from '../../services/store.selectors';
+
+import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { MeasureMap } from 'src/app/models/measure.catalog';
+import { ServiceInformation } from 'src/app/models/service.model';
+import { USER_HAS_EDIT_RIGHTS } from 'src/app/services/store.selectors';
+import { SuccessFactor } from 'src/app/models/success.model';
 import {
   addFactorToDimension,
   removeFactor,
-} from '../../services/store.actions';
-import { ServiceInformation } from '../../models/service.model';
-import { combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { SuccessFactor } from '../../models/success.model';
-import { MeasureMap } from '../../models/measure.catalog';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+} from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-success-dimension',
@@ -48,7 +37,7 @@ export class SuccessDimensionComponent implements OnInit {
     private ngrxStore: Store,
   ) {}
 
-  get factors() {
+  get factors(): SuccessFactor[] {
     return this._factors;
   }
 
@@ -58,7 +47,7 @@ export class SuccessDimensionComponent implements OnInit {
 
   ngOnInit() {}
 
-  async openAddFactorDialog() {
+  async openAddFactorDialog(): Promise<void> {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       // width: '250px',
       data: { factor: new SuccessFactor('', []) },
@@ -76,10 +65,10 @@ export class SuccessDimensionComponent implements OnInit {
     }
   }
 
-  async openRemoveFactorDialog(factorIndex: number) {
-    const message = await this.translate
-      .get('success-dimension.remove-factor-prompt')
-      .toPromise();
+  openRemoveFactorDialog(factorIndex: number) {
+    const message = this.translate.instant(
+      'success-dimension.remove-factor-prompt',
+    ) as string;
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,

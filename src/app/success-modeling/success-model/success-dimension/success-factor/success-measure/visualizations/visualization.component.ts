@@ -11,7 +11,7 @@ import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
 import { SELECTED_SERVICE } from 'src/app/services/store.selectors';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
-import { ErrorDialogComponent } from 'src/app/success-modeling/visualizations/error-dialog/error-dialog.component';
+import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 
 export interface VisualizationComponent {
   service: ServiceInformation;

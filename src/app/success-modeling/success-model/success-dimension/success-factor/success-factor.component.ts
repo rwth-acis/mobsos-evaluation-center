@@ -1,35 +1,28 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-dialog.component';
 
 import { TranslateService } from '@ngx-translate/core';
-import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
-import {
-  EDIT_MODE,
-  MEASURES,
-  SELECTED_SERVICE,
-  USER_HAS_EDIT_RIGHTS,
-} from '../../services/store.selectors';
-import {
-  editFactorInDimension,
-  removeMeasureFromModel,
-} from '../../services/store.actions';
-import { SuccessFactor } from '../../models/success.model';
-import { MeasureMap } from '../../models/measure.catalog';
-import { Measure } from '../../models/measure.model';
-import { ServiceInformation } from '../../models/service.model';
+
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { SuccessFactor } from 'src/app/models/success.model';
+import { ServiceInformation } from 'src/app/models/service.model';
+import { MeasureMap } from 'src/app/models/measure.catalog';
+import {
+  MEASURES,
+  SELECTED_SERVICE,
+  USER_HAS_EDIT_RIGHTS,
+} from 'src/app/services/store.selectors';
+import {
+  editFactorInDimension,
+  removeMeasureFromModel,
+} from 'src/app/services/store.actions';
+import { EditFactorDialogComponent } from '../edit-factor-dialog/edit-factor-dialog.component';
+import { Measure } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-success-factor',
@@ -71,14 +64,14 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
   }
 
   async openRemoveMeasureDialog(measureIndex: number) {
-    const message = await this.translate
-      .get('success-factor.remove-measure-prompt')
-      .toPromise();
+    const message = this.translate.instant(
+      'success-factor.remove-measure-prompt',
+    ) as string;
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
     });
-    const result = await dialogRef.afterClosed();
+    const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.removeMeasure(measureIndex);
     }

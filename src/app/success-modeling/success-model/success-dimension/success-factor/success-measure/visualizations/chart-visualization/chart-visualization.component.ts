@@ -2,7 +2,6 @@
 import {
   AfterViewInit,
   Component,
-  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -22,17 +21,12 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
-  delayWhen,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
   mergeMap,
-  retry,
   sample,
-  takeWhile,
-  tap,
   timeout,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -49,7 +43,7 @@ import {
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
-import { RawDataDialogComponent } from 'src/app/success-modeling/visualizations/raw-data-dialog/raw-data-dialog.component';
+import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 
 @Component({
   selector: 'app-chart-visualization',

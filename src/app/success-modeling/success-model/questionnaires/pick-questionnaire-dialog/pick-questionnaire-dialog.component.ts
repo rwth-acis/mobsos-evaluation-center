@@ -5,9 +5,9 @@ import {
   OnInit,
 } from '@angular/core';
 
-import { environment } from '../../../../environments/environment';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { IQuestionnaire } from 'src/app/models/questionnaire.model';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -16,17 +16,17 @@ import { IQuestionnaire } from 'src/app/models/questionnaire.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PickQuestionnaireDialogComponent implements OnInit {
-  constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public availableQuestionnaires: IQuestionnaire[],
-  ) {}
-
   selectedQuestionnaire: IQuestionnaire;
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
 
-  static parseXml(xml) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public availableQuestionnaires: IQuestionnaire[],
+  ) {}
+
+  static parseXml(xml): Document {
     const parser = new DOMParser();
     return parser.parseFromString(xml, 'text/xml');
   }

@@ -1,30 +1,23 @@
 import {
   Component,
   ComponentRef,
-  EventEmitter,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  Output,
-  SimpleChanges,
 } from '@angular/core';
 import { cloneDeep } from 'lodash-es';
 
-import { EditMeasureDialogComponent } from '../success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 import { TranslateService } from '@ngx-translate/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 
-import { Measure } from '../../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
-import { ServiceInformation } from '../../models/service.model';
+
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  map,
 } from 'rxjs/operators';
 import {
   MEASURE,
@@ -35,6 +28,9 @@ import {
   removeMeasureFromModel,
 } from 'src/app/services/store.actions';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { ServiceInformation } from 'src/app/models/service.model';
+import { Measure } from 'src/app/models/measure.model';
+import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 
 @Component({
   selector: 'app-success-measure',
