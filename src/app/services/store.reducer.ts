@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { createReducer, on } from '@ngrx/store';
+import { Action, createReducer, on } from '@ngrx/store';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
@@ -295,7 +295,7 @@ const _Reducer = createReducer(
   })),
 );
 
-export function Reducer(state, action) {
+export function Reducer(state: AppState, action: Action): any {
   return _Reducer(state, action);
 }
 
@@ -392,8 +392,8 @@ function mergeServiceData(
           releases = Object.keys(service.releases).sort();
           latestRelease = service.releases[releases.slice(-1)[0]];
         }
-
-        let serviceIdentifier = service?.name + '.';
+        if (!service?.name) continue;
+        let serviceIdentifier = `${service?.name as string}.`;
         if (!serviceIdentifier) continue;
         if (!latestRelease?.supplement?.class) continue;
         serviceIdentifier += latestRelease?.supplement?.class;
@@ -495,7 +495,7 @@ function mergeGroupData(
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
-  if (!groupsFromMobSOS) return groups;
+  if (!groupsFromMobSOS) return groups as GroupCollection;
   for (const group of groupsFromMobSOS) {
     const groupID = group.groupID;
     const groupName = group.name;
@@ -508,7 +508,7 @@ function mergeGroupData(
     }
   }
 
-  return groups;
+  return groups as GroupCollection;
 }
 
 function parseXml(xml: string) {
@@ -780,16 +780,16 @@ function updateMeasure(
 //   return copyDimensions;
 // }
 
-function updateMeasureInFactor(
-  factor: SuccessFactor,
-  measure: Measure,
-  oldMeasureName: string,
-) {
-  const copy = [...factor.measures];
-  return copy.map((m) =>
-    measure.name === oldMeasureName ? measure : m,
-  );
-}
+// function updateMeasureInFactor(
+//   factor: SuccessFactor,
+//   measure: Measure,
+//   oldMeasureName: string,
+// ) {
+//   const copy = [...factor.measures];
+//   return copy.map((m) =>
+//     measure.name === oldMeasureName ? measure : m,
+//   );
+// }
 
 function getSelectedService(state: AppState) {
   if (!state.services || !state.selectedServiceName) return undefined;
@@ -909,13 +909,6 @@ function addServiceDescriptions(
       serviceMessageDescriptions: descriptions,
     };
   }
-  return copy;
-}
-function replaceValueInObject<T>(obj: object, key: string, value: T) {
-  if (!(key in obj)) return obj;
-  const copy = cloneDeep(obj);
-
-  copy[key] = value;
   return copy;
 }
 
