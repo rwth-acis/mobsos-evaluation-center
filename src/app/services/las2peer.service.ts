@@ -336,8 +336,7 @@ export class Las2peerService {
 
   async fetchMobSOSQuestionnaires() {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
     return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
@@ -376,8 +375,7 @@ export class Las2peerService {
   async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = joinAbsoluteUrlPath(
-        environment.las2peerWebConnectorUrl,
-        this.SURVEYS_SERVICE_PATH,
+        environment.mobsosSurveysUrl,
         this.SURVEYS_QUESTIONNAIRES_PATH,
         questionnaire.id,
         this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
@@ -404,8 +402,7 @@ export class Las2peerService {
     lang: string,
   ) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
     return this.makeRequest(url, {
@@ -429,8 +426,7 @@ export class Las2peerService {
     surveyId: number,
   ) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
       surveyId,
       this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX,
@@ -444,8 +440,7 @@ export class Las2peerService {
 
   async deleteSurvey(surveyId: number) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
       surveyId,
     );
@@ -454,7 +449,10 @@ export class Las2peerService {
       responseType: 'text',
     });
   }
-
+  /**
+   * @deprecated MobSOS groups might be outdated. We should not rely on them.
+   * Thus there is no need to transfer groups from the contact service to mobsos
+   */
   async saveGroupToMobSOS(groupID: string, groupName: string) {
     let method;
     let url;
