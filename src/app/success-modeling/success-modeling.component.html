@@ -1,4 +1,4 @@
-<!-- Only show component if authorized -->
+<!-- Only show component if authorized. We are authorized if we are signed in or we have restricted access to the model -->
 <ng-container
   *ngIf="(user$ | async)?.signedIn || restricted; else notAuthorized"
 >
@@ -21,6 +21,7 @@
         <app-success-model></app-success-model>
       </mat-tab>
       <mat-tab>
+        <!-- requirements -->
         <ng-template mat-tab-label>
           <span
             [matBadge]="numberOfRequirements$ | async"
@@ -37,25 +38,14 @@
   </ng-container>
 </ng-container>
 
-<ng-template #noGroupSelect>
-  <mat-card>
-    {{ 'success-modeling.no-group-selected' | translate }}
-  </mat-card>
-</ng-template>
-
-<ng-template #noServiceSelect>
-  <mat-card>{{
-    'success-modeling.message-no-application-selected' | translate
-  }}</mat-card>
-</ng-template>
-
-<ng-template #notInitialized>
-  <!-- success model still loading -->
-  <mat-spinner style="margin: auto"> </mat-spinner>
-</ng-template>
-
 <ng-template #notAuthorized>
   <mat-card>
     {{ 'not-logged-in' | translate }}
+  </mat-card>
+</ng-template>
+
+<ng-template #noGroupSelect>
+  <mat-card>
+    {{ 'success-modeling.no-group-selected' | translate }}
   </mat-card>
 </ng-template>

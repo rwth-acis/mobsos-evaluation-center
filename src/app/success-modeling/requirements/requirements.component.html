@@ -3,7 +3,7 @@
     {{ 'success-modeling.requirements-list.heading' | translate }}
   </h3>
 
-  <div *ngIf="requirements$ | async as requirements">
+  <ng-container *ngIf="requirements$ | async as requirements">
     <mat-accordion>
       <mat-expansion-panel
         *ngFor="let requirement of requirements"
@@ -90,9 +90,8 @@
           | translate
       }}
     </button>
-  </div>
-
-  <div *ngIf="successModel && !successModel.reqBazProject">
+  </ng-container>
+  <ng-container *ngIf="(successModel$ | async)?.reqBazProject">
     <p>
       {{
         'success-modeling.requirements-list.no-project' | translate
@@ -108,5 +107,5 @@
           | translate
       }}
     </button>
-  </div>
+  </ng-container>
 </div>

@@ -14,6 +14,7 @@ import {
   IQuestionnaire,
   Questionnaire,
 } from '../models/questionnaire.model';
+import { Requirement } from '../models/reqbaz.model';
 interface HttpOptions {
   method?: string;
   headers?:
@@ -789,7 +790,9 @@ export class Las2peerService {
     return this.makeRequest(url, options);
   }
 
-  async fetchRequirementsOnReqBaz(categoryId: number) {
+  async fetchRequirementsOnReqBaz(
+    categoryId: number,
+  ): Promise<Requirement[]> {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
