@@ -25,36 +25,22 @@
   </h4>
 </div>
 
-<span
-  *ngIf="
-    visualizationError || !measure?.visualization;
-    else visualizationBlock
-  "
-  >{{ visualizationError }}</span
->
-
-<ng-template #visualizationBlock>
-  <div *ngIf="measure$ | async as measureAsync">
-    <div [ngSwitch]="measureAsync.visualization.type">
-      <app-kpi-visualization
-        [measureName]="measureAsync.name"
-        [service]="service"
-        *ngSwitchCase="'KPI'"
-      ></app-kpi-visualization>
-      <app-value-visualization
-        [measureName]="measureAsync.name"
-        [service]="service"
-        *ngSwitchCase="'Value'"
-      ></app-value-visualization>
-      <app-chart-visualization
-        *ngSwitchCase="'Chart'"
-        [measureName]="measureAsync.name"
-        [service]="service"
-      ></app-chart-visualization>
-      <div *ngSwitchDefault>
-        Unknown chartType: {{ measureAsync.visualization.type }}
-      </div>
+<ng-container *ngIf="measure$ | async as measureAsync">
+  <div [ngSwitch]="measureAsync.visualization.type">
+    <app-kpi-visualization
+      [measureName]="measureAsync.name"
+      *ngSwitchCase="'KPI'"
+    ></app-kpi-visualization>
+    <app-value-visualization
+      [measureName]="measureAsync.name"
+      *ngSwitchCase="'Value'"
+    ></app-value-visualization>
+    <app-chart-visualization
+      *ngSwitchCase="'Chart'"
+      [measureName]="measureAsync.name"
+    ></app-chart-visualization>
+    <div *ngSwitchDefault>
+      Unknown chartType: {{ measureAsync.visualization.type }}
     </div>
   </div>
-</ng-template>
-<!-- <ng-template appVisualization></ng-template> -->
+</ng-container>

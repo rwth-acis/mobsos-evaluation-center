@@ -1,10 +1,4 @@
-import {
-  Component,
-  ComponentRef,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { cloneDeep } from 'lodash-es';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -21,6 +15,7 @@ import {
 } from 'rxjs/operators';
 import {
   MEASURE,
+  SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
 import {
@@ -39,20 +34,17 @@ import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-
 })
 export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() measureName: string;
-  @Input() service: ServiceInformation;
-  @Input() canDelete = false;
   @Input() dimensionName = '';
   @Input() factorName = '';
   @Input() preview = false;
 
-  measure: Measure;
   measure$: Observable<Measure>;
+  service$: Observable<ServiceInformation> =
+    this.ngrxStore.select(SELECTED_SERVICE);
   subscriptions$: Subscription[] = [];
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
-
-  public visualizationError: string;
-  public error: Response;
-  componentRef: ComponentRef<{}>;
+  service: ServiceInformation;
+  measure: Measure;
 
   constructor(
     private translate: TranslateService,
@@ -60,19 +52,23 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)
       .pipe(
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),
       );
-    const sub = this.measure$
+    let sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.measure = cloneDeep(measure);
       });
+    this.subscriptions$.push(sub);
+    sub = this.service$.subscribe(
+      (service) => (this.service = service),
+    );
     this.subscriptions$.push(sub);
   }
 
@@ -80,7 +76,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  async onEditClicked(event: MouseEvent) {
+  async onEditClicked(event: MouseEvent): Promise<void> {
     const oldMeasureName = this.measure.name;
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       width: '80%',
@@ -117,7 +113,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     event.stopPropagation();
   }
 
-  async onDeleteClicked($event: MouseEvent) {
+  async onDeleteClicked($event: MouseEvent): Promise<void> {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
     );

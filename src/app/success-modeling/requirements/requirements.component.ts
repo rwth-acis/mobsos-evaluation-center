@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
@@ -22,9 +14,7 @@ import {
 import {
   addReqBazarProject,
   removeReqBazarProject,
-  setNumberOfRequirements,
   storeRequirements,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
@@ -37,7 +27,6 @@ import {
   Las2peerService,
 } from 'src/app/services/las2peer.service';
 import { cloneDeep } from 'lodash-es';
-import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-requirements',
@@ -64,7 +53,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     let sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
     sub = this.successModel$.subscribe((model) => {
@@ -153,7 +142,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     );
   }
 
-  async realizeRequirement(requirement: Requirement) {
+  async realizeRequirement(requirement: Requirement): Promise<void> {
     await this.las2peer.realizeRequirementOnReqBaz(requirement.id);
 
     let newRequirement = this.requirements.find(
@@ -169,7 +158,9 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  async unrealizeRequirement(requirement: Requirement) {
+  async unrealizeRequirement(
+    requirement: Requirement,
+  ): Promise<void> {
     await this.las2peer.unrealizeRequirementOnReqBaz(requirement.id);
     let newRequirement = this.requirements.find(
       (req) => req.id === requirement.id,

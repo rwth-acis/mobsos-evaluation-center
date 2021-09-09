@@ -12,15 +12,11 @@
 </div>
 
 <div *ngIf="factor && factor.measures?.length > 0" class="measures">
-  <div
-    *ngFor="let measure of factor.measures; let i = index"
-    class="measure"
-  >
+  <div *ngFor="let measure of factor.measures" class="measure">
     <app-success-measure
       [measureName]="measures[measure]?.name"
       [factorName]="factor.name"
       [dimensionName]="this.dimensionName"
-      [service]="service"
     ></app-success-measure>
   </div>
 </div>
@@ -34,7 +30,7 @@
   >
     {{ 'success-factor.add-measure-button' | translate }}
   </button>
-  <div *ngIf="!editMode && factor && factor.measures.length === 0">
+  <div *ngIf="!editMode && factor?.measures.length === 0">
     {{ 'success-factor.no-measures-placeholder' | translate }}
   </div>
 </div>
