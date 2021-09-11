@@ -13,6 +13,8 @@ import {
   ValueVisualization,
 } from 'src/app/models/visualization.model';
 import { Query } from 'src/app/models/query.model';
+import { fetchVisualizationData } from 'src/app/services/store.actions';
+import { Store } from '@ngrx/store';
 
 export interface DialogData {
   measure: Measure;
@@ -56,6 +58,7 @@ export class EditMeasureDialogComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private ngrxStore: Store,
   ) {}
 
   ngOnInit(): void {}
@@ -139,8 +142,38 @@ export class EditMeasureDialogComponent implements OnInit {
     }
     this.data.measure.queries[i].name = value;
   }
+  onQueryChanged(sql: string): void {
+    this.ngrxStore.dispatch(
+      fetchVisualizationData({
+        query: sql,
+        queryParams: this.getParamsForQuery(sql),
+      }),
+    );
+  }
 
   prettifyCustomMessageName(messageName: string): string {
     return messageName.replace(/_/g, ' ');
+  }
+
+  getParamsForQuery(query: string): string[] {
+    if (
+      !this.data.service ||
+      this.data.service?.mobsosIDs?.length === 0
+    ) {
+      // just for robustness
+      // should not be called when there are no service IDs stored in MobSOS anyway
+      return [];
+    }
+    const serviceRegex = /\$SERVICE\$/g;
+    const matches = query?.match(serviceRegex);
+    const params = [];
+    if (matches) {
+      for (const match of matches) {
+        // for now we just use the first ID
+        // support for multiple IDs is not implemented yet
+        params.push(this.data.service.mobsosIDs.slice(-1)[0].agentID);
+      }
+    }
+    return params as string[];
   }
 }
