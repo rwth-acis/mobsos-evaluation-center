@@ -117,7 +117,7 @@ export class Las2peerService {
       withCredentials?: boolean;
     } = {};
     if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders({ ...options.headers });
+      ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
       ngHttpOptions.body = options.body;
@@ -163,16 +163,16 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
-    const ngHttpOptions: HttpOptions = {};
+    let ngHttpOptions = {};
 
     if (options.headers) {
-      ngHttpOptions.headers = { ...new HttpHeaders(options.headers) };
+      ngHttpOptions['headers'] = new HttpHeaders(options.headers);
     }
     if (options.body) {
-      ngHttpOptions.body = options.body;
+      ngHttpOptions['body'] = options.body;
     }
     if (options.responseType) {
-      ngHttpOptions.responseType = options.responseType;
+      ngHttpOptions['responseType'] = options.responseType;
     }
 
     return this.http.request(options.method, url, ngHttpOptions);
