@@ -98,7 +98,6 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
     }
-    console.log(this.measureForm.value);
   }
 
   get formVisualizationParameters(): FormArray {
@@ -111,7 +110,11 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.measureForm.valueChanges.subscribe((data) => {
+      console.log(data);
+    });
+  }
 
   onVisualizationChange(visualizationType: string): void {
     if (
@@ -135,7 +138,6 @@ export class EditMeasureDialogComponent implements OnInit {
         this.buildParamsForChart();
         break;
     }
-    console.log(this.measureForm.value, '1');
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.data.measure.visualization =
@@ -249,7 +251,7 @@ export class EditMeasureDialogComponent implements OnInit {
     this.formVisualizationParameters.clear();
     this.formVisualizationParameters.push(
       this.fb.group({
-        chartType,
+        chartType: [chartType || ''],
       }),
     );
   }
@@ -257,7 +259,7 @@ export class EditMeasureDialogComponent implements OnInit {
     this.formVisualizationParameters.clear();
     this.formVisualizationParameters.push(
       this.fb.group({
-        unit,
+        unit: [unit || ''],
       }),
     );
   }

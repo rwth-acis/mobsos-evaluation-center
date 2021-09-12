@@ -27,7 +27,13 @@ app-sql-table {
 .navig {
   height: 80%;
   display: flex;
-  justify-content: space-between;
+  
+  &.first{
+    justify-content: flex-end;
+  }
+  &:not(.first) {
+    justify-content: space-between;
+  }
 }
 button {
   margin-right: 7px;
