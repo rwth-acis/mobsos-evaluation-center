@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
-  AfterViewInit,
+  ChangeDetectorRef,
   Component,
   Input,
   OnDestroy,
@@ -21,27 +21,22 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
+  catchError,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
-  mergeMap,
   sample,
-  timeout,
+  switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
-import {
-  combineLatest,
-  interval,
-  Observable,
-  Subscription,
-} from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
   Visualization,
 } from 'src/app/models/visualization.model';
-import { GoogleChart } from 'src/app/models/chart.model';
+import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 
@@ -52,7 +47,7 @@ import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.compo
 })
 export class ChartVisualizerComponent
   extends BaseVisualizationComponent
-  implements OnInit, OnDestroy, AfterViewInit
+  implements OnInit, OnDestroy
 {
   @Input() measureName: string;
 
@@ -62,13 +57,13 @@ export class ChartVisualizerComponent
 
   formatter_medium; // holds the formatter for the date with format type medium
 
-  chartData: GoogleChart; // data which is needed to build the chart.
+  chartData: ChartData; // data which is needed to build the chart.
+  chartData$: BehaviorSubject<ChartData> =
+    new BehaviorSubject<ChartData>(undefined);
   chartInitialized = false; // used for the fadein animation of charts
   data$: Observable<VisualizationData>; // visualization data fetched from the store
-  googleChartsIsReady$ = interval(10).pipe(
-    map(() => this.scriptLoader.isGoogleChartsAvailable()),
-  ); // Observable which periodically checks wheter the google charts library is ready
-  dataIsLoading$: Observable<boolean>; // Observable which is true when data is currently loading from the server
+  // Observable which periodically checks wheter the google charts library is ready
+  dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
 
   formatters = []; // formatters are used to format js dates into human readable format
 
@@ -77,6 +72,7 @@ export class ChartVisualizerComponent
     public dialog: MatDialog,
     protected ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {
     super(ngrxStore, dialog);
   }
@@ -88,6 +84,7 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit(): void {
+    this.chartData$.subscribe((data) => console.log(data));
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({
@@ -100,7 +97,7 @@ export class ChartVisualizerComponent
       .select(MEASURE, this.measureName)
       .pipe(
         filter((measure) => !!measure),
-        distinctUntilKeyChanged('queries'),
+        // distinctUntilKeyChanged('queries'),
       );
 
     // gets the query string from the measure and applies variable replacements
@@ -114,12 +111,11 @@ export class ChartVisualizerComponent
           ),
         ),
       ),
-      distinctUntilChanged(),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      mergeMap((query) =>
+      switchMap((query) =>
         this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
       ),
     );
@@ -129,17 +125,8 @@ export class ChartVisualizerComponent
       this.error = err;
     });
     this.subscriptions$.push(sub);
-    this.dataIsLoading$ = combineLatest([
-      this.data$.pipe(
-        map((data) => data === undefined || data?.loading),
-      ),
-      this.googleChartsIsReady$,
-    ]).pipe(
-      map(
-        ([dataLoaded, chartLibLoaded]) =>
-          chartLibLoaded && dataLoaded,
-      ),
-      timeout(5000),
+    this.dataIsReady$ = this.data$.pipe(
+      map((data) => !data?.loading),
     );
 
     sub = this.measure$
@@ -168,16 +155,18 @@ export class ChartVisualizerComponent
         super.fetchVisualizationData(query, queryParams);
       });
     this.subscriptions$.push(sub);
-  }
 
-  ngAfterViewInit(): void {
-    const sub = this.data$
+    sub = this.data$
       .pipe(
         distinctUntilChanged(),
         map((vdata) => vdata?.data),
         filter((data) => data instanceof Array && data.length >= 2),
         withLatestFrom(this.measure$),
         sample(this.scriptLoader.loadChartPackages()),
+        catchError((err) => {
+          console.log(err);
+          return of(undefined);
+        }),
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
@@ -218,6 +207,7 @@ export class ChartVisualizerComponent
     dataTable: any[][],
     visualization: Visualization,
   ) {
+    this.chartInitialized = false;
     this.formatters = [];
     visualization = visualization as ChartVisualization;
     this.error = null;
@@ -241,8 +231,24 @@ export class ChartVisualizerComponent
         );
       }
     }
-
-    this.chartData = new GoogleChart(
+    this.chartData$.next(
+      new ChartData(
+        '',
+        (visualization as ChartVisualization).chartType,
+        rows,
+        dataTable[0],
+        {
+          colors: [
+            '#00a895',
+            '#9500a8',
+            '#a89500',
+            '#ff5252',
+            '#ffd600',
+          ],
+        },
+      ),
+    );
+    this.chartData = new ChartData(
       '',
       (visualization as ChartVisualization).chartType,
       rows,
@@ -255,8 +261,12 @@ export class ChartVisualizerComponent
           '#ff5252',
           '#ffd600',
         ],
-        animation: { startup: true },
       },
     );
+    this.chartInitialized = true;
+    this.changeDetectorRef.detectChanges();
   }
+}
+function of(undefined: undefined): any {
+  throw new Error('Function not implemented.');
 }

@@ -1,8 +1,8 @@
-<div id="chart-row" *ngIf="!(dataIsLoading$ | async); else loading">
-  <ng-container *ngIf="data$ | async as data; else noData">
-    <div *ngIf="chartInitialized; else noData"></div>
+<div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
+  <ng-container *ngIf="data$ | async; else noData">
+    {{ chartData$ | async | json }}
     <google-chart
-      *ngIf="chartData"
+      *ngIf="this.chartData"
       [title]="this.chartData.title"
       [type]="this.chartData.chartType"
       [data]="this.chartData.data"
@@ -14,8 +14,8 @@
       class="content"
       style="width: 100%"
       (ready)="this.chartInitialized = true"
-    ></google-chart>
-  </ng-container>
+    ></google-chart
+  ></ng-container>
 </div>
 <button
   *ngIf="chartInitialized"
@@ -61,7 +61,7 @@
 
 <ng-template #noData>
   <span
-    *ngIf="error$ | async as error"
+    *ngIf="error$ | async as error; else loading"
     (click)="openErrorDialog(error)"
     class="visualization-error"
   >
@@ -70,6 +70,10 @@
     </button>
   </span>
 </ng-template>
+
+<ng-template #noDataAndNoError
+  >No data available. Please refresh the page</ng-template
+>
 
 <ng-template #loading>
   <span class="loading-placeholder">

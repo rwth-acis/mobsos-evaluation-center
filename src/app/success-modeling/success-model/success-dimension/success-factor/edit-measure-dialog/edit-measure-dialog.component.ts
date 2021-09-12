@@ -154,10 +154,9 @@ export class EditMeasureDialogComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.measureForm.valid) {
-      console.log('you shall not pass');
-      return;
+      return; // should not happen because submit button is disabled if form is invalid
     }
-    console.log('subission', this.measureForm.value);
+
     const measure = this.measureForm.value;
     this.data.measure = {
       ...this.data.measure,
