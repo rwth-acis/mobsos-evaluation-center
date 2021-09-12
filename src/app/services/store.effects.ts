@@ -155,18 +155,9 @@ export class StateEffects {
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(
-        this.ngrxStore.select(_SELECTED_GROUP_ID),
-        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-      ),
-      filter(
-        ([{ service }, , currentServiceName]) =>
-          !!service && service.name !== currentServiceName,
-      ),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       tap(([{ service }, groupId]) => {
-        this.ngrxStore.dispatch(
-          Action.storeSuccessModel({ xml: undefined }),
-        );
+        this.ngrxStore.dispatch(Action.resetSuccessModel());
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
         );
@@ -176,7 +167,7 @@ export class StateEffects {
           }),
         );
       }),
-      switchMap(() => of(Action.success())),
+      mergeMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());
