@@ -14,142 +14,201 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
+
 <!-- content -->
-<mat-stepper linear #stepper>
-  <!-- first step: choose a name and visualization type -->
-  <mat-step editable="true">
-    <!-- name of the success measure -->
-    <div class="EditMeasureForm">
+<form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
+  <mat-stepper linear #stepper>
+    <!-- first step: choose a name and visualization type -->
+    <mat-step
+      [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
+      editable="true"
+    >
+      <!-- name of the success measure -->
       <mat-form-field>
         <input
+          required
           matInput
+          formControlName="name"
           placeholder="{{
             'success-modeling.edit-measure-dialog.name-placeholder'
               | translate
           }}"
-          [(ngModel)]="data.measure.name"
         />
       </mat-form-field>
-
-      <!-- type of visualization -->
+      <!-- description -->
       <mat-form-field>
         <mat-label>{{
-          'success-modeling.edit-measure-dialog.visualization-select'
+          'success-modeling.edit-measure-dialog.description-label'
             | translate
         }}</mat-label>
-        <mat-select
-          [ngModel]="data.measure.visualization.type"
-          (selectionChange)="onVisualizationChange($event.value)"
-        >
-          <mat-option
-            *ngFor="let item of visualizationChoices | keyvalue"
-            [value]="item.key"
-          >
-            {{ item.value | translate }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field
-        *ngIf="data.measure.visualization.type === 'Value'"
-      >
-        <input
+        <textarea
           matInput
+          formControlName="description"
+          maxlength="500"
           placeholder="{{
-            'success-modeling.edit-measure-dialog.unit-placeholder'
+            'success-modeling.edit-measure-dialog.description-placeholder'
               | translate
-          }}"
-          [(ngModel)]="$any(data.measure.visualization).unit"
-        />
+          }} 
+      "
+        ></textarea>
+        <mat-hint *ngIf="data.measure.description"
+          >{{ data.measure.description.trim().length }}/500</mat-hint
+        >
       </mat-form-field>
 
-      <div *ngIf="data.measure.visualization.type === 'KPI'">
-        <div
-          *ngFor="
-            let termPart of $any(data.measure.visualization)
-              .operationsElements;
-            let i = index
-          "
-        >
-          <mat-form-field *ngIf="i % 2 === 0">
-            <mat-label>Operand</mat-label>
-            <mat-select
-              [ngModel]="$any(termPart).name"
-              (selectionChange)="onKpiOperandChange($event.value, i)"
-            >
-              <mat-option
-                *ngFor="let query of data.measure.queries"
-                [value]="query.name"
-              >
-                {{ query.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field *ngIf="i % 2 !== 0">
-            <mat-label>Operator</mat-label>
-            <mat-select
-              [ngModel]="$any(termPart).name"
-              (selectionChange)="onKpiOperatorChange($event.value, i)"
-            >
-              <mat-option
-                *ngFor="let operator of ['+', '-', '*', '/']"
-                [value]="operator"
-              >
-                {{ operator }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <button
-          mat-button
-          color="primary"
-          (click)="onAddOperationClicked()"
-        >
-          {{
-            'success-modeling.edit-measure-dialog.add-operation'
-              | translate
-          }}
-        </button>
-        <button
-          mat-button
-          color="warn"
-          (click)="onRemoveOperationClicked()"
-          [disabled]="
-            $any(data.measure.visualization).operationsElements
-              .length <= 1
-          "
-        >
-          {{
-            'success-modeling.edit-measure-dialog.remove-operation'
-              | translate
-          }}
-        </button>
-      </div>
-
-      <div *ngIf="data.measure.visualization.type === 'Chart'">
+      <!-- visualization -->
+      <div formGroupName="visualization">
+        <!-- type of visualization -->
         <mat-form-field>
-          <mat-label>Type</mat-label>
+          <mat-label>{{
+            'success-modeling.edit-measure-dialog.visualization-select'
+              | translate
+          }}</mat-label>
           <mat-select
-            [(ngModel)]="$any(data.measure.visualization).chartType"
+            required
+            formControlName="type"
+            (selectionChange)="onVisualizationChange($event.value)"
           >
             <mat-option
-              *ngFor="let item of chartTypeChoices | keyvalue"
+              *ngFor="let item of visualizationChoices | keyvalue"
               [value]="item.key"
             >
               {{ item.value | translate }}
             </mat-option>
           </mat-select>
         </mat-form-field>
+        <!-- different options based on visualization type -->
+        <div formArrayName="parameters">
+          <ng-container
+            [ngSwitch]="measureForm.get('visualization.type').value"
+          >
+            <mat-form-field *ngSwitchCase="'Value'" formGroupName="0">
+              <input
+                matInput
+                formControlName="unit"
+                placeholder="{{
+                  'success-modeling.edit-measure-dialog.unit-placeholder'
+                    | translate
+                }}"
+              />
+            </mat-form-field>
+
+            <div *ngSwitchCase="'Chart'" formGroupName="0">
+              <mat-form-field>
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="chartType" required>
+                  <mat-option
+                    *ngFor="let item of chartTypeChoices | keyvalue"
+                    [value]="item.key"
+                  >
+                    {{ item.value | translate }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <ng-container *ngSwitchCase="'KPI'">
+              <ng-container
+                *ngIf="
+                  measureForm.get('visualization.parameters')?.value
+                    ?.length > 0 &&
+                    measureForm.get('visualization.parameters')
+                      .value[0].name !== '';
+                  else noQueries
+                "
+              >
+                <ng-container
+                  *ngFor="
+                    let termPart of measureForm.get(
+                      'visualization.parameters'
+                    ).controls;
+                    let i = index
+                  "
+                >
+                  <mat-form-field *ngIf="i % 2 === 0">
+                    <mat-label>Operand</mat-label>
+                    <mat-select
+                      [formControl]="termPart"
+                      (selectionChange)="
+                        onKpiOperandChange($event.value, i)
+                      "
+                    >
+                      <mat-option
+                        *ngFor="
+                          let query of measureForm.get('queries')
+                            .controls
+                        "
+                        [value]="query.get('name')?.value"
+                      >
+                        {{ query.get('name').value }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field *ngIf="i % 2 !== 0">
+                    <mat-label>Operator</mat-label>
+                    <mat-select
+                      [formControl]="termPart"
+                      (selectionChange)="
+                        onKpiOperatorChange($event.value, i)
+                      "
+                    >
+                      <mat-option
+                        *ngFor="let operator of ['+', '-', '*', '/']"
+                        [value]="operator"
+                      >
+                        {{ operator }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-container>
+
+                <button
+                  mat-button
+                  color="primary"
+                  (click)="onAddOperationClicked()"
+                >
+                  {{
+                    'success-modeling.edit-measure-dialog.add-operation'
+                      | translate
+                  }}
+                </button>
+                <button
+                  mat-button
+                  color="warn"
+                  (click)="onRemoveOperationClicked()"
+                  [disabled]="
+                    measureForm.get('visualization.parameters')?.value
+                      .length <= 1
+                  "
+                >
+                  {{
+                    'success-modeling.edit-measure-dialog.remove-operation'
+                      | translate
+                  }}
+                </button>
+              </ng-container>
+            </ng-container>
+
+            <div *ngSwitchDefault>Unsupported visualization type</div>
+          </ng-container>
+        </div>
       </div>
-    </div>
-    <div class="navig">
-      <button mat-stroked-button matStepperNext>Next</button>
-    </div>
-  </mat-step>
-  <!-- second step: query input -->
-  <mat-step editable="true">
-    <div class="EditMeasureForm">
+
+      <mat-dialog-actions class="navig first">
+        <button mat-stroked-button matStepperNext type="button">
+          {{
+            'success-modeling.edit-measure-dialog.next-label'
+              | translate
+          }}
+        </button>
+      </mat-dialog-actions>
+    </mat-step>
+    <!-- second step: query input -->
+    <mat-step
+      editable="true"
+      [color]="controlsForSecondStepInValid() ? 'warn' : 'primary'"
+    >
+      <!-- query hints based on message description from the service -->
       <mat-accordion id="hints-accordion">
         <mat-expansion-panel>
           <mat-expansion-panel-header>
@@ -200,16 +259,21 @@
           </ng-template>
         </mat-expansion-panel>
       </mat-accordion>
-
-      <div *ngFor="let query of data.measure.queries; let i = index">
+      <!-- queries -->
+      <ng-container
+        *ngFor="let query of formQueries.controls; let i = index"
+      >
         <mat-form-field>
           <input
+            [required]="
+              measureForm.get('visualization.type').value === 'KPI'
+            "
             matInput
             placeholder="{{
               'success-modeling.edit-measure-dialog.query-name-placeholder'
                 | translate
             }} #{{ i + 1 }}"
-            [ngModel]="query.name"
+            [formControl]="query.controls['name']"
             (change)="
               onQueryNameChanged($any($event.target).value, i)
             "
@@ -218,18 +282,22 @@
         <mat-form-field>
           <textarea
             matInput
+            required
             rows="3"
             id="sqlInput"
             placeholder="{{
               'success-modeling.edit-measure-dialog.query-placeholder'
                 | translate
             }} #{{ i + 1 }}"
-            [(ngModel)]="query.sql"
+            [formControl]="query.controls['sql']"
+            (blur)="onQueryChanged(undefined)"
           ></textarea>
         </mat-form-field>
-      </div>
+      </ng-container>
 
+      <!-- add querry button -->
       <button
+        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="primary"
         (click)="onAddQueryClicked()"
@@ -238,7 +306,9 @@
           'success-modeling.edit-measure-dialog.add-query' | translate
         }}
       </button>
+      <!-- remove query button -->
       <button
+        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="warn"
         (click)="onRemoveQueryClicked()"
@@ -250,56 +320,56 @@
         }}
       </button>
 
-      <mat-divider></mat-divider>
-
-      <mat-form-field>
-        <textarea
-          matInput
-          maxlength="500"
-          rows="4"
-          placeholder="{{
-            'success-modeling.edit-measure-dialog.description-placeholder'
-              | translate
-          }} 
-      "
-          [(ngModel)]="data.measure.description"
-        ></textarea>
-        <mat-hint *ngIf="data.measure.description"
-          >{{ data.measure.description.trim().length }}/500</mat-hint
-        >
-      </mat-form-field>
-    </div>
-    <div class="navig">
-      <button mat-stroked-button matStepperPrevious>Back</button>
-      <button mat-stroked-button matStepperNext>Next</button>
-    </div>
-  </mat-step>
-  <!-- last step: preview of the visualization -->
-  <mat-step editable="false" state="analytics">
-    <ng-template matStepContent>
-      <div class="EditMeasureForm">
-        <h3>
+      <mat-dialog-actions class="navig">
+        <button mat-stroked-button matStepperPrevious type="button">
           {{
-            'success-modeling.edit-measure-dialog.preview-title'
+            'success-modeling.edit-measure-dialog.back-label'
               | translate
           }}
-        </h3>
-        <app-success-measure
-          [preview]="true"
-          [measureName]="data.measure?.name"
-        ></app-success-measure>
-      </div>
-      <div class="navig">
-        <button mat-stroked-button matStepperPrevious>Back</button>
-        <button
-          mat-raised-button
-          color="primary"
-          [mat-dialog-close]="data.measure"
-          cdkFocusInitial
-        >
-          {{ 'shared.elements.save-label' | translate }}
         </button>
-      </div>
-    </ng-template>
-  </mat-step>
-</mat-stepper>
+        <button mat-stroked-button matStepperNext type="button">
+          {{
+            'success-modeling.edit-measure-dialog.next-label'
+              | translate
+          }}
+        </button>
+      </mat-dialog-actions>
+    </mat-step>
+    <!-- last step: preview of the visualization -->
+    <mat-step editable="false" state="analytics">
+      <ng-template matStepContent>
+        <div class="EditMeasureForm">
+          <h3>
+            {{
+              'success-modeling.edit-measure-dialog.preview-title'
+                | translate
+            }}
+          </h3>
+          <app-success-measure
+            [preview]="true"
+            [measureName]="data.measure?.name"
+          ></app-success-measure>
+        </div>
+        <mat-dialog-actions class="navig">
+          <button mat-stroked-button matStepperPrevious type="button">
+            {{
+              'success-modeling.edit-measure-dialog.back-label'
+                | translate
+            }}
+          </button>
+          <!-- submits the form -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="measureForm.invalid"
+          >
+            {{ 'shared.elements.save-label' | translate }}
+          </button>
+        </mat-dialog-actions>
+      </ng-template>
+    </mat-step>
+  </mat-stepper>
+</form>
+
+<ng-template #noQueries> Add a query with a name first </ng-template>

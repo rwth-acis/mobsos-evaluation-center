@@ -13,7 +13,10 @@ import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessModel } from '../models/success.model';
 import { User } from '../models/user.model';
-import { VisualizationData } from '../models/visualization.model';
+import {
+  VisualizationCollection,
+  VisualizationData,
+} from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
@@ -320,7 +323,11 @@ export const VISUALIZATION_DATA = createSelector(
 export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
   VISUALIZATION_DATA_FROM_QVS,
   VISUALIZATION_DATA_FROM_WORKSPACE,
-  (workspacedata, qvsdata, queryString: string) =>
+  (
+    workspacedata: VisualizationCollection,
+    qvsdata: VisualizationCollection,
+    queryString: string,
+  ) =>
     workspacedata && workspacedata[queryString]
       ? workspacedata[queryString]
       : qvsdata

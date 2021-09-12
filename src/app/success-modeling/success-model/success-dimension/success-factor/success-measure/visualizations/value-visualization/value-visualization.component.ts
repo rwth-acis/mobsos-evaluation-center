@@ -63,7 +63,7 @@ export class ValueVisualizationComponent
     );
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)
@@ -89,12 +89,8 @@ export class ValueVisualizationComponent
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
       filter((query) => !!query),
-      mergeMap(
-        (query) =>
-          this.ngrxStore.select(
-            VISUALIZATION_DATA_FOR_QUERY,
-            query,
-          ) as Observable<VisualizationData>,
+      mergeMap((query) =>
+        this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
       ),
     );
 

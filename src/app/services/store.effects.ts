@@ -69,7 +69,7 @@ export class StateEffects {
                   JSON.stringify(err),
               );
 
-              return of(undefined);
+              return of(Action.failureResponse(err));
             }),
           ),
         ]).pipe(
@@ -105,7 +105,7 @@ export class StateEffects {
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
             );
-            return of(undefined);
+            return of(Action.failureResponse(err));
           }),
         ),
       ),

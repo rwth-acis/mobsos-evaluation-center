@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
 import {
@@ -14,16 +15,17 @@ import {
   IQuestionnaire,
   Questionnaire,
 } from '../models/questionnaire.model';
+import { Requirement } from '../models/reqbaz.model';
 interface HttpOptions {
   method?: string;
-  headers?:
-    | {
-        [header: string]: string | string[];
-      }
-    | HttpHeaders;
+  headers?: {
+    [header: string]: string | string[];
+  };
   body?: string;
   responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
+  observe?: 'body' | 'events' | 'response';
 }
+
 @Injectable({
   providedIn: 'root',
 })
@@ -92,9 +94,9 @@ export class Las2peerService {
       ?.sub as string;
     const token = localStorage.getItem('access_token');
     if (username) {
-      options.headers['Authorization'] =
+      options.headers.Authorization =
         'Basic ' + btoa(`${username}:${sub}`);
-      options.headers['access_token'] = token;
+      options.headers.access_token = token;
     }
 
     const ngHttpOptions: {
@@ -115,7 +117,7 @@ export class Las2peerService {
       withCredentials?: boolean;
     } = {};
     if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders({ ...options.headers });
+      ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
       ngHttpOptions.body = options.body;
@@ -133,16 +135,8 @@ export class Las2peerService {
 
   makeRequestAndObserve<T>(
     url: string,
-    options: {
-      method?: string;
-      headers?: {
-        [header: string]: string | string[];
-      };
-      body?: string;
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      observe?: string;
-    } = {},
-  ) {
+    options: HttpOptions = {},
+  ): Observable<T | Request | any> {
     options = merge(
       {
         method: 'GET',
@@ -169,43 +163,43 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
-    const ngHttpOptions: HttpOptions = {};
+    const ngHttpOptions = {};
 
     if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders(options.headers);
+      ngHttpOptions['headers'] = new HttpHeaders(options.headers);
     }
     if (options.body) {
-      ngHttpOptions.body = options.body;
+      ngHttpOptions['body'] = options.body;
     }
     if (options.responseType) {
-      ngHttpOptions.responseType = options.responseType;
+      ngHttpOptions['responseType'] = options.responseType;
     }
 
     return this.http.request(options.method, url, ngHttpOptions);
   }
 
-  async fetchServicesFromDiscovery() {
-    const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SERVICES_PATH,
-    );
-    return this.makeRequest(url).catch((response) =>
-      console.error(response),
-    );
-  }
+  // async fetchServicesFromDiscovery() {
+  //   const url = joinAbsoluteUrlPath(
+  //     environment.las2peerWebConnectorUrl,
+  //     this.SERVICES_PATH,
+  //   );
+  //   return this.makeRequest(url).catch((response) =>
+  //     console.error(response),
+  //   );
+  // }
 
-  async fetchServicesFromMobSOS() {
-    const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
-    );
-    return this.makeRequest(url).catch((response) =>
-      console.error(response),
-    );
-  }
+  // async fetchServicesFromMobSOS() {
+  //   const url = joinAbsoluteUrlPath(
+  //     environment.las2peerWebConnectorUrl,
+  //     this.SUCCESS_MODELING_SERVICE_PATH,
+  //     this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
+  //   );
+  //   return this.makeRequest(url).catch((response) =>
+  //     console.error(response),
+  //   );
+  // }
 
-  fetchServicesFromDiscoveryAndObserve() {
+  fetchServicesFromDiscoveryAndObserve(): Observable<any> {
     if (!environment.useLas2peerServiceDiscovery)
       return of(undefined);
     const url = joinAbsoluteUrlPath(
@@ -215,7 +209,7 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url);
   }
 
-  addGroup(groupName: string) {
+  addGroup(groupName: string): Observable<any> {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
@@ -228,7 +222,7 @@ export class Las2peerService {
     });
   }
 
-  fetchServicesFromMobSOSAndObserve() {
+  fetchServicesFromMobSOSAndObserve(): Observable<any> {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.SUCCESS_MODELING_SERVICE_PATH,
@@ -335,8 +329,7 @@ export class Las2peerService {
 
   async fetchMobSOSQuestionnaires() {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
     );
     return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
@@ -375,8 +368,7 @@ export class Las2peerService {
   async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = joinAbsoluteUrlPath(
-        environment.las2peerWebConnectorUrl,
-        this.SURVEYS_SERVICE_PATH,
+        environment.mobsosSurveysUrl,
         this.SURVEYS_QUESTIONNAIRES_PATH,
         questionnaire.id,
         this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
@@ -403,8 +395,7 @@ export class Las2peerService {
     lang: string,
   ) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
     return this.makeRequest(url, {
@@ -428,8 +419,7 @@ export class Las2peerService {
     surveyId: number,
   ) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
       surveyId,
       this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX,
@@ -443,8 +433,7 @@ export class Las2peerService {
 
   async deleteSurvey(surveyId: number) {
     const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SURVEYS_SERVICE_PATH,
+      environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
       surveyId,
     );
@@ -453,7 +442,10 @@ export class Las2peerService {
       responseType: 'text',
     });
   }
-
+  /**
+   * @deprecated MobSOS groups might be outdated. We should not rely on them.
+   * Thus there is no need to transfer groups from the contact service to mobsos
+   */
   async saveGroupToMobSOS(groupID: string, groupName: string) {
     let method;
     let url;
@@ -717,11 +709,22 @@ export class Las2peerService {
     queryParams: string[],
     format: string = 'JSON',
   ) {
-    const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.QUERY_VISUALIZATION_SERVICE_PATH,
-      this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
-    );
+    let url: string;
+    if (format) {
+      url = joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
+        this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
+        `?format=${format}`,
+      );
+    } else {
+      url = joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
+        this.QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH,
+      );
+    }
+
     const requestBody = {
       cache: true,
       dbkey: 'las2peermon',
@@ -789,7 +792,9 @@ export class Las2peerService {
     return this.makeRequest(url, options);
   }
 
-  async fetchRequirementsOnReqBaz(categoryId: number) {
+  async fetchRequirementsOnReqBaz(
+    categoryId: number,
+  ): Promise<Requirement[]> {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,

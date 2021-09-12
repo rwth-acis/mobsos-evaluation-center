@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
@@ -22,9 +14,7 @@ import {
 import {
   addReqBazarProject,
   removeReqBazarProject,
-  setNumberOfRequirements,
   storeRequirements,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { User } from 'src/app/models/user.model';
 import { SuccessModel } from 'src/app/models/success.model';
@@ -37,7 +27,7 @@ import {
   Las2peerService,
 } from 'src/app/services/las2peer.service';
 import { cloneDeep } from 'lodash-es';
-import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-requirements',
   templateUrl: './requirements.component.html',
@@ -54,7 +44,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
   frontendUrl = environment.reqBazFrontendUrl;
   openedRequirement = null;
   private user: User;
-  private subscriptions$ = [];
+  private subscriptions$: Subscription[] = [];
 
   constructor(
     private dialog: MatDialog,
@@ -63,24 +53,13 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
-  static joinAbsoluteUrlPath(...args) {
-    return args
-      .map((pathPart) => {
-        if (typeof pathPart === 'number') {
-          pathPart = pathPart.toString();
-        }
-        return pathPart.replace(/(^\/|\/$)/g, '');
-      })
-      .join('/');
-  }
-
-  ngOnInit() {
+  ngOnInit(): void {
     let sub = this.user$.subscribe((user) => (this.user = user));
     this.subscriptions$.push(sub);
     sub = this.successModel$.subscribe((model) => {
       this.successModel = model;
       if (!this.requirements) {
-        this.refreshRequirements();
+        void this.refreshRequirements();
       }
     });
     this.subscriptions$.push(sub);
@@ -94,7 +73,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  async openPickProjectDialog() {
+  async openPickProjectDialog(): Promise<void> {
     const dialogRef = this.dialog.open(PickReqbazProjectComponent, {
       minWidth: 300,
       width: '80%',
@@ -115,7 +94,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openDisconnectProjectDialog() {
+  async openDisconnectProjectDialog(): Promise<void> {
     const message = this.translate.instant(
       'success-modeling.requirements-list.disconnect-project-prompt',
     );
@@ -138,24 +117,23 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     }
   }
 
-  refreshRequirements() {
+  async refreshRequirements(): Promise<void> {
     if (!this.successModel || !this.successModel.reqBazProject) {
       return;
     }
-    this.las2peer
-      .fetchRequirementsOnReqBaz(
+    const requirements =
+      await this.las2peer.fetchRequirementsOnReqBaz(
         this.successModel.reqBazProject.categoryId,
-      )
-      .then((requirements: Requirement[]) => {
-        this.ngrxStore.dispatch(storeRequirements({ requirements }));
-      });
+      );
+
+    this.ngrxStore.dispatch(storeRequirements({ requirements }));
   }
 
-  isRealized(requirement) {
+  isRealized(requirement: Requirement): boolean {
     return Object.keys(requirement).includes('realized');
   }
 
-  isLead(requirement) {
+  isLead(requirement: Requirement): boolean {
     return (
       Object.keys(requirement).includes('leadDeveloper') &&
       this.user &&
@@ -164,7 +142,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     );
   }
 
-  async realizeRequirement(requirement: Requirement) {
+  async realizeRequirement(requirement: Requirement): Promise<void> {
     await this.las2peer.realizeRequirementOnReqBaz(requirement.id);
 
     let newRequirement = this.requirements.find(
@@ -176,11 +154,13 @@ export class RequirementsComponent implements OnInit, OnDestroy {
       req.id === newRequirement.id ? newRequirement : req,
     );
     setTimeout(() => {
-      this.refreshRequirements();
+      void this.refreshRequirements();
     }, 1000);
   }
 
-  async unrealizeRequirement(requirement: Requirement) {
+  async unrealizeRequirement(
+    requirement: Requirement,
+  ): Promise<void> {
     await this.las2peer.unrealizeRequirementOnReqBaz(requirement.id);
     let newRequirement = this.requirements.find(
       (req) => req.id === requirement.id,
@@ -191,25 +171,31 @@ export class RequirementsComponent implements OnInit, OnDestroy {
       req.id === newRequirement.id ? newRequirement : req,
     );
     setTimeout(() => {
-      this.refreshRequirements();
+      void this.refreshRequirements();
     }, 1000);
   }
 
-  becomeLeaddevRequirement(requirement: any) {
-    this.las2peer.becomeLeaddeveloperOnReqBaz(requirement.id);
-    this.refreshRequirements();
+  async becomeLeaddevRequirement(
+    requirement: Requirement,
+  ): Promise<void> {
+    await this.las2peer.becomeLeaddeveloperOnReqBaz(requirement.id);
+    void this.refreshRequirements();
   }
 
-  stopBeingLeaddevRequirement(requirement: any) {
-    this.las2peer.stopBeingLeaddeveloperOnReqBaz(requirement.id);
-    this.refreshRequirements();
+  async stopBeingLeaddevRequirement(
+    requirement: Requirement,
+  ): Promise<void> {
+    await this.las2peer.stopBeingLeaddeveloperOnReqBaz(
+      requirement.id,
+    );
+    void this.refreshRequirements();
   }
 
-  getFrontendUrlForRequirement(requirement: any) {
+  getFrontendUrlForRequirement(requirement: Requirement): string {
     const reqBazProject: ReqbazProject =
       this.successModel.reqBazProject;
     if (!reqBazProject) {
-      return '';
+      return;
     }
     return joinAbsoluteUrlPath(
       environment.reqBazFrontendUrl,

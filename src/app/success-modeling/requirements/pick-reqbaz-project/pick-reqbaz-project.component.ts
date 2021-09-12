@@ -24,30 +24,27 @@ export class PickReqbazProjectComponent implements OnInit {
   selectedCategoryControl = new FormControl();
   selectedProject: Project;
   selectedCategory: Category;
-  private availableProjectsSubject = new BehaviorSubject<Project[]>(
-    [],
-  );
-  availableProjects = this.availableProjectsSubject.asObservable();
-  private availableCategoriesSubject = new BehaviorSubject<
-    Category[]
-  >([]);
-  availableCategories =
-    this.availableCategoriesSubject.asObservable();
-  subscriptions$: Subscription[] = [];
+  private availableCategories$ = new BehaviorSubject<Category[]>([]);
+  private availableProjects$ = new BehaviorSubject<Project[]>([]);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  availableProjects = this.availableProjects$.asObservable();
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  availableCategories = this.availableCategories$.asObservable();
+  private subscriptions$: Subscription[] = [];
 
   constructor(private las2peer: Las2peerService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     let sub = this.selectedProjectControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
       .subscribe((value) => {
-        this._filterProject(value);
+        void this._filterProject(value);
       });
     this.subscriptions$.push(sub);
     sub = this.selectedCategoryControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
       .subscribe((value) => {
-        this._filterCategory(value);
+        void this._filterCategory(value);
       });
     this.subscriptions$.push(sub);
   }
@@ -60,23 +57,23 @@ export class PickReqbazProjectComponent implements OnInit {
     return category ? category.name : undefined;
   }
 
-  _filterProject(value: string) {
-    this.las2peer.searchProjectOnReqBaz(value).then((projects) => {
-      if (projects)
-        this.availableProjectsSubject.next(projects as Project[]);
-    });
+  async _filterProject(value: string): Promise<void> {
+    const projects = await this.las2peer.searchProjectOnReqBaz(value);
+
+    if (projects) this.availableProjects$.next(projects as Project[]);
   }
 
-  _filterCategory(value: string) {
+  async _filterCategory(value: string): Promise<void> {
     if (!this.selectedProject) {
-      this.availableCategoriesSubject.next([]);
+      this.availableCategories$.next([]);
       return;
     }
-    this.las2peer
-      .searchCategoryOnReqBaz(this.selectedProject.id, value)
-      .then((categories) => {
-        if (categories)
-          this.availableCategoriesSubject.next(categories as any[]);
-      });
+    const categories = await this.las2peer.searchCategoryOnReqBaz(
+      this.selectedProject.id,
+      value,
+    );
+
+    if (categories)
+      this.availableCategories$.next(categories as any[]);
   }
 }

@@ -49,7 +49,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     let sub = this.measures$.subscribe(
       (measures) => (this.measures = measures),
     );
@@ -59,11 +59,11 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     );
     this.subscriptions$.push(sub);
   }
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  async openRemoveMeasureDialog(measureIndex: number) {
+  async openRemoveMeasureDialog(measureIndex: number): Promise<void> {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
     ) as string;
@@ -77,7 +77,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openPickMeasureDialog() {
+  async openPickMeasureDialog(): Promise<void> {
     const dialogRef = this.dialog.open(PickMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -101,7 +101,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     }
   }
 
-  async onEditClicked() {
+  async onEditClicked(): Promise<void> {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       width: '250px',
       data: { factor: { ...this.factor } },

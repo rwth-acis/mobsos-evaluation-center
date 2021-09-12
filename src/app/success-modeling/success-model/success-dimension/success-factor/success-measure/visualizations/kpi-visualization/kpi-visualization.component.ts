@@ -43,6 +43,7 @@ export class KpiVisualizationComponent
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
+  fetchDate$: Observable<string>; // latest fetch date as iso string
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -89,6 +90,16 @@ export class KpiVisualizationComponent
           ),
         ),
       ),
+    );
+
+    this.fetchDate$ = this.dataArray$.pipe(
+      map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
+      map((dates) =>
+        dates.reduce((max, curr) =>
+          curr.getTime() > max.getTime() ? curr : max,
+        ),
+      ), // take the latest fetch date
+      map((timestamp) => timestamp.toISOString()), // convert to iso string
     );
 
     // true if any query is still loading
@@ -170,7 +181,7 @@ export class KpiVisualizationComponent
     this.subscriptions$.push(sub);
   }
 
-  onRefreshClicked(query: string) {
+  onRefreshClicked(query: string): void {
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,

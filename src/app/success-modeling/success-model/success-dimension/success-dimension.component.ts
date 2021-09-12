@@ -6,8 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { MeasureMap } from 'src/app/models/measure.catalog';
-import { ServiceInformation } from 'src/app/models/service.model';
+
 import { USER_HAS_EDIT_RIGHTS } from 'src/app/services/store.selectors';
 import { SuccessFactor } from 'src/app/models/success.model';
 import {
@@ -21,8 +20,6 @@ import {
   styleUrls: ['./success-dimension.component.scss'],
 })
 export class SuccessDimensionComponent implements OnInit {
-  @Input() measures: MeasureMap;
-  @Input() service: ServiceInformation;
   @Input() name: string;
   @Input() description: string;
   @Input() icon: string;
@@ -55,7 +52,6 @@ export class SuccessDimensionComponent implements OnInit {
 
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this._factors.push(result);
       this.ngrxStore.dispatch(
         addFactorToDimension({
           factor: result,
@@ -65,7 +61,7 @@ export class SuccessDimensionComponent implements OnInit {
     }
   }
 
-  openRemoveFactorDialog(factorIndex: number): void {
+  async openRemoveFactorDialog(factorIndex: number): Promise<void> {
     const message = this.translate.instant(
       'success-dimension.remove-factor-prompt',
     ) as string;
@@ -73,15 +69,11 @@ export class SuccessDimensionComponent implements OnInit {
       minWidth: 300,
       data: message,
     });
-    const result = dialogRef.afterClosed();
+    const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.removeFactor(factorIndex);
+      this.ngrxStore.dispatch(
+        removeFactor({ name: this._factors[factorIndex].name }),
+      );
     }
-  }
-
-  private removeFactor(factorIndex: number): void {
-    this.ngrxStore.dispatch(
-      removeFactor({ name: this._factors[factorIndex].name }),
-    );
   }
 }

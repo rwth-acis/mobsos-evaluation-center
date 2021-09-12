@@ -170,7 +170,7 @@ export class ChartVisualizerComponent
     this.subscriptions$.push(sub);
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     const sub = this.data$
       .pipe(
         distinctUntilChanged(),
@@ -230,10 +230,12 @@ export class ChartVisualizerComponent
           colIndex: i,
         });
         rows = rows.map((row) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           row.map((entry, index) => {
             if (index === i) {
-              return new Date(parseInt(entry));
+              return new Date(parseInt(entry, 10));
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return entry;
           }),
         );
