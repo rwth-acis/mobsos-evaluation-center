@@ -30,7 +30,7 @@ import {
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
@@ -167,6 +167,7 @@ export class ChartVisualizerComponent
           console.log(err);
           return of(undefined);
         }),
+        filter((data) => !!data),
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
@@ -266,7 +267,4 @@ export class ChartVisualizerComponent
     this.chartInitialized = true;
     this.changeDetectorRef.detectChanges();
   }
-}
-function of(undefined: undefined): any {
-  throw new Error('Function not implemented.');
 }

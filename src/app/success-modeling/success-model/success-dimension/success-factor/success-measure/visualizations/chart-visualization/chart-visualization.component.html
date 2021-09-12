@@ -1,6 +1,5 @@
 <div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
   <ng-container *ngIf="data$ | async; else noData">
-    {{ chartData$ | async | json }}
     <google-chart
       *ngIf="this.chartData"
       [title]="this.chartData.title"
