@@ -133,6 +133,7 @@ export const translations = {
       'choice-radarchart': 'Radar Chart',
       'choice-value': 'Value',
       'name-placeholder': 'Name',
+      'description-label': 'Description',
       'description-placeholder':
         'Describe your visualization here in more detail',
       'preview-title': 'Preview',

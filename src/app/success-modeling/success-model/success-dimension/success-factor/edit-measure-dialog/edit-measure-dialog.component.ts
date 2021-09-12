@@ -15,7 +15,7 @@ import {
 import { Query } from 'src/app/models/query.model';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { Store } from '@ngrx/store';
-
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
@@ -55,11 +55,71 @@ export class EditMeasureDialogComponent implements OnInit {
     ),
     KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
   };
+
+  measureForm: FormGroup;
+
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private ngrxStore: Store,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    const measure = this.data.measure;
+    this.measureForm = this.fb.group({
+      name: [measure.name],
+      description: [measure.description],
+      visualization: this.fb.group({
+        type: measure.visualization.type,
+        parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
+      }),
+      queries: this.fb.array([]),
+    });
+    // queries are dynamically added to the form
+    measure.queries.forEach((query) =>
+      this.formQueries.push(
+        this.fb.group({ name: [query.name], sql: [query.sql] }),
+      ),
+    );
+    switch (measure.visualization.type) {
+      case 'Chart':
+        this.formVisualizationParameters.push(
+          this.fb.group({
+            chartType: (measure.visualization as ChartVisualization)
+              .chartType,
+          }),
+        );
+        break;
+      case 'Value':
+        this.formVisualizationParameters.push(
+          this.fb.group({
+            unit: (measure.visualization as ValueVisualization).unit,
+          }),
+        );
+        break;
+      case 'KPI':
+        this.formVisualizationParameters.push(
+          this.fb.group({
+            operationsElements: (
+              measure.visualization as KpiVisualization
+            ).operationsElements,
+            operators: (measure.visualization as KpiVisualization)
+              .operators,
+          }),
+        );
+        break;
+    }
+    console.log(this.measureForm.value);
+  }
+
+  get formVisualizationParameters(): FormArray {
+    return this.measureForm.get(
+      'visualization.parameters',
+    ) as FormArray;
+  }
+
+  get formQueries(): FormArray {
+    return this.measureForm.get('queries') as FormArray;
+  }
 
   ngOnInit(): void {}
 
@@ -77,10 +137,12 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onAddQueryClicked(): void {
+    this.formQueries.push(this.fb.group({ name: [''], sql: [''] }));
     this.data.measure.queries.push(new Query('', ''));
   }
 
   onRemoveQueryClicked(): void {
+    this.formQueries.removeAt(this.formQueries.length - 1);
     this.data.measure.queries.pop();
   }
 

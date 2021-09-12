@@ -163,7 +163,7 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
-    let ngHttpOptions = {};
+    const ngHttpOptions = {};
 
     if (options.headers) {
       ngHttpOptions['headers'] = new HttpHeaders(options.headers);
