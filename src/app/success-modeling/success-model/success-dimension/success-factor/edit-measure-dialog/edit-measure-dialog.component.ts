@@ -82,29 +82,19 @@ export class EditMeasureDialogComponent implements OnInit {
     );
     switch (measure.visualization.type) {
       case 'Chart':
-        this.formVisualizationParameters.push(
-          this.fb.group({
-            chartType: (measure.visualization as ChartVisualization)
-              .chartType,
-          }),
+        this.buildParamsForChart(
+          (measure.visualization as ChartVisualization).chartType,
         );
         break;
       case 'Value':
-        this.formVisualizationParameters.push(
-          this.fb.group({
-            unit: (measure.visualization as ValueVisualization).unit,
-          }),
+        this.buildParamsForValue(
+          (measure.visualization as ValueVisualization).unit,
         );
         break;
       case 'KPI':
-        this.formVisualizationParameters.push(
-          this.fb.group({
-            operationsElements: (
-              measure.visualization as KpiVisualization
-            ).operationsElements,
-            operators: (measure.visualization as KpiVisualization)
-              .operators,
-          }),
+        this.buildParamsForKPI(
+          (measure.visualization as KpiVisualization)
+            .operationsElements,
         );
         break;
     }
@@ -131,6 +121,22 @@ export class EditMeasureDialogComponent implements OnInit {
       this.visualizationBuffer[this.data.measure.visualization.type] =
         this.data.measure.visualization;
     }
+    this.measureForm
+      .get('visualization.type')
+      .setValue(visualizationType);
+    switch (visualizationType) {
+      case 'KPI':
+        this.buildParamsForKPI();
+        break;
+      case 'Value':
+        this.buildParamsForValue();
+        break;
+      case 'Chart':
+        this.buildParamsForChart();
+        break;
+    }
+    console.log(this.measureForm.value, '1');
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.data.measure.visualization =
       this.visualizationBuffer[visualizationType];
@@ -237,5 +243,61 @@ export class EditMeasureDialogComponent implements OnInit {
       }
     }
     return params as string[];
+  }
+
+  private buildParamsForChart(chartType?: string): void {
+    this.formVisualizationParameters.clear();
+    this.formVisualizationParameters.push(
+      this.fb.group({
+        chartType,
+      }),
+    );
+  }
+  private buildParamsForValue(unit?: string): void {
+    this.formVisualizationParameters.clear();
+    this.formVisualizationParameters.push(
+      this.fb.group({
+        unit,
+      }),
+    );
+  }
+  private buildParamsForKPI(
+    operationsElements?:
+      | KpiVisualizationOperand[]
+      | KpiVisualizationOperator[],
+  ): void {
+    this.formVisualizationParameters.clear();
+    // no initial terms set so we add one operand
+    if (!operationsElements || operationsElements.length === 0) {
+      this.formVisualizationParameters.push(
+        this.fb.group({
+          type: ['Operand'],
+          selection: [''],
+        }),
+      );
+      return;
+    }
+
+    // populate the form
+    for (let i = 0; i < operationsElements.length; i++) {
+      const term = operationsElements.find(
+        (element) => element.index === i,
+      ); // we need to search because the elements might not be sorted by index
+      if (i % 2 === 0) {
+        this.formVisualizationParameters.push(
+          this.fb.group({
+            type: ['Operand'],
+            selection: [term.name],
+          }),
+        );
+      } else {
+        this.formVisualizationParameters.push(
+          this.fb.group({
+            type: ['Operator'],
+            selection: [term.name],
+          }),
+        );
+      }
+    }
   }
 }
