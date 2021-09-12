@@ -20,6 +20,7 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  Validators,
 } from '@angular/forms';
 export interface DialogData {
   measure: Measure;
@@ -71,8 +72,9 @@ export class EditMeasureDialogComponent implements OnInit {
   ) {
     const measure = this.data.measure;
     this.measureForm = this.fb.group({
-      name: [measure.name],
-      description: [measure.description],
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      name: [measure.name, Validators.required],
+      description: [measure.description, Validators.maxLength(500)],
       visualization: this.fb.group({
         type: measure.visualization.type,
         parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
@@ -115,20 +117,21 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
-  ngOnInit(): void {
-    this.measureForm.valueChanges.subscribe((data) => {
-      console.log(data);
-    });
+  controlsForFirstStepInValid() {
+    return (
+      this.measureForm.get('name').invalid ||
+      this.measureForm.get('description').invalid ||
+      this.measureForm.get('visualization').invalid
+    );
   }
 
+  controlsForSecondStepInValid() {
+    return this.measureForm.get('queries').invalid;
+  }
+
+  ngOnInit(): void {}
+
   onVisualizationChange(visualizationType: string): void {
-    if (
-      this.data.measure.visualization &&
-      this.data.measure.visualization.type
-    ) {
-      this.visualizationBuffer[this.data.measure.visualization.type] =
-        this.data.measure.visualization;
-    }
     this.measureForm
       .get('visualization.type')
       .setValue(visualizationType);

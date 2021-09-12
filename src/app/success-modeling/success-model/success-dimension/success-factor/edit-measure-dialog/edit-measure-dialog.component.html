@@ -19,7 +19,10 @@
 <form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
   <mat-stepper linear #stepper>
     <!-- first step: choose a name and visualization type -->
-    <mat-step editable="true">
+    <mat-step
+      [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
+      editable="true"
+    >
       <!-- name of the success measure -->
       <mat-form-field>
         <input
@@ -201,7 +204,10 @@
       </mat-dialog-actions>
     </mat-step>
     <!-- second step: query input -->
-    <mat-step editable="true">
+    <mat-step
+      editable="true"
+      [color]="controlsForSecondStepInValid() ? 'warn' : 'primary'"
+    >
       <!-- query hints based on message description from the service -->
       <mat-accordion id="hints-accordion">
         <mat-expansion-panel>
@@ -351,7 +357,13 @@
                 | translate
             }}
           </button>
-          <button mat-raised-button color="primary" type="submit">
+          <!-- submits the form -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="measureForm.invalid"
+          >
             {{ 'shared.elements.save-label' | translate }}
           </button>
         </mat-dialog-actions>
