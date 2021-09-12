@@ -139,6 +139,8 @@ export const translations = {
       'description-label': 'Beschreibung',
       'description-placeholder':
         'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
+      'next-label': 'Nächste Seite',
+      'back-label': 'Zurück',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',

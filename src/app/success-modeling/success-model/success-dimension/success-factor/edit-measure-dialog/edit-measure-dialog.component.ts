@@ -15,7 +15,12 @@ import {
 import { Query } from 'src/app/models/query.model';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { Store } from '@ngrx/store';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+} from '@angular/forms';
 export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
@@ -142,6 +147,42 @@ export class EditMeasureDialogComponent implements OnInit {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.data.measure.visualization =
       this.visualizationBuffer[visualizationType];
+  }
+
+  onSubmit(): void {
+    if (!this.measureForm.valid) {
+      console.log('you shall not pass');
+      return;
+    }
+    console.log('subission', this.measureForm.value);
+    const measure = this.measureForm.value;
+    this.data.measure = {
+      ...this.data.measure,
+      description: measure.description,
+      name: measure.name,
+      queries: measure.queries,
+    } as Measure;
+    switch (measure.visualization.type) {
+      case 'Value':
+        const unit = measure.visualization.parameters[0].unit;
+        this.data.measure.visualization = new ValueVisualization(
+          unit,
+        );
+        break;
+      case 'Chart':
+        const chartType =
+          measure.visualization.parameters[0].chartType;
+        this.data.measure.visualization = new ChartVisualization(
+          chartType,
+        );
+        break;
+      case 'KPI':
+        this.data.measure.visualization = new KpiVisualization(
+          measure.measure.visualization.parameters,
+        );
+        break;
+    }
+    this.dialogRef.close(this.data.measure);
   }
 
   onAddQueryClicked(): void {
@@ -271,12 +312,7 @@ export class EditMeasureDialogComponent implements OnInit {
     this.formVisualizationParameters.clear();
     // no initial terms set so we add one operand
     if (!operationsElements || operationsElements.length === 0) {
-      this.formVisualizationParameters.push(
-        this.fb.group({
-          type: ['Operand'],
-          selection: [''],
-        }),
-      );
+      this.formVisualizationParameters.push(new FormControl(''));
       return;
     }
 
@@ -287,17 +323,11 @@ export class EditMeasureDialogComponent implements OnInit {
       ); // we need to search because the elements might not be sorted by index
       if (i % 2 === 0) {
         this.formVisualizationParameters.push(
-          this.fb.group({
-            type: ['Operand'],
-            selection: [term.name],
-          }),
+          this.fb.group(new FormControl([term.name])),
         );
       } else {
         this.formVisualizationParameters.push(
-          this.fb.group({
-            type: ['Operator'],
-            selection: [term.name],
-          }),
+          new FormControl([term.name]),
         );
       }
     }

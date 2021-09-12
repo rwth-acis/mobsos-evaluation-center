@@ -16,7 +16,7 @@
 </div>
 
 <!-- content -->
-<form [formGroup]="measureForm">
+<form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
   <mat-stepper linear #stepper>
     <!-- first step: choose a name and visualization type -->
     <mat-step editable="true">
@@ -62,6 +62,7 @@
               | translate
           }}</mat-label>
           <mat-select
+            required
             formControlName="type"
             (selectionChange)="onVisualizationChange($event.value)"
           >
@@ -75,7 +76,9 @@
         </mat-form-field>
         <!-- different options based on visualization type -->
         <div formArrayName="parameters">
-          <ng-container [ngSwitch]="data.measure.visualization.type">
+          <ng-container
+            [ngSwitch]="measureForm.get('visualization.type').value"
+          >
             <mat-form-field *ngSwitchCase="'Value'" formGroupName="0">
               <input
                 matInput
@@ -90,7 +93,7 @@
             <div *ngSwitchCase="'Chart'" formGroupName="0">
               <mat-form-field>
                 <mat-label>Type</mat-label>
-                <mat-select formControlName="chartType">
+                <mat-select formControlName="chartType" required>
                   <mat-option
                     *ngFor="let item of chartTypeChoices | keyvalue"
                     [value]="item.key"
@@ -104,40 +107,44 @@
             <ng-container *ngSwitchCase="'KPI'">
               <ng-container
                 *ngIf="
-                  data.measure.visualization.operationsElements
+                  measureForm.get('visualization.parameters')?.value
                     ?.length > 0 &&
-                    data.measure.visualization.operationsElements[0]
-                      .name !== '';
+                    measureForm.get('visualization.parameters')
+                      .value[0].name !== '';
                   else noQueries
                 "
               >
                 <ng-container
                   *ngFor="
-                    let termPart of $any(data.measure.visualization)
-                      .operationsElements;
+                    let termPart of measureForm.get(
+                      'visualization.parameters'
+                    ).controls;
                     let i = index
                   "
                 >
                   <mat-form-field *ngIf="i % 2 === 0">
                     <mat-label>Operand</mat-label>
                     <mat-select
-                      [ngModel]="$any(termPart).name"
+                      [formControl]="termPart"
                       (selectionChange)="
                         onKpiOperandChange($event.value, i)
                       "
                     >
                       <mat-option
-                        *ngFor="let query of data.measure.queries"
-                        [value]="query.name"
+                        *ngFor="
+                          let query of measureForm.get('queries')
+                            .controls
+                        "
+                        [value]="query.get('name')?.value"
                       >
-                        {{ query.name }}
+                        {{ query.get('name').value }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
                   <mat-form-field *ngIf="i % 2 !== 0">
                     <mat-label>Operator</mat-label>
                     <mat-select
-                      [ngModel]="$any(termPart).name"
+                      [formControl]="termPart"
                       (selectionChange)="
                         onKpiOperatorChange($event.value, i)
                       "
@@ -167,8 +174,8 @@
                   color="warn"
                   (click)="onRemoveOperationClicked()"
                   [disabled]="
-                    $any(data.measure.visualization)
-                      .operationsElements.length <= 1
+                    measureForm.get('visualization.parameters')?.value
+                      .length <= 1
                   "
                 >
                   {{
@@ -186,7 +193,10 @@
 
       <mat-dialog-actions class="navig first">
         <button mat-stroked-button matStepperNext type="button">
-          Next
+          {{
+            'success-modeling.edit-measure-dialog.next-label'
+              | translate
+          }}
         </button>
       </mat-dialog-actions>
     </mat-step>
@@ -244,12 +254,14 @@
         </mat-expansion-panel>
       </mat-accordion>
       <!-- queries -->
-
       <ng-container
         *ngFor="let query of formQueries.controls; let i = index"
       >
         <mat-form-field>
           <input
+            [required]="
+              measureForm.get('visualization.type').value === 'KPI'
+            "
             matInput
             placeholder="{{
               'success-modeling.edit-measure-dialog.query-name-placeholder'
@@ -277,7 +289,9 @@
         </mat-form-field>
       </ng-container>
 
+      <!-- add querry button -->
       <button
+        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="primary"
         (click)="onAddQueryClicked()"
@@ -286,7 +300,9 @@
           'success-modeling.edit-measure-dialog.add-query' | translate
         }}
       </button>
+      <!-- remove query button -->
       <button
+        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="warn"
         (click)="onRemoveQueryClicked()"
@@ -300,10 +316,16 @@
 
       <mat-dialog-actions class="navig">
         <button mat-stroked-button matStepperPrevious type="button">
-          Back
+          {{
+            'success-modeling.edit-measure-dialog.back-label'
+              | translate
+          }}
         </button>
         <button mat-stroked-button matStepperNext type="button">
-          Next
+          {{
+            'success-modeling.edit-measure-dialog.next-label'
+              | translate
+          }}
         </button>
       </mat-dialog-actions>
     </mat-step>
@@ -324,13 +346,12 @@
         </div>
         <mat-dialog-actions class="navig">
           <button mat-stroked-button matStepperPrevious type="button">
-            Back
+            {{
+              'success-modeling.edit-measure-dialog.back-label'
+                | translate
+            }}
           </button>
-          <button
-            mat-raised-button
-            color="primary"
-            [mat-dialog-close]="data.measure"
-          >
+          <button mat-raised-button color="primary" type="submit">
             {{ 'shared.elements.save-label' | translate }}
           </button>
         </mat-dialog-actions>
