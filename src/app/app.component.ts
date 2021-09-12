@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -10,12 +9,9 @@ import {
 import 'oidc-client';
 import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
 import { environment } from '../environments/environment';
-import { NGXLogger } from 'ngx-logger';
 
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
-import { SwUpdate } from '@angular/service-worker';
-import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
@@ -31,7 +27,6 @@ import {
 } from './services/store.actions';
 import {
   EXPERT_MODE,
-  FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
@@ -118,7 +113,7 @@ export class AppComponent
   private silentSigninIntervalHandle: Timer;
 
   constructor(
-    public languageService: LanguageService, //public so that we can access it in the template
+    public languageService: LanguageService, // public so that we can access it in the template
     private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -142,7 +137,61 @@ export class AppComponent
     );
   }
 
-  ngAfterViewInit() {
+  ngOnInit(): void {
+    let sub = this.selectedGroupId$.subscribe((id) => {
+      this.selectedGroupId = id;
+    });
+    this.subscriptions$.push(sub);
+
+    const silentLoginFunc = () =>
+      this.userManager
+        .signinSilentCallback()
+        .then(() => {})
+        .catch(() => {
+          this.setUser(null);
+          console.error('Silent login failed');
+        });
+    void silentLoginFunc();
+
+    sub = this.user$
+      .pipe(distinctUntilKeyChanged('signedIn'))
+      .subscribe((user) => {
+        clearInterval(this.silentSigninIntervalHandle);
+        if (user?.signedIn) {
+          this.silentSigninIntervalHandle = setInterval(
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            silentLoginFunc,
+            environment.openIdSilentLoginInterval * 1000,
+          );
+        }
+      });
+    this.subscriptions$.push(sub);
+
+    if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
+      // Logging in dev mode
+      sub = this.ngrxStore
+        .pipe(map((store: StoreState) => store.Reducer))
+        .subscribe((state) => {
+          console.log(state);
+        });
+      this.subscriptions$.push(sub);
+
+      // sub = this.ngrxStore
+      //   .select(APPLICATION_WORKSPACE)
+      //   .subscribe((a) => {
+      //     console.log(a);
+      //   });
+      // this.subscriptions$.push(sub);
+    }
+  }
+
+  ngAfterViewInit(): void {
     const sub = this.ngrxStore
       .select(USER)
       .pipe(
@@ -202,59 +251,6 @@ export class AppComponent
   menuItemClicked(): void {
     if (this.mobileQuery.matches) {
       void this.sidenav.toggle(); // closes the menu if an item is clicked on mobile devices
-    }
-  }
-
-  ngOnInit(): void {
-    let sub = this.selectedGroupId$.subscribe((id) => {
-      this.selectedGroupId = id;
-    });
-    this.subscriptions$.push(sub);
-
-    const silentLoginFunc = () =>
-      this.userManager
-        .signinSilentCallback()
-        .then(() => {})
-        .catch(() => {
-          this.setUser(null);
-          console.error('Silent login failed');
-        });
-    silentLoginFunc();
-
-    sub = this.user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
-      .subscribe((user) => {
-        clearInterval(this.silentSigninIntervalHandle);
-        if (user?.signedIn) {
-          this.silentSigninIntervalHandle = setInterval(
-            silentLoginFunc,
-            environment.openIdSilentLoginInterval * 1000,
-          );
-        }
-      });
-    this.subscriptions$.push(sub);
-
-    if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
-        'OK',
-        { duration: 10000 },
-      );
-      // Logging in dev mode
-      sub = this.ngrxStore
-        .pipe(map((store: StoreState) => store.Reducer))
-        .subscribe((state) => {
-          console.log(state);
-        });
-      this.subscriptions$.push(sub);
-
-      // sub = this.ngrxStore
-      //   .select(APPLICATION_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
-      // this.subscriptions$.push(sub);
     }
   }
 
