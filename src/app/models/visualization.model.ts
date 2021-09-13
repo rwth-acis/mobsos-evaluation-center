@@ -1,16 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 export interface VisualizationCollection {
-  [key: string]: Visualization;
+  [query: string]: VisualizationData;
 }
-
 export interface VisualizationData {
-  [query: string]: VData;
-}
-export interface VData {
   fetchDate: string;
   data: any[][];
   error?: HttpErrorResponse;
+  loading?: boolean;
 }
 
 export class Visualization {

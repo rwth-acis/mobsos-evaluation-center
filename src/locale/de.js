@@ -26,7 +26,7 @@ export const translations = {
         'Einloggen um eine Community auszuwählen',
       'your-groups-hint': 'Deine Gruppen',
       'foreign-groups-hint': 'Andere Gruppen',
-       'pick-community-name':  'Wähle einen Gruppen Namen',
+      'pick-community-name': 'Wähle einen Gruppen Namen',
     },
     'language-selector': {
       'select-language': 'Sprache auswählen',
@@ -89,6 +89,8 @@ export const translations = {
         'Die Daten wurden am {{date}} vom Server geladen.',
       'fetch-error':
         ' Folgender Fehler ist beim Laden von rezenteren Daten aufgetreten: {{ error }}',
+      'refresh-data': 'Neu laden',
+      raw: 'Rohe Daten',
     },
     'community-workspace':
       'Arbeitsbereich der {{community}} Community',
@@ -134,6 +136,8 @@ export const translations = {
       'choice-radarchart': 'Netzdiagramm',
       'choice-value': 'Wert',
       'name-placeholder': 'Name',
+      'description-placeholder':
+        'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',
@@ -191,7 +195,9 @@ export const translations = {
         title: 'Fragenbogen entfernen?',
       },
       'no-questionnaires':
-        'Du hast noch keine Fragebögen ausgewählt. Aktiviere den Bearbeitungsmodus um welche hinzuzufügen.',
+        'Du hast noch keine Fragebögen ausgewählt. ',
+      'activate-edit':
+        'Aktiviere den Bearbeitungsmodus um welche hinzuzufügen.',
       'pick-questionnaire-dialog': {
         'add-measures':
           'Automatisch Messungen für die Antworten hinzufügen.',
@@ -220,7 +226,7 @@ export const translations = {
       'disconnect-project': 'Projekt trennen',
       'disconnect-project-prompt':
         'Bist du sicher, dass du das Project vom Model trennen möchtest?',
-      heading: 'Anforderungen',
+      heading: 'Anforderungen vom Requirements Bazaar',
       'no-project':
         'Dieses Modell ist zur Zeit mit keinem Projekt aus dem Requirements Bazaar verbunden. Klicke den Button um Anforderungen bearbeiten zu können.',
       'pick-reqbaz-project': {

@@ -1,0 +1,13 @@
+<p *ngIf="description">{{ description }}</p>
+<p *ngIf="fetchDate" class="text-muted">
+  {{
+    'success-modeling.visualization.fetch-info'
+      | translate: { date: fetchDate | date: 'short' }
+  }}
+</p>
+<p *ngIf="fetchError" class="text-muted">
+  {{
+    'success-modeling.visualization.fetch-error'
+      | translate: { error: data.error.error }
+  }}
+</p>

@@ -10,14 +10,14 @@ import {
 } from '../services/store.actions';
 import {
   MODEL_AND_CATALOG_LOADED,
-  _EDIT_MODE,
+  EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
-  _USER,
+  USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   SUCCESS_MODEL_IS_EMPTY,
 } from '../services/store.selectors';
@@ -42,6 +42,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../models/service.model';
 import { IQuestionnaire } from '../models/questionnaire.model';
+import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-success-modeling',
   templateUrl: './success-modeling.component.html',
@@ -66,8 +67,8 @@ import { IQuestionnaire } from '../models/questionnaire.model';
 })
 export class SuccessModelingComponent implements OnInit, OnDestroy {
   @Input() restricted = false;
-
-  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  production = environment.production;
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   successModelEmpty$ = this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY);
   showSuccessModellingView$ = combineLatest([
@@ -80,7 +81,7 @@ export class SuccessModelingComponent implements OnInit, OnDestroy {
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
 
   assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );

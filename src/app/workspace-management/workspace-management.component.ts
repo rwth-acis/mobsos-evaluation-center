@@ -10,6 +10,7 @@ import {
   setCommunityWorkspace,
   setNumberOfRequirements,
   setService,
+  storeRequirements,
   toggleEdit,
 } from '../services/store.actions';
 
@@ -18,8 +19,7 @@ import { User } from '../models/user.model';
 import { FormControl } from '@angular/forms';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
-  VISITORS_EXCEPT_USER,
-  _EDIT_MODE,
+  EDIT_MODE,
   IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   ROLE_IN_CURRENT_WORKSPACE,
@@ -27,7 +27,7 @@ import {
   SELECTED_SERVICE,
   _SERVICES,
   SUCCESS_MODEL,
-  _USER,
+  USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   APPLICATION_WORKSPACE,
   MODEL_AND_CATALOG_LOADED,
@@ -37,6 +37,7 @@ import {
   _SELECTED_SERVICE_NAME,
   _SELECTED_GROUP_ID,
   NUMBER_OF_REQUIREMENTS,
+  VISITORS,
 } from '../services/store.selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import {
@@ -44,6 +45,7 @@ import {
   filter,
   first,
   map,
+  switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
 import {
@@ -57,7 +59,7 @@ import { ServiceInformation } from '../models/service.model';
 import { ApplicationWorkspace } from '../models/workspace.model';
 import { GroupInformation } from '../models/community.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { VisualizationData } from '../models/visualization.model';
+import { VisualizationCollection } from '../models/visualization.model';
 import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
 import { Las2peerService } from '../services/las2peer.service';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
@@ -76,19 +78,19 @@ export class WorkspaceManagementComponent
   workspacesForServiceExceptActive$ = this.ngrxStore.select(
     ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   );
-  visitorsExcpetUser$ = this.ngrxStore.select(VISITORS_EXCEPT_USER);
+  visitors$ = this.ngrxStore.select(VISITORS);
   currentApplicationWorkspace$ = this.ngrxStore.select(
     APPLICATION_WORKSPACE,
   );
   services$ = this.ngrxStore.select(_SERVICES);
-  editMode$ = this.ngrxStore.select(_EDIT_MODE);
+  editMode$ = this.ngrxStore.select(EDIT_MODE);
   roleInWorkspace$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
   selectedOwner$ = this.ngrxStore.select(SELECTED_WORKSPACE_OWNER); // holds the owner of the workspace which the user wants to join
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER); // holds the owner of the current workspace object
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   numberOfRequirements$ = this.ngrxStore
     .select(NUMBER_OF_REQUIREMENTS)
     .pipe(map((n) => (n === 0 ? null : n)));
@@ -138,14 +140,14 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
 
     this.ngrxStore
-      .select(_EDIT_MODE)
+      .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-          this.ngrxStore.select(_USER),
+          this.ngrxStore.select(USER),
         ),
       )
       .subscribe(([editMode, groupId, owner, serviceName, user]) => {
@@ -188,24 +190,13 @@ export class WorkspaceManagementComponent
       if (mode !== this.checked) this.checked = mode;
     });
     this.subscriptions$.push(sub);
-    sub = this.successModel$.subscribe((model) => {
-      if (model?.reqBazProject) {
-        this.las2peer
-          .fetchRequirementsOnReqBaz(model.reqBazProject.categoryId)
-          .then((requirements: Requirement[]) => {
-            if (requirements) {
-              this.ngrxStore.dispatch(
-                setNumberOfRequirements({ n: requirements?.length }),
-              );
-            }
-          });
-      }
-    });
-    this.subscriptions$.push(sub);
   }
 
-  async onServiceSelected(service: ServiceInformation) {
-    const confirmation = await this.openClearWorkspaceDialog();
+  async onServiceSelected(
+    service: ServiceInformation,
+  ): Promise<void> {
+    const confirmation =
+      (await this.openClearWorkspaceDialog()) as boolean;
     if (confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
@@ -216,15 +207,16 @@ export class WorkspaceManagementComponent
     }
   }
 
-  onEditModeChanged() {
+  onEditModeChanged(): void {
     this.ngrxStore.dispatch(toggleEdit());
   }
 
   /**
    * Switch the workspace to that of another user
+   *
    * @param owner the owner of the workspace which we want to view
    */
-  onSwitchWorkspace(owner: string) {
+  onSwitchWorkspace(owner: string): void {
     this.ngrxStore.dispatch(
       joinWorkSpace({
         groupId: this.selectedGroupId,
@@ -236,10 +228,16 @@ export class WorkspaceManagementComponent
   }
 
   openBottomSheet(): void {
-    this._bottomSheet.open(BottomSheetComponent);
+    this._bottomSheet.open(BottomSheetComponent, {
+      autoFocus: false,
+    });
   }
 
-  onChangeRole(visitorName: string, role?: string, event?) {
+  onChangeRole(
+    visitorName: string,
+    role?: string,
+    event?: Event,
+  ): void {
     this.workspaceService.changeVisitorRole(
       visitorName,
       this.workspaceOwner,
@@ -249,7 +247,7 @@ export class WorkspaceManagementComponent
     event.stopPropagation();
   }
 
-  shareWorkspaceLink() {
+  shareWorkspaceLink(): void {
     if (this.selectedGroupId && this.selectedService && this.user) {
       const link =
         window.location.href +
@@ -259,16 +257,18 @@ export class WorkspaceManagementComponent
         this.selectedService.name +
         '/' +
         this.user.profile.preferred_username;
-      navigator.clipboard.writeText(link);
-      const message = this.translate.instant('copied-to-clipboard');
+      void navigator.clipboard.writeText(link);
+      const message = this.translate.instant(
+        'copied-to-clipboard',
+      ) as string;
       this._snackBar.open(message, null, { duration: 3000 });
     }
   }
 
-  openCopyWorkspaceDialog(owner: string) {
+  openCopyWorkspaceDialog(owner: string): void {
     const message = this.translate.instant(
       'success-modeling.copy-workspace-prompt',
-    );
+    ) as string;
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       minWidth: 300,
       data: message,
@@ -285,12 +285,22 @@ export class WorkspaceManagementComponent
     });
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
+    this.workspaceService.removeWorkspace(
+      this.user?.profile.preferred_username,
+      this.selectedServiceName,
+    );
+  }
+
   private openClearWorkspaceDialog() {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
     if (this.user) {
       const message = this.translate.instant(
         'success-modeling.discard-changes-prompt',
-      );
+      ) as string;
       const dialogRef = this.dialog.open(
         ConfirmationDialogComponent,
         {
@@ -300,15 +310,5 @@ export class WorkspaceManagementComponent
       );
       return dialogRef.afterClosed().toPromise();
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions$.forEach((subscription) => {
-      subscription.unsubscribe();
-    });
-    this.workspaceService.removeWorkspace(
-      this.user?.profile.preferred_username,
-      this.selectedServiceName,
-    );
   }
 }

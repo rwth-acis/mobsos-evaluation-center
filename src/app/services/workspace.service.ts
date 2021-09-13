@@ -2,6 +2,8 @@ import { Store } from '@ngrx/store';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
+  UserRole,
+  Visitor,
 } from '../models/workspace.model';
 import { setCommunityWorkspace } from './store.actions';
 import { Injectable, isDevMode } from '@angular/core';
@@ -13,16 +15,13 @@ import {
   isEmpty,
 } from 'lodash-es';
 import * as Y from 'yjs';
-import { UserRole, Visitor } from '../models/user.model';
+
 import { MeasureCatalog } from '../models/measure.catalog';
 import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
-import {
-  _COMMUNITY_WORKSPACE,
-  _SELECTED_SERVICE_NAME,
-} from './store.selectors';
+import { _COMMUNITY_WORKSPACE } from './store.selectors';
 import {
   catchError,
   distinctUntilChanged,
@@ -31,7 +30,7 @@ import {
   throttleTime,
   timeout,
 } from 'rxjs/operators';
-import { VisualizationData } from '../models/visualization.model';
+import { VisualizationCollection } from '../models/visualization.model';
 
 const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
@@ -117,7 +116,7 @@ export class WorkspaceService {
     selectedService: ServiceInformation,
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
-    visualizationData?: VisualizationData,
+    visualizationData?: VisualizationCollection,
   ) {
     if (!username) {
       throw new Error('user cannot be null');
@@ -191,21 +190,10 @@ export class WorkspaceService {
   }
 
   /**
-   * Helper function to get the current community workspace from yjs
-   * @param groupId group id of the current commnunity
-   * @returns community workspace object
-   */
-  private getCurrentCommunityWorkspaceFromYJS(
-    groupId: string,
-  ): CommunityWorkspace {
-    return cloneDeep(this.sharedDocument.getMap(groupId).toJSON());
-  }
-
-  /**
    * This fucntion stops synchronizing the workspace
    * @param groupId id of the current community
    */
-  stopSynchronizingWorkspace(groupId: string) {
+  stopSynchronizingWorkspace(groupId: string): void {
     if (groupId) {
       this.stopSync(groupId);
       this.communityWorkspace$.next({});
@@ -292,7 +280,7 @@ export class WorkspaceService {
     model?: SuccessModel,
     catalog?: MeasureCatalog,
     role?: UserRole,
-    vdata?: VisualizationData,
+    vdata?: VisualizationCollection,
   ) {
     if (!owner) {
       throw new Error('owner cannot be null');
@@ -463,7 +451,20 @@ export class WorkspaceService {
   }
 
   /**
+   * Helper function to get the current community workspace from yjs
+   *
+   * @param groupId group id of the current commnunity
+   * @returns community workspace object
+   */
+  private getCurrentCommunityWorkspaceFromYJS(
+    groupId: string,
+  ): CommunityWorkspace {
+    return cloneDeep(this.sharedDocument.getMap(groupId).toJSON());
+  }
+
+  /**
    * Recursively updates the values in the shared map to the changes made to the local object
+   *
    * @param obj The local object from which we want to update the changes
    * @param map our yjs map
    * @param init true if the local object has been initialized yet

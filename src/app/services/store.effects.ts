@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -12,39 +13,37 @@ import {
   filter,
   share,
   tap,
+  delay,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
+import { Questionnaire } from '../models/questionnaire.model';
 
-import { VData } from '../models/visualization.model';
+import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
-import { fetchMeasureCatalog } from './store.actions';
+import {
+  disableEdit,
+  fetchMeasureCatalog,
+  fetchSuccessModel,
+  resetFetchDate,
+} from './store.actions';
 import {
   _SELECTED_GROUP_ID,
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
-  _EDIT_MODE,
-  _USER,
+  USER,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
-  WORKSPACE_MODEL_XML,
   SUCCESS_MODEL_FROM_NETWORK,
   MEASURE_CATALOG_FROM_NETWORK,
   VISUALIZATION_DATA_FROM_QVS,
+  SUCCESS_MODEL_XML,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
 @Injectable()
 export class StateEffects {
-  constructor(
-    private actions$: Actions,
-    private l2p: Las2peerService,
-    private ngrxStore: Store,
-    private logger: NGXLogger,
-    private workspaceService: WorkspaceService,
-  ) {}
-
   // hardcoded map of current visualization calls to prevent sending a POST request multiple times
   // I will leave it here for the demo but should not be necessary. Removal should not cause any problems
   static visualizationCalls = {};
@@ -94,40 +93,20 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchGroups),
       mergeMap(() =>
-        forkJoin([
-          this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-            catchError((err) => {
-              this.logger.error(
-                'Could not groups services from Contact service:' +
-                  JSON.stringify(err),
-              );
-              return of(undefined);
-            }),
-          ),
-          // this.l2p.fetchMobSOSGroupsAndObserve().pipe(
-          //   catchError((err) => {
-          //     this.logger.error(
-          //       'Could not fetch groups from service MobSOS:' +
-          //         JSON.stringify(err),
-          //     );
-          //     return of(undefined);
-          //   }),
-          // ),
-        ]).pipe(
-          tap(([groupsFromContactService]) =>
-            this.ngrxStore.dispatch(
-              Action.transferMissingGroupsToMobSOS({
-                groupsFromContactService,
-                groupsFromMobSOS: null,
-              }),
-            ),
-          ),
-          map(([groupsFromContactService]) =>
+        this.l2p.fetchContactServiceGroupsAndObserve().pipe(
+          map((groupsFromContactService) =>
             Action.storeGroups({
               groupsFromContactService,
               groupsFromMobSOS: null,
             }),
           ),
+          catchError((err) => {
+            this.logger.error(
+              'Could not groups services from Contact service:' +
+                JSON.stringify(err),
+            );
+            return of(undefined);
+          }),
         ),
       ),
       catchError((err) => {
@@ -138,6 +117,14 @@ export class StateEffects {
     ),
   );
 
+  /** *****************************
+   * This effect is called whenever the user selects a new group
+   * In this case we do the following:
+   * - join the yjs room for that group
+   * - fetch the measure catalog for that group
+   * - reset the success model and fetch the new one
+   * - disable the edit mode
+   */
   setGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setGroup),
@@ -145,6 +132,11 @@ export class StateEffects {
       tap(({ groupId }) => {
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(fetchSuccessModel({ groupId }));
+        this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(() => of(Action.success())),
       catchError((err) => {
@@ -155,16 +147,61 @@ export class StateEffects {
     ),
   );
 
+  /** ****************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
-      filter(([{ service }, groupId]) => !!service),
-      switchMap(([{ service }, groupId]) =>
-        of(
-          Action.fetchSuccessModel({
-            groupId,
-            serviceName: service.name,
+      withLatestFrom(
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+      ),
+      filter(
+        ([{ service }, groupId, currentServiceName]) =>
+          !!service && service.name !== currentServiceName,
+      ),
+      tap(([{ service }, groupId]) => {
+        this.ngrxStore.dispatch(
+          Action.storeSuccessModel({ xml: undefined }),
+        );
+        this.ngrxStore.dispatch(
+          fetchSuccessModel({ groupId, serviceName: service.name }),
+        );
+        this.ngrxStore.dispatch(
+          Action.fetchMessageDescriptions({
+            serviceName: service?.name,
+          }),
+        );
+      }),
+      switchMap(() => of(Action.success())),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failure());
+      }),
+      share(),
+    ),
+  );
+
+  /** ****************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
+  fetchMessageDescriptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchMessageDescriptions),
+      filter(({ serviceName }) => !!serviceName),
+      switchMap(({ serviceName }) =>
+        this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
+          map((descriptions) =>
+            Action.storeMessageDescriptions(descriptions),
+          ),
+          catchError((err) => {
+            console.error(err);
+            return of(Action.failure());
           }),
         ),
       ),
@@ -249,11 +286,11 @@ export class StateEffects {
     ),
   );
 
-  saveModelAndCatalogResult$ = createEffect(() =>
+  saveSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(Action.saveCatalogSuccess),
+      ofType(Action.saveCatalogSuccess, Action.updateSuccessModel),
       withLatestFrom(
-        this.ngrxStore.select(WORKSPACE_MODEL_XML),
+        this.ngrxStore.select(SUCCESS_MODEL_XML),
         this.ngrxStore.select(_SELECTED_GROUP_ID),
         this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
@@ -278,6 +315,10 @@ export class StateEffects {
     ),
   );
 
+  /**
+   * @deprecated MobSOS groups might be outdated. We should not rely on them.
+   * Thus there is no need to transfer groups from the contact service to mobsos
+   */
   transferMissingGroupsToMobSOS$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.transferMissingGroupsToMobSOS),
@@ -309,12 +350,10 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.saveModel),
       withLatestFrom(
-        combineLatest([
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-        ]),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
       ),
-      switchMap(([action, [groupId, serviceName]]) =>
+      switchMap(([action, groupId, serviceName]) =>
         this.l2p
           .saveSuccessModelAndObserve(
             groupId,
@@ -412,22 +451,48 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      mergeMap(({ groupId, serviceName }) =>
+      withLatestFrom(this.ngrxStore.select(SELECTED_SERVICE)),
+      mergeMap(([{ groupId, serviceName }, service]) =>
         this.l2p
-          .fetchSuccessModelAsObservable(groupId, serviceName)
+          .fetchSuccessModelAsObservable(
+            groupId,
+            serviceName ? serviceName : service?.name,
+          )
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
                 xml,
               }),
             ),
-            catchError((err) => {
+            catchError(() => {
               return of(Action.storeSuccessModel({ xml: null }));
             }),
           ),
       ),
-      catchError((err) => {
+      catchError(() => {
         return of(Action.storeSuccessModel({ xml: null }));
+      }),
+      share(),
+    ),
+  );
+
+  fetchQuestionnaires$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchQuestionnaires),
+      mergeMap(() =>
+        this.l2p.fetchMobSOSQuestionnairesAndObserve().pipe(
+          map((questionnaires: Questionnaire[]) =>
+            Action.storeQuestionnaires({
+              questionnaires,
+            }),
+          ),
+          catchError((err: Error) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError(() => {
+        return of(Action.failure());
       }),
       share(),
     ),
@@ -438,25 +503,50 @@ export class StateEffects {
       ofType(Action.addGroup),
       mergeMap(({ groupName }) =>
         this.l2p.addGroup(groupName).pipe(
-          map((id: string) => ({
-            id,
-            name: groupName,
-            member: true,
-          })),
-          tap((group: GroupInformation) =>
-            this.l2p.saveGroupsToMobSOS([group]),
-          ),
-          map((group: GroupInformation) =>
-            group?.id
+          map((id: string) =>
+            id
               ? Action.storeGroup({
-                  group,
+                  group: {
+                    id,
+                    name: groupName,
+                    member: true,
+                  },
                 })
               : Action.failureResponse(null),
           ),
-          catchError((err) => {
+          catchError((err: HttpErrorResponse) => {
             return of(Action.failureResponse({ reason: err }));
           }),
         ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  addRequirementsBazarProject$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addReqBazarProject),
+      delay(1000),
+      map(() => Action.updateSuccessModel()),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  refreshVisualization$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.refreshVisualization),
+      tap(({ query }) => {
+        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
+        this.ngrxStore.dispatch(resetFetchDate({ query }));
+      }),
+      mergeMap(({ query, queryParams }) =>
+        of(Action.fetchVisualizationData({ query, queryParams })),
       ),
       catchError((err) => {
         return of(Action.failureResponse({ reason: err }));
@@ -472,7 +562,7 @@ export class StateEffects {
         this.ngrxStore.select(SUCCESS_MODEL_FROM_NETWORK),
         this.ngrxStore.select(MEASURE_CATALOG_FROM_NETWORK),
         this.ngrxStore.select(SELECTED_SERVICE),
-        this.ngrxStore.select(_USER),
+        this.ngrxStore.select(USER),
         this.ngrxStore.select(VISUALIZATION_DATA_FROM_QVS),
       ),
       switchMap(([action, model, catalog, service, user, vdata]) =>
@@ -556,6 +646,14 @@ export class StateEffects {
       share(),
     ),
   );
+
+  constructor(
+    private actions$: Actions,
+    private l2p: Las2peerService,
+    private ngrxStore: Store,
+    private logger: NGXLogger,
+    private workspaceService: WorkspaceService,
+  ) {}
 }
 
 const ONE_MINUTE_IN_MS = 60000;
@@ -564,11 +662,14 @@ const REFETCH_INTERVAL =
     ? environment.visualizationRefreshInterval
     : 30) * ONE_MINUTE_IN_MS;
 /**
+ *
  * Determines whether a new visualization data request should be made
+ *
  * @param dataForQuery the current data from the store
  * @returns true if we should make a new request
+ *
  */
-function shouldFetch(dataForQuery: VData): boolean {
+function shouldFetch(dataForQuery: VisualizationData): boolean {
   if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old

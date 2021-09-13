@@ -38,44 +38,26 @@
     </mat-slide-toggle>
 
     <div id="workspace-controls" *ngIf="editMode$ | async">
-      <button
-        mat-icon-button
-        (click)="openBottomSheet()"
-        aria-label="Requirements Bazaar"
-        matTooltip="{{
-          'success-modeling.reqbaz.tooltip' | translate
-        }}"
-      >
-        <mat-icon
-          color="primary"
-          svgIcon="reqbaz-logo"
-          [matBadge]="numberOfRequirements$ | async"
-          matBadgeColor="accent"
+      <ng-container *ngIf="visitors$ | async as visitors">
+        <button
+          mat-icon-button
+          aria-label="Spectators"
+          [matMenuTriggerFor]="groupMenu"
+          matTooltip="{{
+            'success-modeling.visitors.tooltip' | translate
+          }}"
         >
-        </mat-icon>
-      </button>
-
-      <button
-        mat-icon-button
-        aria-label="Spectators"
-        [matMenuTriggerFor]="groupMenu"
-        matTooltip="{{
-          'success-modeling.visitors.tooltip' | translate
-        }}"
-      >
-        <mat-icon
-          color="primary"
-          [matBadge]="
-            (visitorsExcpetUser$ | async)?.length === 0
-              ? null
-              : (visitorsExcpetUser$ | async)?.length
-          "
-          matBadgeColor="accent"
-        >
-          group
-        </mat-icon>
-      </button>
-
+          <mat-icon
+            color="primary"
+            [matBadge]="
+              visitors?.length === 0 ? null : visitors?.length
+            "
+            matBadgeColor="accent"
+          >
+            group
+          </mat-icon>
+        </button>
+      </ng-container>
       <button
         mat-icon-button
         aria-label="Workspaces"
@@ -137,17 +119,15 @@
 
 <!-- menu for visitors -->
 <mat-menu #groupMenu>
-  <ng-container
-    *ngIf="visitorsExcpetUser$ | async as foreign_visitors"
-  >
+  <ng-container *ngIf="visitors$ | async as visitors">
     <mat-card-content class="card">
       <h3>{{ 'success-modeling.visitors.heading' | translate }}</h3>
-      <div *ngIf="foreign_visitors?.length === 0" class="popover-row">
+      <div *ngIf="visitors?.length === 0" class="popover-row">
         {{ 'success-modeling.visitors.no-visitors' | translate }}
       </div>
       <mat-list role="list">
         <mat-list-item
-          *ngFor="let visitor of foreign_visitors"
+          *ngFor="let visitor of visitors"
           role="listitem"
         >
           <div id="visitor">

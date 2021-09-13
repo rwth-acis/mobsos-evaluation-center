@@ -68,14 +68,14 @@ import { EditFactorDialogComponent } from './success-dimension/edit-factor-dialo
 import { PickMeasureDialogComponent } from './success-factor/pick-measure-dialog/pick-measure-dialog.component';
 import { EditMeasureDialogComponent } from './success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { QuestionnairesComponent } from './success-modeling/questionnaires/questionnaires.component';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { PickQuestionnaireDialogComponent } from './success-modeling/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { DeleteQuestionnaireDialogComponent } from './success-modeling/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { SqlTableComponent } from './success-factor/edit-measure-dialog/sql-table/sql-table.component';
 import { RequirementsListComponent } from './success-modeling/requirements-list/requirements-list.component';
-// tslint:disable-next-line:max-line-length
+// eslint-disable-next-line max-len
 import { PickReqbazProjectComponent } from './success-modeling/requirements-list/pick-reqbaz-project/pick-reqbaz-project.component';
 import {
   HttpClientModule,
@@ -94,7 +94,13 @@ import { VisitorComponent } from './visitor/visitor.component';
 import { PickUsernameDialogComponent } from './pick-username-dialog/pick-username-dialog.component';
 import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
-
+import { VisualizationInfoComponent } from './visualizations/visualization-info/visualization-info.component';
+import { RequirementsComponent } from './requirements/requirements.component';
+import { WorkspaceComponent } from './workspace/workspace.component';
+import { MatSortModule } from '@angular/material/sort';
+import { RawDataDialogComponent } from './raw-data-dialog/raw-data-dialog.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -105,7 +111,7 @@ class ImportLoader implements TranslateLoader {
   }
 }
 
-export function createTranslateLoader() {
+export function createTranslateLoader(): ImportLoader {
   return new ImportLoader();
 }
 
@@ -173,6 +179,10 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     PickUsernameDialogComponent,
     BottomSheetComponent,
     AddCommunityDialogComponent,
+    VisualizationInfoComponent,
+    RequirementsComponent,
+    WorkspaceComponent,
+    RawDataDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -204,6 +214,9 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatButtonModule,
     MatBottomSheetModule,
     MatTabsModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatTableModule,
     MatFormFieldModule,
     MatProgressBarModule,
     MatSelectModule,

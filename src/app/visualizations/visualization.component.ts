@@ -1,23 +1,13 @@
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import {
-  Component,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { fetchVisualizationData } from '../services/store.actions';
 import { ServiceInformation } from '../models/service.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Measure } from '../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
-import {
-  MEASURE,
-  SELECTED_SERVICE,
-} from '../services/store.selectors';
-import { VData } from '../models/visualization.model';
+import { SELECTED_SERVICE } from '../services/store.selectors';
 import { filter } from 'rxjs/operators';
 
 export interface VisualizationComponent {
@@ -36,31 +26,31 @@ export interface VisualizationComponent {
 export class BaseVisualizationComponent
   implements VisualizationComponent, OnInit, OnDestroy
 {
-  constructor(
-    protected ngrxStore: Store,
-    protected dialog: MatDialog,
-  ) {}
   measure: Measure;
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   measure$: Observable<Measure>;
-  data$: Observable<VData>;
+
   error$: Observable<HttpErrorResponse>;
   subscriptions$: Subscription[] = [];
 
   service: ServiceInformation;
   visualizationInitialized = false;
-  public serviceNotFoundInMobSOS = false;
-  error: HttpErrorResponse;
-  refreshVisualizationHandle;
 
-  static htmlDecode(input) {
+  error: HttpErrorResponse;
+
+  constructor(
+    protected ngrxStore: Store,
+    protected dialog: MatDialog,
+  ) {}
+
+  static htmlDecode(input: string): string {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
   }
 
-  protected static applyCompatibilityFixForVisualizationService(
+  static applyCompatibilityFixForVisualizationService(
     query: string,
-  ) {
+  ): string {
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     if (!query) return;
     query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
@@ -68,10 +58,10 @@ export class BaseVisualizationComponent
     return query;
   }
 
-  protected applyVariableReplacements(
+  applyVariableReplacements(
     query: string,
     service: ServiceInformation,
-  ) {
+  ): string {
     let servicesString = '(';
     const services = [];
     if (!this.service) {
@@ -88,7 +78,31 @@ export class BaseVisualizationComponent
     return query?.replace('$SERVICES$', servicesString);
   }
 
-  ngOnInit() {
+  getParamsForQuery(query: string): string[] {
+    if (!this.service || this.service?.mobsosIDs?.length === 0) {
+      // just for robustness
+      // should not be called when there are no service IDs stored in MobSOS anyway
+      return [];
+    }
+    const serviceRegex = /\$SERVICE\$/g;
+    const matches = query?.match(serviceRegex);
+    const params = [];
+    if (matches) {
+      for (const match of matches) {
+        // for now we just use the first ID
+        // support for multiple IDs is not implemented yet
+        params.push(this.service.mobsosIDs.slice(-1)[0].agentID);
+      }
+    }
+    return params as string[];
+  }
+
+  fetchVisualizationData(query: string, queryParams: string[]): void {
+    this.ngrxStore.dispatch(
+      fetchVisualizationData({ query, queryParams }),
+    );
+  }
+  ngOnInit(): void {
     this.service$
       .pipe(filter((service) => !!service))
       .subscribe((service) => {
@@ -110,11 +124,12 @@ export class BaseVisualizationComponent
     );
   }
 
-  openErrorDialog(error?: HttpErrorResponse) {
+  openErrorDialog(error?: HttpErrorResponse): void {
     if (error) {
       this.error = error;
     }
-    let errorText = 'Http status code: ' + this.error.status + '\n';
+    let errorText =
+      'Http status code: ' + this.error.status.toString() + '\n';
     if (this.error.error) {
       errorText += this.error.statusText;
 
@@ -131,33 +146,5 @@ export class BaseVisualizationComponent
       width: '80%',
       data: { error: errorText },
     });
-  }
-
-  protected getParamsForQuery(query: string) {
-    if (!this.service || this.service?.mobsosIDs?.length === 0) {
-      // just for robustness
-      // should not be called when there are no service IDs stored in MobSOS anyway
-      return [];
-    }
-    const serviceRegex = /\$SERVICE\$/g;
-    const matches = query?.match(serviceRegex);
-    const params = [];
-    if (matches) {
-      for (const match of matches) {
-        // for now we just use the first ID
-        // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs.slice(-1)[0].agentID);
-      }
-    }
-    return params;
-  }
-
-  protected fetchVisualizationData(
-    query: string,
-    queryParams: string[],
-  ) {
-    this.ngrxStore.dispatch(
-      fetchVisualizationData({ query, queryParams }),
-    );
   }
 }

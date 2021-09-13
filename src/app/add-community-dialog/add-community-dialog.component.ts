@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -12,12 +13,18 @@ import {
 } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription } from 'rxjs';
-import { map, withLatestFrom } from 'rxjs/operators';
+import { of } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  Subscription,
+} from 'rxjs';
+import { catchError, map, timeout } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
-import { addGroup, storeGroup } from '../services/store.actions';
+import { storeGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
-import { USER_GROUPS } from '../services/store.selectors';
+import { GROUPS, USER_GROUPS } from '../services/store.selectors';
 
 @Component({
   selector: 'app-add-community-dialog',
@@ -28,10 +35,16 @@ export class AddCommunityDialogComponent
   implements OnInit, OnDestroy
 {
   form = new FormControl('', [
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     Validators.required,
     this.forbiddenNameValidator(),
   ]);
-
+  errorSubject$: BehaviorSubject<{
+    groupName: string;
+    message: string;
+  }> = new BehaviorSubject<{ groupName: string; message: string }>(
+    undefined,
+  );
   groups: GroupInformation[] = [];
   subscriptions$: Subscription[] = [];
   error$: Observable<string>;
@@ -51,52 +64,86 @@ export class AddCommunityDialogComponent
         this.groups = groups;
       });
     this.subscriptions$.push(sub);
-    this.error$ = this.form.valueChanges.pipe(
-      withLatestFrom(this.ngrxStore.select(USER_GROUPS)),
-      map(([input, groups]) => {
-        const group = groups.find((g) => g.name === input);
-        let error: string;
-        if (group) {
-          error = 'This name is already taken';
-        } else if (input?.trim().length === 0) {
-          error = 'Group name cannot be empty';
-        }
-        return error;
-      }),
+    this.error$ = combineLatest([
+      this.form.valueChanges,
+      this.ngrxStore.select(GROUPS),
+      this.errorSubject$.asObservable(),
+    ]).pipe(
+      map(
+        ([input, groups, error]: [
+          string,
+          GroupInformation[],
+          { groupName: string; message: string },
+        ]) => {
+          if (input?.trim().length === 0) {
+            return 'Group name cannot be empty';
+          }
+
+          if (error?.groupName === input?.trim()) {
+            return 'This name is already taken';
+          }
+
+          const group = groups.find((g) => g.name === input);
+          if (group) {
+            return 'This name is already taken';
+          }
+          return undefined;
+        },
+      ),
     );
   }
 
-  onSubmit() {
-    const name = this.form.value?.trim();
-    const group = this.groups.find((g) => g.name === name);
-    if (group) {
-      this.error = 'This group name is already taken';
-    } else {
-      this.error = null;
-      this.ngrxStore.dispatch(addGroup({ groupName: name }));
-      this.effects.addGroup$.subscribe((res) => {
+  onSubmit(): void {
+    const name = (this.form.value as string)?.trim();
+
+    const sub = this.effects.addGroup$
+      .pipe(
+        timeout(3000),
+        catchError(() =>
+          of({ reason: 'Service request Timeout', status: 504 }),
+        ),
+      )
+      .subscribe((res) => {
         if ('group' in res && res.group.id) {
           this._snackBar.open('Group added', null, {
             duration: 1000,
           });
-        } else if ('reason' in res) {
-          this._snackBar.open(res.reason.message, 'Ok');
+          sub.unsubscribe();
+          this.dialogRef.close();
+        } else if (
+          'reason' in res &&
+          (res.reason as HttpErrorResponse).status === 400
+        ) {
+          this.ngrxStore.dispatch(
+            storeGroup({
+              group: { name, id: 'unknown', member: false },
+            }),
+          );
+
+          this.errorSubject$.next({
+            groupName: name,
+            message: 'This group name is already taken',
+          });
+          sub.unsubscribe();
+          return;
+        } else {
+          console.error(res);
+          sub.unsubscribe();
+          return;
         }
-        this.dialogRef.close();
       });
-    }
   }
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const group = this.groups?.find(
-        (g) => g.name === control.value?.trim(),
+        (g) => g.name === (control.value as string)?.trim(),
       );
       return !control.value || !!group
-        ? { forbiddenName: { value: control.value } }
+        ? { forbiddenName: { value: control.value as string } }
         : null;
     };
   }
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

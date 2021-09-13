@@ -2,20 +2,17 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  isDevMode,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import 'oidc-client';
 import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
-import { MediaMatcher } from '@angular/cdk/layout';
 import { environment } from '../environments/environment';
 import { NGXLogger } from 'ngx-logger';
 
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
-import * as Hammer from 'hammerjs';
 import { SwUpdate } from '@angular/service-worker';
 import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -23,7 +20,6 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
-  addGroup,
   fetchGroups,
   fetchMeasureCatalog,
   fetchServices,
@@ -33,18 +29,15 @@ import {
   toggleExpertMode,
 } from './services/store.actions';
 import {
-  _EXPERT_MODE,
+  EXPERT_MODE,
   FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_GROUP,
-  _USER,
+  USER,
   USER_GROUPS,
-  _EDIT_MODE,
-  SUCCESS_MODEL,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
-  APPLICATION_WORKSPACE,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
@@ -62,7 +55,6 @@ import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
-import { StateEffects } from './services/store.effects';
 import { StoreState } from './models/state.model';
 
 // workaround for openidconned-signin
@@ -87,24 +79,23 @@ export class AppComponent implements OnInit, OnDestroy {
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
+
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void;
   environment = environment;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
-  private userManager = new UserManager({});
-  private silentSigninIntervalHandle: Timer;
 
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
-  expertMode$ = this.ngrxStore.select(_EXPERT_MODE);
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
   role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore
-    .select(_USER)
+    .select(USER)
     .pipe(filter((user) => !!user));
   foreignGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(FOREIGN_GROUPS);
@@ -118,8 +109,10 @@ export class AppComponent implements OnInit, OnDestroy {
         user && (!!userGroups || !!foreignGroups),
     ),
   );
-
   selectedGroupId: string; // used to show the selected group in the form field
+
+  private userManager = new UserManager({});
+  private silentSigninIntervalHandle: Timer;
 
   constructor(
     private logger: NGXLogger,
@@ -134,6 +127,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
   ) {
+    if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
+    }
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -159,38 +160,38 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  useLanguage(language: string) {
+  useLanguage(language: string): void {
     this.logger.debug(`Changing language to ${language}`);
     this.languageService.changeLanguage(language);
   }
 
-  toggleExpertMode() {
+  toggleExpertMode(): void {
     this.ngrxStore.dispatch(toggleExpertMode());
   }
 
-  setUser(user: User) {
+  setUser(user: User): void {
     this.ngrxStore.dispatch(storeUser({ user }));
   }
 
-  onGroupSelected(groupId: string) {
+  onGroupSelected(groupId: string): void {
     if (groupId) {
       this.ngrxStore.dispatch(setGroup({ groupId }));
     }
   }
 
-  menuItemClicked() {
+  menuItemClicked(): void {
     if (this.mobileQuery.matches) {
-      this.sidenav.toggle();
+      void this.sidenav.toggle();
     }
   }
 
   ngOnInit(): void {
     let sub = this.ngrxStore
-      .select(_USER)
+      .select(USER)
       .pipe(
         filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
-        filter((user) => user?.signedIn),
+        filter((user) => !!user?.signedIn),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
@@ -224,27 +225,29 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     // swipe navigation
-    const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    hammertime.on('panright', (event) => {
-      if (this.mobileQuery.matches) {
-        if (event.center.x >= 1 && event.center.x <= 20) {
-          this.sidenav.open();
-        }
-      }
-    });
-    hammertime.on('panleft', () => {
-      if (this.mobileQuery.matches) {
-        this.sidenav.close();
-      }
-    });
+    // const hammertime = new Hammer(this.elementRef.nativeElement, {});
+    // hammertime.on('panright', (event) => {
+    //   if (this.mobileQuery.matches) {
+    //     if (event.center.x >= 1 && event.center.x <= 20) {
+    //       this.sidenav.open();
+    //     }
+    //   }
+    // });
+    // hammertime.on('panleft', () => {
+    //   if (this.mobileQuery.matches) {
+    //     this.sidenav.close();
+    //   }
+    // });
     if (this.swUpdate.isEnabled) {
-      sub = this.swUpdate.available.subscribe(async () => {
-        const message = await this.translate
-          .get('app.update.message')
-          .toPromise();
-        const reloadAction = await this.translate
-          .get('app.update.reload')
-          .toPromise();
+      sub = this.swUpdate.available.subscribe((): void => {
+        const message = this.translate.instant(
+          'app.update.message',
+        ) as string;
+
+        const reloadAction = this.translate.instant(
+          'app.update.reload',
+        ) as string;
+
         const snackBarRef = this.snackBar.open(
           message,
           reloadAction,
@@ -281,7 +284,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     this.subscriptions$.push(sub);
 
-    if (isDevMode() || !environment.production) {
+    if (!environment.production) {
       // Logging in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
@@ -299,8 +302,8 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openAddCommunityDialog() {
-    const dialogRef = this.dialog.open(AddCommunityDialogComponent, {
+  openAddCommunityDialog(): void {
+    this.dialog.open(AddCommunityDialogComponent, {
       data: null,
       disableClose: true,
     });

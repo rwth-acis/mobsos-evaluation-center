@@ -1,11 +1,11 @@
-<mat-tab-group [dynamicHeight]="true">
+<mat-tab-group dynamicHeight="true" animationDuration="0ms">
   <mat-tab label="{{ 'raw-edit.tabs.measures' | translate }}">
     <ng-container
       *ngIf="canSaveMeasureCatalog$ | async; else notReady"
     >
       <ngx-monaco-editor
         id="measure-editor"
-        (onInit)="registerMeasureEditor($event)"
+        (init)="registerMeasureEditor($event)"
         [options]="editorOptions"
         [(ngModel)]="measureCatalogXml"
       ></ngx-monaco-editor>
@@ -54,7 +54,7 @@
     <ng-container *ngIf="canSaveSuccessModel$ | async; else notReady">
       <ngx-monaco-editor
         id="model-editor"
-        (onInit)="registerSuccessModelEditor($event)"
+        (init)="registerSuccessModelEditor($event)"
         [options]="editorOptions"
         [(ngModel)]="successModelXml"
       ></ngx-monaco-editor>

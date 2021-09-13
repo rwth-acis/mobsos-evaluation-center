@@ -1,8 +1,9 @@
 import { MeasureCatalog } from './measure.catalog';
+import { Requirement } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
 import { SuccessModel } from './success.model';
-import { Visitor } from './user.model';
-import { VisualizationData } from './visualization.model';
+
+import { VisualizationCollection } from './visualization.model';
 
 export interface ApplicationWorkspace {
   createdAt: string;
@@ -11,7 +12,8 @@ export interface ApplicationWorkspace {
   model: SuccessModel;
   catalog: MeasureCatalog;
   service: ServiceInformation;
-  visualizationData: VisualizationData;
+  visualizationData: VisualizationCollection;
+  requirements?: Requirement[];
 }
 
 export interface UserWorkspace {
@@ -21,4 +23,13 @@ export interface UserWorkspace {
 export interface CommunityWorkspace {
   // user ID is key
   [key: string]: UserWorkspace;
+}
+export class Visitor {
+  constructor(public username: string, public role: UserRole) {}
+}
+
+export enum UserRole {
+  SPECTATOR = 'spectator',
+  EDITOR = 'editor',
+  LURKER = 'lurker',
 }

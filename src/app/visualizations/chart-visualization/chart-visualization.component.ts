@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseVisualizationComponent } from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
+  EXPERT_MODE,
   MEASURE,
+  RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
@@ -13,28 +16,17 @@ import {
   first,
   map,
   mergeMap,
-  switchMap,
-  tap,
-  throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, Observable, Subscription } from 'rxjs';
-import { Measure } from 'src/app/models/measure.model';
+import { Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
-  VData,
-  Visualization,
   VisualizationData,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import { GoogleChart } from 'src/app/models/chart.model';
-import { ServiceInformation } from 'src/app/models/service.model';
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { refreshVisualization } from 'src/app/services/store.actions';
+import { RawDataDialogComponent } from 'src/app/raw-data-dialog/raw-data-dialog.component';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -48,11 +40,17 @@ export class ChartVisualizerComponent
   @Input() measureName: string;
 
   query$: Observable<string>;
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
 
   query: string; // local copy of the sql query
   chartData: GoogleChart;
   chartInitialized = false;
   visualization: ChartVisualization;
+  data$: Observable<VisualizationData>;
+  dataIsLoading$: Observable<boolean>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
+
+  formatters = [];
 
   subscriptions$: Subscription[] = [];
   constructor(
@@ -68,7 +66,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     // selects the measure from the measure catalog
     this.measure$ = this.ngrxStore
       .select(MEASURE, this.measureName)
@@ -103,6 +101,9 @@ export class ChartVisualizerComponent
     let sub = this.error$.subscribe((err) => {
       this.error = err;
     });
+    this.dataIsLoading$ = this.data$.pipe(
+      map((data) => data === undefined || data?.loading),
+    );
     this.subscriptions$.push(sub);
     sub = this.data$
       .pipe(
@@ -114,6 +115,7 @@ export class ChartVisualizerComponent
         this.prepareChart(dataTable, measure.visualization);
       });
     this.subscriptions$.push(sub);
+
     sub = this.measure$
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
@@ -129,18 +131,55 @@ export class ChartVisualizerComponent
     this.subscriptions$.push(sub);
   }
 
+  fadeInAnimation(): string {
+    if (this.chartInitialized) {
+      return 'opacity: 1;transition: opacity 1s ease-out;';
+    } else {
+      return 'opacity: 0;';
+    }
+  }
+
+  openRawDataDialog(data: any[][]): void {
+    this.dialog.open(RawDataDialogComponent, {
+      data,
+    });
+  }
+
+  onRefreshClicked(query: string): void {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
+  }
+
   /**
    * Prepares chart for given measure
+   *
    * @param measure success measure
+   *
    */
   private prepareChart(
     dataTable: any[][],
     visualization: Visualization,
   ) {
+    this.formatters = [];
     visualization = visualization as ChartVisualization;
     this.error = null;
     const labelTypes = dataTable[1];
-    const rows = dataTable.slice(2) as any[][];
+    for (let i = 0; i < labelTypes.length; i++) {
+      if (labelTypes[i] === 'datetime' || labelTypes[i] === 'date') {
+        this.formatters.push({
+          formatter: new google.visualization.DateFormat({
+            formatType: 'long',
+          }),
+          colIndex: i,
+        });
+      }
+    }
+
+    const rows = dataTable.slice(2);
     this.chartData = new GoogleChart(
       '',
       (visualization as ChartVisualization).chartType,
@@ -158,13 +197,5 @@ export class ChartVisualizerComponent
       },
     );
     // if (this.chartData) this.visualizationInitialized = true;
-  }
-
-  fadeInAnimation() {
-    if (this.chartInitialized) {
-      return 'opacity: 1;transition: opacity 1s ease-out;';
-    } else {
-      return 'opacity: 0;';
-    }
   }
 }

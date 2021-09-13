@@ -4,13 +4,15 @@ declare global {
       las2peerWebConnectorUrl: string;
       yJsWebsocketUrl: string;
       openIdClientId: string;
-      production: boolean;
+      production: string;
     };
   }
 }
 
 export const environment = {
-  production: window.env.production || true,
+  production: window.env.production
+    ? window.env.production.toLocaleLowerCase() === 'true'
+    : true,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',

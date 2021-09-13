@@ -1,23 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { createReducer, on } from '@ngrx/store';
 import { MeasureCatalog } from '../models/measure.catalog';
 import { Measure } from '../models/measure.model';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
-import { VisualizationData } from '../models/visualization.model';
-import {
-  ApplicationWorkspace,
-  CommunityWorkspace,
-} from '../models/workspace.model';
+import { VisualizationCollection } from '../models/visualization.model';
+import { CommunityWorkspace } from '../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
-import { UserRole, Visitor } from '../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { isEmpty } from 'lodash-es';
-import { ReqbazProject } from '../models/reqbaz.model';
+import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
+import { ServiceCollection } from '../models/service.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -39,10 +36,23 @@ const _Reducer = createReducer(
     Actions.storeGroups,
     (state, { groupsFromContactService, groupsFromMobSOS }) => ({
       ...state,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       groups: mergeGroupData(
         { ...state.groups },
         groupsFromContactService,
         groupsFromMobSOS,
+      ),
+    }),
+  ),
+
+  on(
+    Actions.storeMessageDescriptions,
+    (state, { descriptions, serviceName }) => ({
+      ...state,
+      services: addServiceDescriptions(
+        state.services,
+        descriptions,
+        serviceName,
       ),
     }),
   ),
@@ -138,6 +148,10 @@ const _Reducer = createReducer(
   on(Actions.addReqBazarProject, (state, { project }) => ({
     ...state,
     communityWorkspace: addReqBazarProject(state, project),
+    successModel: {
+      ...state.successModel,
+      reqBazProject: project,
+    } as SuccessModel,
   })),
   on(Actions.removeReqBazarProject, (state) => ({
     ...state,
@@ -146,6 +160,7 @@ const _Reducer = createReducer(
   on(Actions.storeRequirements, (state, { requirements }) => ({
     ...state,
     requirements,
+    communityWorkspace: updateRequirements(state, requirements),
   })),
   on(Actions.storeGroup, (state, { group }) => ({
     ...state,
@@ -205,6 +220,15 @@ const _Reducer = createReducer(
       state.selectedServiceName,
     ),
   })),
+  on(Actions.removeMeasureFromCatalog, (state, props) => ({
+    ...state,
+    communityWorkspace: removeMeasureFromCatalog(
+      props.name,
+      state.communityWorkspace,
+      state.currentWorkSpaceOwner,
+      state.selectedServiceName,
+    ),
+  })),
   on(Actions.editMeasure, (state, props) => ({
     ...state,
     communityWorkspace: updateMeasure(
@@ -212,6 +236,7 @@ const _Reducer = createReducer(
       state.currentWorkSpaceOwner,
       state.selectedServiceName,
       props,
+      props.catalogOnly,
     ),
   })),
   on(Actions.editMeasureInCatalog, (state, props) => ({
@@ -233,7 +258,15 @@ const _Reducer = createReducer(
       props,
     ),
   })),
-  on(Actions.removeMeasure, (state, { name }) => ({
+  on(Actions.resetFetchDate, (state, { query }) => ({
+    ...state,
+    visualizationData: resetFetchDateForQuery(
+      state.visualizationData,
+      query,
+    ),
+  })),
+
+  on(Actions.removeMeasureFromModel, (state, { name }) => ({
     ...state,
     communityWorkspace: removeMeasure(
       state.communityWorkspace,
@@ -305,7 +338,7 @@ function removeReqBazarProject(state: AppState) {
 }
 
 function updateVisualizationData(
-  currentVisualizationData: VisualizationData,
+  currentVisualizationData: VisualizationCollection,
   props: {
     data?: any[][];
     query?: string;
@@ -321,12 +354,14 @@ function updateVisualizationData(
       data: props.data,
       fetchDate: new Date().toISOString(),
       error: null,
+      loading: false,
     };
   } else {
     currentVisualizationData[props.query] = {
       ...currentVisualizationData[props.query],
       error: props?.error,
       fetchDate: new Date().toISOString(),
+      loading: false,
     };
   }
 
@@ -338,14 +373,14 @@ function updateVisualizationData(
  *
  * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
  * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
- *            {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
+ * {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
  */
 function mergeServiceData(
-  serviceCollection,
+  serviceCollection: ServiceCollection,
   servicesFromL2P,
   messageDescriptions,
   servicesFromMobSOS,
-) {
+): ServiceCollection {
   serviceCollection = { ...serviceCollection };
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
@@ -698,7 +733,8 @@ function updateMeasure(
   const successModel = appWorkspace.model;
   // update the measure catalog
 
-  delete measureCatalog.measures[props.oldMeasureName];
+  // commented out because of an issue with success modeling service - ONLY HOTFIX
+  // delete measureCatalog.measures[props.oldMeasureName];
   measureCatalog.measures[props.measure.name] = props.measure;
   if (catalogOnly) {
     return copy;
@@ -706,13 +742,14 @@ function updateMeasure(
 
   // update the success model
   let factors = successModel.dimensions[props.dimensionName];
-  factors = factors.map((factor) =>
+  factors = factors.map((factor: SuccessFactor) =>
     factor.name === props.factorName
-      ? updateMeasureInFactor(
-          factor,
-          props.measure,
-          props.oldMeasureName,
-        )
+      ? {
+          ...factor,
+          measures: factor.measures.map((m: string) =>
+            m === props.oldMeasureName ? props.measure.name : m,
+          ),
+        }
       : factor,
   );
   successModel.dimensions[props.dimensionName] = factors;
@@ -792,7 +829,10 @@ function getWorkspaceByUserAndService(
   user: string,
   service: string,
 ) {
-  if (!Object.keys(communityWorkspace).includes(user)) {
+  if (
+    !communityWorkspace ||
+    !Object.keys(communityWorkspace).includes(user)
+  ) {
     return;
   }
   const userWorkspace = communityWorkspace[user];
@@ -802,18 +842,96 @@ function getWorkspaceByUserAndService(
   return userWorkspace[service];
 }
 function removeVisualizationData(
-  visualizationData: VisualizationData,
+  visualizationData: VisualizationCollection,
   query: string,
-): VisualizationData {
+): VisualizationCollection {
   const copy = { ...visualizationData };
   delete copy[query];
   return copy;
 }
-function addGroup(group: GroupInformation, groups: GroupCollection) {
+function addGroup(
+  group: GroupInformation,
+  groups: GroupCollection,
+): GroupCollection {
   if (!group?.id) {
     return groups;
   }
-  const copy = cloneDeep(groups);
+  const copy = cloneDeep(groups) as GroupCollection;
   copy[group.id] = group;
+  return copy;
+}
+function removeMeasureFromCatalog(
+  measureName: string,
+  communityWorkspace: CommunityWorkspace,
+  owner: string,
+  selectedServiceName: string,
+): CommunityWorkspace {
+  if (!measureName) return communityWorkspace;
+  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    selectedServiceName,
+  );
+  if (!appWorkspace) return communityWorkspace;
+  const catalog = appWorkspace.catalog;
+
+  delete catalog.measures[measureName];
+  return copy;
+}
+
+function updateRequirements(
+  state: AppState,
+  requirements: Requirement[],
+) {
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    state.currentWorkSpaceOwner,
+    state.selectedServiceName,
+  );
+  if (!appWorkspace) return state.communityWorkspace;
+  appWorkspace.requirements = requirements;
+  return copy;
+}
+function addServiceDescriptions(
+  services: ServiceCollection,
+  descriptions: { [key: string]: string },
+  serviceName: string,
+) {
+  const copy = cloneDeep(services) as ServiceCollection;
+  if (!serviceName) return services;
+  if (serviceName in copy) {
+    copy[serviceName] = {
+      ...copy[serviceName],
+      serviceMessageDescriptions: descriptions,
+    };
+  }
+  return copy;
+}
+function replaceValueInObject<T>(obj: object, key: string, value: T) {
+  if (!(key in obj)) return obj;
+  const copy = cloneDeep(obj);
+
+  copy[key] = value;
+  return copy;
+}
+
+function resetFetchDateForQuery(
+  visualizationData: VisualizationCollection,
+  query: string,
+): VisualizationCollection {
+  if (!(query in visualizationData)) return visualizationData;
+  const copy = cloneDeep(
+    visualizationData,
+  ) as VisualizationCollection;
+
+  copy[query] = {
+    ...copy[query],
+    fetchDate: undefined,
+    loading: true,
+  };
   return copy;
 }

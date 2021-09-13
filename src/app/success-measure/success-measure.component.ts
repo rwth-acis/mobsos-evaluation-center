@@ -18,13 +18,13 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { select, Store } from '@ngrx/store';
 import {
-  _EDIT_MODE,
+  EDIT_MODE,
   MEASURE,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';
 import {
   editMeasure,
-  removeMeasure,
+  removeMeasureFromModel,
 } from '../services/store.actions';
 import { Measure } from '../models/measure.model';
 import { Observable, Subscription } from 'rxjs';
@@ -41,9 +41,7 @@ import {
   templateUrl: './success-measure.component.html',
   styleUrls: ['./success-measure.component.scss'],
 })
-export class SuccessMeasureComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() measureName: string;
   @Input() service: ServiceInformation;
   @Input() canDelete = false;
@@ -73,19 +71,20 @@ export class SuccessMeasureComponent
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),
       );
-    const sub = this.measure$.subscribe((measure) => {
-      this.measure = cloneDeep(measure);
-    });
+    const sub = this.measure$
+      .pipe(distinctUntilChanged())
+      .subscribe((measure) => {
+        this.measure = cloneDeep(measure);
+      });
     this.subscriptions$.push(sub);
   }
-
-  ngOnChanges(changes: SimpleChanges): void {}
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
   async onEditClicked(event: MouseEvent) {
+    const oldMeasureName = this.measure.name;
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -97,19 +96,24 @@ export class SuccessMeasureComponent
         factorName: this.factorName,
       },
     });
+
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.ngrxStore.dispatch(
         editMeasure({
           measure: result,
           factorName: this.factorName,
-          oldMeasureName: this.measure.name,
+          oldMeasureName: oldMeasureName,
           dimensionName: this.dimensionName,
+          catalogOnly: false,
         }),
       );
-      this.measure.name = result.name;
-      this.measure.queries = result.queries;
-      this.measure.visualization = result.visualization;
+      this.measure = {
+        ...this.measure,
+        name: result.name,
+        queries: result.queries,
+        visualization: result.visualization,
+      } as Measure;
     }
 
     event.stopPropagation();
@@ -126,10 +130,11 @@ export class SuccessMeasureComponent
     const measure = this.measure;
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.ngrxStore.dispatch(removeMeasure({ name: measure.name }));
+      this.ngrxStore.dispatch(
+        removeMeasureFromModel({ name: measure.name }),
+      );
       // this.measureDelete.emit();
     }
-
     $event.stopPropagation();
   }
 }

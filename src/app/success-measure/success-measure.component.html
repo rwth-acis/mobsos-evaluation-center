@@ -1,13 +1,25 @@
 <div id="measure-header">
-  <button
-    *ngIf="!preview && (canEdit$ | async)"
-    mat-icon-button
-    color="primary"
-    (click)="onEditClicked($event)"
-    id="edit-button"
-  >
-    <mat-icon>edit</mat-icon>
-  </button>
+  <ng-container *ngIf="!preview && (canEdit$ | async)">
+    <button
+      mat-icon-button
+      matTooltipShowDelay="0"
+      matTooltip="{{
+        'success-factor.remove-measure-tooltip' | translate
+      }}"
+      (click)="onDeleteClicked($event)"
+    >
+      <mat-icon color="warn">remove_circle_outline</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      color="primary"
+      (click)="onEditClicked($event)"
+      id="edit-button"
+    >
+      <mat-icon>edit</mat-icon>
+    </button>
+  </ng-container>
+
   <h4 *ngIf="measure && !preview">
     {{ measure.name }}
   </h4>
@@ -25,7 +37,7 @@
   <div *ngIf="measure$ | async as measureAsync">
     <div [ngSwitch]="measureAsync.visualization.type">
       <app-kpi-visualization
-        [measure]="measureAsync"
+        [measureName]="measureAsync.name"
         [service]="service"
         *ngSwitchCase="'KPI'"
       ></app-kpi-visualization>

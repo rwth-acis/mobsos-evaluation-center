@@ -14,11 +14,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURE,
+  RESTRICTED_MODE,
+  ROLE_IN_CURRENT_WORKSPACE,
   SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import { Observable, Subscription } from 'rxjs';
-import { VData } from 'src/app/models/visualization.model';
+import { VisualizationData } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -31,6 +33,7 @@ import {
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
+import { refreshVisualization } from 'src/app/services/store.actions';
 
 @Component({
   selector: 'app-value-visualization',
@@ -43,10 +46,11 @@ export class ValueVisualizationComponent
 {
   @Input() measureName: string;
 
-  data$: Observable<VData>;
+  data$: Observable<VisualizationData>;
   measure$: Observable<Measure>;
   query$: Observable<string>;
   value$: Observable<string>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   service$: Observable<ServiceInformation> = this.ngrxStore
     .select(SELECTED_SERVICE)
     .pipe(
@@ -55,8 +59,7 @@ export class ValueVisualizationComponent
     );
 
   subscriptions$: Subscription[] = [];
-
-  service: ServiceInformation;
+  dataIsLoading$: Observable<boolean>;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -94,18 +97,29 @@ export class ValueVisualizationComponent
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
       filter((query) => !!query),
-      mergeMap((query) =>
-        this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
+      mergeMap(
+        (query) =>
+          this.ngrxStore.select(
+            VISUALIZATION_DATA_FOR_QUERY,
+            query,
+          ) as Observable<VisualizationData>,
       ),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
-
+    this.dataIsLoading$ = this.data$.pipe(
+      map((data) => data === undefined || data?.loading),
+    );
     this.value$ = this.data$.pipe(
-      map((visualizationData) => visualizationData?.data),
+      map(
+        (visualizationData: VisualizationData) =>
+          visualizationData?.data,
+      ),
       filter((data) => !!data),
       map((data) =>
-        data.slice(-1)[0].length === 0 ? 0 : data.slice(-1)[0][0],
+        data.slice(-1)[0].length === 0
+          ? '0'
+          : (data.slice(-1)[0][0] as string),
       ),
     );
 
@@ -122,5 +136,14 @@ export class ValueVisualizationComponent
         super.fetchVisualizationData(query, queryParams);
       });
     this.subscriptions$.push(sub);
+  }
+
+  onRefreshClicked(query: string): void {
+    this.ngrxStore.dispatch(
+      refreshVisualization({
+        query,
+        queryParams: this.getParamsForQuery(query),
+      }),
+    );
   }
 }

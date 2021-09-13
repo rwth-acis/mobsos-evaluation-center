@@ -13,39 +13,21 @@
       >
         <mat-label>Community</mat-label>
         <mat-select
+          *ngIf="(userGroups$ | async)?.length > 0"
           [(ngModel)]="selectedGroupId"
           (selectionChange)="onGroupSelected($event.value)"
         >
-          <ng-container *ngIf="(userGroups$ | async)?.length > 0">
-            <div class="sub-header" mat-subheader>
-              {{
-                'app.community-selector.your-groups-hint' | translate
-              }}
-            </div>
-            <mat-option
-              class="mat-body-strong"
-              *ngFor="let group of userGroups$ | async"
-              [value]="group.id"
-            >
-              {{ group.name }}
-            </mat-option>
-            <mat-divider></mat-divider>
-          </ng-container>
-          <ng-container *ngIf="(foreignGroups$ | async)?.length > 0">
-            <div class="sub-header" mat-subheader>
-              {{
-                'app.community-selector.foreign-groups-hint'
-                  | translate
-              }}
-            </div>
-            <mat-option
-              *ngFor="let group of foreignGroups$ | async"
-              [value]="group.id"
-            >
-              {{ group.name }}
-            </mat-option>
-          </ng-container>
+          <mat-option
+            class="mat-body-strong"
+            *ngFor="let group of userGroups$ | async"
+            [value]="group.id"
+          >
+            {{ group.name }}
+          </mat-option>
         </mat-select>
+        <span *ngIf="(userGroups$ | async)?.length === 0"
+          >You are not part of any community yet</span
+        >
       </mat-form-field>
 
       <mat-nav-list>
@@ -135,11 +117,7 @@
         <mat-icon>menu</mat-icon>
       </button>
       <h2 slot="title">
-        {{
-          mobileQuery.matches
-            ? 'MobSOS EC'
-            : 'MobSOS Evaluation Center'
-        }}
+        {{ mobileQuery.matches ? 'MobSOS EC' : title }}
       </h2>
     </las2peer-frontend-statusbar>
     <mat-progress-bar

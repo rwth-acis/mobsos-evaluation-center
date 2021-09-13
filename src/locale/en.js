@@ -25,7 +25,7 @@ export const translations = {
       'select-community-hint': 'Login to select your community',
       'your-groups-hint': 'Your Groups',
       'foreign-groups-hint': 'Foreign Groups',
-      'pick-community-name':  'Pick a unique community name',
+      'pick-community-name': 'Pick a unique community name',
     },
     'language-selector': {
       'select-language': 'Select Language',
@@ -86,6 +86,8 @@ export const translations = {
         'Showing data fetched on {{date}} from the server ',
       'fetch-error':
         ' The following error was encountered, while fetching more recent data: {{ error }}',
+      'refresh-data': 'Refresh',
+      raw: 'Raw data fetched from server',
     },
     'community-workspace': 'Workspace of the {{community}} Community',
     'community-success-model':
@@ -131,6 +133,8 @@ export const translations = {
       'choice-radarchart': 'Radar Chart',
       'choice-value': 'Value',
       'name-placeholder': 'Name',
+      'description-placeholder':
+        'Describe your visualization here in more detail',
       'preview-title': 'Preview',
       'query-name-placeholder': 'Query Name',
       'query-placeholder': 'SQL',
@@ -188,7 +192,8 @@ export const translations = {
         title: 'Remove Questionnaire?',
       },
       'no-questionnaires':
-        'You have not picked any questionnaires yet. Activate the edit mode to add one.',
+        'You have not picked any questionnaires yet.',
+      'activate-edit': ' Activate the edit mode to add one.',
       'pick-questionnaire-dialog': {
         'add-measures':
           'Automatically add measures for questionnaire answers.',
@@ -217,7 +222,7 @@ export const translations = {
       'disconnect-project': 'Disconnect Project',
       'disconnect-project-prompt':
         'Are you sure that you want to disconnect the project from the model?',
-      heading: 'Requirements',
+      heading: 'Requirements from the Requirements Bazaar',
       'no-project':
         'This model is currently not connected to any Requirements Bazaar project. Click the button edit requirements.',
       'pick-reqbaz-project': {

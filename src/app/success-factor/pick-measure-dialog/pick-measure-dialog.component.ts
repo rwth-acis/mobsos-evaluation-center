@@ -17,8 +17,8 @@ import { Store } from '@ngrx/store';
 import {
   addMeasureToCatalog,
   addMeasureToFactor,
-  editMeasure,
   editMeasureInCatalog,
+  removeMeasureFromCatalog,
 } from 'src/app/services/store.actions';
 import { Measure } from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
@@ -27,14 +27,13 @@ import { Query } from 'src/app/models/query.model';
 import { MatAccordion } from '@angular/material/expansion';
 import { isEmpty } from 'lodash-es';
 import {
-  MEASURE,
   MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
 import { ConfirmationDialogComponent } from 'src/app/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 export interface DialogData {
   measures: Measure[];
@@ -59,6 +58,9 @@ export class PickMeasureDialogComponent implements OnInit {
       !isEmpty(measures) ? Object.values(measures) : [],
     ),
     map((measures) => (measures?.length > 0 ? measures : undefined)),
+    map((measures) =>
+      measures?.sort((a, b) => a.name?.localeCompare(b.name)),
+    ),
   );
   service: ServiceInformation;
 
@@ -131,7 +133,7 @@ export class PickMeasureDialogComponent implements OnInit {
     }
   }
 
-  async deleteMeasure(measureIndex: number) {
+  async deleteMeasure(measure: Measure) {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
     );
@@ -141,8 +143,9 @@ export class PickMeasureDialogComponent implements OnInit {
     });
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.data.measures.splice(measureIndex, 1);
-      this.measuresChanged.emit(this.data.measures);
+      this.ngrxStore.dispatch(
+        removeMeasureFromCatalog({ name: measure.name }),
+      );
     }
   }
 }

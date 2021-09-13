@@ -20,7 +20,7 @@ describe('WorkspaceManagementComponent', () => {
   let component: WorkspaceManagementComponent;
   let fixture: ComponentFixture<WorkspaceManagementComponent>;
   const initialState = INITIAL_APP_STATE;
-  // tslint:disable-next-line: prefer-const
+  // eslint-disable-next-line prefer-const
   let actions$: Observable<any>;
   beforeEach(async () => {
     await TestBed.configureTestingModule({

@@ -1,11 +1,10 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
-import { IQuestionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import { User } from './user.model';
-import { VisualizationData } from './visualization.model';
+import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
 
 /**
@@ -18,9 +17,8 @@ export interface AppState {
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
-  questionnaires: IQuestionnaire[];
-  messageDescriptions: object;
-  visualizationData: VisualizationData;
+  messageDescriptions: any;
+  visualizationData: VisualizationCollection;
   successModel: SuccessModel;
   successModelInitialized: boolean;
   measureCatalog: MeasureCatalog;
@@ -29,8 +27,6 @@ export interface AppState {
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
-  restricted: boolean;
-  numberOfRequirements: number;
   requirements: Requirement[];
 }
 
@@ -41,7 +37,6 @@ export const INITIAL_APP_STATE: AppState = {
   selectedGroupId: undefined,
   selectedServiceName: undefined,
   editMode: false,
-  questionnaires: [],
   messageDescriptions: undefined,
   visualizationData: {},
   measureCatalog: undefined,
@@ -52,8 +47,6 @@ export const INITIAL_APP_STATE: AppState = {
   expertMode: false,
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
-  restricted: false,
-  numberOfRequirements: 0,
   requirements: undefined,
 };
 /**

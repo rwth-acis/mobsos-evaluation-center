@@ -15,15 +15,14 @@ import { TranslateService } from '@ngx-translate/core';
 import { EditFactorDialogComponent } from '../success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { Store } from '@ngrx/store';
 import {
-  _EDIT_MODE,
+  EDIT_MODE,
   MEASURES,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from '../services/store.selectors';
 import {
   editFactorInDimension,
-  removeFactor,
-  removeMeasure,
+  removeMeasureFromModel,
 } from '../services/store.actions';
 import { SuccessFactor } from '../models/success.model';
 import { MeasureMap } from '../models/measure.catalog';
@@ -110,25 +109,6 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         }),
       );
     }
-
-    const sub = dialogRef.componentInstance.measuresChanged.subscribe(
-      (measures) => {
-        const existingMeasures = [];
-        for (const measure of measures) {
-          this.measures[measure.name] = measure;
-          existingMeasures.push(measure.name);
-        }
-        // remove measures that have been deleted
-        for (const measureName of Object.keys(this.measures)) {
-          if (!existingMeasures.includes(measureName)) {
-            delete this.measures[measureName];
-          }
-        }
-        // console.error(this.measures);
-        this.sendMeasuresToDimension.emit(this.measures);
-      },
-    );
-    this.subscriptions$.push(sub);
   }
 
   async onEditClicked() {
@@ -152,7 +132,9 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
 
   private removeMeasure(measureIndex: number) {
     this.ngrxStore.dispatch(
-      removeMeasure({ name: this.factor.measures[measureIndex] }),
+      removeMeasureFromModel({
+        name: this.factor.measures[measureIndex],
+      }),
     );
     // this.factor.measures.splice(measureIndex, 1);
     // this.sendFactorToDimension.emit(this.factor);
