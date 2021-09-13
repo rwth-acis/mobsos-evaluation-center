@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -74,22 +75,24 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
 
   mobileQuery: MediaQueryList;
-  mobileQueryListener: () => void;
-  environment = environment;
+  mobileQueryListener: () => void; // what is this used for? Do we still need it?
+  environment = environment; // set it so that it can be accessed in the template
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
-  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+
   role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
   userGroups$: Observable<GroupInformation[]> =
@@ -97,44 +100,32 @@ export class AppComponent implements OnInit, OnDestroy {
   user$: Observable<User> = this.ngrxStore
     .select(USER)
     .pipe(filter((user) => !!user));
-  foreignGroups$: Observable<GroupInformation[]> =
-    this.ngrxStore.select(FOREIGN_GROUPS);
+
   groupsAreLoaded$: Observable<boolean> = combineLatest([
     this.userGroups$,
-    this.foreignGroups$,
     this.user$,
-  ]).pipe(
-    map(
-      ([userGroups, foreignGroups, user]) =>
-        user && (!!userGroups || !!foreignGroups),
-    ),
+  ]).pipe(map(([userGroups, user]) => user && !!userGroups));
+
+  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP).pipe(
+    filter((group) => !!group),
+    distinctUntilKeyChanged('id'),
+    map((group) => group.id),
   );
+
   selectedGroupId: string; // used to show the selected group in the form field
 
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
 
   constructor(
-    private logger: NGXLogger,
-    public languageService: LanguageService,
-    changeDetectorRef: ChangeDetectorRef,
-    private elementRef: ElementRef,
+    public languageService: LanguageService, //public so that we can access it in the template
+    private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
-    private swUpdate: SwUpdate,
     private snackBar: MatSnackBar,
-    private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
   ) {
-    if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
-        'OK',
-        { duration: 10000 },
-      );
-    }
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -143,7 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
     this.mobileQuery = window.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () =>
-      changeDetectorRef.detectChanges();
+      this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
       'change',
       this.mobileQueryListener,
@@ -151,42 +142,8 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.mobileQuery.removeEventListener(
-      'change',
-      this.mobileQueryListener,
-      false,
-    );
-    this.subscriptions$.forEach((sub) => sub.unsubscribe());
-  }
-
-  useLanguage(language: string): void {
-    this.logger.debug(`Changing language to ${language}`);
-    this.languageService.changeLanguage(language);
-  }
-
-  toggleExpertMode(): void {
-    this.ngrxStore.dispatch(toggleExpertMode());
-  }
-
-  setUser(user: User): void {
-    this.ngrxStore.dispatch(storeUser({ user }));
-  }
-
-  onGroupSelected(groupId: string): void {
-    if (groupId) {
-      this.ngrxStore.dispatch(setGroup({ groupId }));
-    }
-  }
-
-  menuItemClicked(): void {
-    if (this.mobileQuery.matches) {
-      void this.sidenav.toggle();
-    }
-  }
-
-  ngOnInit(): void {
-    let sub = this.ngrxStore
+  ngAfterViewInit() {
+    const sub = this.ngrxStore
       .select(USER)
       .pipe(
         filter((user) => !!user),
@@ -213,62 +170,55 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
+  }
 
-    sub = this.selectedGroup$
-      .pipe(
-        filter((group) => !!group),
-        distinctUntilKeyChanged('id'),
-      )
-      .subscribe((group) => {
-        this.selectedGroupId = group.id;
-      });
+  ngOnDestroy(): void {
+    this.mobileQuery.removeEventListener(
+      'change',
+      this.mobileQueryListener,
+      false,
+    );
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
+
+  useLanguage(language: string): void {
+    this.languageService.changeLanguage(language);
+  }
+
+  toggleExpertMode(): void {
+    this.ngrxStore.dispatch(toggleExpertMode());
+  }
+
+  setUser(user: User): void {
+    this.ngrxStore.dispatch(storeUser({ user }));
+  }
+
+  onGroupSelected(groupId: string): void {
+    if (groupId) {
+      this.ngrxStore.dispatch(setGroup({ groupId }));
+    }
+  }
+
+  menuItemClicked(): void {
+    if (this.mobileQuery.matches) {
+      void this.sidenav.toggle(); // closes the menu if an item is clicked on mobile devices
+    }
+  }
+
+  ngOnInit(): void {
+    let sub = this.selectedGroupId$.subscribe((id) => {
+      this.selectedGroupId = id;
+    });
     this.subscriptions$.push(sub);
 
-    // swipe navigation
-    // const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    // hammertime.on('panright', (event) => {
-    //   if (this.mobileQuery.matches) {
-    //     if (event.center.x >= 1 && event.center.x <= 20) {
-    //       this.sidenav.open();
-    //     }
-    //   }
-    // });
-    // hammertime.on('panleft', () => {
-    //   if (this.mobileQuery.matches) {
-    //     this.sidenav.close();
-    //   }
-    // });
-    if (this.swUpdate.isEnabled) {
-      sub = this.swUpdate.available.subscribe((): void => {
-        const message = this.translate.instant(
-          'app.update.message',
-        ) as string;
-
-        const reloadAction = this.translate.instant(
-          'app.update.reload',
-        ) as string;
-
-        const snackBarRef = this.snackBar.open(
-          message,
-          reloadAction,
-          null,
-        );
-        snackBarRef.onAction().subscribe(() => {
-          window.location.reload();
-        });
-      });
-      this.subscriptions$.push(sub);
-    }
-
-    const silentLoginFunc = () => {
+    const silentLoginFunc = () =>
       this.userManager
         .signinSilentCallback()
         .then(() => {})
         .catch(() => {
           this.setUser(null);
-          this.logger.debug('Silent login failed');
+          console.error('Silent login failed');
         });
-    };
     silentLoginFunc();
 
     sub = this.user$
@@ -285,6 +235,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
       // Logging in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))

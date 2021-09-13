@@ -40,7 +40,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/ngx-monaco-editor/assets/monaco/vs/base/worker/workerMain.js",
+                "input": "node_modules/ngx-monaco-editor/assets/monaco/vs/base/worker",
                 "output": "./assets/min-maps/vs/base/worker/workerMain.js.map"
               },
               "src/favicon.ico",

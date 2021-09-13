@@ -136,8 +136,11 @@ export const translations = {
       'choice-radarchart': 'Netzdiagramm',
       'choice-value': 'Wert',
       'name-placeholder': 'Name',
+      'description-label': 'Beschreibung',
       'description-placeholder':
         'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
+      'next-label': 'Nächste Seite',
+      'back-label': 'Zurück',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',
@@ -183,6 +186,7 @@ export const translations = {
       'no-measures':
         'Es sind keine Messungen vorhanden. Erstelle eine Messung mit dem obigen Button.',
       title: 'Wähle eine Messung aus',
+      search: 'Suchen',
     },
     questionnaires: {
       'add-questionnaire-tooltip':

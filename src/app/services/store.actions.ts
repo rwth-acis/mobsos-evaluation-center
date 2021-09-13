@@ -161,6 +161,9 @@ export const storeRequirements = createAction(
   }>(),
 );
 
+/**
+ * @deprecated set requirements directly
+ */
 export const setNumberOfRequirements = createAction(
   StoreActions.SET_NUMBER_OF_REQUIREMENTS,
   props<{

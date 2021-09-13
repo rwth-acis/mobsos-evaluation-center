@@ -1,0 +1,43 @@
+mat-form-field {
+  width: 100%;
+}
+
+mat-divider {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#hints-accordion {
+  mat-expansion-panel {
+    margin-bottom: 5px;
+    margin-top: 8px;
+  }
+}
+#dialog_header {
+  display: flex;
+  justify-content: space-between;
+}
+app-sql-table {
+  display: block;
+  overflow-y: scroll;
+}
+#sqlInput {
+  font-family: 'Roboto Mono';
+}
+.navig {
+  height: 80%;
+  display: flex;
+  
+  &.first{
+    justify-content: flex-end;
+  }
+  &:not(.first) {
+    justify-content: space-between;
+  }
+}
+button {
+  margin-right: 7px;
+}
+.EditMeasureForm {
+  height: 80%;
+}
