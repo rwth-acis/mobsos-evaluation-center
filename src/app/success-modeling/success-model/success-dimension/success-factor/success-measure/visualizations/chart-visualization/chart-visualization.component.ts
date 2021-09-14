@@ -19,20 +19,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,
-  MEASURE,
   RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
   catchError,
-  distinctUntilChanged,
-  distinctUntilKeyChanged,
   filter,
   map,
   mergeMap,
   sample,
-  switchMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';

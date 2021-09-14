@@ -7,7 +7,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Store } from '@ngrx/store';
 import {
-  MEASURE,
   RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
@@ -19,7 +18,6 @@ import {
 } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
-  distinctUntilKeyChanged,
   filter,
   first,
   map,

@@ -4,9 +4,9 @@ import { Store } from '@ngrx/store';
 
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { distinctUntilKeyChanged, filter } from 'rxjs/operators';
+import { distinctUntilKeyChanged } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
 import { SELECTED_SERVICE } from 'src/app/services/store.selectors';

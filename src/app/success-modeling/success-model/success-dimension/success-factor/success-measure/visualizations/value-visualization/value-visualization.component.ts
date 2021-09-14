@@ -4,7 +4,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Store } from '@ngrx/store';
 import {
-  MEASURE,
   RESTRICTED_MODE,
   SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
