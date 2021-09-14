@@ -130,22 +130,17 @@ export class ChartVisualizerComponent
       map((data) => !data?.loading),
     );
 
-    sub = this.measure$
-      .pipe(
+    // loads the package for the charttype and emits if package is loaded
+    const chartLibReady$ = this.measure$.pipe(
         map(
           (measure) =>
             (measure.visualization as ChartVisualization).chartType,
         ),
-        catchError((err) => {
-          console.log(err);
-          return of(undefined);
-        }),
-      )
-      .subscribe((chartType) => {
+      switchMap((chartType) => {
         const type = getPackageForChart(ChartType[chartType]);
-        this.scriptLoader.loadChartPackages(type);
-      });
-    this.subscriptions$.push(sub);
+        return this.scriptLoader.loadChartPackages(type);
+      }),
+    );
 
     sub = this.measure$
       .pipe(
@@ -174,11 +169,7 @@ export class ChartVisualizerComponent
             data.length >= 2,
         ),
         withLatestFrom(this.measure$),
-        sample(this.scriptLoader.loadChartPackages()),
-        catchError((err) => {
-          console.log(err);
-          return of(undefined);
-        }),
+        delayWhen(() => chartLibReady$),
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
