@@ -17,12 +17,16 @@
 
 <!-- content -->
 <form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
-  <mat-stepper linear #stepper>
+  <mat-stepper #stepper>
     <!-- first step: choose a name and visualization type -->
     <mat-step
       [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
       editable="true"
     >
+      <ng-template matStepLabel>{{
+        'success-modeling.edit-measure-dialog.description-label'
+          | translate
+      }}</ng-template>
       <!-- name of the success measure -->
       <mat-form-field>
         <input
@@ -208,6 +212,10 @@
       editable="true"
       [color]="controlsForSecondStepInValid() ? 'warn' : 'primary'"
     >
+      <ng-template matStepLabel>{{
+        'success-modeling.edit-measure-dialog.data-source-label'
+          | translate
+      }}</ng-template>
       <!-- query hints based on message description from the service -->
       <mat-accordion id="hints-accordion">
         <mat-expansion-panel>
@@ -336,20 +344,17 @@
       </mat-dialog-actions>
     </mat-step>
     <!-- last step: preview of the visualization -->
-    <mat-step editable="false" state="analytics">
+    <mat-step editable="true" state="analytics">
+      <ng-template matStepLabel>{{
+        'success-modeling.edit-measure-dialog.preview-title'
+          | translate
+      }}</ng-template>
       <ng-template matStepContent>
-        <div class="EditMeasureForm">
-          <h3>
-            {{
-              'success-modeling.edit-measure-dialog.preview-title'
-                | translate
-            }}
-          </h3>
-          <app-success-measure
-            [preview]="true"
-            [measureName]="data.measure?.name"
-          ></app-success-measure>
-        </div>
+        <h4>
+          {{ (measure$ | async)?.name }}
+        </h4>
+        <app-visualization [measure$]="measure$"> </app-visualization>
+
         <mat-dialog-actions class="navig">
           <button mat-stroked-button matStepperPrevious type="button">
             {{
