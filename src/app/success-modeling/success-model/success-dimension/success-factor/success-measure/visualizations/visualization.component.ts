@@ -1,5 +1,5 @@
 import { MatDialog } from '@angular/material/dialog';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -13,30 +13,27 @@ import { SELECTED_SERVICE } from 'src/app/services/store.selectors';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 
-export interface VisualizationComponent {
-  service: ServiceInformation;
-  service$: Observable<ServiceInformation>;
-  visualizationInitialized: boolean;
-  error: HttpErrorResponse;
-  measure: Measure;
-}
+// export interface VisualizationComponent {
+//   service: ServiceInformation;
+//   service$: Observable<ServiceInformation>;
+//   visualizationInitialized: boolean;
+//   error: HttpErrorResponse;
+//   measure: Measure;
+// }
 
 @Component({
-  selector: 'app-base-visualization',
+  selector: 'app-visualization',
   styleUrls: ['./visualization.component.scss'],
-  template: '',
+  templateUrl: './visualization.component.html',
 })
-export class BaseVisualizationComponent
-  implements VisualizationComponent, OnInit, OnDestroy
-{
+export class VisualizationComponent implements OnInit, OnDestroy {
+  @Input() measure$: Observable<Measure>;
   measure: Measure;
   service$ = this.ngrxStore
     .select(SELECTED_SERVICE)
     .pipe(distinctUntilKeyChanged('name'));
-  measure$: Observable<Measure>;
 
   error$: Observable<HttpErrorResponse>;
-  subscriptions$: Subscription[] = [];
 
   service: ServiceInformation;
   visualizationInitialized = false;
@@ -51,16 +48,6 @@ export class BaseVisualizationComponent
   static htmlDecode(input: string): string {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
-  }
-
-  static applyCompatibilityFixForVisualizationService(
-    query: string,
-  ): string {
-    // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
-    if (!query) return;
-    query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
-    query = BaseVisualizationComponent.htmlDecode(query);
-    return query;
   }
 
   applyVariableReplacements(
@@ -107,28 +94,14 @@ export class BaseVisualizationComponent
       fetchVisualizationData({ query, queryParams }),
     );
   }
-  ngOnInit(): void {
-    let sub = this.service$
-      .pipe(filter((service) => !!service))
-      .subscribe((service) => {
-        this.service = service;
-      });
-    this.subscriptions$.push(sub);
-    sub = this.error$.subscribe((err) => (this.error = err));
-    this.subscriptions$.push(sub);
-  }
 
   /** Note that lifecycle hooks are not called by components
    * which inherit from this class
    * Thus we need to unsubscribe from all subscriptions in the component itself
    * as mentioned on @link https://medium.com/@saniyusuf/part-1-the-case-for-component-inheritance-in-angular-a34fe2a0f7ac
    */
-  ngOnDestroy(): void {
-    this.subscriptions$.forEach((subscription) =>
-      subscription.unsubscribe(),
-    );
-  }
-
+  ngOnDestroy(): void {}
+  ngOnInit(): void {}
   openErrorDialog(error?: HttpErrorResponse): void {
     if (error) {
       this.error = error;
@@ -152,4 +125,13 @@ export class BaseVisualizationComponent
       data: { error: errorText },
     });
   }
+}
+export function applyCompatibilityFixForVisualizationService(
+  query: string,
+): string {
+  // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
+  if (!query) return;
+  query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
+  query = VisualizationComponent.htmlDecode(query);
+  return query;
 }

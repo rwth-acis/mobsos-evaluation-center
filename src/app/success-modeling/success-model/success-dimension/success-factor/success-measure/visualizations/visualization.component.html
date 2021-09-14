@@ -1,0 +1,17 @@
+<ng-container *ngIf="(measure$ | async)?.visualization.type as type">
+  <ng-container [ngSwitch]="type">
+    <app-kpi-visualization
+      *ngSwitchCase="'KPI'"
+      [measure$]="measure$"
+    ></app-kpi-visualization>
+    <app-value-visualization
+      *ngSwitchCase="'Value'"
+      [measure$]="measure$"
+    ></app-value-visualization>
+    <app-chart-visualization
+      *ngSwitchCase="'Chart'"
+      [measure$]="measure$"
+    ></app-chart-visualization>
+    <div *ngSwitchDefault>Unknown chartType: {{ type }}</div>
+  </ng-container>
+</ng-container>

@@ -15,7 +15,7 @@ import { SuccessDimensionComponent } from './success-model/success-dimension/suc
 import { SuccessMeasureComponent } from './success-model/success-dimension/success-factor/success-measure/success-measure.component';
 import { SuccessFactorComponent } from './success-model/success-dimension/success-factor/success-factor.component';
 import { ErrorDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/error-dialog/error-dialog.component';
-import { BaseVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization.component';
+import { VisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization.component';
 import { ValueVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/value-visualization/value-visualization.component';
 import { ChartVisualizerComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/chart-visualization/chart-visualization.component';
 import { KpiVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/kpi-visualization/kpi-visualization.component';
@@ -38,7 +38,7 @@ import { SuccessModelingRoutingModule } from './success-modeling-routing.module'
     SuccessFactorComponent,
     SuccessModelingComponent,
     ErrorDialogComponent,
-    BaseVisualizationComponent,
+    VisualizationComponent,
     ValueVisualizationComponent,
     ChartVisualizerComponent,
     KpiVisualizationComponent,

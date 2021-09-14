@@ -277,11 +277,10 @@ export const MEASURES = createSelector(
   (catalog) => catalog?.measures,
 );
 
-export const MEASURE = createSelector(
-  MEASURES,
-  (measures: MeasureMap, measureName: string) =>
-    measures ? measures[measureName] : undefined,
-);
+export const MEASURE = (props: { measureName: string }) =>
+  createSelector(MEASURES, (measures: MeasureMap) =>
+    measures ? measures[props.measureName] : undefined,
+  );
 
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
@@ -320,20 +319,22 @@ export const VISUALIZATION_DATA = createSelector(
     editMode && dataFromWorkspace ? dataFromWorkspace : datafromQVS,
 );
 
-export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
-  VISUALIZATION_DATA_FROM_QVS,
-  VISUALIZATION_DATA_FROM_WORKSPACE,
-  (
-    workspacedata: VisualizationCollection,
-    qvsdata: VisualizationCollection,
-    queryString: string,
-  ) =>
-    workspacedata && workspacedata[queryString]
-      ? workspacedata[queryString]
-      : qvsdata
-      ? qvsdata[queryString]
-      : undefined,
-);
+export const VISUALIZATION_DATA_FOR_QUERY = (props: {
+  queryString: string;
+}) =>
+  createSelector(
+    VISUALIZATION_DATA_FROM_QVS,
+    VISUALIZATION_DATA_FROM_WORKSPACE,
+    (
+      workspacedata: VisualizationCollection,
+      qvsdata: VisualizationCollection,
+    ) =>
+      workspacedata && workspacedata[props.queryString]
+        ? workspacedata[props.queryString]
+        : qvsdata
+        ? qvsdata[props.queryString]
+        : undefined,
+  );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
   SUCCESS_MODEL,

@@ -54,7 +54,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.measure$ = this.ngrxStore
-      .select(MEASURE, this.measureName)
+      .select(MEASURE({ measureName: this.measureName }))
       .pipe(
         filter((measure) => !!measure),
         distinctUntilKeyChanged('queries'),

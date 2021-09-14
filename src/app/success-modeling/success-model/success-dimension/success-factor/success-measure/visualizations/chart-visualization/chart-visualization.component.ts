@@ -11,7 +11,10 @@ import {
   getPackageForChart,
   ScriptLoaderService,
 } from 'angular-google-charts';
-import { BaseVisualizationComponent } from '../visualization.component';
+import {
+  applyCompatibilityFixForVisualizationService,
+  VisualizationComponent,
+} from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
@@ -26,8 +29,10 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  mergeMap,
   sample,
   switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
@@ -39,6 +44,7 @@ import {
 import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
+import { Measure } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -46,10 +52,10 @@ import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.compo
   styleUrls: ['./chart-visualization.component.scss'],
 })
 export class ChartVisualizerComponent
-  extends BaseVisualizationComponent
+  extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measureName: string;
+  @Input() measure$: Observable<Measure>;
 
   query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
@@ -84,7 +90,6 @@ export class ChartVisualizerComponent
   }
 
   ngOnInit(): void {
-    this.chartData$.subscribe((data) => console.log(data));
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({
@@ -92,39 +97,40 @@ export class ChartVisualizerComponent
         })),
     );
     this.subscriptions$.push(sub);
-    // selects the measure from the measure catalog
-    this.measure$ = this.ngrxStore
-      .select(MEASURE, this.measureName)
-      .pipe(
-        filter((measure) => !!measure),
-        // distinctUntilKeyChanged('queries'),
-      );
 
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
       map(([measure, service]) =>
-        BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-          this.applyVariableReplacements(
+        applyCompatibilityFixForVisualizationService(
+          super.applyVariableReplacements(
             measure.queries[0].sql,
             service,
           ),
         ),
       ),
+      filter((query) => !!query),
+      catchError((err) => {
+        console.log(err);
+        return of(undefined);
+      }),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      switchMap((query) =>
-        this.ngrxStore.select(VISUALIZATION_DATA_FOR_QUERY, query),
+      mergeMap((queryString) =>
+        this.ngrxStore.select(
+          VISUALIZATION_DATA_FOR_QUERY({ queryString }),
+        ),
       ),
+      catchError((err) => {
+        console.log(err);
+        return of(undefined);
+      }),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
-    sub = this.error$.subscribe((err) => {
-      this.error = err;
-    });
-    this.subscriptions$.push(sub);
+
     this.dataIsReady$ = this.data$.pipe(
       map((data) => !data?.loading),
     );
@@ -135,6 +141,10 @@ export class ChartVisualizerComponent
           (measure) =>
             (measure.visualization as ChartVisualization).chartType,
         ),
+        catchError((err) => {
+          console.log(err);
+          return of(undefined);
+        }),
       )
       .subscribe((chartType) => {
         const type = getPackageForChart(ChartType[chartType]);
@@ -143,31 +153,37 @@ export class ChartVisualizerComponent
     this.subscriptions$.push(sub);
 
     sub = this.measure$
-      .pipe(withLatestFrom(this.service$))
+      .pipe(
+        withLatestFrom(this.service$),
+        catchError((err) => {
+          console.log(err);
+          return of(undefined);
+        }),
+      )
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
-        query =
-          BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-            query,
-          );
+        query = applyCompatibilityFixForVisualizationService(query);
         super.fetchVisualizationData(query, queryParams);
       });
     this.subscriptions$.push(sub);
 
     sub = this.data$
       .pipe(
-        distinctUntilChanged(),
         map((vdata) => vdata?.data),
-        filter((data) => data instanceof Array && data.length >= 2),
+        filter(
+          (data) =>
+            data !== undefined &&
+            data instanceof Array &&
+            data.length >= 2,
+        ),
         withLatestFrom(this.measure$),
         sample(this.scriptLoader.loadChartPackages()),
         catchError((err) => {
           console.log(err);
           return of(undefined);
         }),
-        filter((data) => !!data),
       )
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
@@ -193,7 +209,7 @@ export class ChartVisualizerComponent
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: this.getParamsForQuery(query),
+        queryParams: super.getParamsForQuery(query),
       }),
     );
   }
@@ -211,7 +227,7 @@ export class ChartVisualizerComponent
     this.chartInitialized = false;
     this.formatters = [];
     visualization = visualization as ChartVisualization;
-    this.error = null;
+
     const labelTypes = dataTable[1];
     let rows = dataTable.slice(2);
     for (let i = 0; i < labelTypes.length; i++) {
