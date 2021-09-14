@@ -22,6 +22,8 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
@@ -63,6 +65,7 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   measureForm: FormGroup;
+  measure$: Observable<Measure>;
 
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
@@ -71,16 +74,19 @@ export class EditMeasureDialogComponent implements OnInit {
     private fb: FormBuilder,
   ) {
     const measure = this.data.measure;
-    this.measureForm = this.fb.group({
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      name: [measure.name, Validators.required],
-      description: [measure.description, Validators.maxLength(500)],
-      visualization: this.fb.group({
-        type: measure.visualization.type,
-        parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
-      }),
-      queries: this.fb.array([]),
-    });
+    this.measureForm = this.fb.group(
+      {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        name: [measure.name, Validators.required],
+        description: [measure.description, Validators.maxLength(500)],
+        visualization: this.fb.group({
+          type: measure.visualization.type,
+          parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
+        }),
+        queries: this.fb.array([], { updateOn: 'blur' }),
+      },
+      { updateOn: 'blur' },
+    );
     // queries are dynamically added to the form
     measure.queries.forEach((query) =>
       this.formQueries.push(
@@ -117,7 +123,40 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
-  controlsForFirstStepInValid() {
+  /**
+   * Transforms the value of a form into a Success Measure object.
+   *
+   * @param value the value of the form
+   * @returns corresponding success measure object
+   */
+  private static getMeasureFromForm(value: any): Measure {
+    const measure = value as Measure;
+
+    switch (measure.visualization.type) {
+      case 'Value':
+        const unit = value.visualization.parameters
+          ? value.visualization.parameters[0].unit
+          : value.visualization.unit;
+        measure.visualization = new ValueVisualization(unit);
+        break;
+      case 'Chart':
+        const chartType = value.visualization.parameters
+          ? value.visualization.parameters[0].chartType
+          : value.visualization.chartType;
+        measure.visualization = new ChartVisualization(chartType);
+        break;
+      case 'KPI':
+        measure.visualization = new KpiVisualization(
+          value.visualization.parameters
+            ? value.visualization.parameters
+            : value.visualization.operationsElements,
+        );
+        break;
+    }
+    return measure;
+  }
+
+  controlsForFirstStepInValid(): boolean {
     return (
       this.measureForm.get('name').invalid ||
       this.measureForm.get('description').invalid ||
@@ -125,11 +164,21 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  controlsForSecondStepInValid() {
+  controlsForSecondStepInValid(): boolean {
     return this.measureForm.get('queries').invalid;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.measure$ = this.measureForm.valueChanges.pipe(
+      startWith(this.data.measure),
+      distinctUntilChanged(),
+      map((value) =>
+        EditMeasureDialogComponent.getMeasureFromForm(
+          value ? value : this.data.measure,
+        ),
+      ),
+    );
+  }
 
   onVisualizationChange(visualizationType: string): void {
     this.measureForm
@@ -157,34 +206,11 @@ export class EditMeasureDialogComponent implements OnInit {
       return; // should not happen because submit button is disabled if form is invalid
     }
 
-    const measure = this.measureForm.value;
-    this.data.measure = {
-      ...this.data.measure,
-      description: measure.description,
-      name: measure.name,
-      queries: measure.queries,
-    } as Measure;
-    switch (measure.visualization.type) {
-      case 'Value':
-        const unit = measure.visualization.parameters[0].unit;
-        this.data.measure.visualization = new ValueVisualization(
-          unit,
-        );
-        break;
-      case 'Chart':
-        const chartType =
-          measure.visualization.parameters[0].chartType;
-        this.data.measure.visualization = new ChartVisualization(
-          chartType,
-        );
-        break;
-      case 'KPI':
-        this.data.measure.visualization = new KpiVisualization(
-          measure.measure.visualization.parameters,
-        );
-        break;
-    }
-    this.dialogRef.close(this.data.measure);
+    const measure = EditMeasureDialogComponent.getMeasureFromForm(
+      this.measureForm.value,
+    );
+
+    this.dialogRef.close(measure);
   }
 
   onAddQueryClicked(): void {
