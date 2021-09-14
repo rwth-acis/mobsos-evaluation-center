@@ -141,6 +141,7 @@ export const translations = {
         'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
       'next-label': 'Nächste Seite',
       'back-label': 'Zurück',
+      'data-source-label': 'Datenquelle',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',
