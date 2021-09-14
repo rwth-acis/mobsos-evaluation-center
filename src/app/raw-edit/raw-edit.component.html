@@ -10,7 +10,6 @@
       >
         <ngx-monaco-editor
           id="measure-editor"
-          (onInit)="registerMeasureEditor($event)"
           [options]="editorOptions"
           [(ngModel)]="measureCatalogXml"
         ></ngx-monaco-editor>
@@ -63,7 +62,6 @@
       >
         <ngx-monaco-editor
           id="model-editor"
-          (onInit)="registerSuccessModelEditor($event)"
           [options]="editorOptions"
           [(ngModel)]="successModelXml"
         ></ngx-monaco-editor>

@@ -39,7 +39,7 @@ import { ServiceInformation } from '../models/service.model';
   styleUrls: ['./raw-edit.component.scss'],
 })
 export class RawEditComponent implements OnInit, OnDestroy {
-  groupID;
+  groupID: string;
   services = [];
   serviceMap = {};
   selectedServiceName: string;
@@ -53,8 +53,8 @@ export class RawEditComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   successModelXml: string;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  measureCatalogEditor;
-  successModelEditor;
+  measureCatalogEditor: any;
+  successModelEditor: any;
   saveInProgress = false;
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
@@ -134,13 +134,13 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  registerMeasureEditor(editor): void {
-    this.measureCatalogEditor = editor;
-  }
+  // registerMeasureEditor(editor: any): void {
+  //   this.measureCatalogEditor = editor;
+  // }
 
-  registerSuccessModelEditor(editor): void {
-    this.successModelEditor = editor;
-  }
+  // registerSuccessModelEditor(editor: any): void {
+  //   this.successModelEditor = editor;
+  // }
 
   onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(setService({ service }));
@@ -229,8 +229,9 @@ export class RawEditComponent implements OnInit, OnDestroy {
                 result instanceof failureResponse &&
                 'reason' in result
               )
-                message += (result as { type; reason }).reason
-                  .message as string;
+                message += (
+                  result as { type: any; reason: { message: string } }
+                ).reason.message;
               this.snackBar.open(message, 'Ok');
             }
             sub.unsubscribe();
