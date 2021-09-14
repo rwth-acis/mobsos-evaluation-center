@@ -94,12 +94,12 @@ export class RawEditComponent implements OnInit, OnDestroy {
     private actionState: StateEffects,
   ) {}
 
-  static prettifyXml(xml) {
-    if (xml) return vkbeautify.xml(xml);
+  static prettifyXml(xml: string): string {
+    if (xml) return vkbeautify.xml(xml) as string;
     return xml;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.ngrxStore.dispatch(disableEdit());
 
     let sub = this.selectedGroupId$

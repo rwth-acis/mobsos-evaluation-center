@@ -44,7 +44,7 @@
         'raw-edit.success-models.select-application' | translate
       }}</mat-label>
       <mat-select
-        [(value)]="selectedServiceName"
+        [value]="selectedService$ | async"
         (selectionChange)="onServiceSelected($event.value)"
       >
         <mat-option
