@@ -133,13 +133,7 @@ export class ChartVisualizerComponent
     );
 
     sub = this.measure$
-      .pipe(
-        withLatestFrom(this.service$),
-        catchError((err) => {
-          console.log(err);
-          return of(undefined);
-        }),
-      )
+      .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
         const queryParams = this.getParamsForQuery(query);

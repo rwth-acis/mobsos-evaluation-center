@@ -170,7 +170,7 @@ export class AppComponent
     if (!environment.production) {
       this.title = 'MobSOS Evaluation Center (dev)';
       this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
+        'You are currently in the development network. Please note that some features might not be available / fully functional yet',
         'OK',
         { duration: 10000 },
       );
