@@ -24,10 +24,10 @@ import {
 } from 'src/app/services/store.selectors';
 import {
   catchError,
+  delayWhen,
   filter,
   map,
-  mergeMap,
-  sample,
+  switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
@@ -59,8 +59,6 @@ export class ChartVisualizerComponent
   formatter_medium; // holds the formatter for the date with format type medium
 
   chartData: ChartData; // data which is needed to build the chart.
-  chartData$: BehaviorSubject<ChartData> =
-    new BehaviorSubject<ChartData>(undefined);
   chartInitialized = false; // used for the fadein animation of charts
   data$: Observable<VisualizationData>; // visualization data fetched from the store
   // Observable which periodically checks wheter the google charts library is ready
@@ -105,23 +103,15 @@ export class ChartVisualizerComponent
         ),
       ),
       filter((query) => !!query),
-      catchError((err) => {
-        console.log(err);
-        return of(undefined);
-      }),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      mergeMap((queryString) =>
+      switchMap((queryString) =>
         this.ngrxStore.select(
           VISUALIZATION_DATA_FOR_QUERY({ queryString }),
         ),
       ),
-      catchError((err) => {
-        console.log(err);
-        return of(undefined);
-      }),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
@@ -132,10 +122,10 @@ export class ChartVisualizerComponent
 
     // loads the package for the charttype and emits if package is loaded
     const chartLibReady$ = this.measure$.pipe(
-        map(
-          (measure) =>
-            (measure.visualization as ChartVisualization).chartType,
-        ),
+      map(
+        (measure) =>
+          (measure.visualization as ChartVisualization).chartType,
+      ),
       switchMap((chartType) => {
         const type = getPackageForChart(ChartType[chartType]);
         return this.scriptLoader.loadChartPackages(type);
@@ -198,6 +188,8 @@ export class ChartVisualizerComponent
         queryParams: super.getParamsForQuery(query),
       }),
     );
+    this.chartData = null;
+    this.chartInitialized = false;
   }
 
   /**
@@ -234,23 +226,7 @@ export class ChartVisualizerComponent
         );
       }
     }
-    this.chartData$.next(
-      new ChartData(
-        '',
-        (visualization as ChartVisualization).chartType,
-        rows,
-        dataTable[0],
-        {
-          colors: [
-            '#00a895',
-            '#9500a8',
-            '#a89500',
-            '#ff5252',
-            '#ffd600',
-          ],
-        },
-      ),
-    );
+
     this.chartData = new ChartData(
       '',
       (visualization as ChartVisualization).chartType,
