@@ -11,7 +11,6 @@ import {
   saveCatalog,
   saveModel,
   setService,
-  StateActions,
 } from '../services/store.actions';
 import {
   MEASURE_CATALOG,
@@ -28,15 +27,11 @@ import {
   filter,
   first,
   map,
-  tap,
   timeout,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
 import { combineLatest, of, Subscription } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
-import { SuccessModel } from '../models/success.model';
-import { MeasureCatalog } from '../models/measure.catalog';
 
 @Component({
   selector: 'app-raw-edit',
@@ -139,19 +134,19 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  registerMeasureEditor(editor) {
+  registerMeasureEditor(editor): void {
     this.measureCatalogEditor = editor;
   }
 
-  registerSuccessModelEditor(editor) {
+  registerSuccessModelEditor(editor): void {
     this.successModelEditor = editor;
   }
 
-  onServiceSelected(service: ServiceInformation) {
+  onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  _onCatalogSaveClicked() {
+  _onCatalogSaveClicked(): void {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(
       saveCatalog({ xml: this.measureCatalogXml }),
@@ -195,7 +190,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  _onModelSaveClicked() {
+  _onModelSaveClicked(): void {
     this.saveInProgress = true;
 
     this.ngrxStore.dispatch(saveModel({ xml: this.successModelXml }));
