@@ -29,6 +29,7 @@ import { SqlTableComponent } from './success-model/success-dimension/success-fac
 import { VisualizationInfoComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization-info/visualization-info.component';
 import { RawDataDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/raw-data-dialog/raw-data-dialog.component';
 import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
+import { SuccessModelingRoutingModule } from './success-modeling-routing.module';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,11 @@ import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/p
     RawDataDialogComponent,
     SuccessModelComponent,
   ],
-  imports: [CommonModule, SharedModule, GoogleChartsModule],
+  imports: [
+    CommonModule,
+    SharedModule,
+    GoogleChartsModule,
+    SuccessModelingRoutingModule,
+  ],
 })
 export class SuccessModelingModule {}
