@@ -134,14 +134,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  // registerMeasureEditor(editor: any): void {
-  //   this.measureCatalogEditor = editor;
-  // }
-
-  // registerSuccessModelEditor(editor: any): void {
-  //   this.successModelEditor = editor;
-  // }
-
   onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(setService({ service }));
   }
