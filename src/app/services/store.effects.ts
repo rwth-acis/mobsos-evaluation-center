@@ -167,7 +167,7 @@ export class StateEffects {
           }),
         );
       }),
-      mergeMap(() => of(Action.success())),
+      switchMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
         return of(Action.failure());
