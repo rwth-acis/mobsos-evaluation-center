@@ -1,18 +1,18 @@
 <div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
   <ng-container *ngIf="data$ | async; else noData">
     <google-chart
-      *ngIf="this.chartData"
-      [title]="this.chartData.title"
-      [type]="this.chartData.chartType"
-      [data]="this.chartData.data"
-      [options]="this.chartData.options"
+      *ngIf="chartData"
+      [title]="chartData.title"
+      [type]="chartData.chartType"
+      [data]="chartData.data"
+      [options]="chartData.options"
       [formatters]="formatters"
       [columns]="columnNames"
       dynamicResize="true"
       [style]="fadeInAnimation()"
       class="content"
       style="width: 100%"
-      (ready)="this.chartInitialized = true"
+      (ready)="chartInitialized = true"
     ></google-chart
   ></ng-container>
 </div>
