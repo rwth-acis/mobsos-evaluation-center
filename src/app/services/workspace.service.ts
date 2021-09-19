@@ -131,7 +131,7 @@ export class WorkspaceService {
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupID);
 
-    /** *****************************
+    /*******************************
      * Add our local stuff to the community workspace
      */
     if (!Object.keys(communityWorkspace).includes(username)) {

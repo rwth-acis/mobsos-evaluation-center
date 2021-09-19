@@ -53,8 +53,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   successModelXml: string;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  measureCatalogEditor: any;
-  successModelEditor: any;
   saveInProgress = false;
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
@@ -133,14 +131,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
-
-  // registerMeasureEditor(editor: any): void {
-  //   this.measureCatalogEditor = editor;
-  // }
-
-  // registerSuccessModelEditor(editor: any): void {
-  //   this.successModelEditor = editor;
-  // }
 
   onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(setService({ service }));
