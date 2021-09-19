@@ -13,14 +13,6 @@ import { SELECTED_SERVICE } from 'src/app/services/store.selectors';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 
-// export interface VisualizationComponent {
-//   service: ServiceInformation;
-//   service$: Observable<ServiceInformation>;
-//   visualizationInitialized: boolean;
-//   error: HttpErrorResponse;
-//   measure: Measure;
-// }
-
 @Component({
   selector: 'app-visualization',
   styleUrls: ['./visualization.component.scss'],
