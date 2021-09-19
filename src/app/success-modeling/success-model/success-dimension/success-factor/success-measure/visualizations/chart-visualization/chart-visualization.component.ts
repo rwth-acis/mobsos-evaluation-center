@@ -1,11 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import {
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   ChartType,
   getPackageForChart,
@@ -71,7 +65,6 @@ export class ChartVisualizerComponent
     public dialog: MatDialog,
     protected ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
-    private changeDetectorRef: ChangeDetectorRef,
   ) {
     super(ngrxStore, dialog);
   }
@@ -237,6 +230,5 @@ export class ChartVisualizerComponent
       },
     );
     this.chartInitialized = true;
-    this.changeDetectorRef.detectChanges();
   }
 }
