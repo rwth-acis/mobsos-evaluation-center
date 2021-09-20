@@ -7,7 +7,14 @@ import {
   HttpParams,
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map, share, timeout } from 'rxjs/operators';
+import {
+  catchError,
+  map,
+  mergeMap,
+  share,
+  switchMap,
+  timeout,
+} from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
@@ -47,7 +54,7 @@ export class Las2peerService {
   REQBAZ_REALIZED_PATH = 'realized';
   REQBAZ_LEADDEV_PATH = 'leaddevelopers';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
-  SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires?full=1';
+  SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
   SURVEYS_SURVEY_PATH = 'surveys';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
@@ -347,6 +354,7 @@ export class Las2peerService {
     const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
+      '?full=1',
     );
     return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
       .then((response) =>
@@ -367,16 +375,27 @@ export class Las2peerService {
     const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
+      '?full=1',
     );
     return this.makeRequestAndObserve<IQuestionnaire[]>(url).pipe(
-      map((response) => {
-        for (const questionnaire of response) {
+      map((response) => [response, response]),
+      switchMap(([questionnaires, response]) => [
+        questionnaires,
+        this.fetchQuestionnaireFormsAndObserve(
+          response.questionnaires,
+        ),
+      ]),
+      map(([questionnaires, forms]: [IQuestionnaire[], string[]]) => {
+        for (let index = 0; index < questionnaires.length; index++) {
+          const questionnaire = questionnaires[index];
           questionnaire.name = decodeURIComponent(questionnaire.name);
           questionnaire.description = decodeURIComponent(
             questionnaire.description,
           );
+          questionnaire.formXML = forms[index];
         }
-        return response as Questionnaire[];
+
+        return questionnaires as IQuestionnaire[];
       }),
       timeout(60000),
     );
@@ -399,6 +418,24 @@ export class Las2peerService {
     return questionnaires;
   }
 
+  fetchQuestionnaireFormsAndObserve(
+    questionnaires: IQuestionnaire[],
+  ) {
+    const questionaireFormRequests = questionnaires.map(
+      (questionnaire) => {
+        const formUrl = joinAbsoluteUrlPath(
+          environment.mobsosSurveysUrl,
+          this.SURVEYS_QUESTIONNAIRES_PATH,
+          questionnaire.id,
+          this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
+        );
+        return this.makeRequestAndObserve<string>(formUrl, {
+          responseType: 'text',
+        });
+      },
+    );
+    return forkJoin(questionaireFormRequests);
+  }
   async createSurvey(
     name: string,
     description: string,
