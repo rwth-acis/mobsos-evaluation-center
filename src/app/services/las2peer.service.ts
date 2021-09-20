@@ -176,12 +176,11 @@ export class Las2peerService {
     }
 
     let ngHttpOptionsNoAuthorization = cloneDeep(ngHttpOptions);
-    if ('Authorization' in ngHttpOptionsNoAuthorization['headers']) {
-      ngHttpOptionsNoAuthorization['headers']['Authorization'] = '';
-    }
-    if ('access_token' in ngHttpOptionsNoAuthorization['headers']) {
-      ngHttpOptionsNoAuthorization['headers']['access_token'] = '';
-    }
+    ngHttpOptionsNoAuthorization['headers'] = new HttpHeaders({
+      ...options.headers,
+      Authorization: '',
+      access_token: '',
+    });
 
     return this.http
       .request(options.method, url, ngHttpOptions)
