@@ -47,7 +47,7 @@ export class Las2peerService {
   REQBAZ_REALIZED_PATH = 'realized';
   REQBAZ_LEADDEV_PATH = 'leaddevelopers';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
-  SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
+  SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires?full=1';
   SURVEYS_SURVEY_PATH = 'surveys';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
