@@ -9,6 +9,7 @@ declare global {
       yJsWebsocketUrl: string;
       openIdClientId: string;
       production: string;
+      mobsosSurveysUrl?: string;
     };
   }
 }

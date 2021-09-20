@@ -5,6 +5,7 @@ declare global {
       yJsWebsocketUrl: string;
       openIdClientId: string;
       production: string;
+      mobsosSurveysUrl?: string;
     };
   }
 }
@@ -24,7 +25,8 @@ export const environment = {
     window.env.las2peerWebConnectorUrl ||
     'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
-    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
+    window.env.mobsosSurveysUrl ||
+    'https://surveys.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
   servicePollingInterval: 10,
   // interval at which visualizations should be refetched from server
   visualizationRefreshInterval: 12 * 60,
