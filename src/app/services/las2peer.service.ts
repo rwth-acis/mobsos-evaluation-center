@@ -8,7 +8,7 @@ import {
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share, timeout } from 'rxjs/operators';
-import { merge } from 'lodash-es';
+import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import {
@@ -175,7 +175,27 @@ export class Las2peerService {
       ngHttpOptions['responseType'] = options.responseType;
     }
 
-    return this.http.request(options.method, url, ngHttpOptions);
+    let ngHttpOptionsNoAuthorization = cloneDeep(ngHttpOptions);
+    if ('Authorization' in ngHttpOptionsNoAuthorization['headers']) {
+      ngHttpOptionsNoAuthorization['headers']['Authorization'] = '';
+    }
+    if ('access_token' in ngHttpOptionsNoAuthorization['headers']) {
+      ngHttpOptionsNoAuthorization['headers']['access_token'] = '';
+    }
+
+    return this.http
+      .request(options.method, url, ngHttpOptions)
+      .pipe(
+        catchError((err) =>
+          err.status === 401 && err.error === 'agent not found'
+            ? this.http.request(
+                options.method,
+                url,
+                ngHttpOptionsNoAuthorization,
+              )
+            : of(err),
+        ),
+      );
   }
 
   // async fetchServicesFromDiscovery() {
@@ -319,10 +339,7 @@ export class Las2peerService {
     return this.makeRequestAndObserve<SuccessModel>(url, {
       observe: 'response',
     }).pipe(
-      map(
-        (response) => !!response,
-        () => false,
-      ),
+      map((response) => !!response),
       catchError(() => of(false)),
     );
   }
