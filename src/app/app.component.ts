@@ -96,11 +96,6 @@ export class AppComponent
     .select(USER)
     .pipe(filter((user) => !!user));
 
-  groupsAreLoaded$: Observable<boolean> = combineLatest([
-    this.userGroups$,
-    this.user$,
-  ]).pipe(map(([userGroups, user]) => user && !!userGroups));
-
   selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP).pipe(
     filter((group) => !!group),
     distinctUntilKeyChanged('id'),

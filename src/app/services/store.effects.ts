@@ -96,7 +96,9 @@ export class StateEffects {
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
           map((groupsFromContactService) =>
             Action.storeGroups({
-              groupsFromContactService,
+              groupsFromContactService: groupsFromContactService
+                ? groupsFromContactService
+                : null,
               groupsFromMobSOS: null,
             }),
           ),
@@ -105,7 +107,16 @@ export class StateEffects {
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
             );
-            return of(Action.failureResponse(err));
+            return of(Action.failureResponse(err)).pipe(
+              tap(() =>
+                this.ngrxStore.dispatch(
+                  Action.storeGroups({
+                    groupsFromContactService: null,
+                    groupsFromMobSOS: null,
+                  }),
+                ),
+              ),
+            );
           }),
         ),
       ),

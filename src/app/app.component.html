@@ -9,23 +9,22 @@
       <!-- group selection -->
       <mat-form-field
         id="community-selection"
-        *ngIf="groupsAreLoaded$ | async; else groupsAreLoading"
+        *ngIf="userGroups$ | async as groups; else groupsAreLoading"
       >
         <mat-label>Community</mat-label>
         <mat-select
-          *ngIf="(userGroups$ | async)?.length > 0"
           [(ngModel)]="selectedGroupId"
           (selectionChange)="onGroupSelected($event.value)"
         >
           <mat-option
             class="mat-body-strong"
-            *ngFor="let group of userGroups$ | async"
+            *ngFor="let group of groups"
             [value]="group.id"
           >
             {{ group.name }}
           </mat-option>
         </mat-select>
-        <span *ngIf="(userGroups$ | async)?.length === 0"
+        <span *ngIf="groups.length === 0"
           >You are not part of any community yet</span
         >
       </mat-form-field>

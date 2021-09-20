@@ -66,11 +66,13 @@ export const _SELECTED_GROUP_ID = (state: StoreState) =>
 const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
 export const GROUPS = (state: StoreState) =>
-  state.Reducer?.groups
-    ? Object.values(state.Reducer.groups).sort((a, b) =>
+  state.Reducer.groups === undefined
+    ? undefined
+    : state.Reducer.groups === null
+    ? []
+    : Object.values(state.Reducer.groups).sort((a, b) =>
         sortGroupsByName(a, b),
-      )
-    : undefined;
+      );
 
 export const USER_GROUPS = createSelector(GROUPS, (groups) =>
   groups?.filter((g) => g.member),
