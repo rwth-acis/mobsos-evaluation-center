@@ -11,7 +11,7 @@ export interface IQuestionnaire {
   formXML?: string;
 }
 // internal questionnaire class
-export class Questionnaire {
+export class Questionnaire implements IQuestionnaire {
   constructor(
     public name: string,
     public id: number,
