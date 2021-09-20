@@ -413,7 +413,7 @@ function sortGroupsByName(
   a: GroupInformation,
   b: GroupInformation,
 ): number {
-  if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase()) {
+  if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase()) {
     return -1;
   } else return 1;
 }
@@ -424,11 +424,11 @@ function sortServicesByName(
   if (a.alias && !b.alias) return -1;
   else if (b.alias && !a.alias) return 1;
   if (a.alias && b.alias) {
-    if (a.alias.toLocaleLowerCase() < b.alias.toLocaleLowerCase())
+    if (a.alias?.toLocaleLowerCase() < b.alias?.toLocaleLowerCase())
       return -1;
     else return 1;
   } else {
-    if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase())
+    if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase())
       return -1;
     else return 1;
   }
