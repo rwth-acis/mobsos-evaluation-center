@@ -137,6 +137,7 @@ export const translations = {
       'description-placeholder':
         'Describe your visualization here in more detail',
       'preview-title': 'Preview',
+      'data-source-label': 'Data Source',
       'next-label': 'Next',
       'back-label': 'Back',
       'query-name-placeholder': 'Query Name',

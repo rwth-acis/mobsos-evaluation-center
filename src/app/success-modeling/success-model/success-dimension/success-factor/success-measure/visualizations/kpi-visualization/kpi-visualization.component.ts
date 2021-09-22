@@ -1,14 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { BaseVisualizationComponent } from '../visualization.component';
+import {
+  applyCompatibilityFixForVisualizationService,
+  VisualizationComponent,
+} from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 
 import { Store } from '@ngrx/store';
 import {
-  MEASURE,
   RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
   KpiVisualization,
@@ -16,7 +18,6 @@ import {
 } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
-  distinctUntilKeyChanged,
   filter,
   first,
   map,
@@ -32,32 +33,24 @@ import { refreshVisualization } from 'src/app/services/store.actions';
   styleUrls: ['./kpi-visualization.component.scss'],
 })
 export class KpiVisualizationComponent
-  extends BaseVisualizationComponent
+  extends VisualizationComponent
   implements OnInit
 {
-  @Input() measureName: string;
+  @Input() measure$: Observable<Measure>;
 
-  measure$: Observable<Measure>;
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
+  private subscriptions$: Subscription[] = [];
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
   }
 
   ngOnInit(): void {
-    // selects the measure from the measure catalog
-    this.measure$ = this.ngrxStore
-      .select(MEASURE, this.measureName)
-      .pipe(
-        filter((measure) => !!measure),
-        distinctUntilKeyChanged('queries'),
-      );
-
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
       withLatestFrom(this.service$),
@@ -66,10 +59,7 @@ export class KpiVisualizationComponent
         measure.queries.map((query) => {
           let q = query.sql;
           q = this.applyVariableReplacements(q, service);
-          q =
-            BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-              q,
-            );
+          q = applyCompatibilityFixForVisualizationService(q);
           return q;
         }),
       ),
@@ -82,10 +72,9 @@ export class KpiVisualizationComponent
       mergeMap((queries) =>
         forkJoin(
           queries.map(
-            (query: string): Observable<VisualizationData> =>
+            (queryString: string): Observable<VisualizationData> =>
               this.ngrxStore.select(
-                VISUALIZATION_DATA_FOR_QUERY,
-                query,
+                VISUALIZATION_DATA_FOR_QUERY({ queryString }),
               ),
           ),
         ),
@@ -170,11 +159,8 @@ export class KpiVisualizationComponent
         );
         queryStrings.forEach((query) => {
           const queryParams = this.getParamsForQuery(query);
-          query = this.applyVariableReplacements(query, service);
-          query =
-            BaseVisualizationComponent.applyCompatibilityFixForVisualizationService(
-              query,
-            );
+          query = super.applyVariableReplacements(query, service);
+          query = applyCompatibilityFixForVisualizationService(query);
           super.fetchVisualizationData(query, queryParams);
         });
       });
@@ -185,7 +171,7 @@ export class KpiVisualizationComponent
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: this.getParamsForQuery(query),
+        queryParams: super.getParamsForQuery(query),
       }),
     );
   }

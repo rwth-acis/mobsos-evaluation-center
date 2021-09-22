@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
-import { createSelector, Selector, State } from '@ngrx/store';
-import { create } from 'domain';
+import { createSelector } from '@ngrx/store';
 import {
   GroupCollection,
   GroupInformation,
@@ -11,12 +11,8 @@ import {
 } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
-import { SuccessModel } from '../models/success.model';
-import { User } from '../models/user.model';
-import {
-  VisualizationCollection,
-  VisualizationData,
-} from '../models/visualization.model';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { VisualizationCollection } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
@@ -26,6 +22,7 @@ import {
 
 /**
  * Function which returns true if any http call is currently loading
+ *
  * @param state state of the store
  * @returns true if any http call is being processed
  */
@@ -211,7 +208,9 @@ export const SUCCESS_MODEL = createSelector(
 export const DIMENSIONS_IN_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) =>
-    model?.dimensions ? Object.values(model.dimensions) : undefined,
+    model?.dimensions
+      ? (Object.values(model.dimensions) as [SuccessFactor[]])
+      : undefined,
 );
 
 export const SUCCESS_MODEL_IS_EMPTY = createSelector(
@@ -277,11 +276,10 @@ export const MEASURES = createSelector(
   (catalog) => catalog?.measures,
 );
 
-export const MEASURE = createSelector(
-  MEASURES,
-  (measures: MeasureMap, measureName: string) =>
-    measures ? measures[measureName] : undefined,
-);
+export const MEASURE = (props: { measureName: string }) =>
+  createSelector(MEASURES, (measures: MeasureMap) =>
+    measures ? measures[props.measureName] : undefined,
+  );
 
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
@@ -320,20 +318,22 @@ export const VISUALIZATION_DATA = createSelector(
     editMode && dataFromWorkspace ? dataFromWorkspace : datafromQVS,
 );
 
-export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
-  VISUALIZATION_DATA_FROM_QVS,
-  VISUALIZATION_DATA_FROM_WORKSPACE,
-  (
-    workspacedata: VisualizationCollection,
-    qvsdata: VisualizationCollection,
-    queryString: string,
-  ) =>
-    workspacedata && workspacedata[queryString]
-      ? workspacedata[queryString]
-      : qvsdata
-      ? qvsdata[queryString]
-      : undefined,
-);
+export const VISUALIZATION_DATA_FOR_QUERY = (props: {
+  queryString: string;
+}) =>
+  createSelector(
+    VISUALIZATION_DATA_FROM_QVS,
+    VISUALIZATION_DATA_FROM_WORKSPACE,
+    (
+      workspacedata: VisualizationCollection,
+      qvsdata: VisualizationCollection,
+    ) =>
+      workspacedata && workspacedata[props.queryString]
+        ? workspacedata[props.queryString]
+        : qvsdata
+        ? qvsdata[props.queryString]
+        : undefined,
+  );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
   SUCCESS_MODEL,
@@ -375,9 +375,10 @@ function parseModel(xml: string): SuccessModel {
 }
 /**
  * filter groups that the user is a part of
+ *
  * @param groups groups as a collection
  */
-function _userGroups(groups: GroupCollection) {
+function _userGroups(groups: GroupCollection): GroupInformation[] {
   if (!groups) {
     return undefined;
   }
@@ -390,10 +391,10 @@ function _userGroups(groups: GroupCollection) {
       userGroups.push(groups[groupId]);
     }
   }
-  return userGroups;
+  return userGroups as GroupInformation[];
 }
 
-function _foreignGroups(groups: GroupCollection) {
+function _foreignGroups(groups: GroupCollection): GroupInformation[] {
   if (!groups) {
     return undefined;
   }
@@ -406,7 +407,7 @@ function _foreignGroups(groups: GroupCollection) {
       userGroups.push(groups[groupId]);
     }
   }
-  return userGroups;
+  return userGroups as GroupInformation[];
 }
 function sortGroupsByName(
   a: GroupInformation,
@@ -467,7 +468,7 @@ function getAllWorkspacesForService(
   const userWorkspaces = Object.values(workspace);
   for (const userWorkspace of userWorkspaces) {
     if (Object.keys(userWorkspace).includes(serviceName)) {
-      result.push(userWorkspace[serviceName] as ApplicationWorkspace);
+      result.push(userWorkspace[serviceName]);
     }
   }
   return (result as ApplicationWorkspace[])?.sort((a, b) =>
@@ -477,6 +478,7 @@ function getAllWorkspacesForService(
 
 /**
  * Get the workspace for the current workspace.
+ *
  * @param owner The owner of the current user workspace
  * @param communityWorkspace The workspace of the community
  * @param user The current user

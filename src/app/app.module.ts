@@ -5,10 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
@@ -119,13 +117,13 @@ const metaReducers: Array<MetaReducer<any, any>> = [
         useFactory: createTranslateLoader,
       },
     }),
+    MonacoEditorModule.forRoot(),
     MarkdownModule.forRoot(),
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatListModule,
     MatProgressBarModule,
-    MonacoEditorModule.forRoot(),
     FormsModule,
 
     ServiceWorkerModule.register('ngsw-worker.js', {

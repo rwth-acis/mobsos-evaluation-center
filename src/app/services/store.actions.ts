@@ -60,6 +60,7 @@ export enum StoreActions {
   STORE_REQUIREMENTS = 'Store the requirements for the current req bazar project',
   SET_NUMBER_OF_REQUIREMENTS = 'set the number of requirements for the current project',
   STORE_QUESTIONNAIRES = 'store the fetched questionnaires in store',
+  RESET_SUCCESS_MODEL = 'Sets the success model to undefined',
 }
 
 export enum StateActions {
@@ -291,6 +292,10 @@ export const storeCatalog = createAction(
 export const storeSuccessModel = createAction(
   StoreActions.STORE_SUCCESS_MODEL,
   props<{ xml: string }>(),
+);
+
+export const resetSuccessModel = createAction(
+  StoreActions.RESET_SUCCESS_MODEL,
 );
 
 export const updateCommunityWorkspace = createAction(

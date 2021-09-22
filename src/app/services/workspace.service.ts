@@ -37,6 +37,8 @@ const ONE_MINUTE_IN_MS = 60000;
   providedIn: 'root',
 })
 export class WorkspaceService {
+  provider: WebsocketProvider;
+
   // copy of the last group id. This will be used to stop synchronizing the old workspace if a new one is created
   private currentGroupId: string;
 
@@ -52,10 +54,10 @@ export class WorkspaceService {
   private sharedDocument = new Y.Doc();
   private syncDone$: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(undefined); // True when the sync with yjs is done
-  provider: WebsocketProvider;
 
   /**
    * This service is used to sync between local state and remote yjs map.
+   *
    * @param ngrxStore Store which contains the local app state
    */
   constructor(private ngrxStore: Store) {
@@ -104,6 +106,7 @@ export class WorkspaceService {
 
   /**
    * Initializes the workspace for a given user and service inside the current community workspace.
+   *
    * @param groupID  the group id of the current community
    * @param username the username of the current user
    * @param selectedService the service which is currently selected
@@ -161,6 +164,7 @@ export class WorkspaceService {
 
   /**
    * Used to join a community workspace
+   *
    * @param groupId group ID of the community which we want to join
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
@@ -191,6 +195,7 @@ export class WorkspaceService {
 
   /**
    * This fucntion stops synchronizing the workspace
+   *
    * @param groupId id of the current community
    */
   stopSynchronizingWorkspace(groupId: string): void {
@@ -202,22 +207,9 @@ export class WorkspaceService {
   }
 
   /**
-   * This function start synchronizing the workspace for the current community
-   * @param groupId groupid for the community
-   */
-  private startSynchronizingWorkspace(groupId: string) {
-    if (groupId !== this.currentGroupId) {
-      if (this.currentGroupId) {
-        this.stopSynchronizingWorkspace(this.currentGroupId);
-      }
-      this.currentGroupId = groupId;
-      this.syncObject(groupId);
-    }
-  }
-
-  /**
    * This function is used to remove the application workspace of the current user from the community workspace
    * This should be called when a new service is selected
+   *
    * @param username username of the current user
    * @param serviceName name of the application
    */
@@ -239,6 +231,7 @@ export class WorkspaceService {
 
   /**
    * This function is used to copy the application workspace of someone else in the community
+   *
    * @param owner the owner of the workspace wich we want to copy
    * @param username the username of the current user
    * @param serviceName the name of the application
@@ -270,6 +263,40 @@ export class WorkspaceService {
     communityWorkspace[username][serviceName] = userWorkspace;
     this.communityWorkspace$.next(communityWorkspace);
     return userWorkspace;
+  }
+
+  changeVisitorRole(
+    visitorName: string,
+    owner: string,
+    selectedServiceName: string,
+    role: string,
+  ): ApplicationWorkspace {
+    const communityWorkspace = cloneDeep(
+      this.communityWorkspace$.getValue(),
+    ) as CommunityWorkspace;
+    const ownerWorkspace = communityWorkspace[owner];
+    if (!ownerWorkspace) {
+      console.error('owner workspace not found');
+      return;
+    }
+    const applicationWorkspace = ownerWorkspace[selectedServiceName];
+    if (!applicationWorkspace) {
+      console.error('app workspace not found for current user');
+    }
+    const visitors = applicationWorkspace.visitors.map((visitor) =>
+      visitor.username === visitorName
+        ? {
+            ...visitor,
+            role:
+              role === 'editor'
+                ? UserRole.EDITOR
+                : UserRole.SPECTATOR,
+          }
+        : visitor,
+    );
+    applicationWorkspace.visitors = visitors;
+    this.communityWorkspace$.next(communityWorkspace);
+    return applicationWorkspace;
   }
 
   switchWorkspace(
@@ -314,7 +341,7 @@ export class WorkspaceService {
           if (
             !workspaceData?.fetchDate ||
             !(
-              Date.parse(workspaceData.fetchDate as string) >
+              Date.parse(workspaceData.fetchDate) >
               Date.parse(value?.fetchDate)
             )
           ) {
@@ -347,7 +374,7 @@ export class WorkspaceService {
       !containedInVisitors
     ) {
       const n = guestVisitors.length + 1;
-      username = username + ' (guest ' + n + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
+      username = username + ' (guest ' + n.toString() + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
       localStorage.setItem('visitor-username', username); // in the future anonymous user gets reassigned the same name
       visitors.push(new Visitor(username, role));
     }
@@ -431,6 +458,21 @@ export class WorkspaceService {
     };
   }
 
+  /**
+   * This function start synchronizing the workspace for the current community
+   *
+   * @param groupId groupid for the community
+   */
+  private startSynchronizingWorkspace(groupId: string) {
+    if (groupId !== this.currentGroupId) {
+      if (this.currentGroupId) {
+        this.stopSynchronizingWorkspace(this.currentGroupId);
+      }
+      this.currentGroupId = groupId;
+      this.syncObject(groupId);
+    }
+  }
+
   private observeFn(map) {
     if (isDevMode()) {
       console.log('Applying remote changes to local object...');
@@ -459,7 +501,9 @@ export class WorkspaceService {
   private getCurrentCommunityWorkspaceFromYJS(
     groupId: string,
   ): CommunityWorkspace {
-    return cloneDeep(this.sharedDocument.getMap(groupId).toJSON());
+    return cloneDeep(
+      this.sharedDocument.getMap(groupId).toJSON(),
+    ) as CommunityWorkspace;
   }
 
   /**
@@ -470,7 +514,10 @@ export class WorkspaceService {
    * @param init true if the local object has been initialized yet
    * @returns true if successfull
    */
-  private _syncObjectToMap(obj: object, map: Y.Map<any>) {
+  private _syncObjectToMap(
+    obj: Record<string, unknown>,
+    map: Y.Map<any>,
+  ) {
     try {
       const mapAsObj = map.toJSON();
       if (isEqual(obj, mapAsObj)) {
@@ -496,7 +543,10 @@ export class WorkspaceService {
             map.set(key, new Y.Map());
             mapValue = map.get(key);
           }
-          this._syncObjectToMap(objValue, mapValue);
+          this._syncObjectToMap(
+            objValue as Record<string, unknown>,
+            mapValue,
+          );
         } else {
           if (objValue !== null) {
             map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
@@ -507,40 +557,6 @@ export class WorkspaceService {
       console.error(error);
       return false;
     }
-  }
-
-  changeVisitorRole(
-    visitorName: string,
-    owner: string,
-    selectedServiceName: string,
-    role: string,
-  ): ApplicationWorkspace {
-    const communityWorkspace = cloneDeep(
-      this.communityWorkspace$.getValue(),
-    ) as CommunityWorkspace;
-    const ownerWorkspace = communityWorkspace[owner];
-    if (!ownerWorkspace) {
-      console.error('owner workspace not found');
-      return;
-    }
-    const applicationWorkspace = ownerWorkspace[selectedServiceName];
-    if (!applicationWorkspace) {
-      console.error('app workspace not found for current user');
-    }
-    const visitors = applicationWorkspace.visitors.map((visitor) =>
-      visitor.username === visitorName
-        ? {
-            ...visitor,
-            role:
-              role === 'editor'
-                ? UserRole.EDITOR
-                : UserRole.SPECTATOR,
-          }
-        : visitor,
-    );
-    applicationWorkspace.visitors = visitors;
-    this.communityWorkspace$.next(communityWorkspace);
-    return applicationWorkspace;
   }
 
   private getWorkspaceByUserAndService(

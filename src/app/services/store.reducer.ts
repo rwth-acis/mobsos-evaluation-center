@@ -45,6 +45,11 @@ const _Reducer = createReducer(
     }),
   ),
 
+  on(Actions.resetSuccessModel, (state) => ({
+    ...state,
+    successModel: initialState.successModel,
+  })),
+
   on(
     Actions.storeMessageDescriptions,
     (state, { descriptions, serviceName }) => ({
