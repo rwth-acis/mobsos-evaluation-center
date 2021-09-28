@@ -350,7 +350,7 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
   APPLICATION_WORKSPACE,
-  (service, workspace) => (service ? service : workspace.service),
+  (service, workspace) => (service ? service : workspace?.service),
 );
 
 function parseXml(xml: string) {

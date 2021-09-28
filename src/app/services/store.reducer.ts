@@ -350,7 +350,7 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
-  if (!props.query || props?.error?.status < 200) {
+  if (!props.query || props?.error?.status === 0) {
     return currentVisualizationData;
   }
   if (props.data) {

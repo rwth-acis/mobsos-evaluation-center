@@ -423,16 +423,22 @@ export class StateEffects {
                   delete StateEffects.visualizationCalls[query];
               }),
               map((vdata) =>
-                Action.storeVisualizationData({
-                  data: vdata,
-                  query,
-                  error: null,
-                }),
+                'error' in vdata
+                  ? Action.storeVisualizationData({
+                      error: vdata.error,
+                      query,
+                    })
+                  : Action.storeVisualizationData({
+                      data: vdata,
+                      query,
+                      error: null,
+                    }),
               ),
               catchError((err) =>
                 of(
                   Action.storeVisualizationData({
                     error: err,
+                    query,
                   }),
                 ),
               ),
