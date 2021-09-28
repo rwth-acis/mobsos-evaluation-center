@@ -38,7 +38,6 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../../models/service.model';
 import { IQuestionnaire } from '../../models/questionnaire.model';
@@ -121,7 +120,6 @@ export class SuccessModelComponent implements OnInit {
   subscriptions$: Subscription[] = [];
 
   constructor(
-    private dialog: MatDialog,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
     private ngrxStore: Store,

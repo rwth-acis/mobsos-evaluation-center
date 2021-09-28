@@ -10,7 +10,6 @@ import { forkJoin, Observable, of } from 'rxjs';
 import {
   catchError,
   map,
-  mergeMap,
   share,
   switchMap,
   timeout,
@@ -18,10 +17,7 @@ import {
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
-import {
-  IQuestionnaire,
-  Questionnaire,
-} from '../models/questionnaire.model';
+import { IQuestionnaire } from '../models/questionnaire.model';
 import { Requirement } from '../models/reqbaz.model';
 interface HttpOptions {
   method?: string;
@@ -203,27 +199,6 @@ export class Las2peerService {
         ),
       );
   }
-
-  // async fetchServicesFromDiscovery() {
-  //   const url = joinAbsoluteUrlPath(
-  //     environment.las2peerWebConnectorUrl,
-  //     this.SERVICES_PATH,
-  //   );
-  //   return this.makeRequest(url).catch((response) =>
-  //     console.error(response),
-  //   );
-  // }
-
-  // async fetchServicesFromMobSOS() {
-  //   const url = joinAbsoluteUrlPath(
-  //     environment.las2peerWebConnectorUrl,
-  //     this.SUCCESS_MODELING_SERVICE_PATH,
-  //     this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
-  //   );
-  //   return this.makeRequest(url).catch((response) =>
-  //     console.error(response),
-  //   );
-  // }
 
   fetchServicesFromDiscoveryAndObserve(): Observable<any> {
     if (!environment.useLas2peerServiceDiscovery)
