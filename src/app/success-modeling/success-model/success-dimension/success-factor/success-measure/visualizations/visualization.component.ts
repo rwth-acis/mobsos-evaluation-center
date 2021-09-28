@@ -99,7 +99,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       this.error = error;
     }
     let errorText =
-      'Http status code: ' + this.error.status.toString() + '\n';
+      'Http status code: ' + this.error.status?.toString() + '\n';
     if (this.error.error) {
       errorText += this.error.statusText;
 
