@@ -456,6 +456,24 @@ export class StateEffects {
     ),
   );
 
+  refreshVisualization$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.refreshVisualization),
+      tap(({ query }) => {
+        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
+        this.ngrxStore.dispatch(resetFetchDate({ query }));
+      }),
+      delay(100),
+      mergeMap(({ query, queryParams }) =>
+        of(Action.fetchVisualizationData({ query, queryParams })),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
@@ -540,23 +558,6 @@ export class StateEffects {
       delay(1000),
       map(() => Action.updateSuccessModel()),
       catchError((err: HttpErrorResponse) => {
-        return of(Action.failureResponse({ reason: err }));
-      }),
-      share(),
-    ),
-  );
-
-  refreshVisualization$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.refreshVisualization),
-      tap(({ query }) => {
-        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
-        this.ngrxStore.dispatch(resetFetchDate({ query }));
-      }),
-      mergeMap(({ query, queryParams }) =>
-        of(Action.fetchVisualizationData({ query, queryParams })),
-      ),
-      catchError((err) => {
         return of(Action.failureResponse({ reason: err }));
       }),
       share(),
@@ -677,7 +678,7 @@ const REFETCH_INTERVAL =
  *
  */
 function shouldFetch(dataForQuery: VisualizationData): boolean {
-  if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
+  if (!dataForQuery?.data && !dataForQuery?.error) return true; // initial state: we dont have any data or error yet
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old
     if (
@@ -696,8 +697,9 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     // the query had led to an error
     // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
+      !dataForQuery.fetchDate ||
       Date.now() - Date.parse(dataForQuery.fetchDate) >
-      5 * ONE_MINUTE_IN_MS
+        5 * ONE_MINUTE_IN_MS
     ) {
       if (!status) {
         // Unknown error
