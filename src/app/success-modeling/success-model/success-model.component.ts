@@ -41,6 +41,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../../models/service.model';
 import { IQuestionnaire } from '../../models/questionnaire.model';
+import { ofType } from '@ngrx/effects';
 @Component({
   selector: 'app-success-model',
   templateUrl: './success-model.component.html',
@@ -118,6 +119,7 @@ export class SuccessModelComponent implements OnInit {
   numberOfRequirements = 0;
 
   subscriptions$: Subscription[] = [];
+  saveSubScription: Subscription;
 
   constructor(
     private translate: TranslateService,
@@ -179,7 +181,7 @@ export class SuccessModelComponent implements OnInit {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(saveModelAndCatalog());
     if (this.saveInProgress) {
-      const sub = this.actionState.saveModelAndCatalog$
+      this.saveSubScription = this.actionState.saveModelAndCatalog$
         .pipe(
           timeout(300000),
           catchError(() => {
@@ -211,7 +213,7 @@ export class SuccessModelComponent implements OnInit {
             }
             this.snackBar.open(message, 'Ok');
           }
-          sub.unsubscribe();
+          this.saveSubScription.unsubscribe();
         });
     }
   }
