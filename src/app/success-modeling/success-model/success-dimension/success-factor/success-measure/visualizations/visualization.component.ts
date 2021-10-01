@@ -30,8 +30,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   service: ServiceInformation;
   visualizationInitialized = false;
 
-  error: HttpErrorResponse;
-
   constructor(
     protected ngrxStore: Store,
     protected dialog: MatDialog,
@@ -94,24 +92,19 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    */
   ngOnDestroy(): void {}
   ngOnInit(): void {}
-  openErrorDialog(error?: HttpErrorResponse): void {
-    if (error) {
-      this.error = error;
-    }
-    let errorText =
-      'Http status code: ' + this.error.status?.toString() + '\n';
-    if (this.error.error) {
-      errorText += this.error.statusText;
-
-      if (typeof this.error.error === 'string') {
-        errorText += ': ' + this.error.error;
+  openErrorDialog(error?: HttpErrorResponse | string): void {
+    let errorText = 'Unknown error';
+    if (error instanceof HttpErrorResponse) {
+      errorText =
+        'Http status code: ' + error.status?.toString() + '\n';
+      errorText += error.statusText;
+      if (typeof error.error === 'string') {
+        errorText += ': ' + error.error;
       }
-
-      errorText = errorText.trim();
-    } else if (typeof this.error === 'string') {
-      errorText += this.error;
+    } else if (typeof error === 'string') {
+      errorText = error;
     }
-
+    errorText = errorText?.trim();
     this.dialog.open(ErrorDialogComponent, {
       width: '80%',
       data: { error: errorText },

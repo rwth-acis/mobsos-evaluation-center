@@ -1,7 +1,6 @@
 <div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
-  <ng-container *ngIf="data$ | async; else noData">
+  <ng-container *ngIf="chartData; else noData">
     <google-chart
-      *ngIf="chartData"
       [title]="chartData.title"
       [type]="chartData.chartType"
       [data]="chartData.data"
@@ -15,17 +14,6 @@
       (ready)="chartInitialized = true"
     ></google-chart
   ></ng-container>
-  <ng-container *ngIf="error$ | async as error"
-    ><span
-      *ngIf="!chartData && error"
-      (click)="openErrorDialog(error)"
-      class="visualization-error"
-    >
-      <button mat-button>
-        <mat-icon>warning</mat-icon>
-      </button>
-    </span></ng-container
-  >
 </div>
 <button
   *ngIf="chartInitialized"
@@ -72,10 +60,22 @@
 </mat-menu>
 
 <ng-template #noData>
-  {{ error$ | async | json }}
+  <ng-container
+    *ngIf="error$ | async as error; else noDataAndNoError"
+  >
+    <ng-container
+      *ngTemplateOutlet="Error; context: { error: error }"
+    ></ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #noDataAndNoError
+  >No data available. Please refresh the page</ng-template
+>
+
+<ng-template #Error let-errorInput="error">
   <span
-    *ngIf="error$ | async as error; else loading"
-    (click)="openErrorDialog(error)"
+    (click)="openErrorDialog(errorInput)"
     class="visualization-error"
   >
     <button mat-button>
@@ -83,10 +83,6 @@
     </button>
   </span>
 </ng-template>
-
-<ng-template #noDataAndNoError
-  >No data available. Please refresh the page</ng-template
->
 
 <ng-template #loading>
   <span class="loading-placeholder">
