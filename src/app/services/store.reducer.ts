@@ -350,10 +350,10 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
-  if (!props.query || props?.error?.status === 0) {
+  if (!props?.query || props?.error?.status === 0) {
     return currentVisualizationData;
   }
-  if (props.data) {
+  if (props?.data) {
     // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
@@ -363,7 +363,9 @@ function updateVisualizationData(
     };
   } else {
     currentVisualizationData[props.query] = {
-      data: currentVisualizationData[props.query].data || null,
+      data: currentVisualizationData[props.query]
+        ? currentVisualizationData[props.query].data
+        : null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
       loading: false,
