@@ -110,7 +110,7 @@ export class ChartVisualizerComponent
     this.error$ = this.data$.pipe(map((data) => data?.error));
 
     this.dataIsReady$ = this.data$.pipe(
-      map((data) => !data?.loading),
+      map((data) => data && !data.loading),
     );
 
     // loads the package for the charttype and emits if package is loaded

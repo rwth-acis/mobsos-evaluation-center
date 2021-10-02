@@ -14,10 +14,12 @@ import {
   share,
   tap,
   delay,
+  distinctUntilKeyChanged,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
+import { ServiceMessageDescriptions } from '../models/service.model';
 
 import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -196,10 +198,14 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchMessageDescriptions),
       filter(({ serviceName }) => !!serviceName),
+      distinctUntilKeyChanged('serviceName'),
       switchMap(({ serviceName }) =>
         this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions) =>
-            Action.storeMessageDescriptions(descriptions),
+          map((descriptions: ServiceMessageDescriptions) =>
+            Action.storeMessageDescriptions({
+              descriptions,
+              serviceName,
+            }),
           ),
           catchError((err) => {
             console.error(err);

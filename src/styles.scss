@@ -1,8 +1,8 @@
 @use '~@angular/material' as mat;
 
 @include mat.core();
-@import '~material-design-icons/iconfont/material-icons.css';
 
+@import '~material-design-icons/iconfont/material-icons.css';
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @import '~@angular/material/theming';

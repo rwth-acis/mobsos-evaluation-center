@@ -19,6 +19,7 @@ import { Store } from '@ngrx/store';
 import {
   fetchGroups,
   fetchMeasureCatalog,
+  fetchMessageDescriptions,
   fetchServices,
   fetchSuccessModel,
   setGroup,
@@ -209,6 +210,11 @@ export class AppComponent
           if (serviceName) {
             this.ngrxStore.dispatch(
               fetchSuccessModel({ groupId, serviceName }),
+            );
+            this.ngrxStore.dispatch(
+              fetchMessageDescriptions({
+                serviceName,
+              }),
             );
           }
         }

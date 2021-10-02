@@ -15,6 +15,7 @@
     ></google-chart
   ></ng-container>
 </div>
+
 <button
   *ngIf="chartInitialized"
   mat-icon-button
@@ -36,6 +37,7 @@
     <mat-icon>poll</mat-icon>
   </button>
 </ng-container>
+
 <ng-container *ngIf="!(restricted$ | async)">
   <button
     *ngIf="query$ | async as query"
@@ -49,6 +51,7 @@
     <mat-icon color="primary">sync</mat-icon>
   </button></ng-container
 >
+
 <mat-menu #menu="matMenu" yPosition="above">
   <div id="chart-info" *ngIf="data$ | async as data">
     <app-visualization-info

@@ -136,7 +136,7 @@ export class SuccessModelComponent implements OnInit {
           ? service.alias
           : service.name;
         // this is used so that the initial success model is fetched. We should rather use a new effect for this
-        this.ngrxStore.dispatch(setService({ service }));
+        // this.ngrxStore.dispatch(setService({ service }));
       });
     this.subscriptions$.push(sub);
 
