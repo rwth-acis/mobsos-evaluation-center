@@ -439,14 +439,22 @@ function mergeServiceData(
           messageDescriptions,
           serviceName,
         );
-      if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {
-          name: serviceName,
-          alias: serviceAlias,
-          mobsosIDs: [],
-          serviceMessageDescriptions,
-        };
-      }
+
+      serviceCollection[serviceName] = {
+        ...serviceCollection[serviceName],
+        name: serviceName,
+        alias: serviceAlias,
+        mobsosIDs: [
+          ...serviceCollection[serviceName].mobsosIDs,
+          { agentID: serviceAgentID, registrationTime },
+        ],
+        serviceMessageDescriptions: {
+          ...serviceCollection[serviceName]
+            .serviceMessageDescriptions,
+          ...serviceMessageDescriptions,
+        },
+      };
+
       if (!serviceCollection[serviceName]) continue;
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
       mobsosIDs.push({

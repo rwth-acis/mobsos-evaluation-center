@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { ServiceInformation } from 'src/app/models/service.model';
 
-
 @Component({
   selector: 'app-sql-table',
   templateUrl: './sql-table.component.html',
@@ -18,6 +17,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
   @Input() query: string;
   @Input() service: ServiceInformation;
   results: any[][];
+  queryParams: string[];
 
   constructor() {}
 
@@ -44,6 +44,8 @@ export class SqlTableComponent implements OnInit, OnChanges {
       SqlTableComponent.applyCompatibilityFixForVisualizationService(
         query,
       );
+    this.query = query;
+    this.queryParams = queryParams;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
