@@ -27,7 +27,6 @@ const _Reducer = createReducer(
       services: mergeServiceData(
         { ...state.services },
         servicesFromL2P,
-        { ...state.messageDescriptions },
         servicesFromMobSOS,
       ),
     }),
@@ -385,7 +384,6 @@ function updateVisualizationData(
 function mergeServiceData(
   serviceCollection: ServiceCollection,
   servicesFromL2P,
-  messageDescriptions,
   servicesFromMobSOS,
 ): ServiceCollection {
   serviceCollection = { ...serviceCollection };
@@ -409,10 +407,9 @@ function mergeServiceData(
           name: serviceIdentifier,
           alias: latestRelease?.supplement?.name,
           mobsosIDs: [],
-          serviceMessageDescriptions: getMessageDescriptionForService(
-            messageDescriptions,
-            serviceIdentifier,
-          ),
+          serviceMessageDescriptions:
+            serviceCollection[serviceIdentifier]
+              ?.serviceMessageDescriptions,
         };
       }
     }
@@ -433,13 +430,6 @@ function mergeServiceData(
         serviceAlias = serviceName;
       }
 
-      // only add mobsos service data if the data from the discovery is missing
-      const serviceMessageDescriptions =
-        getMessageDescriptionForService(
-          messageDescriptions,
-          serviceName,
-        );
-
       serviceCollection[serviceName] = {
         ...serviceCollection[serviceName],
         name: serviceName,
@@ -451,11 +441,9 @@ function mergeServiceData(
         serviceMessageDescriptions: {
           ...serviceCollection[serviceName]
             .serviceMessageDescriptions,
-          ...serviceMessageDescriptions,
         },
       };
 
-      if (!serviceCollection[serviceName]) continue;
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
       mobsosIDs.push({
         agentID: serviceAgentID,
@@ -464,10 +452,6 @@ function mergeServiceData(
       mobsosIDs.sort(
         (a, b) => a.registrationTime - b.registrationTime,
       );
-      serviceCollection[serviceName] = {
-        ...serviceCollection[serviceName],
-        serviceMessageDescriptions: { ...serviceMessageDescriptions },
-      };
     }
   }
   return serviceCollection;

@@ -6,7 +6,13 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
+import { VisualizationData } from 'src/app/models/visualization.model';
+import { fetchVisualizationData } from 'src/app/services/store.actions';
+import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
 
 @Component({
   selector: 'app-sql-table',
@@ -16,10 +22,11 @@ import { ServiceInformation } from 'src/app/models/service.model';
 export class SqlTableComponent implements OnInit, OnChanges {
   @Input() query: string;
   @Input() service: ServiceInformation;
-  results: any[][];
-  queryParams: string[];
 
-  constructor() {}
+  queryParams: string[];
+  vdata$: Observable<any[][]>;
+
+  constructor(private ngrxStore: Store) {}
 
   static htmlDecode(input) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
@@ -36,7 +43,6 @@ export class SqlTableComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    console.error(this.query);
     let query = this.query;
     const queryParams = this.getParamsForQuery(query);
     query = this.applyVariableReplacements(query);
@@ -46,6 +52,12 @@ export class SqlTableComponent implements OnInit, OnChanges {
       );
     this.query = query;
     this.queryParams = queryParams;
+    this.ngrxStore.dispatch(
+      fetchVisualizationData({ query, queryParams }),
+    );
+    this.vdata$ = this.ngrxStore
+      .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
+      .pipe(map((vdata) => vdata?.data));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -73,12 +85,12 @@ export class SqlTableComponent implements OnInit, OnChanges {
   }
 
   protected applyVariableReplacements(query: string) {
-    let servicesString = '(';
-    const services = [];
+    const ids = [];
     for (const mobsosID of this.service?.mobsosIDs) {
-      services.push(`"${mobsosID.agentID}"`);
+      ids.push(`"${mobsosID.agentID}"`);
     }
-    servicesString += services.join(',') + ')';
+    let servicesString = '(';
+    servicesString += ids.join(',') + ')';
     return query.replace('$SERVICES$', servicesString);
   }
 }
