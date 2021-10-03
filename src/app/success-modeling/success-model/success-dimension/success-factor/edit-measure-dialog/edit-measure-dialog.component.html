@@ -256,7 +256,7 @@
                       [query]="
                         'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
                         item.key +
-                        '&quot AND SOURCE_AGENT IN $SERVICE$ ORDER BY ID DESC LIMIT 5'
+                        '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
                       "
                     >
                     </app-sql-table>
