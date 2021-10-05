@@ -445,12 +445,14 @@ function mergeServiceData(
         name: serviceName,
         alias: serviceAlias,
         mobsosIDs: [
-          ...serviceCollection[serviceName].mobsosIDs,
+          ...(serviceCollection[serviceName]
+            ? serviceCollection[serviceName].mobsosIDs
+            : []),
           { agentID: serviceAgentID, registrationTime },
         ],
         serviceMessageDescriptions: {
           ...serviceCollection[serviceName]
-            .serviceMessageDescriptions,
+            ?.serviceMessageDescriptions,
           ...serviceMessageDescriptions,
         },
       };
