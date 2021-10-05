@@ -111,8 +111,6 @@ export class SqlTableComponent
       filter((data) => !!data),
       map((data) => this.getDisplayedColumns(data)),
     );
-
-    this.dataSource$.subscribe((data) => console.log(data));
   }
 
   ngOnDestroy() {
