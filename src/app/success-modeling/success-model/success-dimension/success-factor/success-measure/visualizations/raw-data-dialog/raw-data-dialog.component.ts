@@ -36,7 +36,7 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
           this.displayedColumns[i] +
           ` (type: ${this.rawData[1][i] as string})`; // add type of the column
       }
-      const arr = this.rawData.slice(2).map((row) => {
+      const o = this.rawData.slice(2).map((row) => {
         // for the table we need to transform each row in our array to an object with the corresponding label as key
         const obj = {};
         for (let index = 0; index < row.length; index++) {
@@ -46,8 +46,8 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
         return obj;
       });
 
-      this.dataSource = new MatTableDataSource(arr);
-      this.res = arr;
+      this.dataSource = new MatTableDataSource(o);
+      this.res = o;
     } else {
       console.error('Invalid data input');
     }

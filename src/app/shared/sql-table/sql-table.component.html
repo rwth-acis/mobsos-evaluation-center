@@ -1,12 +1,18 @@
-<table>
-  <thead>
-    <tr *ngFor="let row of results | slice: 0:2">
-      <th *ngFor="let cell of row">{{ cell }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let row of results | slice: 2">
-      <td *ngFor="let cell of row">{{ cell }}</td>
-    </tr>
-  </tbody>
+<table
+  mat-table
+  *ngIf="dataSource$ | async as dataSource"
+  class="mat-elevation-z8"
+  id="dataTable"
+>
+  <ng-container *ngIf="displayedColumns$ | async as cols">
+    <ng-container *ngFor="let col of cols" [matColumnDef]="col">
+      <th mat-header-cell *matHeaderCellDef>
+        {{ col }}
+      </th>
+      <td mat-cell *matCellDef="let element">{{ element[col] }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="cols"></tr>
+    <tr mat-row *matRowDef="let row; columns: cols"></tr>
+  </ng-container>
 </table>

@@ -8,14 +8,15 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, Subscription } from 'rxjs';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import { ServiceInformation } from 'src/app/models/service.model';
 import { VisualizationData } from 'src/app/models/visualization.model';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-sql-table',
@@ -28,11 +29,14 @@ export class SqlTableComponent
   @Input() query: string;
   @Input() service: ServiceInformation;
   @Input() query$: Observable<string>;
-  results: any[][];
+
   queryParams: string[];
   vdata$: Observable<any[][]>;
 
   subscriptions$: Subscription[] = [];
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  dataSource$: Observable<any>;
+  displayedColumns$: Observable<unknown>;
   constructor(private ngrxStore: Store) {}
 
   static htmlDecode(input) {
@@ -42,7 +46,7 @@ export class SqlTableComponent
 
   protected static applyCompatibilityFixForVisualizationService(
     query: string,
-  ) {
+  ): string {
     if (!query) return null;
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
     query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
@@ -51,35 +55,61 @@ export class SqlTableComponent
   }
 
   ngOnInit() {
-    const sub = this.query$?.subscribe((q) => {
-      this.query = q;
-      const qParams = this.getParamsForQuery(q);
-      q = this.applyVariableReplacements(q);
-      q =
-        SqlTableComponent.applyCompatibilityFixForVisualizationService(
-          q,
-        );
-      this.query = q;
-      this.queryParams = qParams;
-      console.log(this.query);
-    });
-    this.subscriptions$.push(sub);
-    console.error(this.query);
-    let query = this.query;
-    const queryParams = this.getParamsForQuery(query);
-    query = this.applyVariableReplacements(query);
-    query =
-      SqlTableComponent.applyCompatibilityFixForVisualizationService(
-        query,
+    if (this.query$) {
+      this.vdata$ = this.query$.pipe(
+        map((query) => {
+          this.query = query;
+          const qParams = this.getParamsForQuery(query);
+          query = this.applyVariableReplacements(query);
+          query =
+            SqlTableComponent.applyCompatibilityFixForVisualizationService(
+              query,
+            );
+          this.query = query;
+          this.queryParams = qParams;
+          return [query, qParams] as [string, string[]];
+        }),
+        tap(([query, queryParams]) =>
+          this.ngrxStore.dispatch(
+            fetchVisualizationData({ query, queryParams }),
+          ),
+        ),
+        switchMap(([query]) =>
+          this.ngrxStore
+            .select(
+              VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
+            )
+            .pipe(map((vdata) => vdata?.data)),
+        ),
       );
-    this.query = query;
-    this.queryParams = queryParams;
-    this.ngrxStore.dispatch(
-      fetchVisualizationData({ query, queryParams }),
+    } else {
+      let query = this.query;
+      const queryParams = this.getParamsForQuery(query);
+      query = this.applyVariableReplacements(query);
+      query =
+        SqlTableComponent.applyCompatibilityFixForVisualizationService(
+          query,
+        );
+      this.query = query;
+      this.queryParams = queryParams;
+      this.ngrxStore.dispatch(
+        fetchVisualizationData({ query, queryParams }),
+      );
+      this.vdata$ = this.ngrxStore
+        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
+        .pipe(map((vdata) => vdata?.data));
+    }
+
+    this.dataSource$ = this.vdata$.pipe(
+      filter((data) => !!data),
+      map((data) => this.getTableDataSource(data)),
     );
-    this.vdata$ = this.ngrxStore
-      .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
-      .pipe(map((vdata) => vdata?.data));
+    this.displayedColumns$ = this.vdata$.pipe(
+      filter((data) => !!data),
+      map((data) => this.getDisplayedColumns(data)),
+    );
+
+    this.displayedColumns$.subscribe((data) => console.log(data));
   }
 
   ngOnDestroy() {
@@ -91,8 +121,36 @@ export class SqlTableComponent
     }
   }
 
+  getDisplayedColumns(rawData: any[][]): string[] {
+    if (!rawData) {
+      return;
+    }
+    const displayedColumns = [...(rawData[0] as string[])]; // contains the labels
+    for (let i = 0; i < rawData[1].length; i++) {
+      displayedColumns[i] =
+        displayedColumns[i] + ` (type: ${rawData[1][i] as string})`; // add type of the column
+    }
+    return displayedColumns;
+  }
+
+  getTableDataSource(rawData: any[][]) {
+    const displayedColumns = this.getDisplayedColumns(rawData);
+    const src = rawData.slice(2).map((row) => {
+      // for the table we need to transform each row in our array to an object with the corresponding label as key
+      const obj = {};
+      for (let index = 0; index < row.length; index++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        obj[displayedColumns[index]] = row[index];
+      }
+      return obj;
+    });
+    return src;
+    const dataSource = new MatTableDataSource(src);
+    return dataSource;
+  }
+
   protected getParamsForQuery(query: string) {
-    if (!this.service) return null;
+    if (!this.service) return [];
     if (this.service.mobsosIDs.length === 0) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
@@ -100,7 +158,7 @@ export class SqlTableComponent
     }
     const serviceRegex = /\$SERVICE\$/g;
     const matches = query.match(serviceRegex);
-    const params = [];
+    const params: string[] = [];
     if (matches) {
       for (const match of matches) {
         // for now we just use the first ID
