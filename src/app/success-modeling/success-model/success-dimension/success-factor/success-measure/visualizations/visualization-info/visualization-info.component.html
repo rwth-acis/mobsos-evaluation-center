@@ -8,6 +8,6 @@
 <p *ngIf="fetchError" class="text-muted">
   {{
     'success-modeling.visualization.fetch-error'
-      | translate: { error: data.error.error }
+      | translate: { error: fetchError }
   }}
 </p>

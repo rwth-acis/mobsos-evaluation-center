@@ -350,10 +350,10 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
-  if (!props.query || props?.error?.status === 0) {
+  if (!props?.query || props?.error?.status === 0) {
     return currentVisualizationData;
   }
-  if (props.data) {
+  if (props?.data) {
     // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
@@ -363,7 +363,9 @@ function updateVisualizationData(
     };
   } else {
     currentVisualizationData[props.query] = {
-      data: currentVisualizationData[props.query]?.data || null,
+      data: currentVisualizationData[props.query]
+        ? currentVisualizationData[props.query].data
+        : null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
       loading: false,
@@ -437,14 +439,22 @@ function mergeServiceData(
           messageDescriptions,
           serviceName,
         );
-      if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {
-          name: serviceName,
-          alias: serviceAlias,
-          mobsosIDs: [],
-          serviceMessageDescriptions,
-        };
-      }
+
+      serviceCollection[serviceName] = {
+        ...serviceCollection[serviceName],
+        name: serviceName,
+        alias: serviceAlias,
+        mobsosIDs: [
+          ...serviceCollection[serviceName].mobsosIDs,
+          { agentID: serviceAgentID, registrationTime },
+        ],
+        serviceMessageDescriptions: {
+          ...serviceCollection[serviceName]
+            .serviceMessageDescriptions,
+          ...serviceMessageDescriptions,
+        },
+      };
+
       if (!serviceCollection[serviceName]) continue;
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
       mobsosIDs.push({
