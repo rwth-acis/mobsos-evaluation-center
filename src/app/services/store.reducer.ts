@@ -440,11 +440,6 @@ function mergeServiceData(
             : []),
           { agentID: serviceAgentID, registrationTime },
         ],
-        serviceMessageDescriptions: {
-          ...serviceCollection[serviceName]
-            ?.serviceMessageDescriptions,
-          ...serviceMessageDescriptions,
-        },
       };
 
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];

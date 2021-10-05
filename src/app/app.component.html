@@ -54,6 +54,18 @@
           <mat-icon matListIcon>code</mat-icon>
           {{ 'shared.pages.raw-edit' | translate }}
         </a>
+        <a
+          *ngIf="
+            environment.production === false && expertMode$ | async
+          "
+          mat-list-item
+          routerLink="/query-visualization"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
+        >
+          <mat-icon matListIcon>show_chart</mat-icon>
+          {{ 'shared.pages.query' | translate }}
+        </a>
         <!-- <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
           <mat-icon matListIcon>open_in_browser</mat-icon>
           {{ 'shared.pages.manage-questionnaires' | translate }}

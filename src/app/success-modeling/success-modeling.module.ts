@@ -25,7 +25,7 @@ import { PickMeasureDialogComponent } from './success-model/success-dimension/su
 import { QuestionnairesComponent } from './success-model/questionnaires/questionnaires.component';
 import { PickQuestionnaireDialogComponent } from './success-model/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { DeleteQuestionnaireDialogComponent } from './success-model/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-import { SqlTableComponent } from './success-model/success-dimension/success-factor/edit-measure-dialog/sql-table/sql-table.component';
+import { SqlTableComponent } from '../shared/sql-table/sql-table.component';
 import { VisualizationInfoComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization-info/visualization-info.component';
 import { RawDataDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/raw-data-dialog/raw-data-dialog.component';
 import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
@@ -49,7 +49,6 @@ import { SuccessModelingRoutingModule } from './success-modeling-routing.module'
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
-    SqlTableComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
     VisitorComponent,

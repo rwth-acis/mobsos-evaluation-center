@@ -7,6 +7,7 @@ export const translations = {
       'success-modeling': 'Erfolgsmodellierung',
       'raw-edit': 'Direktbearbeitung',
       'add-community': 'Community hinzufügen',
+      query: 'Query Visualisierer',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -18,6 +19,7 @@ export const translations = {
       'ok-label': 'OK',
       'save-label': 'Speichern',
       'yes-label': 'Ja',
+      visualization: 'Visualisierung',
     },
   },
   app: {
