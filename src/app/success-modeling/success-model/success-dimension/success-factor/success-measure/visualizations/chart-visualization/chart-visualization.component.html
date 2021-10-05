@@ -73,8 +73,10 @@
 </ng-template>
 
 <ng-template #noDataAndNoError
-  >No data available. Please refresh the page</ng-template
->
+  ><ng-container *ngIf="dataIsReady$ | async; else loading">
+    No data available. Please refresh the page
+  </ng-container>
+</ng-template>
 
 <ng-template #Error let-errorInput="error">
   <span
