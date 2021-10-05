@@ -70,7 +70,6 @@ export function localStorageSyncReducer(
     keys: [
       {
         Reducer: [
-          'services',
           'groups',
           'selectedGroupId',
           'selectedServiceName',
@@ -78,7 +77,6 @@ export function localStorageSyncReducer(
           'expertMode',
           'measureCatalog',
           'user',
-          'successModel',
           'editMode',
           'visualizationData',
           'currentWorkSpaceOwner',

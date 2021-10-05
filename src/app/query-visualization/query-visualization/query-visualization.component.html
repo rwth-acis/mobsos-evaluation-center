@@ -36,6 +36,4 @@
     {{ 'shared.elements.visualization' | translate }}
   </button>
 </mat-card>
-<app-sql-table
-  [query$]="form.get('query').valueChanges"
-></app-sql-table>
+<app-sql-table [query$]="queryInput$"></app-sql-table>

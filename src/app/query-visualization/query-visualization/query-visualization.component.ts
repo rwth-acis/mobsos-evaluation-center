@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-query-visualization',
@@ -14,9 +15,13 @@ export class QueryVisualizationComponent implements OnInit {
   };
 
   form = this.fb.group({
-    query: [''],
+    query: ['SELECT * FROM MESSAGE limit 1'],
     updateOn: 'blur',
   });
+
+  queryInput$ = this.form
+    .get('query')
+    .valueChanges.pipe(startWith('SELECT * FROM MESSAGE limit 1'));
 
   constructor(private fb: FormBuilder) {}
 

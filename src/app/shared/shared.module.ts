@@ -37,6 +37,8 @@ import { SqlTableComponent } from './sql-table/sql-table.component';
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
+    MatPaginatorModule,
+    MatTableModule,
   ],
   exports: [
     MatSelectModule,

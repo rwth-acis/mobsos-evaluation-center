@@ -1,22 +1,23 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 
-import { Observable, of, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import { ServiceInformation } from 'src/app/models/service.model';
-import { VisualizationData } from 'src/app/models/visualization.model';
 import { fetchVisualizationData } from 'src/app/services/store.actions';
 import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-sql-table',
@@ -29,13 +30,15 @@ export class SqlTableComponent
   @Input() query: string;
   @Input() service: ServiceInformation;
   @Input() query$: Observable<string>;
+  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
   queryParams: string[];
   vdata$: Observable<any[][]>;
 
   subscriptions$: Subscription[] = [];
   // eslint-disable-next-line @typescript-eslint/ban-types
-  dataSource$: Observable<any>;
+  dataSource$: Observable<MatTableDataSource<{}>>;
   displayedColumns$: Observable<unknown>;
   constructor(private ngrxStore: Store) {}
 
@@ -109,11 +112,21 @@ export class SqlTableComponent
       map((data) => this.getDisplayedColumns(data)),
     );
 
-    this.displayedColumns$.subscribe((data) => console.log(data));
+    this.dataSource$.subscribe((data) => console.log(data));
   }
 
   ngOnDestroy() {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource$ = this.dataSource$.pipe(
+      map((dataSource) => {
+        dataSource.sort = this.sort;
+        dataSource.paginator = this.paginator;
+        return dataSource;
+      }),
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -144,7 +157,7 @@ export class SqlTableComponent
       }
       return obj;
     });
-    return src;
+
     const dataSource = new MatTableDataSource(src);
     return dataSource;
   }
