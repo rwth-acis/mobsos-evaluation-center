@@ -363,7 +363,7 @@ function updateVisualizationData(
     };
   } else {
     currentVisualizationData[props.query] = {
-      data: currentVisualizationData[props.query].data || null,
+      data: currentVisualizationData[props.query]?.data || null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
       loading: false,
