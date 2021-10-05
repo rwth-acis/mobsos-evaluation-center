@@ -3,9 +3,11 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { ServiceInformation } from 'src/app/models/service.model';
 
 @Component({
@@ -13,12 +15,16 @@ import { ServiceInformation } from 'src/app/models/service.model';
   templateUrl: './sql-table.component.html',
   styleUrls: ['./sql-table.component.scss'],
 })
-export class SqlTableComponent implements OnInit, OnChanges {
+export class SqlTableComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() query: string;
   @Input() service: ServiceInformation;
+  @Input() query$: Observable<string>;
   results: any[][];
   queryParams: string[];
 
+  subscriptions$: Subscription[] = [];
   constructor() {}
 
   static htmlDecode(input) {
@@ -29,13 +35,27 @@ export class SqlTableComponent implements OnInit, OnChanges {
   protected static applyCompatibilityFixForVisualizationService(
     query: string,
   ) {
+    if (!query) return null;
     // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
-    query = query.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
+    query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
     query = SqlTableComponent.htmlDecode(query);
     return query;
   }
 
   ngOnInit() {
+    const sub = this.query$?.subscribe((q) => {
+      this.query = q;
+      const qParams = this.getParamsForQuery(q);
+      q = this.applyVariableReplacements(q);
+      q =
+        SqlTableComponent.applyCompatibilityFixForVisualizationService(
+          q,
+        );
+      this.query = q;
+      this.queryParams = qParams;
+      console.log(this.query);
+    });
+    this.subscriptions$.push(sub);
     console.error(this.query);
     let query = this.query;
     const queryParams = this.getParamsForQuery(query);
@@ -48,12 +68,17 @@ export class SqlTableComponent implements OnInit, OnChanges {
     this.queryParams = queryParams;
   }
 
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (Object.keys(changes).includes('query') && this.query) {
     }
   }
 
   protected getParamsForQuery(query: string) {
+    if (!this.service) return null;
     if (this.service.mobsosIDs.length === 0) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
@@ -73,6 +98,7 @@ export class SqlTableComponent implements OnInit, OnChanges {
   }
 
   protected applyVariableReplacements(query: string) {
+    if (!this.service) return query;
     let servicesString = '(';
     const services = [];
     for (const mobsosID of this.service?.mobsosIDs) {

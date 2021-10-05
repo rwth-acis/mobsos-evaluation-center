@@ -26,10 +26,11 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { SqlTableComponent } from './sql-table/sql-table.component';
 
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  declarations: [ConfirmationDialogComponent],
+  declarations: [ConfirmationDialogComponent, SqlTableComponent],
   imports: [
     CommonModule,
     TranslateModule,
@@ -64,6 +65,7 @@ import { MatDividerModule } from '@angular/material/divider';
     MatToolbarModule,
     MatSnackBarModule,
     FormsModule,
+    SqlTableComponent,
   ],
 })
 export class SharedModule {}

@@ -1,0 +1,42 @@
+<mat-card>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="standard">
+      <mat-label></mat-label>
+      <input matInput [formControl]="form.controls['query']" />
+
+      <mat-hint>SQL</mat-hint>
+    </mat-form-field>
+    {{ form.get('query').value }}
+  </form>
+  <br />
+  <!-- <mat-form-field>
+    <mat-label>{{
+      'success-modeling.edit-measure-dialog.visualization-select'
+        | translate
+    }}</mat-label>
+    <mat-select
+      required
+      formControlName="type"
+      
+    >
+      <mat-option
+        *ngFor="let item of visualizationChoices | keyvalue"
+        [value]="item.key"
+      >
+        {{ item.value | translate }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field> -->
+
+  <button
+    mat-raised-button
+    color="primary"
+    type="submit"
+    [disabled]="form.invalid"
+  >
+    {{ 'shared.elements.visualization' | translate }}
+  </button>
+</mat-card>
+<app-sql-table
+  [query$]="form.get('query').valueChanges"
+></app-sql-table>

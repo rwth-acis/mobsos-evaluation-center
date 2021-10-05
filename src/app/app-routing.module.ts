@@ -35,6 +35,13 @@ const routes: Routes = [
     path: 'join/:groupId/:serviceName/:username',
     component: JoinWorkSpaceComponent,
   },
+  {
+    path: 'query-visualization',
+    loadChildren: () =>
+      import('./query-visualization/query-visualization.module').then(
+        (m) => m.QueryVisualizationModule,
+      ),
+  },
 ];
 
 @NgModule({
