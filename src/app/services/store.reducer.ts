@@ -424,7 +424,7 @@ function mergeServiceData(
       const serviceName = tmp[0];
       let serviceAlias =
         servicesFromMobSOS[serviceAgentID]?.serviceAlias;
-      const registrationTime =
+      const registrationTime: number =
         servicesFromMobSOS[serviceAgentID]?.registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
@@ -434,19 +434,18 @@ function mergeServiceData(
         ...serviceCollection[serviceName],
         name: serviceName,
         alias: serviceAlias,
-        mobsosIDs: [
-          ...(serviceCollection[serviceName]
-            ? serviceCollection[serviceName].mobsosIDs
-            : []),
-          { agentID: serviceAgentID, registrationTime },
-        ],
       };
 
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
-      mobsosIDs.push({
-        agentID: serviceAgentID,
-        registrationTime,
-      });
+      if (
+        mobsosIDs.length < 100 &&
+        Date.now() - registrationTime > ONE_YEAR
+      ) {
+        mobsosIDs.push({
+          agentID: serviceAgentID,
+          registrationTime,
+        });
+      }
       mobsosIDs.sort(
         (a, b) => a.registrationTime - b.registrationTime,
       );
@@ -454,6 +453,8 @@ function mergeServiceData(
   }
   return serviceCollection;
 }
+
+const ONE_YEAR = 1601968704;
 
 function getMessageDescriptionForService(
   messageDescriptions,

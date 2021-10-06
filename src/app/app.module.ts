@@ -71,6 +71,7 @@ export function localStorageSyncReducer(
       {
         Reducer: [
           'groups',
+          'services',
           'selectedGroupId',
           'selectedServiceName',
           'questionnaires',
