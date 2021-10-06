@@ -438,7 +438,7 @@ function mergeServiceData(
 
       const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
       if (
-        mobsosIDs.length < 100 &&
+        mobsosIDs?.length < 100 &&
         Date.now() - registrationTime > ONE_YEAR
       ) {
         mobsosIDs.push({
