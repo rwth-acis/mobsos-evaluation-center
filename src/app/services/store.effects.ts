@@ -1,4 +1,7 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -409,7 +412,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([{ query, queryParams }, data]) => {
+      mergeMap(([props, data]) => {
+        const query = props.query;
+        const queryParams = props.queryParams;
         const dataForQuery = data[query];
 
         if (
@@ -424,22 +429,23 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((success) => {
-                if (success)
+              tap((res: HttpResponse<any> | HttpErrorResponse) => {
+                if (res.status < 400)
                   delete StateEffects.visualizationCalls[query];
               }),
-              map((vdata) =>
-                'error' in vdata
-                  ? Action.storeVisualizationData({
-                      error: vdata.error,
-                      query,
-                    })
-                  : Action.storeVisualizationData({
-                      data: vdata,
-                      query,
-                      error: null,
-                    }),
-              ),
+              map((response) => {
+                if (response instanceof HttpErrorResponse)
+                  return Action.storeVisualizationData({
+                    error: response,
+                    query,
+                  });
+                else
+                  return Action.storeVisualizationData({
+                    data: response,
+                    query,
+                    error: null,
+                  });
+              }),
               catchError((err) =>
                 of(
                   Action.storeVisualizationData({

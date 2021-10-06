@@ -44,16 +44,19 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     query: string,
     service: ServiceInformation,
   ): string {
+    if (!query?.includes('$SERVICES$')) {
+      return query;
+    }
     let servicesString = '(';
     const services = [];
     if (!this.service) {
       this.service = service;
     }
-    if (!this.service?.mobsosIDs) {
-      console.error('Service cannot be null');
-      return;
+    if (!service?.mobsosIDs) {
+      console.error('Service agent id cannot be null');
+      return query;
     }
-    for (const mobsosID of this.service.mobsosIDs) {
+    for (const mobsosID of service.mobsosIDs) {
       services.push(`"${mobsosID.agentID}"`);
     }
     servicesString += services.join(',') + ')';
