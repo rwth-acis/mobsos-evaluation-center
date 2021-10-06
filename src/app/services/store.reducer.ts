@@ -25,7 +25,7 @@ const _Reducer = createReducer(
     (state, { servicesFromL2P, servicesFromMobSOS }) => ({
       ...state,
       services: mergeServiceData(
-        { ...state.services },
+        state.services,
         servicesFromL2P,
         servicesFromMobSOS,
       ),
@@ -200,7 +200,7 @@ const _Reducer = createReducer(
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(
-      { ...state.visualizationData },
+      state.visualizationData,
       props,
     ),
   })),
@@ -349,6 +349,7 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
+  currentVisualizationData = cloneDeep(currentVisualizationData);
   if (!props?.query || props?.error?.status === 0) {
     return currentVisualizationData;
   }
@@ -363,7 +364,7 @@ function updateVisualizationData(
   } else {
     currentVisualizationData[props.query] = {
       data: currentVisualizationData[props.query]
-        ? currentVisualizationData[props.query].data
+        ? currentVisualizationData[props.query]?.data
         : null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
@@ -386,7 +387,7 @@ function mergeServiceData(
   servicesFromL2P,
   servicesFromMobSOS,
 ): ServiceCollection {
-  serviceCollection = { ...serviceCollection };
+  serviceCollection = cloneDeep(serviceCollection);
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
       if (service) {
@@ -436,7 +437,7 @@ function mergeServiceData(
         alias: serviceAlias,
       };
 
-      const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
+      const mobsosIDs = serviceCollection[serviceName].mobsosIDs;
       if (
         mobsosIDs?.length < 100 &&
         Date.now() - registrationTime > ONE_YEAR
@@ -446,7 +447,7 @@ function mergeServiceData(
           registrationTime,
         });
       }
-      mobsosIDs.sort(
+      mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime,
       );
     }
