@@ -39,3 +39,11 @@ export class Questionnaire implements IQuestionnaire {
     return questionnaire;
   }
 }
+
+export interface Question {
+  code: string;
+  type: 'ordinal' | 'dichotomous';
+  dimensionRecommendation: string;
+  factorRecommendation: string;
+  instructions: string;
+}
