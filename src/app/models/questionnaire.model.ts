@@ -9,6 +9,7 @@ export interface IQuestionnaire {
   owner?: string;
   url?: string;
   formXML?: string;
+  surveyId?: number;
 }
 // internal questionnaire class
 export class Questionnaire implements IQuestionnaire {
@@ -25,7 +26,7 @@ export class Questionnaire implements IQuestionnaire {
     return new Questionnaire(name, id, surveyId);
   }
 
-  public static fromPlainObject(obj: Questionnaire): Questionnaire {
+  public static fromPlainObject(obj: IQuestionnaire): Questionnaire {
     return new Questionnaire(obj.name, obj.id, obj.surveyId);
   }
 

@@ -166,30 +166,39 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
+    const a = cloneDeep(options);
+    delete a.headers.Authorization;
+    delete a.headers.access_token;
+
     const ngHttpOptions = {};
+    let ngHttpOptionsNoAuthorization = {};
 
     if (options.headers) {
       ngHttpOptions['headers'] = new HttpHeaders(options.headers);
+      ngHttpOptionsNoAuthorization['headers'] = new HttpHeaders(
+        a.headers,
+      );
     }
     if (options.body) {
       ngHttpOptions['body'] = options.body;
+      ngHttpOptionsNoAuthorization['body'] = a.body;
     }
     if (options.responseType) {
       ngHttpOptions['responseType'] = options.responseType;
+      ngHttpOptionsNoAuthorization['responseType'] = a.responseType;
     }
 
-    let ngHttpOptionsNoAuthorization = cloneDeep(ngHttpOptions);
-    ngHttpOptionsNoAuthorization['headers'] = new HttpHeaders({
-      ...options.headers,
-      Authorization: '',
-      access_token: '',
-    });
-
     return this.http
-      .request(options.method, url, ngHttpOptions)
+      .request(
+        options.method,
+        url,
+        url.includes('surveys')
+          ? ngHttpOptionsNoAuthorization
+          : ngHttpOptions,
+      )
       .pipe(
         catchError((err) =>
-          err.status === 401 && err.error === 'agent not found'
+          err.status === 401
             ? this.http.request(
                 options.method,
                 url,
@@ -331,7 +340,10 @@ export class Las2peerService {
       this.SURVEYS_QUESTIONNAIRES_PATH,
       '?full=1',
     );
-    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
+    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(
+      url,
+      { headers: { access_token: null, Authorization: null } },
+    )
       .then((response) =>
         this.fetchQuestionnaireForms(response.questionnaires),
       )
@@ -352,16 +364,21 @@ export class Las2peerService {
       this.SURVEYS_QUESTIONNAIRES_PATH,
       '?full=1',
     );
-    return this.makeRequestAndObserve<IQuestionnaire[]>(url).pipe(
-      map((response) => [response, response]),
-      switchMap(([questionnaires, response]) => [
-        questionnaires,
-        this.fetchQuestionnaireFormsAndObserve(
+    return this.makeRequestAndObserve<IQuestionnaire[]>(url, {
+      headers: { access_token: '', Authorization: '' },
+    }).pipe(
+      map(
+        (response: { questionnaires: IQuestionnaire[] }) =>
           response.questionnaires,
-        ),
-      ]),
-      map(([questionnaires, forms]: [IQuestionnaire[], string[]]) => {
-        for (let index = 0; index < questionnaires.length; index++) {
+      ),
+      switchMap((questionnaires) =>
+        forkJoin([
+          this.fetchQuestionnaireFormsAndObserve(questionnaires),
+          of(questionnaires),
+        ]),
+      ),
+      map(([forms, questionnaires]) => {
+        for (let index = 0; index < questionnaires?.length; index++) {
           const questionnaire = questionnaires[index];
           questionnaire.name = decodeURIComponent(questionnaire.name);
           questionnaire.description = decodeURIComponent(
@@ -370,7 +387,7 @@ export class Las2peerService {
           questionnaire.formXML = forms[index];
         }
 
-        return questionnaires as IQuestionnaire[];
+        return questionnaires;
       }),
       timeout(60000),
     );

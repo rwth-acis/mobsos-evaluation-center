@@ -6,7 +6,12 @@ import {
 } from '@angular/core';
 
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
 import { IQuestionnaire } from 'src/app/models/questionnaire.model';
+import {
+  QUESTIONNAIRES,
+  QUESTIONNAIRES_NOT_IN_MODEL,
+} from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -20,10 +25,13 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  questionnaires$ = this.ngrxStore.select(
+    QUESTIONNAIRES_NOT_IN_MODEL,
+  );
 
   constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public availableQuestionnaires: IQuestionnaire[],
+    @Inject(MAT_DIALOG_DATA) data,
+    private ngrxStore: Store,
   ) {}
 
   static parseXml(xml): Document {

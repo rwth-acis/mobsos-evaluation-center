@@ -9,12 +9,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURES,
-  QUESTIONNAIRES,
+  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
   EDIT_MODE,
+  QUESTIONNAIRES,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -93,7 +94,9 @@ export class QuestionnairesComponent implements OnInit {
     this.subscriptions$.push(sub);
 
     sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs;
+      this.availableQuestionnaires = qs.map((q) =>
+        Questionnaire.fromPlainObject(q),
+      );
     });
     this.subscriptions$.push(sub);
 
