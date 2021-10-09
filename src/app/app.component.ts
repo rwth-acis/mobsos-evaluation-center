@@ -30,19 +30,21 @@ import {
   EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
-  SELECTED_GROUP,
   USER,
   USER_GROUPS,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
 } from './services/store.selectors';
 import {
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
+  take,
+  timeout,
   withLatestFrom,
 } from 'rxjs/operators';
+
 import { Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -97,12 +99,6 @@ export class AppComponent
     .select(USER)
     .pipe(filter((user) => !!user));
 
-  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP).pipe(
-    filter((group) => !!group),
-    distinctUntilKeyChanged('id'),
-    map((group) => group.id),
-  );
-
   selectedGroupId: string; // used to show the selected group in the form field
 
   private userManager = new UserManager({});
@@ -123,7 +119,7 @@ export class AppComponent
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 600px)');
+    this.mobileQuery = window.matchMedia('(max-width: 800px)');
     this.mobileQueryListener = () =>
       this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
@@ -134,10 +130,13 @@ export class AppComponent
   }
 
   ngOnInit(): void {
-    let sub = this.selectedGroupId$.subscribe((id) => {
-      this.selectedGroupId = id;
-    });
-    this.subscriptions$.push(sub);
+    void this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
+      .toPromise()
+      .then((id) => {
+        this.selectedGroupId = id;
+      });
 
     const silentLoginFunc = () =>
       this.userManager
@@ -149,11 +148,13 @@ export class AppComponent
         });
     void silentLoginFunc();
 
-    sub = this.user$
+    let sub = this.user$
       .pipe(distinctUntilKeyChanged('signedIn'))
       .subscribe((user) => {
-        clearInterval(this.silentSigninIntervalHandle);
+        // callback only called when signedIn state changes
+        clearInterval(this.silentSigninIntervalHandle); // clear old interval
         if (user?.signedIn) {
+          // if signed in, create a new interval
           this.silentSigninIntervalHandle = setInterval(
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             silentLoginFunc,
@@ -187,9 +188,8 @@ export class AppComponent
     }
   }
 
-  ngAfterViewInit(): void {
-    const sub = this.ngrxStore
-      .select(USER)
+  async ngAfterViewInit(): Promise<void> {
+    const [, groupId, serviceName] = await this.user$
       .pipe(
         filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
@@ -198,28 +198,27 @@ export class AppComponent
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ),
-        first(),
+        take(1),
       )
-      .subscribe(([, groupId, serviceName]) => {
-        // only gets called once if user is signed in
-        // initial fetching
-        this.ngrxStore.dispatch(fetchGroups());
-        this.ngrxStore.dispatch(fetchServices());
-        if (groupId) {
-          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-          if (serviceName) {
-            this.ngrxStore.dispatch(
-              fetchSuccessModel({ groupId, serviceName }),
-            );
-            this.ngrxStore.dispatch(
-              fetchMessageDescriptions({
-                serviceName,
-              }),
-            );
-          }
-        }
-      });
-    this.subscriptions$.push(sub);
+      .toPromise();
+
+    // only gets called once if user is signed in
+    // initial fetching
+    this.ngrxStore.dispatch(fetchGroups());
+    this.ngrxStore.dispatch(fetchServices());
+    if (groupId) {
+      this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+      if (serviceName) {
+        this.ngrxStore.dispatch(
+          fetchSuccessModel({ groupId, serviceName }),
+        );
+        this.ngrxStore.dispatch(
+          fetchMessageDescriptions({
+            serviceName,
+          }),
+        );
+      }
+    }
   }
 
   ngOnDestroy(): void {
