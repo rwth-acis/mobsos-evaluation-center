@@ -132,7 +132,7 @@ export class WorkspaceService {
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupID);
 
-    /*******************************
+    /** *****************************
      * Add our local stuff to the community workspace
      */
     if (!Object.keys(communityWorkspace).includes(username)) {
@@ -300,7 +300,7 @@ export class WorkspaceService {
     return applicationWorkspace;
   }
 
-  switchWorkspace(
+  joinWorkspace(
     owner: string,
     currentServiceName: string,
     username: string,
@@ -309,7 +309,7 @@ export class WorkspaceService {
     catalog?: MeasureCatalog,
     role?: UserRole,
     vdata?: VisualizationCollection,
-  ) {
+  ): void {
     if (!owner) {
       throw new Error('owner cannot be null');
     }
@@ -326,7 +326,7 @@ export class WorkspaceService {
         'Cannot join workspace as it is not know in communityWorkspace',
       );
     }
-    const currentApplicationWorkspace = communityWorkspace[owner][
+    let currentApplicationWorkspace = communityWorkspace[owner][
       currentServiceName
     ] as ApplicationWorkspace;
     if (!currentApplicationWorkspace) {
@@ -335,25 +335,11 @@ export class WorkspaceService {
       );
     }
     if (vdata) {
-      for (const [query, value] of Object.entries(vdata)) {
-        if (value.data && value?.fetchDate) {
-          let workspaceData =
-            currentApplicationWorkspace.visualizationData[query];
-          if (
-            !workspaceData?.fetchDate ||
-            !(
-              Date.parse(workspaceData.fetchDate) >
-              Date.parse(value?.fetchDate)
-            )
-          ) {
-            // we have more recent data so we add our data
-            workspaceData = {
-              ...workspaceData,
-              data: value.data,
-            };
-          }
-        }
-      }
+      currentApplicationWorkspace =
+        this.updateWorkSpaceVisualizationData(
+          vdata,
+          currentApplicationWorkspace,
+        );
     }
 
     if (username === owner) {
@@ -369,11 +355,7 @@ export class WorkspaceService {
       visitor.username.includes('(guest'),
     );
 
-    if (
-      role === UserRole.LURKER &&
-      !username.includes('(guest') &&
-      !containedInVisitors
-    ) {
+    if (role === UserRole.LURKER && !username.includes('(guest')) {
       const n = guestVisitors.length + 1;
       username = username + ' (guest ' + n.toString() + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
       localStorage.setItem('visitor-username', username); // in the future anonymous user gets reassigned the same name
@@ -388,27 +370,40 @@ export class WorkspaceService {
     }
     visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
     currentApplicationWorkspace.visitors = visitors;
-    // communityWorkspace[owner][currentServiceName].visitors = visitors;
+
     if (owner === username) {
       currentApplicationWorkspace.catalog = catalog;
       currentApplicationWorkspace.model = model;
     }
-    if (role !== UserRole.LURKER && vdata) {
-      const vdataInWorkspace =
-        currentApplicationWorkspace.visualizationData;
-      for (const [query, data] of Object.entries(vdata)) {
+    this.communityWorkspace$.next(communityWorkspace);
+    setTimeout(() => {
+      this.syncObject(this.currentGroupId);
+    });
+  }
+  updateWorkSpaceVisualizationData(
+    vdata: VisualizationCollection,
+    currentApplicationWorkspace: ApplicationWorkspace,
+  ): ApplicationWorkspace {
+    for (const [query, value] of Object.entries(vdata)) {
+      if (value.data && value?.fetchDate) {
+        let workspaceData =
+          currentApplicationWorkspace.visualizationData[query];
         if (
-          data.data &&
-          (!vdataInWorkspace[query] ||
-            data.fetchDate > vdataInWorkspace[query].fetchDate)
+          !workspaceData?.fetchDate ||
+          !(
+            Date.parse(workspaceData.fetchDate) >
+            Date.parse(value?.fetchDate)
+          )
         ) {
-          // Workspace visualization data non-existant or local visualization data more recent
-          vdataInWorkspace[query] = data;
+          // we have more recent data so we add our data
+          workspaceData = {
+            ...workspaceData,
+            data: value.data,
+          };
         }
       }
     }
-    this.communityWorkspace$.next(communityWorkspace);
-    this.syncObject(this.currentGroupId);
+    return currentApplicationWorkspace;
   }
 
   private leaveWorkspace(
