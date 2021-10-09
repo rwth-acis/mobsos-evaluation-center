@@ -183,15 +183,6 @@ const _Reducer = createReducer(
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
     communityWorkspace: props.workspace,
-    selectedGroupId: props.selectedGroupId
-      ? props.selectedGroupId
-      : state.selectedGroupId,
-    selectedServiceName: props.serviceName
-      ? props.serviceName
-      : state.selectedServiceName,
-    currentWorkSpaceOwner: props.owner
-      ? props.owner
-      : state.currentWorkSpaceOwner,
   })),
   on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
     ...state,

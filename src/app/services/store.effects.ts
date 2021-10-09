@@ -598,7 +598,7 @@ export class StateEffects {
                   username = user.profile.preferred_username;
                 }
                 try {
-                  this.workspaceService.switchWorkspace(
+                  this.workspaceService.joinWorkspace(
                     action.owner,
                     action.serviceName,
                     username,
@@ -645,8 +645,6 @@ export class StateEffects {
                 } else {
                   return Action.setCommunityWorkspace({
                     workspace: currentCommunityWorkspace,
-                    owner,
-                    serviceName: action.serviceName,
                   });
                 }
               } else {
