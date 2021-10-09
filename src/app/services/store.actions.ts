@@ -50,6 +50,7 @@ export enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
+  ADD_QUESTIONNAIRE_TO_MODEL = 'adds a questionnaire to the success model',
   EDIT_MEASURE = 'updates an existing measure in catalog and success model',
   EDIT_MEASURE_IN_CATALOG = 'updates an existing measure in catalog only ',
   SET_COMMUNITY_WORKSPACE = 'update the community workspace',
@@ -110,6 +111,10 @@ export const storeMessageDescriptions = createAction(
     descriptions: { [key: string]: string };
     serviceName: string;
   }>(),
+);
+export const addQuestionnaireToModel = createAction(
+  StoreActions.ADD_QUESTIONNAIRE_TO_MODEL,
+  props<{ questionnaire: Questionnaire }>(),
 );
 export const storeQuestionnaires = createAction(
   StoreActions.STORE_QUESTIONNAIRES,
