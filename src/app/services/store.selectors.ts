@@ -233,7 +233,7 @@ export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(
   QUESTIONNAIRES_FROM_SUCCESS_MODEL,
   QUESTIONNAIRES,
   (qsInModel, qs) =>
-    qs.filter(
+    qs?.filter(
       (q) => !qsInModel.find((qfromModel) => (qfromModel.id = q.id)),
     ),
 );
