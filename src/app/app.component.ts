@@ -36,7 +36,6 @@ import {
   _SELECTED_SERVICE_NAME,
 } from './services/store.selectors';
 import {
-  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
