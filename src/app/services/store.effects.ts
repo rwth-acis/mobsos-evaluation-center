@@ -592,7 +592,6 @@ export class StateEffects {
           .pipe(
             map((synced) => {
               if (synced) {
-                let owner = action.owner;
                 let username = action.username;
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
@@ -618,7 +617,6 @@ export class StateEffects {
                       model,
                       vdata,
                     );
-                    owner = user?.profile.preferred_username;
                   } else {
                     return Action.failure();
                   }
