@@ -26,7 +26,6 @@ import {
   catchError,
   distinctUntilChanged,
   filter,
-  first,
   take,
   throttleTime,
   timeout,
@@ -94,14 +93,14 @@ export class WorkspaceService {
   /**
    * an observable of the community workspace
    */
-  get communityWorkspace() {
+  get communityWorkspace(): Observable<CommunityWorkspace> {
     return this.communityWorkspace$.asObservable();
   }
 
   /**
-   * the value of the current community workspace
+   * the current value of the current community workspace
    */
-  get currentCommunityWorkspace() {
+  get currentCommunityWorkspace(): CommunityWorkspace {
     return this.communityWorkspace$.getValue();
   }
 
@@ -121,7 +120,7 @@ export class WorkspaceService {
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
     visualizationData?: VisualizationCollection,
-  ) {
+  ): void {
     if (!username) {
       throw new Error('user cannot be null');
     }
@@ -214,7 +213,7 @@ export class WorkspaceService {
    * @param username username of the current user
    * @param serviceName name of the application
    */
-  removeWorkspace(username: string, serviceName: string) {
+  removeWorkspace(username: string, serviceName: string): void {
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
     );
