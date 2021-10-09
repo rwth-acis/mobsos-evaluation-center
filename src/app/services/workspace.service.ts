@@ -27,6 +27,7 @@ import {
   distinctUntilChanged,
   filter,
   first,
+  take,
   throttleTime,
   timeout,
 } from 'rxjs/operators';
@@ -187,9 +188,9 @@ export class WorkspaceService {
     this.communityWorkspace$.next(communityWorkspace);
     return this.syncDone$.asObservable().pipe(
       timeout(2 * ONE_MINUTE_IN_MS),
-      filter((syncDone) => syncDone === true),
+      filter((syncDone) => syncDone),
       catchError(() => of(false)),
-      first(),
+      take(1),
     );
   }
 
