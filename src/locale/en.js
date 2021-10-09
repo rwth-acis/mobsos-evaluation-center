@@ -83,6 +83,7 @@ export const translations = {
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    requirements: { title: 'Requirements' },
     visualization: {
       'fetch-info':
         'Showing data fetched on {{date}} from the server ',
