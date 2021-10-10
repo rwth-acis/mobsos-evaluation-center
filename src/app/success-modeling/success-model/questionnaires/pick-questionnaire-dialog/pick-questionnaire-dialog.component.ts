@@ -7,11 +7,11 @@ import {
 
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { IQuestionnaire } from 'src/app/models/questionnaire.model';
 import {
-  QUESTIONNAIRES,
-  QUESTIONNAIRES_NOT_IN_MODEL,
-} from 'src/app/services/store.selectors';
+  IQuestionnaire,
+  Questionnaire,
+} from 'src/app/models/questionnaire.model';
+import { QUESTIONNAIRES_NOT_IN_MODEL } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -30,11 +30,12 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   );
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) data,
+    @Inject(MAT_DIALOG_DATA)
+    data: { questionnaires: Questionnaire[] },
     private ngrxStore: Store,
   ) {}
 
-  static parseXml(xml): Document {
+  static parseXml(xml: string): Document {
     const parser = new DOMParser();
     return parser.parseFromString(xml, 'text/xml');
   }
@@ -58,7 +59,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     }
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 
   getNumberOfQuestions(): number {
     if (!this.selectedQuestionnaire) {
@@ -84,7 +85,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     for (const recommendation of successModelRecommendations) {
       resultSet.add(recommendation.getAttribute('dimension'));
     }
-    let result = [];
+    let result: string[] = [];
     resultSet.forEach((value) => {
       const translateStringValue =
         PickQuestionnaireDialogComponent.getTranslateStringForDimensionName(
@@ -96,7 +97,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
     return result;
   }
 
-  onAddMeasuresChange(addMeasures) {
+  onAddMeasuresChange(addMeasures: boolean): void {
     if (!addMeasures) {
       this.assignMeasures = false;
     }

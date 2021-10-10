@@ -9,7 +9,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURES,
-  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
@@ -57,7 +56,7 @@ export class QuestionnairesComponent implements OnInit {
   model: SuccessModel;
   service: ServiceInformation;
   editMode = false;
-  groupID: string;
+  group: GroupInformation;
 
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   group$ = this.ngrxStore.select(SELECTED_GROUP);
@@ -66,7 +65,7 @@ export class QuestionnairesComponent implements OnInit {
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
-  group: GroupInformation;
+
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   subscriptions$: Subscription[] = [];
@@ -236,7 +235,6 @@ export class QuestionnairesComponent implements OnInit {
     this.ngrxStore.dispatch(fetchQuestionnaires());
     let sub = this.group$.subscribe((group) => {
       this.group = group;
-      this.groupID = group.id;
     });
     this.subscriptions$.push(sub);
 
