@@ -77,63 +77,8 @@ export class Las2peerService {
   async makeRequest<T>(
     url: string,
     options: HttpOptions = {},
-  ): Promise<T> {
-    options = merge(
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept-language': 'en-US',
-        },
-      },
-      options,
-    ) as HttpOptions;
-
-    this.userCredentials = JSON.parse(
-      localStorage.getItem('profile'),
-    );
-    const username = this.userCredentials?.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile'))
-      ?.sub as string;
-    const token = localStorage.getItem('access_token');
-    if (username) {
-      options.headers.Authorization =
-        'Basic ' + btoa(`${username}:${sub}`);
-      options.headers.access_token = token;
-    }
-
-    const ngHttpOptions: {
-      body?: any;
-      headers?:
-        | HttpHeaders
-        | {
-            [header: string]: string | string[];
-          };
-      observe?: 'body';
-      params?:
-        | HttpParams
-        | {
-            [param: string]: string | string[];
-          };
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      reportProgress?: boolean;
-      withCredentials?: boolean;
-    } = {};
-    if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders(options.headers);
-    }
-    if (options.body) {
-      ngHttpOptions.body = options.body;
-    }
-    if (options.responseType) {
-      ngHttpOptions.responseType = options.responseType;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this.http
-      .request(options.method, url, ngHttpOptions)
-      .pipe(share())
-      .toPromise();
+  ): Promise<any> {
+    return this.makeRequestAndObserve(url, options).toPromise();
   }
 
   makeRequestAndObserve<T>(
