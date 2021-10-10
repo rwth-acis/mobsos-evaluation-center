@@ -375,6 +375,10 @@ export class QuestionnairesComponent implements OnInit {
         this.service.alias,
         questionnaire.lang,
       );
+      if (!('id' in response)) {
+        throw new Error('Invalid survey id: undefined');
+      }
+
       const surveyId = parseInt((response as { id: string }).id, 10);
 
       await this.las2peer.setQuestionnaireForSurvey(
