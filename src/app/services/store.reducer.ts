@@ -31,18 +31,14 @@ const _Reducer = createReducer(
       ),
     }),
   ),
-  on(
-    Actions.storeGroups,
-    (state, { groupsFromContactService, groupsFromMobSOS }) => ({
-      ...state,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      groups: mergeGroupData(
-        { ...state.groups },
-        groupsFromContactService,
-        groupsFromMobSOS,
-      ),
-    }),
-  ),
+  on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
+    ...state,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    groups: mergeGroupData(
+      { ...state.groups },
+      groupsFromContactService,
+    ),
+  })),
 
   on(Actions.resetSuccessModel, (state) => ({
     ...state,
@@ -479,7 +475,7 @@ function getMessageDescriptionForService(
 function mergeGroupData(
   groups,
   groupsFromContactService,
-  groupsFromMobSOS,
+  groupsFromMobSOS?,
 ) {
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
