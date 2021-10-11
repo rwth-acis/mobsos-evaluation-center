@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
@@ -116,7 +117,7 @@ export class Las2peerService {
     delete a.headers.access_token;
 
     const ngHttpOptions = {};
-    let ngHttpOptionsNoAuthorization = {};
+    const ngHttpOptionsNoAuthorization = {};
 
     if (options.headers) {
       ngHttpOptions['headers'] = new HttpHeaders(options.headers);
