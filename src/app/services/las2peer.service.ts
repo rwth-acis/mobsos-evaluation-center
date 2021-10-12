@@ -393,6 +393,12 @@ export class Las2peerService {
     return questionnaires;
   }
 
+  /**
+   * Returns all questionaire forms fetched from the server as an observable
+   *
+   * @param questionnaires the questionnaires for which to fetch the forms
+   * @returns an observable of the forms
+   */
   fetchQuestionnaireFormsAndObserve(
     questionnaires: IQuestionnaire[],
   ) {
@@ -411,6 +417,7 @@ export class Las2peerService {
     );
     return forkJoin(questionaireFormRequests);
   }
+
   async createSurvey(
     name: string,
     description: string,
