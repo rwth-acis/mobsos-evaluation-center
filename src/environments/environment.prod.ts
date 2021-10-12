@@ -26,7 +26,7 @@ export const environment = {
     'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     window.env.mobsosSurveysUrl ||
-    'https://surveys.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
+    'https://surveys.tech4comp.dbis.rwth-aachen.de',
   servicePollingInterval: 10,
   // interval at which visualizations should be refetched from server
   visualizationRefreshInterval: 12 * 60,
