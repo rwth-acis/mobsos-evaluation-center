@@ -29,6 +29,9 @@ import {
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
+export const QUESTIONNAIRES = (state: StoreState) =>
+  state.Reducer.questionnaires;
+
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
 
@@ -221,9 +224,18 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
     !dimensions?.find((dimension) => dimension.length > 0),
 );
 
-export const QUESTIONNAIRES = createSelector(
+export const QUESTIONNAIRES_FROM_SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) => model?.questionnaires,
+);
+
+export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(
+  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
+  QUESTIONNAIRES,
+  (qsInModel, qs) =>
+    qs?.filter(
+      (q) => !qsInModel.find((qfromModel) => (qfromModel.id = q.id)),
+    ),
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>

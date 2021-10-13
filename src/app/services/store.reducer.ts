@@ -179,6 +179,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
+  on(Actions.storeQuestionnaires, (state, { questionnaires }) => ({
+    ...state,
+    questionnaires,
+  })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
     editMode: true,
