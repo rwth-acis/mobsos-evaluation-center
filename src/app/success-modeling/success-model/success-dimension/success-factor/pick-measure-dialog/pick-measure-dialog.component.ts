@@ -73,7 +73,9 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
     map(([measures, input]) =>
       input?.trim().length > 0
         ? measures.filter((measure) =>
-            measure.name.toLowerCase().includes(input.toLowerCase()),
+            measure.name
+              ?.toLowerCase()
+              .includes(input?.toLowerCase()),
           )
         : measures,
     ),

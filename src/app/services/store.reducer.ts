@@ -25,25 +25,17 @@ const _Reducer = createReducer(
     (state, { servicesFromL2P, servicesFromMobSOS }) => ({
       ...state,
       services: mergeServiceData(
-        { ...state.services },
+        state.services,
         servicesFromL2P,
-        { ...state.messageDescriptions },
         servicesFromMobSOS,
       ),
     }),
   ),
-  on(
-    Actions.storeGroups,
-    (state, { groupsFromContactService, groupsFromMobSOS }) => ({
-      ...state,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      groups: mergeGroupData(
-        { ...state.groups },
-        groupsFromContactService,
-        groupsFromMobSOS,
-      ),
-    }),
-  ),
+  on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
+    ...state,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    groups: mergeGroupData(state.groups, groupsFromContactService),
+  })),
 
   on(Actions.resetSuccessModel, (state) => ({
     ...state,
@@ -184,6 +176,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
+  on(Actions.storeQuestionnaires, (state, { questionnaires }) => ({
+    ...state,
+    questionnaires,
+  })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
     editMode: true,
@@ -201,7 +197,7 @@ const _Reducer = createReducer(
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(
-      { ...state.visualizationData },
+      state.visualizationData,
       props,
     ),
   })),
@@ -350,10 +346,11 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
-  if (!props.query || props?.error?.status < 200) {
+  currentVisualizationData = cloneDeep(currentVisualizationData);
+  if (!props?.query || props?.error?.status === 0) {
     return currentVisualizationData;
   }
-  if (props.data) {
+  if (props?.data) {
     // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
@@ -363,7 +360,9 @@ function updateVisualizationData(
     };
   } else {
     currentVisualizationData[props.query] = {
-      ...currentVisualizationData[props.query],
+      data: currentVisualizationData[props.query]
+        ? currentVisualizationData[props.query]?.data
+        : null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
       loading: false,
@@ -383,10 +382,9 @@ function updateVisualizationData(
 function mergeServiceData(
   serviceCollection: ServiceCollection,
   servicesFromL2P,
-  messageDescriptions,
   servicesFromMobSOS,
 ): ServiceCollection {
-  serviceCollection = { ...serviceCollection };
+  serviceCollection = cloneDeep(serviceCollection);
   if (servicesFromL2P) {
     for (const service of servicesFromL2P) {
       if (service) {
@@ -407,10 +405,9 @@ function mergeServiceData(
           name: serviceIdentifier,
           alias: latestRelease?.supplement?.name,
           mobsosIDs: [],
-          serviceMessageDescriptions: getMessageDescriptionForService(
-            messageDescriptions,
-            serviceIdentifier,
-          ),
+          serviceMessageDescriptions:
+            serviceCollection[serviceIdentifier]
+              ?.serviceMessageDescriptions,
         };
       }
     }
@@ -425,43 +422,37 @@ function mergeServiceData(
       const serviceName = tmp[0];
       let serviceAlias =
         servicesFromMobSOS[serviceAgentID]?.serviceAlias;
-      const registrationTime =
+      const registrationTime: number =
         servicesFromMobSOS[serviceAgentID]?.registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
 
-      // only add mobsos service data if the data from the discovery is missing
-      const serviceMessageDescriptions =
-        getMessageDescriptionForService(
-          messageDescriptions,
-          serviceName,
-        );
-      if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {
-          name: serviceName,
-          alias: serviceAlias,
-          mobsosIDs: [],
-          serviceMessageDescriptions,
-        };
-      }
-      if (!serviceCollection[serviceName]) continue;
-      const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
-      mobsosIDs.push({
-        agentID: serviceAgentID,
-        registrationTime,
-      });
-      mobsosIDs.sort(
-        (a, b) => a.registrationTime - b.registrationTime,
-      );
       serviceCollection[serviceName] = {
         ...serviceCollection[serviceName],
-        serviceMessageDescriptions: { ...serviceMessageDescriptions },
+        name: serviceName,
+        alias: serviceAlias,
       };
+
+      const mobsosIDs = serviceCollection[serviceName].mobsosIDs;
+      if (
+        mobsosIDs?.length < 100 &&
+        Date.now() - registrationTime > ONE_YEAR
+      ) {
+        mobsosIDs.push({
+          agentID: serviceAgentID,
+          registrationTime,
+        });
+      }
+      mobsosIDs?.sort(
+        (a, b) => a.registrationTime - b.registrationTime,
+      );
     }
   }
   return serviceCollection;
 }
+
+const ONE_YEAR = 1601968704;
 
 function getMessageDescriptionForService(
   messageDescriptions,
@@ -485,11 +476,11 @@ function getMessageDescriptionForService(
 function mergeGroupData(
   groups,
   groupsFromContactService,
-  groupsFromMobSOS,
+  groupsFromMobSOS?,
 ) {
+  groups = cloneDeep(groups);
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
-    groups = {};
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       groups[groupID] = {

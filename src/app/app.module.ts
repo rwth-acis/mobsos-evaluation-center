@@ -70,15 +70,14 @@ export function localStorageSyncReducer(
     keys: [
       {
         Reducer: [
-          'services',
           'groups',
+          'services',
           'selectedGroupId',
           'selectedServiceName',
           'questionnaires',
           'expertMode',
           'measureCatalog',
           'user',
-          'successModel',
           'editMode',
           'visualizationData',
           'currentWorkSpaceOwner',

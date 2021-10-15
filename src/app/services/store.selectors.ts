@@ -29,6 +29,9 @@ import {
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
 
+export const QUESTIONNAIRES = (state: StoreState) =>
+  state.Reducer.questionnaires;
+
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
 
@@ -66,11 +69,13 @@ export const _SELECTED_GROUP_ID = (state: StoreState) =>
 const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
 export const GROUPS = (state: StoreState) =>
-  state.Reducer?.groups
-    ? Object.values(state.Reducer.groups).sort((a, b) =>
+  state.Reducer.groups === undefined
+    ? undefined
+    : state.Reducer.groups === null
+    ? []
+    : Object.values(state.Reducer.groups).sort((a, b) =>
         sortGroupsByName(a, b),
-      )
-    : undefined;
+      );
 
 export const USER_GROUPS = createSelector(GROUPS, (groups) =>
   groups?.filter((g) => g.member),
@@ -219,9 +224,18 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
     !dimensions?.find((dimension) => dimension.length > 0),
 );
 
-export const QUESTIONNAIRES = createSelector(
+export const QUESTIONNAIRES_FROM_SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) => model?.questionnaires,
+);
+
+export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(
+  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
+  QUESTIONNAIRES,
+  (qsInModel, qs) =>
+    qs?.filter(
+      (q) => !qsInModel.find((qfromModel) => (qfromModel.id = q.id)),
+    ),
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
@@ -348,7 +362,7 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
   APPLICATION_WORKSPACE,
-  (service, workspace) => (service ? service : workspace.service),
+  (service, workspace) => (service ? service : workspace?.service),
 );
 
 function parseXml(xml: string) {
@@ -413,7 +427,7 @@ function sortGroupsByName(
   a: GroupInformation,
   b: GroupInformation,
 ): number {
-  if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase()) {
+  if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase()) {
     return -1;
   } else return 1;
 }
@@ -424,11 +438,11 @@ function sortServicesByName(
   if (a.alias && !b.alias) return -1;
   else if (b.alias && !a.alias) return 1;
   if (a.alias && b.alias) {
-    if (a.alias.toLocaleLowerCase() < b.alias.toLocaleLowerCase())
+    if (a.alias?.toLocaleLowerCase() < b.alias?.toLocaleLowerCase())
       return -1;
     else return 1;
   } else {
-    if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase())
+    if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase())
       return -1;
     else return 1;
   }

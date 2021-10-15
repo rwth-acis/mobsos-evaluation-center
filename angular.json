@@ -55,7 +55,8 @@
               "node_modules/marked/lib/marked.js",
               "node_modules/prismjs/prism.js",
               "node_modules/prismjs/components/prism-sql.min.js",
-              "node_modules/prismjs/components/prism-json.min.js"
+              "node_modules/prismjs/components/prism-json.min.js",
+              "node_modules/emoji-toolkit/lib/js/joypixels.min.js"
             ]
           },
           "configurations": {

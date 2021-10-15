@@ -1,4 +1,7 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -14,10 +17,12 @@ import {
   share,
   tap,
   delay,
+  distinctUntilKeyChanged,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
+import { ServiceMessageDescriptions } from '../models/service.model';
 
 import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -94,16 +99,23 @@ export class StateEffects {
       ofType(Action.fetchGroups),
       mergeMap(() =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-          map((groupsFromContactService) =>
-            Action.storeGroups({
-              groupsFromContactService,
-              groupsFromMobSOS: null,
-            }),
-          ),
+          map((response) => {
+            if (response instanceof HttpErrorResponse) {
+              throw response;
+            }
+            return Action.storeGroups({
+              groupsFromContactService: response ? response : [],
+            });
+          }),
           catchError((err) => {
             console.error(
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
+            );
+            this.ngrxStore.dispatch(
+              Action.storeGroups({
+                groupsFromContactService: [],
+              }),
             );
             return of(Action.failureResponse(err));
           }),
@@ -111,6 +123,11 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
+        this.ngrxStore.dispatch(
+          Action.storeGroups({
+            groupsFromContactService: [],
+          }),
+        );
         return of(Action.failureResponse(err));
       }),
       share(),
@@ -185,10 +202,14 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchMessageDescriptions),
       filter(({ serviceName }) => !!serviceName),
+      distinctUntilKeyChanged('serviceName'),
       switchMap(({ serviceName }) =>
         this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions) =>
-            Action.storeMessageDescriptions(descriptions),
+          map((descriptions: ServiceMessageDescriptions) =>
+            Action.storeMessageDescriptions({
+              descriptions,
+              serviceName,
+            }),
           ),
           catchError((err) => {
             console.error(err);
@@ -392,7 +413,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([{ query, queryParams }, data]) => {
+      mergeMap(([props, data]) => {
+        const query = props.query;
+        const queryParams = props.queryParams;
         const dataForQuery = data[query];
 
         if (
@@ -407,21 +430,28 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((success) => {
-                if (success)
+              tap((res: HttpResponse<any> | HttpErrorResponse) => {
+                if (res.status < 400)
                   delete StateEffects.visualizationCalls[query];
               }),
-              map((vdata) =>
-                Action.storeVisualizationData({
-                  data: vdata,
-                  query,
-                  error: null,
-                }),
-              ),
+              map((response) => {
+                if (response instanceof HttpErrorResponse)
+                  return Action.storeVisualizationData({
+                    error: response,
+                    query,
+                  });
+                else
+                  return Action.storeVisualizationData({
+                    data: response,
+                    query,
+                    error: null,
+                  });
+              }),
               catchError((err) =>
                 of(
                   Action.storeVisualizationData({
                     error: err,
+                    query,
                   }),
                 ),
               ),
@@ -436,6 +466,24 @@ export class StateEffects {
           }),
         ),
       ),
+    ),
+  );
+
+  refreshVisualization$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.refreshVisualization),
+      tap(({ query }) => {
+        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
+        this.ngrxStore.dispatch(resetFetchDate({ query }));
+      }),
+      delay(100),
+      mergeMap(({ query, queryParams }) =>
+        of(Action.fetchVisualizationData({ query, queryParams })),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
     ),
   );
 
@@ -523,23 +571,6 @@ export class StateEffects {
       delay(1000),
       map(() => Action.updateSuccessModel()),
       catchError((err: HttpErrorResponse) => {
-        return of(Action.failureResponse({ reason: err }));
-      }),
-      share(),
-    ),
-  );
-
-  refreshVisualization$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.refreshVisualization),
-      tap(({ query }) => {
-        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
-        this.ngrxStore.dispatch(resetFetchDate({ query }));
-      }),
-      mergeMap(({ query, queryParams }) =>
-        of(Action.fetchVisualizationData({ query, queryParams })),
-      ),
-      catchError((err) => {
         return of(Action.failureResponse({ reason: err }));
       }),
       share(),
@@ -660,7 +691,7 @@ const REFETCH_INTERVAL =
  *
  */
 function shouldFetch(dataForQuery: VisualizationData): boolean {
-  if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
+  if (!dataForQuery?.data && !dataForQuery?.error) return true; // initial state: we dont have any data or error yet
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old
     if (
@@ -679,8 +710,9 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     // the query had led to an error
     // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
+      !dataForQuery.fetchDate ||
       Date.now() - Date.parse(dataForQuery.fetchDate) >
-      5 * ONE_MINUTE_IN_MS
+        5 * ONE_MINUTE_IN_MS
     ) {
       if (!status) {
         // Unknown error

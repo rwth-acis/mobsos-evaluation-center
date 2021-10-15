@@ -9,6 +9,7 @@ declare global {
       yJsWebsocketUrl: string;
       openIdClientId: string;
       production: string;
+      mobsosSurveysUrl?: string;
     };
   }
 }
@@ -20,7 +21,7 @@ export const environment = {
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId:
     window?.env?.openIdClientId || 'www.localclient.com',
-  openIdSilentLoginInterval: 60,
+  openIdSilentLoginInterval: 60, // interval in seconds to silently sign in the user
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   las2peerWebConnectorUrl:
     'https://git.tech4comp.dbis.rwth-aachen.de',

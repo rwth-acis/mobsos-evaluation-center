@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
@@ -7,14 +8,17 @@ import {
   HttpParams,
 } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map, share, timeout } from 'rxjs/operators';
-import { merge } from 'lodash-es';
+import {
+  catchError,
+  map,
+  share,
+  switchMap,
+  timeout,
+} from 'rxjs/operators';
+import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
-import {
-  IQuestionnaire,
-  Questionnaire,
-} from '../models/questionnaire.model';
+import { IQuestionnaire } from '../models/questionnaire.model';
 import { Requirement } from '../models/reqbaz.model';
 interface HttpOptions {
   method?: string;
@@ -74,63 +78,8 @@ export class Las2peerService {
   async makeRequest<T>(
     url: string,
     options: HttpOptions = {},
-  ): Promise<T> {
-    options = merge(
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept-language': 'en-US',
-        },
-      },
-      options,
-    ) as HttpOptions;
-
-    this.userCredentials = JSON.parse(
-      localStorage.getItem('profile'),
-    );
-    const username = this.userCredentials?.preferred_username;
-    const sub = JSON.parse(localStorage.getItem('profile'))
-      ?.sub as string;
-    const token = localStorage.getItem('access_token');
-    if (username) {
-      options.headers.Authorization =
-        'Basic ' + btoa(`${username}:${sub}`);
-      options.headers.access_token = token;
-    }
-
-    const ngHttpOptions: {
-      body?: any;
-      headers?:
-        | HttpHeaders
-        | {
-            [header: string]: string | string[];
-          };
-      observe?: 'body';
-      params?:
-        | HttpParams
-        | {
-            [param: string]: string | string[];
-          };
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      reportProgress?: boolean;
-      withCredentials?: boolean;
-    } = {};
-    if (options.headers) {
-      ngHttpOptions.headers = new HttpHeaders(options.headers);
-    }
-    if (options.body) {
-      ngHttpOptions.body = options.body;
-    }
-    if (options.responseType) {
-      ngHttpOptions.responseType = options.responseType;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this.http
-      .request(options.method, url, ngHttpOptions)
-      .pipe(share())
-      .toPromise();
+  ): Promise<any> {
+    return this.makeRequestAndObserve(url, options).toPromise();
   }
 
   makeRequestAndObserve<T>(
@@ -163,41 +112,48 @@ export class Las2peerService {
       options.headers.access_token = token;
     }
 
+    const a = cloneDeep(options);
+    delete a.headers.Authorization;
+    delete a.headers.access_token;
+
     const ngHttpOptions = {};
+    const ngHttpOptionsNoAuthorization = {};
 
     if (options.headers) {
       ngHttpOptions['headers'] = new HttpHeaders(options.headers);
+      ngHttpOptionsNoAuthorization['headers'] = new HttpHeaders(
+        a.headers,
+      );
     }
     if (options.body) {
       ngHttpOptions['body'] = options.body;
+      ngHttpOptionsNoAuthorization['body'] = a.body;
     }
     if (options.responseType) {
       ngHttpOptions['responseType'] = options.responseType;
+      ngHttpOptionsNoAuthorization['responseType'] = a.responseType;
     }
 
-    return this.http.request(options.method, url, ngHttpOptions);
+    return this.http
+      .request(
+        options.method,
+        url,
+        url.includes('surveys')
+          ? ngHttpOptionsNoAuthorization
+          : ngHttpOptions,
+      )
+      .pipe(
+        catchError((err) =>
+          err.status === 401
+            ? this.http.request(
+                options.method,
+                url,
+                ngHttpOptionsNoAuthorization,
+              )
+            : of(err),
+        ),
+      );
   }
-
-  // async fetchServicesFromDiscovery() {
-  //   const url = joinAbsoluteUrlPath(
-  //     environment.las2peerWebConnectorUrl,
-  //     this.SERVICES_PATH,
-  //   );
-  //   return this.makeRequest(url).catch((response) =>
-  //     console.error(response),
-  //   );
-  // }
-
-  // async fetchServicesFromMobSOS() {
-  //   const url = joinAbsoluteUrlPath(
-  //     environment.las2peerWebConnectorUrl,
-  //     this.SUCCESS_MODELING_SERVICE_PATH,
-  //     this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
-  //   );
-  //   return this.makeRequest(url).catch((response) =>
-  //     console.error(response),
-  //   );
-  // }
 
   fetchServicesFromDiscoveryAndObserve(): Observable<any> {
     if (!environment.useLas2peerServiceDiscovery)
@@ -319,10 +275,7 @@ export class Las2peerService {
     return this.makeRequestAndObserve<SuccessModel>(url, {
       observe: 'response',
     }).pipe(
-      map(
-        (response) => !!response,
-        () => false,
-      ),
+      map((response) => !!response),
       catchError(() => of(false)),
     );
   }
@@ -331,8 +284,12 @@ export class Las2peerService {
     const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
+      '?full=1',
     );
-    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(url)
+    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(
+      url,
+      { headers: { access_token: null, Authorization: null } },
+    )
       .then((response) =>
         this.fetchQuestionnaireForms(response.questionnaires),
       )
@@ -351,16 +308,32 @@ export class Las2peerService {
     const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
       this.SURVEYS_QUESTIONNAIRES_PATH,
+      '?full=1',
     );
-    return this.makeRequestAndObserve<IQuestionnaire[]>(url).pipe(
-      map((response) => {
-        for (const questionnaire of response) {
+    return this.makeRequestAndObserve<IQuestionnaire[]>(url, {
+      headers: { access_token: '', Authorization: '' },
+    }).pipe(
+      map(
+        (response: { questionnaires: IQuestionnaire[] }) =>
+          response.questionnaires,
+      ),
+      switchMap((questionnaires) =>
+        forkJoin([
+          this.fetchQuestionnaireFormsAndObserve(questionnaires),
+          of(questionnaires),
+        ]),
+      ),
+      map(([forms, questionnaires]) => {
+        for (let index = 0; index < questionnaires?.length; index++) {
+          const questionnaire = questionnaires[index];
           questionnaire.name = decodeURIComponent(questionnaire.name);
           questionnaire.description = decodeURIComponent(
             questionnaire.description,
           );
+          questionnaire.formXML = forms[index];
         }
-        return response as Questionnaire[];
+
+        return questionnaires;
       }),
       timeout(60000),
     );
@@ -381,6 +354,31 @@ export class Las2peerService {
       );
     }
     return questionnaires;
+  }
+
+  /**
+   * Returns all questionaire forms fetched from the server as an observable
+   *
+   * @param questionnaires the questionnaires for which to fetch the forms
+   * @returns an observable of the forms
+   */
+  fetchQuestionnaireFormsAndObserve(
+    questionnaires: IQuestionnaire[],
+  ) {
+    const questionaireFormRequests = questionnaires.map(
+      (questionnaire) => {
+        const formUrl = joinAbsoluteUrlPath(
+          environment.mobsosSurveysUrl,
+          this.SURVEYS_QUESTIONNAIRES_PATH,
+          questionnaire.id,
+          this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
+        );
+        return this.makeRequestAndObserve<string>(formUrl, {
+          responseType: 'text',
+        });
+      },
+    );
+    return forkJoin(questionaireFormRequests);
   }
 
   async createSurvey(

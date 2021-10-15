@@ -239,9 +239,9 @@
                     <mat-panel-title>Description</mat-panel-title>
                   </mat-expansion-panel-header>
                   <ng-template matExpansionPanelContent>
-                    <markdown ngPreserveWhitespaces>
-                      {{ item.value }}
-                    </markdown>
+                    <markdown ngPreserveWhitespaces>{{
+                      item.value
+                    }}</markdown>
                   </ng-template>
                 </mat-expansion-panel>
                 <mat-expansion-panel [expanded]="false">

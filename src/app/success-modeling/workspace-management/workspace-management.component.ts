@@ -45,7 +45,7 @@ import {
 import { WorkspaceService } from '../../services/workspace.service';
 import { ServiceInformation } from '../../models/service.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Las2peerService } from '../../services/las2peer.service';
+import { joinAbsoluteUrlPath } from '../../services/las2peer.service';
 
 @Component({
   selector: 'app-workspace-management',
@@ -109,7 +109,6 @@ export class WorkspaceManagementComponent
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
     private ngrxStore: Store,
-    private las2peer: Las2peerService,
   ) {}
 
   ngOnInit(): void {
@@ -225,14 +224,15 @@ export class WorkspaceManagementComponent
 
   shareWorkspaceLink(): void {
     if (this.selectedGroupId && this.selectedService && this.user) {
-      const link =
-        window.location.href +
-        'join/' +
-        this.selectedGroupId +
-        '/' +
-        this.selectedService.name +
-        '/' +
-        this.user.profile.preferred_username;
+      const base = window.location.href.split('success-modeling')[0];
+      const link = joinAbsoluteUrlPath(
+        base,
+        'join',
+        this.selectedGroupId,
+        this.selectedService.name,
+        this.user.profile.preferred_username,
+      );
+
       void navigator.clipboard.writeText(link);
       const message = this.translate.instant(
         'copied-to-clipboard',

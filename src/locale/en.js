@@ -7,6 +7,7 @@ export const translations = {
       'success-modeling': 'Success Modeling',
       'raw-edit': 'Raw Edit',
       'add-community': 'Add Community',
+      query: 'Query Visualizer',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -18,6 +19,7 @@ export const translations = {
       'ok-label': 'OK',
       'save-label': 'Save',
       'yes-label': 'Yes',
+      visualization: 'Visualization',
     },
   },
   app: {

@@ -104,10 +104,10 @@ export class KpiVisualizationComponent
       map((data) => data.find((vdata) => !!vdata.error)?.error),
     );
 
-    let sub = this.error$.subscribe((err) => {
-      this.error = err;
-    });
-    this.subscriptions$.push(sub);
+    // let sub = this.error$.subscribe((err) => {
+    //   this.error = err;
+    // });
+    // this.subscriptions$.push(sub);
 
     this.kpi$ = this.dataArray$.pipe(
       filter((data) => !data.find((vdata) => vdata.error)), // only proceed if no error occurred
@@ -151,7 +151,7 @@ export class KpiVisualizationComponent
       }),
     );
 
-    sub = this.measure$
+    const sub = this.measure$
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
         const queryStrings = measure.queries.map(
