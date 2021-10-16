@@ -93,14 +93,14 @@ export class WorkspaceService {
   /**
    * an observable of the community workspace
    */
-  get communityWorkspace() {
+  get communityWorkspace(): Observable<CommunityWorkspace> {
     return this.communityWorkspace$.asObservable();
   }
 
   /**
    * the value of the current community workspace
    */
-  get currentCommunityWorkspace() {
+  get currentCommunityWorkspace(): CommunityWorkspace {
     return this.communityWorkspace$.getValue();
   }
 
@@ -120,7 +120,7 @@ export class WorkspaceService {
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
     visualizationData?: VisualizationCollection,
-  ) {
+  ): void {
     if (!username) {
       throw new Error('user cannot be null');
     }
@@ -131,7 +131,7 @@ export class WorkspaceService {
     const communityWorkspace =
       this.getCurrentCommunityWorkspaceFromYJS(groupID);
 
-    /*******************************
+    /** *****************************
      * Add our local stuff to the community workspace
      */
     if (!Object.keys(communityWorkspace).includes(username)) {
@@ -213,7 +213,7 @@ export class WorkspaceService {
    * @param username username of the current user
    * @param serviceName name of the application
    */
-  removeWorkspace(username: string, serviceName: string) {
+  removeWorkspace(username: string, serviceName: string): void {
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
     );
@@ -308,7 +308,7 @@ export class WorkspaceService {
     catalog?: MeasureCatalog,
     role?: UserRole,
     vdata?: VisualizationCollection,
-  ) {
+  ): void {
     if (!owner) {
       throw new Error('owner cannot be null');
     }
@@ -548,8 +548,9 @@ export class WorkspaceService {
             mapValue,
           );
         } else {
-          if (objValue !== null) {
-            map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
+          try {
+            if (objValue !== null) {
+              map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
             }
           } catch (error) {
             console.error(error);
