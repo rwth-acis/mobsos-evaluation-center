@@ -419,6 +419,7 @@ export class StateEffects {
         const dataForQuery = data[query];
 
         if (
+          query &&
           !Object.keys(StateEffects.visualizationCalls).includes(
             query,
           ) &&
