@@ -36,7 +36,6 @@ import {
   _SELECTED_SERVICE_NAME,
 } from './services/store.selectors';
 import {
-  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
@@ -119,7 +118,7 @@ export class AppComponent
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 800px)');
+    this.mobileQuery = window.matchMedia('(max-width: 1000px)');
     this.mobileQueryListener = () =>
       this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
