@@ -434,18 +434,23 @@ function mergeServiceData(
         alias: serviceAlias,
       };
 
-      const mobsosIDs = serviceCollection[serviceName].mobsosIDs;
-      if (
-        mobsosIDs?.length < 100 &&
-        Date.now() - registrationTime > ONE_YEAR
-      ) {
-        mobsosIDs.push({
-          agentID: serviceAgentID,
-          registrationTime,
-        });
+      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
+      if (!mobsosIDs) {
+        mobsosIDs = [];
       }
+
+      mobsosIDs.push({
+        agentID: serviceAgentID,
+        registrationTime,
+      });
+
       mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime,
+      );
+
+      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
+        0,
+        100,
       );
     }
   }
