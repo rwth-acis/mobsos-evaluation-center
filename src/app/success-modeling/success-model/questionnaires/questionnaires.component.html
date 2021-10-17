@@ -24,7 +24,11 @@
     </button>
   </mat-card-header>
   <mat-card-content *ngIf="model$ | async as model">
-    <p *ngIf="model && model.questionnaires.length === 0">
+    <p
+      *ngIf="
+        !model.questionnaires || model.questionnaires.length === 0
+      "
+    >
       {{
         'success-modeling.questionnaires.no-questionnaires'
           | translate
@@ -40,48 +44,46 @@
           let i = index
         "
       >
-        <div *ngIf="questionnaire">
-          <td *ngIf="canEdit$ | async">
-            <button
-              mat-icon-button
-              matTooltipShowDelay="0"
-              matTooltip="{{
-                'success-modeling.questionnaires.remove-questionnaire-tooltip'
-                  | translate
-              }}"
-              (click)="openRemoveQuestionnaireDialog(i)"
-            >
-              <mat-icon color="warn">remove_circle_outline</mat-icon>
-            </button>
-          </td>
-          <th>{{ questionnaire.name }}</th>
-          <td>
-            <mat-icon
-              id="info-icon"
-              matTooltipShowDelay="0"
-              matTooltip="{{
-                getQuestionnaireByName(questionnaire.name)
-                  ? getQuestionnaireByName(questionnaire.name)
-                      .description
-                  : ''
-              }}"
-            >
-              info_outline
-            </mat-icon>
-          </td>
-          <td>
-            <a
-              mat-icon-button
-              [href]="
-                mobsosSurveysUrl + 'surveys/' + questionnaire.surveyId
-              "
-              color="primary"
-              target="_blank"
-            >
-              <mat-icon>open_in_browser</mat-icon>
-            </a>
-          </td>
-        </div>
+        <td *ngIf="canEdit$ | async">
+          <button
+            mat-icon-button
+            matTooltipShowDelay="0"
+            matTooltip="{{
+              'success-modeling.questionnaires.remove-questionnaire-tooltip'
+                | translate
+            }}"
+            (click)="openRemoveQuestionnaireDialog(i)"
+          >
+            <mat-icon color="warn">remove_circle_outline</mat-icon>
+          </button>
+        </td>
+        <th>{{ questionnaire.name }}</th>
+        <td>
+          <mat-icon
+            id="info-icon"
+            matTooltipShowDelay="0"
+            matTooltip="{{
+              getQuestionnaireByName(questionnaire.name)
+                ? getQuestionnaireByName(questionnaire.name)
+                    .description
+                : ''
+            }}"
+          >
+            info_outline
+          </mat-icon>
+        </td>
+        <td>
+          <a
+            mat-icon-button
+            [href]="
+              mobsosSurveysUrl + 'surveys/' + questionnaire.surveyId
+            "
+            color="primary"
+            target="_blank"
+          >
+            <mat-icon>open_in_browser</mat-icon>
+          </a>
+        </td>
       </tr>
     </table>
   </mat-card-content>
