@@ -24,6 +24,7 @@ import {
 } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+
 export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
@@ -88,9 +89,14 @@ export class EditMeasureDialogComponent implements OnInit {
       { updateOn: 'blur' },
     );
     // queries are dynamically added to the form
-    measure.queries.forEach((query) =>
+    measure.queries.forEach((q) =>
       this.formQueries.push(
-        this.fb.group({ name: [query.name], sql: [query.sql] }),
+        this.fb.group({
+          name: [q.name],
+          sql: [
+            EditMeasureDialogComponent.replaceXMLEncodings(q.sql),
+          ],
+        }),
       ),
     );
     switch (measure.visualization.type) {
@@ -112,25 +118,26 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
     }
   }
-
-  get formVisualizationParameters(): FormArray {
-    return this.measureForm.get(
-      'visualization.parameters',
-    ) as FormArray;
+  private static encodeXML(sql: string): string {
+    sql = sql.replace(/>/g, '&gt;');
+    sql = sql.replace(/</g, '&lt;');
+    return sql;
   }
 
-  get formQueries(): FormArray {
-    return this.measureForm.get('queries') as FormArray;
+  private static replaceXMLEncodings(sql: string) {
+    sql = sql.replace(/&gt;/g, '>');
+    sql = sql.replace(/&lt;/g, '<');
+    return sql;
   }
 
-  /**
-   * Transforms the value of a form into a Success Measure object.
-   *
-   * @param value the value of the form
-   * @returns corresponding success measure object
-   */
   private static getMeasureFromForm(value: any): Measure {
     const measure = value as Measure;
+    measure.queries = measure.queries.map((q) =>
+      Query.fromPlainObject({
+        ...q,
+        sql: EditMeasureDialogComponent.encodeXML(q.sql),
+      }),
+    );
 
     switch (measure.visualization.type) {
       case 'Value':
@@ -155,6 +162,23 @@ export class EditMeasureDialogComponent implements OnInit {
     }
     return measure;
   }
+
+  get formVisualizationParameters(): FormArray {
+    return this.measureForm.get(
+      'visualization.parameters',
+    ) as FormArray;
+  }
+
+  get formQueries(): FormArray {
+    return this.measureForm.get('queries') as FormArray;
+  }
+
+  /**
+   * Transforms the value of a form into a Success Measure object.
+   *
+   * @param value the value of the form
+   * @returns corresponding success measure object
+   */
 
   controlsForFirstStepInValid(): boolean {
     return (
@@ -294,7 +318,7 @@ export class EditMeasureDialogComponent implements OnInit {
     return messageName.replace(/_/g, ' ');
   }
 
-  getParamsForQuery(query: string): string[] {
+  getParamsForQuery(q: string): string[] {
     if (
       !this.data.service ||
       this.data.service?.mobsosIDs?.length === 0
@@ -304,7 +328,7 @@ export class EditMeasureDialogComponent implements OnInit {
       return [];
     }
     const serviceRegex = /\$SERVICE\$/g;
-    const matches = query?.match(serviceRegex);
+    const matches = q?.match(serviceRegex);
     const params = [];
     if (matches) {
       for (const match of matches) {

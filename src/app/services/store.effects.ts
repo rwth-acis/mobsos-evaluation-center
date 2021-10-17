@@ -99,34 +99,35 @@ export class StateEffects {
       ofType(Action.fetchGroups),
       mergeMap(() =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-          map((groupsFromContactService) =>
-            Action.storeGroups({
-              groupsFromContactService: groupsFromContactService
-                ? groupsFromContactService
-                : null,
-              groupsFromMobSOS: null,
-            }),
-          ),
+          map((response) => {
+            if (response instanceof HttpErrorResponse) {
+              throw response;
+            }
+            return Action.storeGroups({
+              groupsFromContactService: response ? response : [],
+            });
+          }),
           catchError((err) => {
             console.error(
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
             );
-            return of(Action.failureResponse(err)).pipe(
-              tap(() =>
-                this.ngrxStore.dispatch(
-                  Action.storeGroups({
-                    groupsFromContactService: null,
-                    groupsFromMobSOS: null,
-                  }),
-                ),
-              ),
+            this.ngrxStore.dispatch(
+              Action.storeGroups({
+                groupsFromContactService: [],
+              }),
             );
+            return of(Action.failureResponse(err));
           }),
         ),
       ),
       catchError((err) => {
         console.error(err);
+        this.ngrxStore.dispatch(
+          Action.storeGroups({
+            groupsFromContactService: [],
+          }),
+        );
         return of(Action.failureResponse(err));
       }),
       share(),
@@ -418,6 +419,7 @@ export class StateEffects {
         const dataForQuery = data[query];
 
         if (
+          query &&
           !Object.keys(StateEffects.visualizationCalls).includes(
             query,
           ) &&

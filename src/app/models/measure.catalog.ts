@@ -34,7 +34,11 @@ export class MeasureCatalog {
     const doc = document.implementation.createDocument('', '', null);
     const catalog = doc.createElement('Catalog');
     for (const measure of Object.values(this.measures)) {
-      catalog.appendChild(measure.toXml());
+      if (typeof measure.toXml === 'undefined') {
+        catalog.appendChild(Measure.fromPlainObject(measure).toXml());
+      } else {
+        catalog.appendChild(measure.toXml());
+      }
     }
     return catalog;
   }

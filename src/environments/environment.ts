@@ -25,7 +25,8 @@ export const environment = {
   // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
   las2peerWebConnectorUrl:
     'https://git.tech4comp.dbis.rwth-aachen.de',
-  mobsosSurveysUrl: 'https://surveys.tech4comp.dbis.rwth-aachen.de/',
+  mobsosSurveysUrl:
+    'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
   servicePollingInterval: 120,
   // interval at which visualizations should be refetched in minutes

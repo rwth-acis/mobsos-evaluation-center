@@ -50,6 +50,7 @@ export enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
+  ADD_QUESTIONNAIRE_TO_MODEL = 'adds a questionnaire to the success model',
   EDIT_MEASURE = 'updates an existing measure in catalog and success model',
   EDIT_MEASURE_IN_CATALOG = 'updates an existing measure in catalog only ',
   SET_COMMUNITY_WORKSPACE = 'update the community workspace',
@@ -69,6 +70,8 @@ export enum StateActions {
   SET_SERVICE = 'set the current service',
   SET_SERVICE_NAME = 'set the current service by only providing  the name',
   JOIN_WORKSPACE = 'Join the workspace of another user',
+  ADD_SUCCESS_MODEL_TO_WORKSPACE = 'add the success model to the workspace',
+  ADD_CATALOG_TO_WORKSPACE = 'add the catalog to the workspace',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -110,6 +113,10 @@ export const storeMessageDescriptions = createAction(
     descriptions: { [key: string]: string };
     serviceName: string;
   }>(),
+);
+export const addQuestionnaireToModel = createAction(
+  StoreActions.ADD_QUESTIONNAIRE_TO_MODEL,
+  props<{ questionnaire: Questionnaire }>(),
 );
 export const storeQuestionnaires = createAction(
   StoreActions.STORE_QUESTIONNAIRES,
@@ -205,7 +212,7 @@ export const editMeasureInCatalog = createAction(
 );
 export const storeGroups = createAction(
   StoreActions.STORE_GROUPS,
-  props<{ groupsFromContactService; groupsFromMobSOS }>(),
+  props<{ groupsFromContactService }>(),
 );
 
 export const removeFactor = createAction(
@@ -351,6 +358,15 @@ export const updateSuccessModel = createAction(
 export const failureResponse = createAction(
   HttpActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
+);
+
+export const addModelToWorkSpace = createAction(
+  StateActions.ADD_SUCCESS_MODEL_TO_WORKSPACE,
+  props<{ xml: string }>(),
+);
+export const addCatalogToWorkspace = createAction(
+  StateActions.ADD_CATALOG_TO_WORKSPACE,
+  props<{ xml: string }>(),
 );
 
 export const success = createAction('action was successful');

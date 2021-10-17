@@ -543,8 +543,12 @@ export class WorkspaceService {
             mapValue,
           );
         } else {
-          if (objValue !== null) {
-            map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
+          try {
+            if (objValue !== null) {
+              map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
+            }
+          } catch (error) {
+            console.error(error);
           }
         }
       }

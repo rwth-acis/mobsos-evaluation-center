@@ -27,6 +27,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { SqlTableComponent } from './sql-table/sql-table.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -53,6 +54,7 @@ import { SqlTableComponent } from './sql-table/sql-table.component';
     MatPaginatorModule,
     MatTableModule,
     MatFormFieldModule,
+    MatCheckboxModule,
     MatExpansionModule,
     ReactiveFormsModule,
     MatRippleModule,

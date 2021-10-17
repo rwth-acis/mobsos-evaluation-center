@@ -7,7 +7,10 @@ export class Query {
     return new Query(queryName, sql);
   }
 
-  public static fromPlainObject(obj: Query): Query {
+  public static fromPlainObject(obj: {
+    name: string;
+    sql: string;
+  }): Query {
     return new Query(obj.name, obj.sql);
   }
 

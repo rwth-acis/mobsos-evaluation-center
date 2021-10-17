@@ -120,7 +120,7 @@ export class AppComponent
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 800px)');
+    this.mobileQuery = window.matchMedia('(max-width: 1000px)');
     this.mobileQueryListener = () =>
       this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(

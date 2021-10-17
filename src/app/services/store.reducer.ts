@@ -15,6 +15,7 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
+import { addModelToWorkSpace } from './store.actions';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -31,18 +32,11 @@ const _Reducer = createReducer(
       ),
     }),
   ),
-  on(
-    Actions.storeGroups,
-    (state, { groupsFromContactService, groupsFromMobSOS }) => ({
-      ...state,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      groups: mergeGroupData(
-        { ...state.groups },
-        groupsFromContactService,
-        groupsFromMobSOS,
-      ),
-    }),
-  ),
+  on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
+    ...state,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    groups: mergeGroupData(state.groups, groupsFromContactService),
+  })),
 
   on(Actions.resetSuccessModel, (state) => ({
     ...state,
@@ -180,6 +174,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
+  on(Actions.storeQuestionnaires, (state, { questionnaires }) => ({
+    ...state,
+    questionnaires,
+  })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
     communityWorkspace: props.workspace,
@@ -287,6 +285,14 @@ const _Reducer = createReducer(
       state.selectedServiceName,
       name,
     ),
+  })),
+  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addModelToCurrentWorkSpace(state, xml),
+  })),
+  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),
 );
 
@@ -428,18 +434,23 @@ function mergeServiceData(
         alias: serviceAlias,
       };
 
-      const mobsosIDs = serviceCollection[serviceName].mobsosIDs;
-      if (
-        mobsosIDs?.length < 100 &&
-        Date.now() - registrationTime > ONE_YEAR
-      ) {
-        mobsosIDs.push({
-          agentID: serviceAgentID,
-          registrationTime,
-        });
+      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
+      if (!mobsosIDs) {
+        mobsosIDs = [];
       }
+
+      mobsosIDs.push({
+        agentID: serviceAgentID,
+        registrationTime,
+      });
+
       mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime,
+      );
+
+      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
+        0,
+        100,
       );
     }
   }
@@ -470,11 +481,11 @@ function getMessageDescriptionForService(
 function mergeGroupData(
   groups,
   groupsFromContactService,
-  groupsFromMobSOS,
+  groupsFromMobSOS?,
 ) {
+  groups = cloneDeep(groups);
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
-    groups = {};
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       groups[groupID] = {
@@ -916,5 +927,41 @@ function resetFetchDateForQuery(
     fetchDate: undefined,
     loading: true,
   };
+  return copy;
+}
+function addModelToCurrentWorkSpace(
+  state: AppState,
+  xml: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const model = SuccessModel.fromXml(doc.documentElement);
+  appWorkspace.model = model;
+  return copy;
+}
+
+function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const catalog = MeasureCatalog.fromXml(doc.documentElement);
+  appWorkspace.catalog = catalog;
   return copy;
 }

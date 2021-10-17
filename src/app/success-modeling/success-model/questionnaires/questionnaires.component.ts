@@ -3,28 +3,32 @@ import { Component, OnInit } from '@angular/core';
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-
+import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURES,
-  QUESTIONNAIRES,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
   EDIT_MODE,
+  QUESTIONNAIRES,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { MeasureMap } from 'src/app/models/measure.catalog';
+import {
+  MeasureCatalog,
+  MeasureMap,
+} from 'src/app/models/measure.catalog';
 import {
   SuccessFactor,
   SuccessModel,
 } from 'src/app/models/success.model';
 import {
   IQuestionnaire,
+  Question,
   Questionnaire,
   Questionnaire as QuestionnaireModel,
 } from 'src/app/models/questionnaire.model';
@@ -33,7 +37,14 @@ import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { Subscription } from 'rxjs';
-import { fetchQuestionnaires } from 'src/app/services/store.actions';
+import {
+  addCatalogToWorkspace,
+  addModelToWorkSpace,
+  addQuestionnaireToModel,
+  fetchQuestionnaires,
+  storeCatalog,
+  storeSuccessModel,
+} from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -47,7 +58,7 @@ export class QuestionnairesComponent implements OnInit {
   model: SuccessModel;
   service: ServiceInformation;
   editMode = false;
-  groupID: string;
+  group: GroupInformation;
 
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   group$ = this.ngrxStore.select(SELECTED_GROUP);
@@ -56,7 +67,7 @@ export class QuestionnairesComponent implements OnInit {
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
-  group: GroupInformation;
+
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
 
   subscriptions$: Subscription[] = [];
@@ -70,6 +81,144 @@ export class QuestionnairesComponent implements OnInit {
   static parseXml(xml: string): Document {
     const parser = new DOMParser();
     return parser.parseFromString(xml, 'text/xml');
+  }
+
+  private static extractQuestions(
+    formXML: string,
+    service: ServiceInformation,
+  ): Question[] {
+    const result: Question[] = [];
+    const xml = QuestionnairesComponent.parseXml(formXML);
+    let pages = Array.from(xml.getElementsByTagName('qu:Page'));
+    pages = pages.filter((page) => {
+      const type = page.getAttribute('xsi:type');
+      return (
+        type === 'qu:OrdinalScaleQuestionPageType' ||
+        type === 'qu:DichotomousQuestionPageType'
+      );
+    });
+    for (const page of pages) {
+      const code = page.getAttribute('qid');
+      let type: 'ordinal' | 'dichotomous';
+      if (
+        page.getAttribute('xsi:type') ===
+        'qu:OrdinalScaleQuestionPageType'
+      ) {
+        type = 'ordinal';
+      } else {
+        type = 'dichotomous';
+      }
+      let dimensionRecommendation: string = null;
+      let factorRecommendation: string = null;
+      const recommendations = Array.from(
+        page.getElementsByTagName('qu:SuccessModelRecommendation'),
+      );
+      if (recommendations.length > 0) {
+        const recommendation = recommendations[0];
+        dimensionRecommendation =
+          recommendation.getAttribute('dimension');
+        factorRecommendation = recommendation.getAttribute('factor');
+      }
+      const instructionsElement = Array.from(
+        page.getElementsByTagName('qu:Instructions'),
+      )[0];
+      const instructions = instructionsElement.innerHTML
+        .trim()
+        .replace('${SURVEY.RESOURCE}', service.alias);
+      result.push({
+        code,
+        type,
+        dimensionRecommendation,
+        factorRecommendation,
+        instructions,
+      });
+    }
+    return result;
+  }
+
+  private static getSQL(
+    surveyId: number,
+    question: { code: string },
+  ) {
+    // eslint-disable-next-line max-len
+    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
+      SqlString.escape(surveyId.toString()) as string
+    } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
+      question.code
+    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
+  }
+
+  private static addMeasuresFromQuestionnaireToModel(
+    questionnaire: IQuestionnaire,
+    surveyId: number,
+    assignMeasures: boolean = false,
+    service: ServiceInformation,
+    measures: MeasureMap,
+    model: SuccessModel,
+  ): [SuccessModel, MeasureMap] {
+    const questions = QuestionnairesComponent.extractQuestions(
+      questionnaire.formXML,
+      service,
+    );
+    for (const question of questions) {
+      const measureName =
+        questionnaire.name + ': ' + question.instructions;
+      const query = QuestionnairesComponent.getSQL(
+        surveyId,
+        question,
+      );
+      const measure = new Measure(
+        measureName,
+        [new Query('Answer Distribution', query)],
+        new ChartVisualization(
+          'BarChart',
+          measureName,
+          measureName,
+          '300px',
+          '300px',
+        ),
+        ['surveyId=' + surveyId.toString(), 'generated'],
+      );
+
+      measures[measureName] = measure;
+      if (
+        assignMeasures &&
+        question.dimensionRecommendation &&
+        question.factorRecommendation
+      ) {
+        let dimension = model.dimensions[
+          question.dimensionRecommendation
+        ] as SuccessFactor[];
+        dimension = QuestionnairesComponent.assignMeasuresToDimension(
+          question,
+          measureName,
+          dimension,
+        );
+      }
+    }
+    return [model, measures];
+  }
+  private static assignMeasuresToDimension(
+    question: Question,
+    measureName: string,
+    dimension: SuccessFactor[],
+  ): SuccessFactor[] {
+    let targetFactor: SuccessFactor;
+    for (const factor of dimension) {
+      if (factor.name === question.factorRecommendation) {
+        targetFactor = factor;
+        break;
+      }
+    }
+    if (!targetFactor) {
+      targetFactor = new SuccessFactor(
+        question.factorRecommendation,
+        [],
+      );
+    }
+    targetFactor.measures.push(measureName);
+    dimension.push(targetFactor);
+    return dimension;
   }
 
   private static nowAsIsoDate(): string {
@@ -88,21 +237,25 @@ export class QuestionnairesComponent implements OnInit {
     this.ngrxStore.dispatch(fetchQuestionnaires());
     let sub = this.group$.subscribe((group) => {
       this.group = group;
-      this.groupID = group.id;
     });
     this.subscriptions$.push(sub);
 
     sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs;
+      this.availableQuestionnaires = qs.map((q) =>
+        Questionnaire.fromPlainObject(q),
+      );
     });
     this.subscriptions$.push(sub);
 
     sub = this.measures$.subscribe(
-      (measures) => (this.measures = measures),
+      (measures) =>
+        (this.measures = cloneDeep(measures) as MeasureMap),
     );
     this.subscriptions$.push(sub);
 
-    sub = this.model$.subscribe((model) => (this.model = model));
+    sub = this.model$.subscribe(
+      (model) => (this.model = cloneDeep(model) as SuccessModel),
+    );
     this.subscriptions$.push(sub);
 
     sub = this.service$.subscribe((service) => {
@@ -199,7 +352,7 @@ export class QuestionnairesComponent implements OnInit {
     }
   }
 
-  async createNewSurvey(
+  private async createNewSurvey(
     questionnaire: IQuestionnaire,
     addMeasures: boolean,
     assignMeasures: boolean,
@@ -215,150 +368,68 @@ export class QuestionnairesComponent implements OnInit {
       '(' +
       QuestionnairesComponent.nowAsIsoDate() +
       ')';
+    try {
+      const response = await this.las2peer.createSurvey(
+        surveyName,
+        questionnaire.description,
+        this.group.name,
+        questionnaire.logo,
+        QuestionnairesComponent.nowAsIsoDate(),
+        QuestionnairesComponent.in100YearsAsIsoDate(),
+        serviceName,
+        this.service.alias,
+        questionnaire.lang,
+      );
+      if (!response || !('id' in response)) {
+        throw new Error('Invalid survey id: undefined');
+      }
 
-    const response = await this.las2peer.createSurvey(
-      surveyName,
-      questionnaire.description,
-      this.group.name,
-      questionnaire.logo,
-      QuestionnairesComponent.nowAsIsoDate(),
-      QuestionnairesComponent.in100YearsAsIsoDate(),
-      serviceName,
-      this.service.alias,
-      questionnaire.lang,
-    );
+      const surveyId = parseInt((response as { id: string }).id, 10);
 
-    const surveyId = parseInt((response as { id: string }).id, 10);
-    await this.las2peer.setQuestionnaireForSurvey(
-      questionnaire.id,
-      surveyId,
-    );
+      await this.las2peer.setQuestionnaireForSurvey(
+        questionnaire.id,
+        surveyId,
+      );
 
-    this.model.questionnaires.push(
-      new QuestionnaireModel(
+      const q = new QuestionnaireModel(
         questionnaire.name,
         questionnaire.id,
         surveyId,
-      ),
-    );
+      );
+      this.ngrxStore.dispatch(
+        addQuestionnaireToModel({ questionnaire: q }),
+      );
 
-    if (addMeasures) {
-      const questions = this.extractQuestions(questionnaire.formXML);
-      for (const question of questions) {
-        const measureName =
-          questionnaire.name + ': ' + question.instructions;
-        const query = this.getSQL(surveyId, question);
-        const measure = new Measure(
-          measureName,
-          [new Query('Answer Distribution', query)],
-          new ChartVisualization(
-            'BarChart',
-            measureName,
-            measureName,
-            '300px',
-            '300px',
-          ),
-          ['surveyId=' + surveyId, 'generated'],
+      if (addMeasures) {
+        const [newModel, newMeasures] =
+          QuestionnairesComponent.addMeasuresFromQuestionnaireToModel(
+            questionnaire,
+            surveyId,
+            assignMeasures,
+            this.service,
+            this.measures,
+            this.model,
+          );
+        this.ngrxStore.dispatch(
+          addModelToWorkSpace({
+            xml: SuccessModel.fromPlainObject(newModel).toXml()
+              .outerHTML,
+          }),
         );
-        this.measures[measureName] = measure;
-        if (
-          assignMeasures &&
-          question.dimensionRecommendation &&
-          question.factorRecommendation
-        ) {
-          const dimension =
-            this.model.dimensions[question.dimensionRecommendation];
-          let targetFactor: SuccessFactor;
-          for (const factor of dimension as SuccessFactor[]) {
-            if (factor.name === question.factorRecommendation) {
-              targetFactor = factor;
-              break;
-            }
-          }
-          if (!targetFactor) {
-            targetFactor = new SuccessFactor(
-              question.factorRecommendation,
-              [],
-            );
-          }
-          targetFactor.measures.push(measureName);
-          dimension.push(targetFactor);
-        }
+        this.ngrxStore.dispatch(
+          addCatalogToWorkspace({
+            xml: new MeasureCatalog(newMeasures).toXml().outerHTML,
+          }),
+        );
       }
+    } catch (error) {
+      console.error(error);
     }
   }
 
   private getQuestionnaireByName(name: string): Questionnaire {
-    if (!this.availableQuestionnaires) {
-      return null;
-    }
     return this.availableQuestionnaires?.find(
       (value) => value.name === name,
     );
-  }
-
-  private extractQuestions(formXML: string): {
-    code: string;
-    type: 'ordinal' | 'dichotomous';
-    dimensionRecommendation: string;
-    factorRecommendation: string;
-    instructions: string;
-  }[] {
-    const result = [];
-    const xml = QuestionnairesComponent.parseXml(formXML);
-    let pages = Array.from(xml.getElementsByTagName('qu:Page'));
-    pages = pages.filter((page) => {
-      const type = page.getAttribute('xsi:type');
-      return (
-        type === 'qu:OrdinalScaleQuestionPageType' ||
-        type === 'qu:DichotomousQuestionPageType'
-      );
-    });
-    for (const page of pages) {
-      const code = page.getAttribute('qid');
-      let type: string;
-      if (
-        page.getAttribute('xsi:type') ===
-        'qu:OrdinalScaleQuestionPageType'
-      ) {
-        type = 'ordinal';
-      } else {
-        type = 'dichotomous';
-      }
-      let dimensionRecommendation: string = null;
-      let factorRecommendation: string = null;
-      const recommendations = Array.from(
-        page.getElementsByTagName('qu:SuccessModelRecommendation'),
-      );
-      if (recommendations.length > 0) {
-        const recommendation = recommendations[0];
-        dimensionRecommendation =
-          recommendation.getAttribute('dimension');
-        factorRecommendation = recommendation.getAttribute('factor');
-      }
-      const instructionsElement = Array.from(
-        page.getElementsByTagName('qu:Instructions'),
-      )[0];
-      const instructions = instructionsElement.innerHTML
-        .trim()
-        .replace('${SURVEY.RESOURCE}', this.service.alias);
-      result.push({
-        code,
-        type,
-        dimensionRecommendation,
-        factorRecommendation,
-        instructions,
-      });
-    }
-    return result;
-  }
-
-  private getSQL(surveyId: number, question: { code: string }) {
-    // eslint-disable-next-line max-len
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${SqlString.escape(
-      surveyId,
-    )} AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
-      question.code
-    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
   }
 }
