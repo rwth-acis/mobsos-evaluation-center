@@ -396,6 +396,7 @@ export class QuestionnairesComponent implements OnInit {
         questionnaire.id,
         surveyId,
       );
+
       this.ngrxStore.dispatch(
         addQuestionnaireToModel({ questionnaire: q }),
       );

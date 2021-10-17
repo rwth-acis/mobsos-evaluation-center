@@ -15,7 +15,11 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
-import { addModelToWorkSpace } from './store.actions';
+import {
+  addModelToWorkSpace,
+  addQuestionnaireToModel,
+} from './store.actions';
+import { Questionnaire } from '../models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -116,6 +120,13 @@ const _Reducer = createReducer(
   on(Actions.fetchMeasureCatalog, (state) => ({
     ...state,
     measureCatalogInitialized: false,
+  })),
+  on(Actions.addQuestionnaireToModel, (state, { questionnaire }) => ({
+    ...state,
+    communityWorkspace: addQuestionnaireToSuccessModel(
+      state,
+      questionnaire,
+    ),
   })),
   on(Actions.setUserName, (state, props) => ({
     ...state,
@@ -972,5 +983,25 @@ function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
   const doc = parseXml(xml);
   const catalog = MeasureCatalog.fromXml(doc.documentElement);
   appWorkspace.catalog = catalog;
+  return copy;
+}
+function addQuestionnaireToSuccessModel(
+  state: AppState,
+  questionnaire: Questionnaire,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace.model.questionnaires) {
+    appWorkspace.model.questionnaires = [];
+  }
+  appWorkspace.model.questionnaires.push(questionnaire);
   return copy;
 }
