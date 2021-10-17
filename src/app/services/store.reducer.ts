@@ -15,6 +15,7 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
+import { addModelToWorkSpace } from './store.actions';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -293,6 +294,14 @@ const _Reducer = createReducer(
       state.selectedServiceName,
       name,
     ),
+  })),
+  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addModelToCurrentWorkSpace(state, xml),
+  })),
+  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),
 );
 
@@ -927,5 +936,41 @@ function resetFetchDateForQuery(
     fetchDate: undefined,
     loading: true,
   };
+  return copy;
+}
+function addModelToCurrentWorkSpace(
+  state: AppState,
+  xml: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const model = SuccessModel.fromXml(doc.documentElement);
+  appWorkspace.model = model;
+  return copy;
+}
+
+function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const catalog = MeasureCatalog.fromXml(doc.documentElement);
+  appWorkspace.catalog = catalog;
   return copy;
 }

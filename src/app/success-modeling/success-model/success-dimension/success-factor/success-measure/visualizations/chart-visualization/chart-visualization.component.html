@@ -1,5 +1,5 @@
 <div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
-  <ng-container *ngIf="chartData; else noData">
+  <ng-container *ngIf="chartData?.data?.length > 0; else noData">
     <google-chart
       [title]="chartData.title"
       [type]="chartData.chartType"
@@ -74,7 +74,7 @@
 
 <ng-template #noDataAndNoError
   ><ng-container *ngIf="dataIsReady$ | async; else loading">
-    No data available. Please refresh the page
+    No data available yet
   </ng-container>
 </ng-template>
 

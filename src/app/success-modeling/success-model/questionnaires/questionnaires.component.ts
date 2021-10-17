@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-
+import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -38,6 +38,8 @@ import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { Subscription } from 'rxjs';
 import {
+  addCatalogToWorkspace,
+  addModelToWorkSpace,
   addQuestionnaireToModel,
   fetchQuestionnaires,
   storeCatalog,
@@ -246,11 +248,14 @@ export class QuestionnairesComponent implements OnInit {
     this.subscriptions$.push(sub);
 
     sub = this.measures$.subscribe(
-      (measures) => (this.measures = measures),
+      (measures) =>
+        (this.measures = cloneDeep(measures) as MeasureMap),
     );
     this.subscriptions$.push(sub);
 
-    sub = this.model$.subscribe((model) => (this.model = model));
+    sub = this.model$.subscribe(
+      (model) => (this.model = cloneDeep(model) as SuccessModel),
+    );
     this.subscriptions$.push(sub);
 
     sub = this.service$.subscribe((service) => {
@@ -347,7 +352,7 @@ export class QuestionnairesComponent implements OnInit {
     }
   }
 
-  async createNewSurvey(
+  private async createNewSurvey(
     questionnaire: IQuestionnaire,
     addMeasures: boolean,
     assignMeasures: boolean,
@@ -375,7 +380,7 @@ export class QuestionnairesComponent implements OnInit {
         this.service.alias,
         questionnaire.lang,
       );
-      if (!('id' in response)) {
+      if (!response || !('id' in response)) {
         throw new Error('Invalid survey id: undefined');
       }
 
@@ -406,10 +411,13 @@ export class QuestionnairesComponent implements OnInit {
             this.model,
           );
         this.ngrxStore.dispatch(
-          storeSuccessModel({ xml: newModel.toXml().outerHTML }),
+          addModelToWorkSpace({
+            xml: SuccessModel.fromPlainObject(newModel).toXml()
+              .outerHTML,
+          }),
         );
         this.ngrxStore.dispatch(
-          storeCatalog({
+          addCatalogToWorkspace({
             xml: new MeasureCatalog(newMeasures).toXml().outerHTML,
           }),
         );

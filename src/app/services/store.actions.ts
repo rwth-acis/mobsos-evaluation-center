@@ -70,6 +70,8 @@ export enum StateActions {
   SET_SERVICE = 'set the current service',
   SET_SERVICE_NAME = 'set the current service by only providing  the name',
   JOIN_WORKSPACE = 'Join the workspace of another user',
+  ADD_SUCCESS_MODEL_TO_WORKSPACE = 'add the success model to the workspace',
+  ADD_CATALOG_TO_WORKSPACE = 'add the catalog to the workspace',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
@@ -359,6 +361,15 @@ export const updateSuccessModel = createAction(
 export const failureResponse = createAction(
   HttpActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
+);
+
+export const addModelToWorkSpace = createAction(
+  StateActions.ADD_SUCCESS_MODEL_TO_WORKSPACE,
+  props<{ xml: string }>(),
+);
+export const addCatalogToWorkspace = createAction(
+  StateActions.ADD_CATALOG_TO_WORKSPACE,
+  props<{ xml: string }>(),
 );
 
 export const success = createAction('action was successful');

@@ -194,7 +194,8 @@ export class ChartVisualizerComponent
     visualization = visualization as ChartVisualization;
 
     const labelTypes = dataTable[1];
-    let rows = dataTable.slice(2);
+    let rows = dataTable.slice(2) || [];
+
     for (let i = 0; i < labelTypes.length; i++) {
       if (labelTypes[i] === 'datetime' || labelTypes[i] === 'date') {
         this.formatters.push({
@@ -229,6 +230,5 @@ export class ChartVisualizerComponent
         ],
       },
     );
-    this.chartInitialized = true;
   }
 }

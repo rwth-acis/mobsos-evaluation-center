@@ -135,13 +135,7 @@ export class Las2peerService {
     }
 
     return this.http
-      .request(
-        options.method,
-        url,
-        url.includes('surveys')
-          ? ngHttpOptionsNoAuthorization
-          : ngHttpOptions,
-      )
+      .request(options.method, url, ngHttpOptions)
       .pipe(
         catchError((err) =>
           err.status === 401
