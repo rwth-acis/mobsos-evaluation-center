@@ -233,6 +233,12 @@ export class QuestionnairesComponent implements OnInit {
     return new Date(year + 100, month, day).toISOString();
   }
 
+  getQuestionnaireByName(name: string): Questionnaire {
+    return this.availableQuestionnaires?.find(
+      (value) => value.name === name,
+    );
+  }
+
   ngOnInit(): void {
     this.ngrxStore.dispatch(fetchQuestionnaires());
     let sub = this.group$.subscribe((group) => {
@@ -426,11 +432,5 @@ export class QuestionnairesComponent implements OnInit {
     } catch (error) {
       console.error(error);
     }
-  }
-
-  private getQuestionnaireByName(name: string): Questionnaire {
-    return this.availableQuestionnaires?.find(
-      (value) => value.name === name,
-    );
   }
 }
