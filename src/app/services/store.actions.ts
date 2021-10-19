@@ -315,7 +315,7 @@ export const joinWorkSpace = createAction(
   props<{
     groupId: string;
     serviceName: string;
-    owner: string;
+    owner?: string;
     username: string;
     role?: UserRole;
   }>(),

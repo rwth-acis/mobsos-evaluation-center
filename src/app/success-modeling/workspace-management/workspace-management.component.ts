@@ -124,24 +124,20 @@ export class WorkspaceManagementComponent
       .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
+        filter((editMode) => editMode),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
           this.ngrxStore.select(USER),
         ),
       )
-      .subscribe(([editMode, groupId, owner, serviceName, user]) => {
+      .subscribe(([, groupId, serviceName, user]) => {
         const username = user?.profile.preferred_username;
 
-        if (editMode && username && serviceName) {
-          if (!owner) {
-            owner = user?.profile.preferred_username;
-          }
+        if (username && serviceName) {
           this.ngrxStore.dispatch(
             joinWorkSpace({
               groupId,
-              owner,
               serviceName,
               username,
             }),
