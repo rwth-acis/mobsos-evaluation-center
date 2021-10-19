@@ -15,10 +15,6 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
-import {
-  addModelToWorkSpace,
-  addQuestionnaireToModel,
-} from './store.actions';
 import { Questionnaire } from '../models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
@@ -477,19 +473,19 @@ function mergeServiceData(
   return serviceCollection;
 }
 
-const ONE_YEAR = 1601968704;
+// const ONE_YEAR = 1601968704;
 
-function getMessageDescriptionForService(
-  messageDescriptions,
-  serviceIdentifier: string,
-) {
-  let serviceMessageDescriptions = {};
-  if (messageDescriptions && messageDescriptions[serviceIdentifier])
-    serviceMessageDescriptions =
-      messageDescriptions[serviceIdentifier];
+// function getMessageDescriptionForService(
+//   messageDescriptions,
+//   serviceIdentifier: string,
+// ) {
+//   let serviceMessageDescriptions = {};
+//   if (messageDescriptions && messageDescriptions[serviceIdentifier])
+//     serviceMessageDescriptions =
+//       messageDescriptions[serviceIdentifier];
 
-  return serviceMessageDescriptions;
-}
+//   return serviceMessageDescriptions;
+// }
 
 /**
  * Convert data from both group sources into a common format.

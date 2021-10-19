@@ -448,10 +448,10 @@ export class StateEffects {
                     error: null,
                   });
               }),
-              catchError((err) =>
+              catchError((error) =>
                 of(
                   Action.storeVisualizationData({
-                    error: err,
+                    error,
                     query,
                   }),
                 ),
