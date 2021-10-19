@@ -711,21 +711,12 @@ function addMeasureToFactorInModel(
   );
   const successModel = appWorkspace.model;
 
-  const factorList = successModel.dimensions[
-    props.dimensionName
-  ].filter(
-    (factor: SuccessFactor) => factor.name === props.factorName,
+  const factor = successModel.dimensions[props.dimensionName].find(
+    (f: SuccessFactor) => f.name === props.factorName,
   );
-  const copyFactorList = [];
-  for (let factor of factorList) {
-    factor = {
-      ...factor,
-      measures: [...factor.measures],
-    } as SuccessFactor;
-    factor.measures.unshift(props.measure.name);
-    copyFactorList.push(factor);
-  }
-  successModel.dimensions[props.dimensionName] = copyFactorList;
+
+  factor.measures.unshift(props.measure.name);
+
   return copy;
 }
 
