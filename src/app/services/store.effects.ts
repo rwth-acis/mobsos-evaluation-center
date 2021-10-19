@@ -501,7 +501,7 @@ export class StateEffects {
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
-                xml,
+                xml: xml || null,
               }),
             ),
             catchError(() => {
