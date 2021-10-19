@@ -318,6 +318,7 @@ export const joinWorkSpace = createAction(
     owner?: string;
     username: string;
     role?: UserRole;
+    copyModel?: boolean;
   }>(),
 );
 

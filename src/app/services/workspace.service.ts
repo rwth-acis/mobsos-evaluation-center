@@ -308,6 +308,7 @@ export class WorkspaceService {
     catalog?: MeasureCatalog,
     role?: UserRole,
     vdata?: VisualizationCollection,
+    copyModel?: boolean,
   ): void {
     if (!owner) {
       throw new Error('owner cannot be null');
@@ -355,7 +356,7 @@ export class WorkspaceService {
       }
     }
 
-    if (username === owner) {
+    if (copyModel && username === owner) {
       currentApplicationWorkspace.catalog = catalog;
       currentApplicationWorkspace.model = model;
     }

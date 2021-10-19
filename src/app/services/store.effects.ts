@@ -613,6 +613,7 @@ export class StateEffects {
                     catalog,
                     action.role,
                     vdata,
+                    action.copyModel,
                   );
                 } catch (error) {
                   if (user?.signedIn) {

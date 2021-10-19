@@ -134,15 +134,29 @@ export class WorkspaceManagementComponent
       .subscribe(([, groupId, serviceName, user]) => {
         const username = user?.profile.preferred_username;
 
-        if (username && serviceName) {
-          this.ngrxStore.dispatch(
-            joinWorkSpace({
-              groupId,
-              serviceName,
-              username,
-            }),
-          );
-        }
+        const dialogRef = this.dialog.open(
+          ConfirmationDialogComponent,
+          {
+            minWidth: 300,
+            width: '80%',
+            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
+          },
+        );
+        void dialogRef
+          .afterClosed()
+          .toPromise()
+          .then((result: boolean) => {
+            if (username && serviceName) {
+              this.ngrxStore.dispatch(
+                joinWorkSpace({
+                  groupId,
+                  serviceName,
+                  username,
+                  copyModel: result,
+                }),
+              );
+            }
+          });
       });
     this.subscriptions$.push(sub);
 
