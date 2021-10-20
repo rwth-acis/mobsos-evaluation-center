@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import {
   disableEdit,
+  enableEdit,
   joinWorkSpace,
   setService,
   toggleEdit,
@@ -39,6 +40,7 @@ import {
   filter,
   first,
   map,
+  take,
   withLatestFrom,
 } from 'rxjs/operators';
 
@@ -186,9 +188,11 @@ export class WorkspaceManagementComponent
   async onServiceSelected(
     service: ServiceInformation,
   ): Promise<void> {
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
     const confirmation =
-      (await this.openClearWorkspaceDialog()) as boolean;
-    if (confirmation) {
+      editMode &&
+      ((await this.openClearWorkspaceDialog()) as boolean);
+    if (!editMode || confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
         this.selectedServiceName,
@@ -198,8 +202,13 @@ export class WorkspaceManagementComponent
     }
   }
 
-  onEditModeChanged(): void {
-    this.ngrxStore.dispatch(toggleEdit());
+  async onEditModeChanged(): Promise<void> {
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+    if (editMode) {
+      this.ngrxStore.dispatch(disableEdit());
+    } else {
+      this.ngrxStore.dispatch(enableEdit());
+    }
   }
 
   /**
