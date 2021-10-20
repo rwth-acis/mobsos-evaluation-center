@@ -9,7 +9,6 @@ import {
   enableEdit,
   joinWorkSpace,
   setService,
-  toggleEdit,
 } from '../../services/store.actions';
 
 import { User } from '../../models/user.model';

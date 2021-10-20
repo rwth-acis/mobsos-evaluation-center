@@ -17,7 +17,6 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
-  catchError,
   delayWhen,
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -26,7 +25,7 @@ import {
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
