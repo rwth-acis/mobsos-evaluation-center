@@ -6,29 +6,33 @@
     [opened]="!mobileQuery.matches"
   >
     <ng-container *ngIf="(user$ | async)?.signedIn">
-      <!-- group selection -->
-      <mat-form-field
-        id="community-selection"
+      <ng-container
         *ngIf="userGroups$ | async as groups; else groupsAreLoading"
       >
-        <mat-label>Community</mat-label>
-        <mat-select
-          [(ngModel)]="selectedGroupId"
-          (selectionChange)="onGroupSelected($event.value)"
+        <p *ngIf="groups.length === 0" id="noGroups">
+          You are not part of any community yet. <br />
+          Add a community too get started.
+        </p>
+        <!-- group selection -->
+        <mat-form-field
+          id="community-selection"
+          *ngIf="groups.length > 0"
         >
-          <mat-option
-            class="mat-body-strong"
-            *ngFor="let group of groups"
-            [value]="group.id"
+          <mat-label>Community</mat-label>
+          <mat-select
+            [(ngModel)]="selectedGroupId"
+            (selectionChange)="onGroupSelected($event.value)"
           >
-            {{ group.name }}
-          </mat-option>
-        </mat-select>
-        <span *ngIf="groups.length === 0"
-          >You are not part of any community yet</span
-        >
-      </mat-form-field>
-
+            <mat-option
+              class="mat-body-strong"
+              *ngFor="let group of groups"
+              [value]="group.id"
+            >
+              {{ group.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
       <mat-nav-list>
         <a mat-list-item (click)="openAddCommunityDialog()">
           <mat-icon matListIcon> group_add </mat-icon>

@@ -103,10 +103,17 @@ export class StateEffects {
           timeout(30000),
           map((response) => {
             if (response instanceof HttpErrorResponse) {
-              throw response;
+              return Action.failureResponse({
+                reason: response.error,
+              });
+            }
+            if (!response || Object.keys(response).length === 0) {
+              return Action.storeGroups({
+                groupsFromContactService: null,
+              });
             }
             return Action.storeGroups({
-              groupsFromContactService: response || [],
+              groupsFromContactService: response,
             });
           }),
           catchError((err) => {

@@ -35,7 +35,10 @@ const _Reducer = createReducer(
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    groups: mergeGroupData(state.groups, groupsFromContactService),
+    groups: mergeGroupData(
+      state.groups || null,
+      groupsFromContactService,
+    ),
   })),
 
   on(Actions.resetSuccessModel, (state) => ({
@@ -500,6 +503,7 @@ function mergeGroupData(
   groupsFromMobSOS?,
 ) {
   groups = cloneDeep(groups);
+
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
     for (const groupID of Object.keys(groupsFromContactService)) {
