@@ -448,10 +448,10 @@ export class StateEffects {
                     error: null,
                   });
               }),
-              catchError((err) =>
+              catchError((error) =>
                 of(
                   Action.storeVisualizationData({
-                    error: err,
+                    error,
                     query,
                   }),
                 ),
@@ -501,7 +501,7 @@ export class StateEffects {
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
-                xml,
+                xml: xml || null,
               }),
             ),
             catchError(() => {
@@ -595,8 +595,12 @@ export class StateEffects {
             map((synced) => {
               if (synced) {
                 let username = action.username;
+
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
+                  if (!owner) {
+                    owner = username;
+                  }
                 }
                 try {
                   this.workspaceService.joinWorkspace(
@@ -608,6 +612,7 @@ export class StateEffects {
                     catalog,
                     action.role,
                     vdata,
+                    action.copyModel,
                   );
                 } catch (error) {
                   if (user?.signedIn) {

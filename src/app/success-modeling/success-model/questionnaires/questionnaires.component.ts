@@ -232,6 +232,12 @@ export class QuestionnairesComponent implements OnInit {
     return new Date(year + 100, month, day).toISOString();
   }
 
+  getQuestionnaireByName(name: string): Questionnaire {
+    return this.availableQuestionnaires?.find(
+      (value) => value.name === name,
+    );
+  }
+
   async openPickQuestionnaireDialog(): Promise<void> {
     // remove questionnaires that already have been chosen
     const questionnaires = this.availableQuestionnaires.filter(
@@ -398,6 +404,7 @@ export class QuestionnairesComponent implements OnInit {
         questionnaire.id,
         surveyId,
       );
+
       this.ngrxStore.dispatch(
         addQuestionnaireToModel({ questionnaire: q }),
       );
@@ -427,11 +434,5 @@ export class QuestionnairesComponent implements OnInit {
     } catch (error) {
       console.error(error);
     }
-  }
-
-  private getQuestionnaireByName(name: string): Questionnaire {
-    return this.availableQuestionnaires?.find(
-      (value) => value.name === name,
-    );
   }
 }

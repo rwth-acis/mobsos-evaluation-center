@@ -123,30 +123,39 @@ export class WorkspaceManagementComponent
       .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
+        filter((editMode) => editMode),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
           this.ngrxStore.select(USER),
         ),
       )
-      .subscribe(([editMode, groupId, owner, serviceName, user]) => {
-        this.editMode = editMode;
+      .subscribe(([, groupId, serviceName, user]) => {
         const username = user?.profile.preferred_username;
 
-        if (editMode && username && serviceName) {
-          if (!owner) {
-            owner = user?.profile.preferred_username;
-          }
-          this.ngrxStore.dispatch(
-            joinWorkSpace({
-              groupId,
-              owner,
-              serviceName,
-              username,
-            }),
-          );
-        }
+        const dialogRef = this.dialog.open(
+          ConfirmationDialogComponent,
+          {
+            minWidth: 300,
+            width: '80%',
+            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
+          },
+        );
+        void dialogRef
+          .afterClosed()
+          .toPromise()
+          .then((result: boolean) => {
+            if (username && serviceName) {
+              this.ngrxStore.dispatch(
+                joinWorkSpace({
+                  groupId,
+                  serviceName,
+                  username,
+                  copyModel: result,
+                }),
+              );
+            }
+          });
       });
     this.subscriptions$.push(sub);
 
