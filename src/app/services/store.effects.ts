@@ -569,6 +569,22 @@ export class StateEffects {
     ),
   );
 
+  storeGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeGroup),
+      tap(({ group }) =>
+        this.ngrxStore.dispatch(
+          Action.setGroup({ groupId: group.id }),
+        ),
+      ),
+      mergeMap(() => of(Action.success())),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.addReqBazarProject),
