@@ -18,6 +18,7 @@ import {
   tap,
   delay,
   distinctUntilKeyChanged,
+  timeout,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
@@ -99,12 +100,13 @@ export class StateEffects {
       ofType(Action.fetchGroups),
       mergeMap(() =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
+          timeout(30000),
           map((response) => {
             if (response instanceof HttpErrorResponse) {
               throw response;
             }
             return Action.storeGroups({
-              groupsFromContactService: response ? response : [],
+              groupsFromContactService: response || [],
             });
           }),
           catchError((err) => {
