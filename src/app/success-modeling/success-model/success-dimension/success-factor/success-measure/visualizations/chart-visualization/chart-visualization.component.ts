@@ -19,6 +19,8 @@ import {
 import {
   catchError,
   delayWhen,
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
   filter,
   map,
   switchMap,
@@ -96,6 +98,7 @@ export class ChartVisualizerComponent
         ),
       ),
       filter((query) => !!query),
+      distinctUntilChanged(),
     );
 
     // selects the query data for the query from the store
@@ -105,6 +108,8 @@ export class ChartVisualizerComponent
           VISUALIZATION_DATA_FOR_QUERY({ queryString }),
         ),
       ),
+      filter((data) => !!data),
+      distinctUntilKeyChanged('fetchDate'),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
