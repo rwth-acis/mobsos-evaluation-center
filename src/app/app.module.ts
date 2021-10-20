@@ -78,7 +78,6 @@ export function localStorageSyncReducer(
           'expertMode',
           'measureCatalog',
           'user',
-
           'visualizationData',
           'currentWorkSpaceOwner',
         ],

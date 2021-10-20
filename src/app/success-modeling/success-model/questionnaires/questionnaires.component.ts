@@ -42,8 +42,6 @@ import {
   addModelToWorkSpace,
   addQuestionnaireToModel,
   fetchQuestionnaires,
-  storeCatalog,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 
