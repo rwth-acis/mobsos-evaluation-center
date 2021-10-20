@@ -121,6 +121,28 @@ export class WorkspaceManagementComponent
     this.subscriptions$.push(sub);
 
     sub = this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .subscribe((groupId) => {
+        this.selectedGroupId = groupId;
+      });
+    this.subscriptions$.push(sub);
+    sub = this.user$.subscribe((user) => {
+      this.user = user;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.ngrxStore
+      .select(WORKSPACE_OWNER)
+      .subscribe((owner) => {
+        this.workspaceOwner = owner;
+      });
+    this.subscriptions$.push(sub);
+    sub = this.editMode$.pipe(first()).subscribe((mode) => {
+      if (mode !== this.checked) this.checked = mode;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.ngrxStore
       .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
@@ -158,28 +180,6 @@ export class WorkspaceManagementComponent
             }
           });
       });
-    this.subscriptions$.push(sub);
-
-    sub = this.ngrxStore
-      .select(_SELECTED_GROUP_ID)
-      .subscribe((groupId) => {
-        this.selectedGroupId = groupId;
-      });
-    this.subscriptions$.push(sub);
-    sub = this.user$.subscribe((user) => {
-      this.user = user;
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.ngrxStore
-      .select(WORKSPACE_OWNER)
-      .subscribe((owner) => {
-        this.workspaceOwner = owner;
-      });
-    this.subscriptions$.push(sub);
-    sub = this.editMode$.pipe(first()).subscribe((mode) => {
-      if (mode !== this.checked) this.checked = mode;
-    });
     this.subscriptions$.push(sub);
   }
 
