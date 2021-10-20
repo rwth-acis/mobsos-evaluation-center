@@ -175,6 +175,7 @@ export class StateEffects {
       withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       tap(([{ service }, groupId]) => {
         this.ngrxStore.dispatch(Action.resetSuccessModel());
+        this.ngrxStore.dispatch(disableEdit());
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
         );
