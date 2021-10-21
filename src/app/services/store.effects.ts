@@ -598,11 +598,9 @@ export class StateEffects {
 
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
-                  if (!owner) {
-                    owner = username;
-                  }
                 }
                 try {
+                  // try joining the workspace
                   this.workspaceService.joinWorkspace(
                     action.owner,
                     action.serviceName,
@@ -615,7 +613,9 @@ export class StateEffects {
                     action.copyModel,
                   );
                 } catch (error) {
+                  // exception occurs when the workspace cannot be joined
                   if (user?.signedIn) {
+                    // If we are signed in we create a new workspace
                     this.workspaceService.initWorkspace(
                       action.groupId,
                       username,
@@ -625,6 +625,8 @@ export class StateEffects {
                       vdata,
                     );
                   } else {
+                    // probably some property is undefined
+                    console.error(error);
                     return Action.failure();
                   }
                 }
