@@ -201,7 +201,7 @@ export class WorkspaceManagementComponent
     }
   }
 
-  async onEditModeChanged(): Promise<void> {
+  async onEditModeToggled(): Promise<void> {
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
     if (editMode) {
       this.ngrxStore.dispatch(disableEdit());
