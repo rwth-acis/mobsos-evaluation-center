@@ -7,6 +7,7 @@ export const translations = {
       'success-modeling': 'Erfolgsmodellierung',
       'raw-edit': 'Direktbearbeitung',
       'add-community': 'Community hinzufügen',
+      query: 'Query Visualisierer',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -18,6 +19,7 @@ export const translations = {
       'ok-label': 'OK',
       'save-label': 'Speichern',
       'yes-label': 'Ja',
+      visualization: 'Visualisierung',
     },
   },
   app: {
@@ -84,11 +86,14 @@ export const translations = {
     'remove-measure-tooltip': 'Messung entfernen',
   },
   'success-modeling': {
+    requirements: { title: 'Anforderungen' },
     visualization: {
       'fetch-info':
         'Die Daten wurden am {{date}} vom Server geladen.',
       'fetch-error':
         ' Folgender Fehler ist beim Laden von rezenteren Daten aufgetreten: {{ error }}',
+      'refresh-data': 'Neu laden',
+      raw: 'Rohe Daten',
     },
     'community-workspace':
       'Arbeitsbereich der {{community}} Community',
@@ -134,8 +139,12 @@ export const translations = {
       'choice-radarchart': 'Netzdiagramm',
       'choice-value': 'Wert',
       'name-placeholder': 'Name',
+      'description-label': 'Beschreibung',
       'description-placeholder':
         'Hier kannst du eine nähere Beschreibung deiner Visualisierung geben',
+      'next-label': 'Nächste Seite',
+      'back-label': 'Zurück',
+      'data-source-label': 'Datenquelle',
       'preview-title': 'Vorschau',
       'query-name-placeholder': 'Abfragenname',
       'query-placeholder': 'SQL',
@@ -181,6 +190,7 @@ export const translations = {
       'no-measures':
         'Es sind keine Messungen vorhanden. Erstelle eine Messung mit dem obigen Button.',
       title: 'Wähle eine Messung aus',
+      search: 'Suchen',
     },
     questionnaires: {
       'add-questionnaire-tooltip':
@@ -224,7 +234,7 @@ export const translations = {
       'disconnect-project': 'Projekt trennen',
       'disconnect-project-prompt':
         'Bist du sicher, dass du das Project vom Model trennen möchtest?',
-      heading: 'Anforderungen',
+      heading: 'Anforderungen vom Requirements Bazaar',
       'no-project':
         'Dieses Modell ist zur Zeit mit keinem Projekt aus dem Requirements Bazaar verbunden. Klicke den Button um Anforderungen bearbeiten zu können.',
       'pick-reqbaz-project': {

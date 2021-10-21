@@ -55,6 +55,7 @@ export interface Requirement {
   downVotes: number;
   userVoted: string;
   realized?: Date;
+  leadDeveloper?: { userName: string };
 }
 
 export interface Category {

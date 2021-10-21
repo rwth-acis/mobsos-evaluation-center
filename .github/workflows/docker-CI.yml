@@ -13,6 +13,13 @@ jobs:
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
+    - if: github.ref == 'refs/heads/develop'
+      name: Replace build command in Dockerfile
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "npm run build:prod"
+        replace: "npm run build:prod-sbf-dev"
+        include: "Dockerfile"
     - name: Build the Docker image
       run: | 
         docker build -t registry.tech4comp.dbis.rwth-aachen.de/rwthacis/mobsos-evaluation-center:${{ steps.extract_branch.outputs.branch }} .

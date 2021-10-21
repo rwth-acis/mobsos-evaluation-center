@@ -74,7 +74,7 @@ export class Measure {
     const doc = document.implementation.createDocument('', '', null);
     const measure = doc.createElement('measure');
     measure.setAttribute('name', this.name);
-    measure.setAttribute('tags', this.tags.join(';'));
+    if (this.tags) measure.setAttribute('tags', this.tags.join(';'));
     const description = doc.createElement('description');
     description.textContent = this.description;
     measure.appendChild(description);

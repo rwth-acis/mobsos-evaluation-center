@@ -1,16 +1,14 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { HttpErrorResponse } from '@angular/common/http';
 
 export interface VisualizationCollection {
-  [key: string]: Visualization;
+  [query: string]: VisualizationData;
 }
-
 export interface VisualizationData {
-  [query: string]: VData;
-}
-export interface VData {
   fetchDate: string;
   data: any[][];
   error?: HttpErrorResponse;
+  loading?: boolean;
 }
 
 export class Visualization {
@@ -72,7 +70,7 @@ export class Visualization {
 export class ValueVisualization extends Visualization {
   type = 'Value';
 
-  constructor(public unit: string) {
+  constructor(public unit?: string) {
     super();
   }
 
@@ -100,11 +98,11 @@ export class ChartVisualization extends Visualization {
   type = 'Chart';
 
   constructor(
-    public chartType: string,
-    public nodeId: string,
-    public title: string,
-    public height: string,
-    public width: string,
+    public chartType?: string,
+    public nodeId?: string,
+    public title?: string,
+    public height?: string,
+    public width?: string,
   ) {
     super();
   }
@@ -174,7 +172,7 @@ export class KpiVisualization extends Visualization {
   };
 
   constructor(
-    public operationsElements:
+    public operationsElements?:
       | KpiVisualizationOperand[]
       | KpiVisualizationOperator[],
   ) {

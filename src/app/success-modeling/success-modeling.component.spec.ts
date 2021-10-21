@@ -39,12 +39,12 @@ describe('SuccessModelingComponent', () => {
   let component: SuccessModelingComponent;
   let fixture: ComponentFixture<SuccessModelingComponent>;
   const initialState = INITIAL_APP_STATE;
-  // tslint:disable-next-line: prefer-const
+  // eslint-disable-next-line prefer-const
   let actions$: Observable<any>;
   let store: MockStore<AppState>;
   beforeEach(
     waitForAsync(() => {
-      TestBed.configureTestingModule({
+      void TestBed.configureTestingModule({
         declarations: [
           SuccessModelingComponent,
           SuccessDimensionComponent,
@@ -97,6 +97,6 @@ describe('SuccessModelingComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    void expect(component).toBeTruthy();
   });
 });

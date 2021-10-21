@@ -1,9 +1,9 @@
-export class GoogleChart {
+export class ChartData {
   constructor(
     public title: string,
     public chartType: string,
     public data: any[][],
     public columns: string[],
-    public options: object
+    public options: Record<string, unknown>,
   ) {}
 }

@@ -32,7 +32,7 @@ describe('RawEditComponent', () => {
   let component: RawEditComponent;
   let fixture: ComponentFixture<RawEditComponent>;
   const initialState = INITIAL_APP_STATE;
-  // tslint:disable-next-line: prefer-const
+  // eslint-disable-next-line prefer-const
   let actions$: Observable<any>;
   let store: MockStore<AppState>;
   beforeEach(

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -12,12 +13,18 @@ import {
 } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
-import { map, throttleTime, withLatestFrom } from 'rxjs/operators';
+import { of } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  Subscription,
+} from 'rxjs';
+import { catchError, map, take, timeout } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
 import { addGroup, storeGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
-import { USER_GROUPS } from '../services/store.selectors';
+import { GROUPS, USER_GROUPS } from '../services/store.selectors';
 
 @Component({
   selector: 'app-add-community-dialog',
@@ -28,13 +35,19 @@ export class AddCommunityDialogComponent
   implements OnInit, OnDestroy
 {
   form = new FormControl('', [
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     Validators.required,
     this.forbiddenNameValidator(),
   ]);
-
+  errorSubject$: BehaviorSubject<{
+    groupName: string;
+    message: string;
+  }> = new BehaviorSubject<{ groupName: string; message: string }>(
+    undefined,
+  );
   groups: GroupInformation[] = [];
   subscriptions$: Subscription[] = [];
-  error$: BehaviorSubject<string>;
+  error$: Observable<string>;
   error: string;
   constructor(
     private dialogRef: MatDialogRef<AddCommunityDialogComponent>,
@@ -51,59 +64,88 @@ export class AddCommunityDialogComponent
         this.groups = groups;
       });
     this.subscriptions$.push(sub);
-    sub = this.form.valueChanges
-      .pipe(
-        withLatestFrom(this.ngrxStore.select(USER_GROUPS)),
-        throttleTime(5),
-      )
-      .subscribe(([input, groups]) => {
-        const group = groups.find((g) => g.name === input);
-        let error: string;
-        if (group) {
-          error = 'This name is already taken';
-        } else if (input?.trim().length === 0) {
-          error = 'Group name cannot be empty';
-        }
-        this.error$.next(error);
-      });
-    this.subscriptions$.push(sub);
+    this.error$ = combineLatest([
+      this.form.valueChanges,
+      this.ngrxStore.select(GROUPS),
+      this.errorSubject$.asObservable(),
+    ]).pipe(
+      map(
+        ([input, groups, error]: [
+          string,
+          GroupInformation[],
+          { groupName: string; message: string },
+        ]) => {
+          if (input?.trim().length === 0) {
+            return 'Group name cannot be empty';
+          }
+
+          if (error?.groupName === input?.trim()) {
+            return 'This name is already taken';
+          }
+
+          const group = groups.find((g) => g.name === input);
+          if (group) {
+            return 'This name is already taken';
+          }
+          return undefined;
+        },
+      ),
+    );
   }
 
-  async onSubmit() {
-    const name: string = this.form.value?.trim();
-    const group = this.groups.find((g) => g.name === name);
-    if (!group) {
-      this.error = null;
-      this.ngrxStore.dispatch(addGroup({ groupName: name }));
-      try {
-        const res = await this.effects.addGroup$.toPromise();
-        if ('group' in res && res.group.id) {
-          this._snackBar.open('Group added', null, {
-            duration: 1000,
-          });
-          this.dialogRef.close();
-        } else if ('reason' in res) {
-          this.groups.push({ name });
-          this.error$.next('This group name is already taken');
-          return;
-        }
-      } catch (error) {
-        this.error$.next('Unknown error');
-        return;
-      }
+  async onSubmit(): Promise<void> {
+    const name = (this.form.value as string)?.trim();
+    this.ngrxStore.dispatch(addGroup({ groupName: name }));
+
+    const res = await this.effects.addGroup$
+      .pipe(
+        timeout(30000),
+        catchError(() =>
+          of({ reason: 'Service request Timeout', status: 504 }),
+        ),
+        take(1),
+      )
+      .toPromise();
+
+    if ('group' in res && res.group.id) {
+      this._snackBar.open('Group added', null, {
+        duration: 5000,
+      });
+
+      this.dialogRef.close();
+    } else if (
+      'reason' in res &&
+      (res.reason as HttpErrorResponse).status === 400
+    ) {
+      this.ngrxStore.dispatch(
+        storeGroup({
+          group: { name, id: 'unknown', member: false },
+        }),
+      );
+
+      this.errorSubject$.next({
+        groupName: name,
+        message: 'This group name is already taken',
+      });
+
+      return;
+    } else {
+      console.error(res);
+
+      return;
     }
   }
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const group = this.groups?.find(
-        (g) => g.name === control.value?.trim(),
+        (g) => g.name === (control.value as string)?.trim(),
       );
       return !control.value || !!group
-        ? { forbiddenName: { value: control.value } }
+        ? { forbiddenName: { value: control.value as string } }
         : null;
     };
   }
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

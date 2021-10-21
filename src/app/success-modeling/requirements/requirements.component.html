@@ -1,0 +1,111 @@
+<div class="container">
+  <h3>
+    {{ 'success-modeling.requirements-list.heading' | translate }}
+  </h3>
+
+  <ng-container *ngIf="requirements$ | async as requirements">
+    <mat-accordion>
+      <mat-expansion-panel
+        *ngFor="let requirement of requirements"
+        [expanded]="requirement.id == openedRequirement"
+        (opened)="openedRequirement = requirement.id"
+        (closed)="
+          openedRequirement =
+            openedRequirement == openedRequirement
+              ? openedRequirement
+              : null
+        "
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ requirement.name }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <p>{{ requirement.description }}</p>
+        </ng-template>
+
+        <mat-action-row>
+          <a
+            mat-button
+            [href]="getFrontendUrlForRequirement(requirement)"
+            target="_blank"
+          >
+            {{
+              'success-modeling.requirements-list.view-requirement'
+                | translate
+            }}
+          </a>
+          <button
+            mat-button
+            *ngIf="!isLead(requirement)"
+            (click)="becomeLeaddevRequirement(requirement)"
+          >
+            {{
+              'success-modeling.requirements-list.become-lead'
+                | translate
+            }}
+          </button>
+          <button
+            mat-button
+            *ngIf="isLead(requirement)"
+            (click)="stopBeingLeaddevRequirement(requirement)"
+          >
+            {{
+              'success-modeling.requirements-list.stop-lead'
+                | translate
+            }}
+          </button>
+          <button
+            mat-button
+            *ngIf="!isRealized(requirement)"
+            (click)="realizeRequirement(requirement)"
+          >
+            {{
+              'success-modeling.requirements-list.realize-requirement'
+                | translate
+            }}
+          </button>
+          <button
+            mat-button
+            *ngIf="isRealized(requirement)"
+            (click)="unrealizeRequirement(requirement)"
+          >
+            {{
+              'success-modeling.requirements-list.unrealize-requirement'
+                | translate
+            }}
+          </button>
+        </mat-action-row>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openDisconnectProjectDialog()"
+    >
+      {{
+        'success-modeling.requirements-list.disconnect-project'
+          | translate
+      }}
+    </button>
+  </ng-container>
+  <ng-container *ngIf="(successModel$ | async)?.reqBazProject">
+    <p>
+      {{
+        'success-modeling.requirements-list.no-project' | translate
+      }}
+    </p>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openPickProjectDialog()"
+    >
+      {{
+        'success-modeling.requirements-list.connect-project'
+          | translate
+      }}
+    </button>
+  </ng-container>
+</div>

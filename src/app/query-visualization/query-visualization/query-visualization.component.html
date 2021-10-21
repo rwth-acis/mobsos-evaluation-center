@@ -1,0 +1,16 @@
+<mat-card>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="standard">
+      <mat-label></mat-label>
+      <textarea
+        matInput
+        [formControl]="form.controls['query']"
+      ></textarea>
+
+      <mat-hint>SQL</mat-hint>
+    </mat-form-field>
+  </form>
+  <br />
+</mat-card>
+<br />
+<app-sql-table [query$]="queryInput$"></app-sql-table>

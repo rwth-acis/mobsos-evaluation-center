@@ -7,10 +7,10 @@ import { Store } from '@ngrx/store';
 import {
   disableEdit,
   failureResponse,
+  HttpActions,
   saveCatalog,
   saveModel,
   setService,
-  StateActions,
 } from '../services/store.actions';
 import {
   MEASURE_CATALOG,
@@ -27,15 +27,11 @@ import {
   filter,
   first,
   map,
-  tap,
   timeout,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { StateEffects } from '../services/store.effects';
 import { combineLatest, of, Subscription } from 'rxjs';
 import { ServiceInformation } from '../models/service.model';
-import { SuccessModel } from '../models/success.model';
-import { MeasureCatalog } from '../models/measure.catalog';
 
 @Component({
   selector: 'app-raw-edit',
@@ -43,7 +39,7 @@ import { MeasureCatalog } from '../models/measure.catalog';
   styleUrls: ['./raw-edit.component.scss'],
 })
 export class RawEditComponent implements OnInit, OnDestroy {
-  groupID;
+  groupID: string;
   services = [];
   serviceMap = {};
   selectedServiceName: string;
@@ -57,8 +53,6 @@ export class RawEditComponent implements OnInit, OnDestroy {
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   successModelXml: string;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  measureCatalogEditor;
-  successModelEditor;
   saveInProgress = false;
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
   selectedService$ = this.ngrxStore.select(SELECTED_SERVICE);
@@ -93,12 +87,12 @@ export class RawEditComponent implements OnInit, OnDestroy {
     private actionState: StateEffects,
   ) {}
 
-  static prettifyXml(xml) {
-    if (xml) return vkbeautify.xml(xml);
+  static prettifyXml(xml: string): string {
+    if (xml) return vkbeautify.xml(xml) as string;
     return xml;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.ngrxStore.dispatch(disableEdit());
 
     let sub = this.selectedGroupId$
@@ -138,43 +132,11 @@ export class RawEditComponent implements OnInit, OnDestroy {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 
-  registerMeasureEditor(editor) {
-    this.measureCatalogEditor = editor;
-  }
-
-  registerSuccessModelEditor(editor) {
-    this.successModelEditor = editor;
-  }
-
-  onServiceSelected(service: ServiceInformation) {
+  onServiceSelected(service: ServiceInformation): void {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  fetchXml() {
-    // if (this.groupID) {
-    //   this.las2peer.fetchMeasureCatalog(this.groupID).then((xml) => {
-    //     if (!xml) {
-    //       xml = '';
-    //     }
-    //     xml = RawEditComponent.prettifyXml(xml);
-    //     this.measureCatalogXml = xml;
-    //   });
-    //   if (this.selectedService) {
-    //     const setServiceXml = (xml) => {
-    //       if (!xml) {
-    //         xml = '';
-    //       }
-    //       this.successModelXml = RawEditComponent.prettifyXml(xml);
-    //     };
-    //     this.las2peer
-    //       .fetchSuccessModel(this.groupID, this.selectedService)
-    //       .then(setServiceXml)
-    //       .catch(() => setServiceXml(null));
-    //   }
-    // }
-  }
-
-  _onCatalogSaveClicked() {
+  _onCatalogSaveClicked(): void {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(
       saveCatalog({ xml: this.measureCatalogXml }),
@@ -196,17 +158,17 @@ export class RawEditComponent implements OnInit, OnDestroy {
         .subscribe((result) => {
           this.saveInProgress = false;
 
-          if (result?.type === StateActions.SUCCESS_RESPONSE) {
+          if (result?.type === HttpActions.SUCCESS_RESPONSE) {
             const message = this.translate.instant(
               'raw-edit.measures.snackbar-success',
-            );
+            ) as string;
             this.snackBar.open(message, null, {
               duration: 2000,
             });
           } else {
             let message = this.translate.instant(
               'raw-edit.measures.snackbar-failure',
-            );
+            ) as string;
             if (result && result instanceof failureResponse) {
               message += (result as { reason: Error }).reason.message;
             }
@@ -218,7 +180,7 @@ export class RawEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  _onModelSaveClicked() {
+  _onModelSaveClicked(): void {
     this.saveInProgress = true;
 
     this.ngrxStore.dispatch(saveModel({ xml: this.successModelXml }));
@@ -238,23 +200,28 @@ export class RawEditComponent implements OnInit, OnDestroy {
         )
         .subscribe(
           (
-            result: { type: StateActions } | typeof failureResponse,
+            result: { type: HttpActions } | typeof failureResponse,
           ) => {
             this.saveInProgress = false;
-            if (result?.type === StateActions.SUCCESS_RESPONSE) {
+            if (result?.type === HttpActions.SUCCESS_RESPONSE) {
               const message = this.translate.instant(
                 'raw-edit.success-models.snackbar-success',
-              );
+              ) as string;
               this.snackBar.open(message, null, {
                 duration: 2000,
               });
             } else {
               let message = this.translate.instant(
                 'raw-edit.success-models.snackbar-failure',
-              );
-              if (result && result instanceof failureResponse)
-                message += (result as { type; reason }).reason
-                  .message;
+              ) as string;
+              if (
+                result &&
+                result instanceof failureResponse &&
+                'reason' in result
+              )
+                message += (
+                  result as { type: any; reason: { message: string } }
+                ).reason.message;
               this.snackBar.open(message, 'Ok');
             }
             sub.unsubscribe();

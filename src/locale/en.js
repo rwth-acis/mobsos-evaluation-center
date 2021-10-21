@@ -7,6 +7,7 @@ export const translations = {
       'success-modeling': 'Success Modeling',
       'raw-edit': 'Raw Edit',
       'add-community': 'Add Community',
+      query: 'Query Visualizer',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -18,6 +19,7 @@ export const translations = {
       'ok-label': 'OK',
       'save-label': 'Save',
       'yes-label': 'Yes',
+      visualization: 'Visualization',
     },
   },
   app: {
@@ -81,11 +83,14 @@ export const translations = {
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    requirements: { title: 'Requirements' },
     visualization: {
       'fetch-info':
         'Showing data fetched on {{date}} from the server ',
       'fetch-error':
         ' The following error was encountered, while fetching more recent data: {{ error }}',
+      'refresh-data': 'Refresh',
+      raw: 'Raw data fetched from server',
     },
     'community-workspace': 'Workspace of the {{community}} Community',
     'community-success-model':
@@ -131,9 +136,13 @@ export const translations = {
       'choice-radarchart': 'Radar Chart',
       'choice-value': 'Value',
       'name-placeholder': 'Name',
+      'description-label': 'Description',
       'description-placeholder':
         'Describe your visualization here in more detail',
       'preview-title': 'Preview',
+      'data-source-label': 'Data Source',
+      'next-label': 'Next',
+      'back-label': 'Back',
       'query-name-placeholder': 'Query Name',
       'query-placeholder': 'SQL',
       'remove-operation': 'Remove Operation',
@@ -178,6 +187,7 @@ export const translations = {
       'no-measures':
         'No measures exist yet. Create one with the button above.',
       title: 'Pick a Measure',
+      search: 'Search',
     },
     questionnaires: {
       'add-questionnaire-tooltip':
@@ -220,7 +230,7 @@ export const translations = {
       'disconnect-project': 'Disconnect Project',
       'disconnect-project-prompt':
         'Are you sure that you want to disconnect the project from the model?',
-      heading: 'Requirements',
+      heading: 'Requirements from the Requirements Bazaar',
       'no-project':
         'This model is currently not connected to any Requirements Bazaar project. Click the button edit requirements.',
       'pick-reqbaz-project': {

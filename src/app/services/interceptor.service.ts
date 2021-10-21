@@ -47,7 +47,7 @@ export class Interceptor implements HttpInterceptor {
     }
     if (req.method === 'GET' && req.url in this.cachedRequests) {
       // a request is already being made to this url
-      this.cachedRequests[req.url].subscribe();
+      this.cachedRequests[req.url].subscribe(() => {});
       return this.cachedRequests[req.url]; // return an observable of the initial request instead of making a new call
     } else {
       this.ngrxStore.dispatch(incrementLoading());
@@ -79,7 +79,7 @@ export class Interceptor implements HttpInterceptor {
       if (req.method === 'GET') {
         this.cachedRequests[req.url] = observableRequest;
         // put the observable request into the request map so further requests can subscribe to it
-        this.cachedRequests[req.url].subscribe();
+        this.cachedRequests[req.url].subscribe(() => {});
       }
       return observableRequest;
     }

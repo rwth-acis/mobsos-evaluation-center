@@ -4,15 +4,4 @@ export interface User {
   session_state?: string;
   id_token?: string;
   signedIn?: boolean;
-  visiting?: boolean;
-}
-
-export class Visitor {
-  constructor(public username: string, public role: UserRole) {}
-}
-
-export enum UserRole {
-  SPECTATOR = 'spectator',
-  EDITOR = 'editor',
-  LURKER = 'lurker',
 }

@@ -6,8 +6,12 @@ import { Questionnaire } from '../models/questionnaire.model';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import { ServiceInformation } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
-import { User, UserRole } from '../models/user.model';
-import { CommunityWorkspace } from '../models/workspace.model';
+import { User } from '../models/user.model';
+
+import {
+  CommunityWorkspace,
+  UserRole,
+} from '../models/workspace.model';
 
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
@@ -20,8 +24,12 @@ export enum HttpActions {
   SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
+  UPDATE_MODEL = 'This action takes the current local success model and saves it on the server',
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
-  ADD_GROUP = 'adds a new group',
+  REFRESH_VISUALIZATION = 'Refresh the current visualization manually',
+  ADD_GROUP = 'adds a new group on the server',
+  SUCCESS_RESPONSE = 'response was successfully',
+  FAILURE_RESPONSE = 'response was not successfully',
 }
 
 export enum StoreActions {
@@ -42,6 +50,7 @@ export enum StoreActions {
   EDIT_FACTOR_IN_DIMENSION = 'updates a specific factor for a dimension',
   ADD_MEASURE_TO_CATALOG = 'adds a measure to the catalog',
   ADD_MEASURE_TO_SUCCESS_FACTOR = 'adds a measure to the success model',
+  ADD_QUESTIONNAIRE_TO_MODEL = 'adds a questionnaire to the success model',
   EDIT_MEASURE = 'updates an existing measure in catalog and success model',
   EDIT_MEASURE_IN_CATALOG = 'updates an existing measure in catalog only ',
   SET_COMMUNITY_WORKSPACE = 'update the community workspace',
@@ -52,6 +61,7 @@ export enum StoreActions {
   STORE_REQUIREMENTS = 'Store the requirements for the current req bazar project',
   SET_NUMBER_OF_REQUIREMENTS = 'set the number of requirements for the current project',
   STORE_QUESTIONNAIRES = 'store the fetched questionnaires in store',
+  RESET_SUCCESS_MODEL = 'Sets the success model to undefined',
 }
 
 export enum StateActions {
@@ -60,15 +70,16 @@ export enum StateActions {
   SET_SERVICE = 'set the current service',
   SET_SERVICE_NAME = 'set the current service by only providing  the name',
   JOIN_WORKSPACE = 'Join the workspace of another user',
+  ADD_SUCCESS_MODEL_TO_WORKSPACE = 'add the success model to the workspace',
+  ADD_CATALOG_TO_WORKSPACE = 'add the catalog to the workspace',
   TOGGLE_EDIT = 'toggle edit mode for success model',
   ENABLE_EDIT = 'enable edit mode for success model',
   DISABLE_EDIT = 'disable edit mode for success model',
   INCREMENT_LOADING = 'Increase the number of current http calls',
   DECREMENT_LOADING = 'Decrease the number of current http calls',
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
+  RESET_FETCH_DATE = 'set the fetch date to null',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
-  SUCCESS_RESPONSE = 'response was successfully',
-  FAILURE_RESPONSE = 'response was not successfully',
 }
 
 // fetching
@@ -102,6 +113,10 @@ export const storeMessageDescriptions = createAction(
     descriptions: { [key: string]: string };
     serviceName: string;
   }>(),
+);
+export const addQuestionnaireToModel = createAction(
+  StoreActions.ADD_QUESTIONNAIRE_TO_MODEL,
+  props<{ questionnaire: Questionnaire }>(),
 );
 export const storeQuestionnaires = createAction(
   StoreActions.STORE_QUESTIONNAIRES,
@@ -146,9 +161,6 @@ export const storeGroup = createAction(
 );
 export const removeReqBazarProject = createAction(
   StoreActions.REMOVE_REQUIREMENTS_BAZAR_PROJECT,
-  props<{
-    id: number;
-  }>(),
 );
 export const storeRequirements = createAction(
   StoreActions.STORE_REQUIREMENTS,
@@ -157,6 +169,9 @@ export const storeRequirements = createAction(
   }>(),
 );
 
+/**
+ * @deprecated set requirements directly
+ */
 export const setNumberOfRequirements = createAction(
   StoreActions.SET_NUMBER_OF_REQUIREMENTS,
   props<{
@@ -184,6 +199,7 @@ export const editMeasure = createAction(
     oldMeasureName: string;
     factorName: string;
     dimensionName: string;
+    catalogOnly?: boolean;
   }>(),
 );
 
@@ -195,8 +211,8 @@ export const editMeasureInCatalog = createAction(
   }>(),
 );
 export const storeGroups = createAction(
-  StoreActions.STORE_SERVICES,
-  props<{ groupsFromContactService; groupsFromMobSOS }>(),
+  StoreActions.STORE_GROUPS,
+  props<{ groupsFromContactService }>(),
 );
 
 export const removeFactor = createAction(
@@ -252,9 +268,6 @@ export const setCommunityWorkspace = createAction(
   StoreActions.SET_COMMUNITY_WORKSPACE,
   props<{
     workspace: CommunityWorkspace;
-    owner?: string;
-    serviceName?: string;
-    selectedGroupId?: string;
   }>(),
 );
 
@@ -285,6 +298,10 @@ export const storeSuccessModel = createAction(
   props<{ xml: string }>(),
 );
 
+export const resetSuccessModel = createAction(
+  StoreActions.RESET_SUCCESS_MODEL,
+);
+
 export const updateCommunityWorkspace = createAction(
   StoreActions.UPDATE_COMMUNITY_WORKSPACE,
   props<{ workspace: CommunityWorkspace }>(),
@@ -295,9 +312,10 @@ export const joinWorkSpace = createAction(
   props<{
     groupId: string;
     serviceName: string;
-    owner: string;
+    owner?: string;
     username: string;
     role?: UserRole;
+    copyModel?: boolean;
   }>(),
 );
 
@@ -305,8 +323,15 @@ export const setUserName = createAction(
   StoreActions.STORE_USERNAME,
   props<{ username: string }>(),
 );
+export const refreshVisualization = createAction(
+  HttpActions.REFRESH_VISUALIZATION,
+  props<{ query: string; queryParams?: string[] }>(),
+);
+export const resetFetchDate = createAction(
+  StateActions.RESET_FETCH_DATE,
+  props<{ query: string }>(),
+);
 
-// modes
 export const incrementLoading = createAction(
   StateActions.INCREMENT_LOADING,
 );
@@ -323,14 +348,26 @@ export const toggleExpertMode = createAction(
 
 // http results
 export const successResponse = createAction(
-  StateActions.SUCCESS_RESPONSE,
+  HttpActions.SUCCESS_RESPONSE,
 );
 export const saveCatalogSuccess = createAction(
   HttpActions.SAVE_CATALOG_SUCCESS,
 );
+export const updateSuccessModel = createAction(
+  HttpActions.UPDATE_MODEL,
+);
 export const failureResponse = createAction(
-  StateActions.FAILURE_RESPONSE,
+  HttpActions.FAILURE_RESPONSE,
   props<{ reason: Error }>(),
+);
+
+export const addModelToWorkSpace = createAction(
+  StateActions.ADD_SUCCESS_MODEL_TO_WORKSPACE,
+  props<{ xml: string }>(),
+);
+export const addCatalogToWorkspace = createAction(
+  StateActions.ADD_CATALOG_TO_WORKSPACE,
+  props<{ xml: string }>(),
 );
 
 export const success = createAction('action was successful');
