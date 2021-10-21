@@ -622,17 +622,14 @@ export class StateEffects {
           .pipe(
             map((synced) => {
               if (synced) {
-                let owner = action.owner;
                 let username = action.username;
 
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
-                  if (!owner) {
-                    owner = username;
-                  }
                 }
                 try {
-                  this.workspaceService.switchWorkspace(
+                  // try joining the workspace
+                  this.workspaceService.joinWorkspace(
                     action.owner,
                     action.serviceName,
                     username,
@@ -644,7 +641,9 @@ export class StateEffects {
                     action.copyModel,
                   );
                 } catch (error) {
+                  // exception occurs when the workspace cannot be joined
                   if (user?.signedIn) {
+                    // If we are signed in we create a new workspace
                     this.workspaceService.initWorkspace(
                       action.groupId,
                       username,
@@ -653,8 +652,9 @@ export class StateEffects {
                       model,
                       vdata,
                     );
-                    owner = user?.profile.preferred_username;
                   } else {
+                    // probably some property is undefined
+                    console.error(error);
                     return Action.failure();
                   }
                 }
@@ -680,8 +680,6 @@ export class StateEffects {
                 } else {
                   return Action.setCommunityWorkspace({
                     workspace: currentCommunityWorkspace,
-                    owner,
-                    serviceName: action.serviceName,
                   });
                 }
               } else {

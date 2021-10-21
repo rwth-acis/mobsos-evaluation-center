@@ -24,7 +24,11 @@
     </button>
   </mat-card-header>
   <mat-card-content *ngIf="model$ | async as model">
-    <p *ngIf="model && model.questionnaires.length === 0">
+    <p
+      *ngIf="
+        !model.questionnaires || model.questionnaires.length === 0
+      "
+    >
       {{
         'success-modeling.questionnaires.no-questionnaires'
           | translate

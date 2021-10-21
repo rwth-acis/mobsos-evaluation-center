@@ -268,9 +268,6 @@ export const setCommunityWorkspace = createAction(
   StoreActions.SET_COMMUNITY_WORKSPACE,
   props<{
     workspace: CommunityWorkspace;
-    owner?: string;
-    serviceName?: string;
-    selectedGroupId?: string;
   }>(),
 );
 

@@ -1,37 +1,36 @@
 <!-- Only show component if authorized. We are authorized if we are signed in or we have restricted access to the model -->
 <ng-container
-  *ngIf="(user$ | async)?.signedIn || restricted; else notAuthorized"
+  *ngIf="restricted || (user$ | async)?.signedIn; else notAuthorized"
 >
   <ng-container
-    *ngIf="selectedGroup$ | async as group; else noGroupSelect"
+    *ngIf="selectedGroup$ | async as group; else noGroupSelected"
   >
-    <h2 *ngIf="group?.name">
+    <h2>
       {{
         'success-modeling.community-workspace'
-          | translate: { community: group.name }
+          | translate: { community: group?.name }
       }}
     </h2>
 
     <!-- workspace management -->
     <app-workspace-management></app-workspace-management>
 
-    <mat-tab-group mat-align-tabs="start">
+    <mat-tab-group mat-align-tabs="start" animationDuration="0ms">
+      <!-- success model -->
       <mat-tab label="Success modeling">
-        <!-- success model -->
         <app-success-model></app-success-model>
       </mat-tab>
 
+      <!-- requirements -->
       <mat-tab>
-        <!-- requirements -->
         <ng-template mat-tab-label>
           <span
             [matBadge]="numberOfRequirements$ | async"
             matBadgeColor="accent"
             matBadgeOverlap="false"
-            matTooltip="{{
-              'success-modeling.reqbaz.tooltip' | translate
-            }}"
-            >Requirements and issues</span
+            >{{
+              'success-modeling.requirements.title' | translate
+            }}</span
           > </ng-template
         ><app-requirements></app-requirements>
       </mat-tab>
@@ -45,7 +44,7 @@
   </mat-card>
 </ng-template>
 
-<ng-template #noGroupSelect>
+<ng-template #noGroupSelected>
   <mat-card>
     {{ 'success-modeling.no-group-selected' | translate }}
   </mat-card>

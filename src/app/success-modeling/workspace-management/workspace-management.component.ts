@@ -101,6 +101,7 @@ export class WorkspaceManagementComponent
   // these variables represent what the user has selected, not necessarily the current state
   selectedService: ServiceInformation;
   selectedGroupId: string;
+  editMode: boolean;
 
   constructor(
     private _snackBar: MatSnackBar,
@@ -186,8 +187,7 @@ export class WorkspaceManagementComponent
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
 
     const confirmation =
-      editMode &&
-      ((await this.openClearWorkspaceDialog()) as boolean);
+      editMode && (await this.openClearWorkspaceDialog()); // only open the dialog if we are in the edit mode
     if (!editMode || confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
@@ -201,8 +201,7 @@ export class WorkspaceManagementComponent
   async onEditModeToggled(): Promise<void> {
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
     if (editMode) {
-      const confirmation =
-        (await this.openClearWorkspaceDialog()) as boolean;
+      const confirmation = await this.openClearWorkspaceDialog();
       if (confirmation) {
         this.ngrxStore.dispatch(disableEdit());
       }
@@ -290,7 +289,7 @@ export class WorkspaceManagementComponent
     );
   }
 
-  private openClearWorkspaceDialog() {
+  private openClearWorkspaceDialog(): Promise<boolean> {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
     if (this.user) {
       const message = this.translate.instant(
@@ -303,7 +302,7 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      return dialogRef.afterClosed().toPromise();
+      return dialogRef.afterClosed().toPromise() as Promise<boolean>;
     }
   }
 }

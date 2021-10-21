@@ -141,10 +141,7 @@ const _Reducer = createReducer(
     ...state,
     selectedServiceName: props.serviceName,
   })),
-  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
-    ...state,
-    currentWorkSpaceOwner: props.owner,
-  })),
+
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModelInitialized: true,
@@ -193,17 +190,11 @@ const _Reducer = createReducer(
   })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
-    editMode: true,
     communityWorkspace: props.workspace,
-    selectedGroupId: props.selectedGroupId
-      ? props.selectedGroupId
-      : state.selectedGroupId,
-    selectedServiceName: props.serviceName
-      ? props.serviceName
-      : state.selectedServiceName,
-    currentWorkSpaceOwner: props.owner
-      ? props.owner
-      : state.currentWorkSpaceOwner,
+  })),
+  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner,
   })),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
