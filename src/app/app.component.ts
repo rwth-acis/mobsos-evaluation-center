@@ -1,31 +1,25 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ElementRef,
-  isDevMode,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import 'oidc-client';
 import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
-import { MediaMatcher } from '@angular/cdk/layout';
 import { environment } from '../environments/environment';
-import { NGXLogger } from 'ngx-logger';
 
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
-import * as Hammer from 'hammerjs';
-import { SwUpdate } from '@angular/service-worker';
-import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
-  addGroup,
   fetchGroups,
   fetchMeasureCatalog,
+  fetchMessageDescriptions,
   fetchServices,
   fetchSuccessModel,
   setGroup,
@@ -33,27 +27,24 @@ import {
   toggleExpertMode,
 } from './services/store.actions';
 import {
-  _EXPERT_MODE,
-  FOREIGN_GROUPS,
+  EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
-  SELECTED_GROUP,
-  _USER,
+  USER,
   USER_GROUPS,
-  _EDIT_MODE,
-  SUCCESS_MODEL,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
-  APPLICATION_WORKSPACE,
 } from './services/store.selectors';
 import {
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
+  take,
+  timeout,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+
+import { Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -62,8 +53,8 @@ import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
-import { StateEffects } from './services/store.effects';
 import { StoreState } from './models/state.model';
+import { WorkspaceService } from './services/workspace.service';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -82,75 +73,56 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
 
   mobileQuery: MediaQueryList;
-  mobileQueryListener: () => void;
-  environment = environment;
+  mobileQueryListener: () => void; // what is this used for? Do we still need it?
+  environment = environment; // set it so that it can be accessed in the template
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
-  private userManager = new UserManager({});
-  private silentSigninIntervalHandle: Timer;
 
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
-  expertMode$ = this.ngrxStore.select(_EXPERT_MODE);
-  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+
   role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
   userGroups$: Observable<GroupInformation[]> =
     this.ngrxStore.select(USER_GROUPS);
   user$: Observable<User> = this.ngrxStore
-    .select(_USER)
+    .select(USER)
     .pipe(filter((user) => !!user));
-  foreignGroups$: Observable<GroupInformation[]> =
-    this.ngrxStore.select(FOREIGN_GROUPS);
-  groupsAreLoaded$: Observable<boolean> = combineLatest([
-    this.userGroups$,
-    this.foreignGroups$,
-    this.user$,
-  ]).pipe(
-    map(
-      ([userGroups, foreignGroups, user]) =>
-        user && (!!userGroups || !!foreignGroups),
-    ),
-  );
 
   selectedGroupId: string; // used to show the selected group in the form field
 
+  private userManager = new UserManager({});
+  private silentSigninIntervalHandle: Timer;
+
   constructor(
-    private logger: NGXLogger,
-    public languageService: LanguageService,
-    changeDetectorRef: ChangeDetectorRef,
-    private elementRef: ElementRef,
+    public languageService: LanguageService, // public so that we can access it in the template
+    private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
-    private swUpdate: SwUpdate,
     private snackBar: MatSnackBar,
-    private translate: TranslateService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private workspaceService: WorkspaceService,
   ) {
-    if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
-        'OK',
-      );
-    }
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 600px)');
+    this.mobileQuery = window.matchMedia('(max-width: 1000px)');
     this.mobileQueryListener = () =>
-      changeDetectorRef.detectChanges();
+      this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
       'change',
       this.mobileQueryListener,
@@ -158,130 +130,34 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.mobileQuery.removeEventListener(
-      'change',
-      this.mobileQueryListener,
-      false,
-    );
-    this.subscriptions$.forEach((sub) => sub.unsubscribe());
-  }
-
-  useLanguage(language: string) {
-    this.logger.debug(`Changing language to ${language}`);
-    this.languageService.changeLanguage(language);
-  }
-
-  toggleExpertMode() {
-    this.ngrxStore.dispatch(toggleExpertMode());
-  }
-
-  setUser(user: User) {
-    this.ngrxStore.dispatch(storeUser({ user }));
-  }
-
-  onGroupSelected(groupId: string) {
-    if (groupId) {
-      this.ngrxStore.dispatch(setGroup({ groupId }));
-    }
-  }
-
-  menuItemClicked() {
-    if (this.mobileQuery.matches) {
-      this.sidenav.toggle();
-    }
-  }
-
   ngOnInit(): void {
-    let sub = this.ngrxStore
-      .select(_USER)
-      .pipe(
-        filter((user) => !!user),
-        distinctUntilKeyChanged('signedIn'),
-        filter((user) => user?.signedIn),
-        withLatestFrom(
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-        ),
-        first(),
-      )
-      .subscribe(([, groupId, serviceName]) => {
-        // only gets called once if user is signed in
-        // initial fetching
-        this.ngrxStore.dispatch(fetchGroups());
-        this.ngrxStore.dispatch(fetchServices());
-        if (groupId) {
-          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-          if (serviceName) {
-            this.ngrxStore.dispatch(
-              fetchSuccessModel({ groupId, serviceName }),
-            );
-          }
-        }
+    void this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
+      .toPromise()
+      .then((id) => {
+        this.selectedGroupId = id;
       });
-    this.subscriptions$.push(sub);
 
-    sub = this.selectedGroup$
-      .pipe(
-        filter((group) => !!group),
-        distinctUntilKeyChanged('id'),
-      )
-      .subscribe((group) => {
-        this.selectedGroupId = group.id;
-      });
-    this.subscriptions$.push(sub);
-
-    // swipe navigation
-    const hammertime = new Hammer(this.elementRef.nativeElement, {});
-    hammertime.on('panright', (event) => {
-      if (this.mobileQuery.matches) {
-        if (event.center.x >= 1 && event.center.x <= 20) {
-          this.sidenav.open();
-        }
-      }
-    });
-    hammertime.on('panleft', () => {
-      if (this.mobileQuery.matches) {
-        this.sidenav.close();
-      }
-    });
-    if (this.swUpdate.isEnabled) {
-      sub = this.swUpdate.available.subscribe(async () => {
-        const message = await this.translate
-          .get('app.update.message')
-          .toPromise();
-        const reloadAction = await this.translate
-          .get('app.update.reload')
-          .toPromise();
-        const snackBarRef = this.snackBar.open(
-          message,
-          reloadAction,
-          null,
-        );
-        snackBarRef.onAction().subscribe(() => {
-          window.location.reload();
-        });
-      });
-      this.subscriptions$.push(sub);
-    }
-
-    const silentLoginFunc = () => {
+    const silentLoginFunc = () =>
       this.userManager
         .signinSilentCallback()
         .then(() => {})
         .catch(() => {
           this.setUser(null);
-          this.logger.debug('Silent login failed');
+          console.error('Silent login failed');
         });
-    };
-    silentLoginFunc();
+    void silentLoginFunc();
 
-    sub = this.user$
+    let sub = this.user$
       .pipe(distinctUntilKeyChanged('signedIn'))
       .subscribe((user) => {
-        clearInterval(this.silentSigninIntervalHandle);
+        // callback only called when signedIn state changes
+        clearInterval(this.silentSigninIntervalHandle); // clear old interval
         if (user?.signedIn) {
+          // if signed in, create a new interval
           this.silentSigninIntervalHandle = setInterval(
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             silentLoginFunc,
             environment.openIdSilentLoginInterval * 1000,
           );
@@ -290,6 +166,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available / fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
       // Logging in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
@@ -307,8 +189,75 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openAddCommunityDialog() {
-    const dialogRef = this.dialog.open(AddCommunityDialogComponent, {
+  async ngAfterViewInit(): Promise<void> {
+    const [, groupId, serviceName] = await this.user$
+      .pipe(
+        filter((user) => !!user),
+        distinctUntilKeyChanged('signedIn'),
+        filter((user) => !!user?.signedIn),
+        withLatestFrom(
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+        ),
+        take(1),
+      )
+      .toPromise();
+
+    // only gets called once if user is signed in
+    // initial fetching
+    this.ngrxStore.dispatch(fetchGroups());
+    this.ngrxStore.dispatch(fetchServices());
+    if (groupId) {
+      this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+      this.workspaceService.syncWithCommunnityWorkspace(groupId);
+      if (serviceName) {
+        this.ngrxStore.dispatch(
+          fetchSuccessModel({ groupId, serviceName }),
+        );
+        this.ngrxStore.dispatch(
+          fetchMessageDescriptions({
+            serviceName,
+          }),
+        );
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.mobileQuery.removeEventListener(
+      'change',
+      this.mobileQueryListener,
+      false,
+    );
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
+  }
+
+  useLanguage(language: string): void {
+    this.languageService.changeLanguage(language);
+  }
+
+  toggleExpertMode(): void {
+    this.ngrxStore.dispatch(toggleExpertMode());
+  }
+
+  setUser(user: User): void {
+    this.ngrxStore.dispatch(storeUser({ user }));
+  }
+
+  onGroupSelected(groupId: string): void {
+    if (groupId) {
+      this.ngrxStore.dispatch(setGroup({ groupId }));
+    }
+  }
+
+  menuItemClicked(): void {
+    if (this.mobileQuery.matches) {
+      void this.sidenav.toggle(); // closes the menu if an item is clicked on mobile devices
+    }
+  }
+
+  openAddCommunityDialog(): void {
+    this.dialog.open(AddCommunityDialogComponent, {
       data: null,
       disableClose: true,
     });

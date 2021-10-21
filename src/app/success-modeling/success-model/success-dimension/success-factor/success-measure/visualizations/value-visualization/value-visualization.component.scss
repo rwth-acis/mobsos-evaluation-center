@@ -1,0 +1,20 @@
+@import 'src/styles.scss';
+@import '../visualization.component';
+
+$primary: map-get($mobsos-evaluation-center-theme, primary);
+
+.value-visualization {
+  font-size: 2em;
+  font-weight: bold;
+  margin-right: 1rem;
+  color: mat.get-color-from-palette($primary);
+}
+#value-info{
+ margin: auto;
+ padding: 1rem
+}
+#value-row{
+    display: flex;
+    justify-content: left;
+    align-items: flex-start
+}

@@ -1,85 +1,95 @@
-<mat-tab-group dynamicHeight="true" animationDuration="0ms">
+<mat-tab-group
+  dynamicResize="true"
+  dynamicHeight="true"
+  animationDuration="0ms"
+>
   <mat-tab label="{{ 'raw-edit.tabs.measures' | translate }}">
-    <ng-container
-      *ngIf="canSaveMeasureCatalog$ | async; else notReady"
-    >
-      <ngx-monaco-editor
-        id="measure-editor"
-        (onInit)="registerMeasureEditor($event)"
-        [options]="editorOptions"
-        [(ngModel)]="measureCatalogXml"
-      ></ngx-monaco-editor>
-      <button
-        id="measure-send-button"
-        class="send-button"
-        mat-raised-button
-        color="primary"
-        [disabled]="
-          !(canSaveMeasureCatalog$ | async) || saveInProgress
-        "
-        (click)="_onCatalogSaveClicked()"
+    <ng-template matTabContent>
+      <ng-container
+        *ngIf="canSaveMeasureCatalog$ | async; else notReady"
       >
-        <mat-spinner
-          *ngIf="saveInProgress"
-          color="warn"
-          [diameter]="25"
+        <ngx-monaco-editor
+          id="measure-editor"
+          [options]="editorOptions"
+          [(ngModel)]="measureCatalogXml"
+        ></ngx-monaco-editor>
+        <button
+          id="measure-send-button"
+          class="send-button"
+          mat-raised-button
+          color="primary"
+          [disabled]="
+            !(canSaveMeasureCatalog$ | async) || saveInProgress
+          "
+          (click)="_onCatalogSaveClicked()"
         >
-        </mat-spinner>
-        {{
-          !(selectedGroupId$ | async)
-            ? ('raw-edit.measures.send-button-no-selected-group'
-              | translate)
-            : ('raw-edit.measures.send-button' | translate)
-        }}
-      </button>
-    </ng-container>
+          <mat-spinner
+            *ngIf="saveInProgress"
+            color="warn"
+            [diameter]="25"
+          >
+          </mat-spinner>
+          {{
+            !(selectedGroupId$ | async)
+              ? ('raw-edit.measures.send-button-no-selected-group'
+                | translate)
+              : ('raw-edit.measures.send-button' | translate)
+          }}
+        </button>
+      </ng-container>
+    </ng-template>
   </mat-tab>
   <mat-tab label="{{ 'raw-edit.tabs.success-models' | translate }}">
-    <mat-form-field class="community-service-selection">
-      <mat-label>{{
-        'raw-edit.success-models.select-application' | translate
-      }}</mat-label>
-      <mat-select
-        [(value)]="selectedServiceName"
-        (selectionChange)="onServiceSelected($event.value)"
-      >
-        <mat-option
-          *ngFor="let service of services$ | async"
-          [value]="service"
+    <ng-template matTabContent>
+      <mat-form-field class="community-service-selection">
+        <mat-label>{{
+          'raw-edit.success-models.select-application' | translate
+        }}</mat-label>
+        <mat-select
+          [value]="selectedService$ | async"
+          (selectionChange)="onServiceSelected($event.value)"
         >
-          {{ service.alias }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <ng-container *ngIf="canSaveSuccessModel$ | async; else notReady">
-      <ngx-monaco-editor
-        id="model-editor"
-        (onInit)="registerSuccessModelEditor($event)"
-        [options]="editorOptions"
-        [(ngModel)]="successModelXml"
-      ></ngx-monaco-editor>
+          <mat-option
+            *ngFor="let service of services$ | async"
+            [value]="service"
+          >
+            {{ service.alias }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <ng-container
+        *ngIf="canSaveSuccessModel$ | async; else notReady"
+      >
+        <ngx-monaco-editor
+          id="model-editor"
+          [options]="editorOptions"
+          [(ngModel)]="successModelXml"
+        ></ngx-monaco-editor>
 
-      <button
-        class="send-button"
-        mat-raised-button
-        color="primary"
-        (click)="_onModelSaveClicked()"
-        [disabled]="!(canSaveSuccessModel$ | async) || saveInProgress"
-      >
-        <mat-spinner
-          *ngIf="saveInProgress"
-          color="warn"
-          [diameter]="25"
+        <button
+          class="send-button"
+          mat-raised-button
+          color="primary"
+          (click)="_onModelSaveClicked()"
+          [disabled]="
+            !(canSaveSuccessModel$ | async) || saveInProgress
+          "
         >
-        </mat-spinner>
-        {{
-          !(selectedGroupId$ | async) || !(selectedService$ | async)
-            ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
-              | translate)
-            : ('raw-edit.success-models.send-button' | translate)
-        }}
-      </button>
-    </ng-container>
+          <mat-spinner
+            *ngIf="saveInProgress"
+            color="warn"
+            [diameter]="25"
+          >
+          </mat-spinner>
+          {{
+            !(selectedGroupId$ | async) || !(selectedService$ | async)
+              ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
+                | translate)
+              : ('raw-edit.success-models.send-button' | translate)
+          }}
+        </button>
+      </ng-container>
+    </ng-template>
   </mat-tab>
 </mat-tab-group>
 

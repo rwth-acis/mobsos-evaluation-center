@@ -1,6 +1,6 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
-import { IQuestionnaire, Questionnaire } from './questionnaire.model';
+import { IQuestionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
@@ -18,7 +18,7 @@ export interface AppState {
   selectedGroupId: string;
   selectedServiceName: string;
   editMode: boolean;
-  messageDescriptions: object;
+  messageDescriptions: any;
   visualizationData: VisualizationCollection;
   successModel: SuccessModel;
   successModelInitialized: boolean;
@@ -28,8 +28,8 @@ export interface AppState {
   expertMode: boolean;
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
-  restricted: boolean;
   requirements: Requirement[];
+  questionnaires: IQuestionnaire[];
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -49,8 +49,8 @@ export const INITIAL_APP_STATE: AppState = {
   expertMode: false,
   communityWorkspace: undefined,
   currentWorkSpaceOwner: undefined,
-  restricted: false,
   requirements: undefined,
+  questionnaires: undefined,
 };
 /**
  * What the store looks like

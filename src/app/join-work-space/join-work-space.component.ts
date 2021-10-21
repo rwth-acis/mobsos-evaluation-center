@@ -5,13 +5,13 @@ import { Store } from '@ngrx/store';
 import { UserManager } from 'oidc-client';
 import { Observable, Subscription } from 'rxjs';
 import {
-  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   withLatestFrom,
 } from 'rxjs/operators';
-import { User, UserRole } from '../models/user.model';
-import { PickUsernameDialogComponent } from '../pick-username-dialog/pick-username-dialog.component';
+import { User } from '../models/user.model';
+import { UserRole } from '../models/workspace.model';
+
 import {
   joinWorkSpace,
   setCommunityWorkspaceOwner,
@@ -19,7 +19,7 @@ import {
   setServiceName,
   setUserName,
 } from '../services/store.actions';
-import { _USER } from '../services/store.selectors';
+import { USER } from '../services/store.selectors';
 
 /**
  * Used to join the workspace of another user by url. Url should be of the following format: /join/:groupId/:serviceName/:username
@@ -30,13 +30,7 @@ import { _USER } from '../services/store.selectors';
   styleUrls: ['./join-work-space.component.scss'],
 })
 export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
-  constructor(
-    private route: ActivatedRoute,
-    private ngrxStore: Store,
-    private router: Router,
-    private dialog: MatDialog,
-  ) {}
-  user$ = this.ngrxStore.select(_USER);
+  user$ = this.ngrxStore.select(USER);
   groupId$: Observable<string>;
   serviceName$: Observable<string>;
 
@@ -48,11 +42,18 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   user: User;
   private userManager = new UserManager({});
 
-  ngOnInit() {
+  constructor(
+    private route: ActivatedRoute,
+    private ngrxStore: Store,
+    private router: Router,
+    private dialog: MatDialog,
+  ) {}
+
+  ngOnInit(): void {
     let sub = this.route.params
       .pipe(withLatestFrom(this.user$))
       .subscribe(
-        async ([params, user]: [
+        ([params, user]: [
           {
             groupId: string;
             serviceName: string;
@@ -87,7 +88,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
                 username: user.profile.preferred_username,
               }),
             );
-            this.router.navigateByUrl('/');
+            void this.router.navigateByUrl('/');
           } else {
             const cachedName = localStorage.getItem(
               'visitor-username',
@@ -113,7 +114,9 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
                 role: UserRole.LURKER,
               }),
             );
-            this.router.navigateByUrl('/visitor');
+            void this.router.navigateByUrl(
+              '/success-modeling/visitor',
+            );
           }
         },
       );
@@ -133,13 +136,13 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
               username: user.profile.preferred_username,
             }),
           );
-          this.router.navigateByUrl('');
+          void this.router.navigateByUrl('');
         }
       });
     this.subscriptions$.push(sub);
   }
 
-  joinWorkspace() {
+  joinWorkspace(): void {
     if (!this.username) {
       return;
     }
@@ -155,21 +158,10 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
       }),
     );
 
-    this.router.navigateByUrl('/visitor');
+    void this.router.navigateByUrl('/success-modeling/visitor');
   }
 
-  openDialog(): Promise<any> {
-    const dialogRef = this.dialog.open(PickUsernameDialogComponent, {
-      width: '250px',
-      data: { name: undefined },
-      disableClose: true,
-      minWidth: 300,
-    });
-
-    return dialogRef.afterClosed().toPromise();
-  }
-
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) =>
       subscription.unsubscribe(),
     );

@@ -5,13 +5,15 @@ declare global {
       yJsWebsocketUrl: string;
       openIdClientId: string;
       production: string;
+      mobsosSurveysUrl?: string;
     };
   }
 }
 
 export const environment = {
-  production:
-    window.env.production?.toLocaleLowerCase() === 'true' || true,
+  production: window.env.production
+    ? window.env.production.toLocaleLowerCase() === 'true'
+    : true,
   // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
@@ -23,7 +25,8 @@ export const environment = {
     window.env.las2peerWebConnectorUrl ||
     'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
-    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
+    window.env.mobsosSurveysUrl ||
+    'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   servicePollingInterval: 10,
   // interval at which visualizations should be refetched from server
   visualizationRefreshInterval: 12 * 60,
