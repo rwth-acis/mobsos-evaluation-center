@@ -49,6 +49,9 @@ import { SharedModule } from './shared/shared.module';
 import { RawEditModule } from './raw-edit/raw-edit.module';
 import { SuccessModelingModule } from './success-modeling/success-modeling.module';
 import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
+import { HttpLink } from 'apollo-angular/http';
+import { APOLLO_OPTIONS } from 'apollo-angular';
+import { InMemoryCache } from '@apollo/client/core';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {

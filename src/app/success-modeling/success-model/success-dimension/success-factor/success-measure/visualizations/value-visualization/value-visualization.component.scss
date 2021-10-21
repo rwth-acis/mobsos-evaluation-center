@@ -7,7 +7,7 @@ $primary: map-get($mobsos-evaluation-center-theme, primary);
   font-size: 2em;
   font-weight: bold;
   margin-right: 1rem;
-  color: mat.get-color-from-palette($primary);
+  color: mat-color($primary);
 }
 #value-info{
  margin: auto;
