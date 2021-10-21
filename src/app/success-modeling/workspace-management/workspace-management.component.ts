@@ -37,7 +37,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
-  first,
   map,
   take,
   withLatestFrom,
@@ -101,7 +100,6 @@ export class WorkspaceManagementComponent
   checked: boolean;
   // these variables represent what the user has selected, not necessarily the current state
   selectedService: ServiceInformation;
-  selectedServiceName: string;
   selectedGroupId: string;
 
   constructor(
@@ -112,12 +110,11 @@ export class WorkspaceManagementComponent
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     let sub = this.selectedService$
-      .pipe(filter((service) => service !== undefined))
+      .pipe(filter((service) => !!service))
       .subscribe((service) => {
         this.selectedService = service;
-        this.selectedServiceName = service.name;
       });
     this.subscriptions$.push(sub);
 
@@ -138,16 +135,12 @@ export class WorkspaceManagementComponent
         this.workspaceOwner = owner;
       });
     this.subscriptions$.push(sub);
-    sub = this.editMode$.pipe(first()).subscribe((mode) => {
-      if (mode !== this.checked) this.checked = mode;
-    });
-    this.subscriptions$.push(sub);
 
     sub = this.ngrxStore
       .select(EDIT_MODE)
       .pipe(
         distinctUntilChanged(),
-        filter((editMode) => editMode),
+        filter((mode) => mode),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
@@ -182,19 +175,23 @@ export class WorkspaceManagementComponent
           });
       });
     this.subscriptions$.push(sub);
+
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+    if (editMode !== this.checked) this.checked = editMode;
   }
 
   async onServiceSelected(
     service: ServiceInformation,
   ): Promise<void> {
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
+
     const confirmation =
       editMode &&
       ((await this.openClearWorkspaceDialog()) as boolean);
     if (!editMode || confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
-        this.selectedServiceName,
+        this.selectedService?.name,
       );
       this.ngrxStore.dispatch(disableEdit());
       this.ngrxStore.dispatch(setService({ service }));
@@ -204,7 +201,11 @@ export class WorkspaceManagementComponent
   async onEditModeToggled(): Promise<void> {
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
     if (editMode) {
-      this.ngrxStore.dispatch(disableEdit());
+      const confirmation =
+        (await this.openClearWorkspaceDialog()) as boolean;
+      if (confirmation) {
+        this.ngrxStore.dispatch(disableEdit());
+      }
     } else {
       this.ngrxStore.dispatch(enableEdit());
     }
@@ -219,7 +220,7 @@ export class WorkspaceManagementComponent
     this.ngrxStore.dispatch(
       joinWorkSpace({
         groupId: this.selectedGroupId,
-        serviceName: this.selectedServiceName,
+        serviceName: this.selectedService?.name,
         owner,
         username: this.user.profile.preferred_username,
       }),
@@ -234,7 +235,7 @@ export class WorkspaceManagementComponent
     this.workspaceService.changeVisitorRole(
       visitorName,
       this.workspaceOwner,
-      this.selectedServiceName,
+      this.selectedService?.name,
       role,
     );
     event.stopPropagation();
@@ -272,7 +273,7 @@ export class WorkspaceManagementComponent
         this.workspaceService.copyWorkspace(
           owner,
           this.user?.profile.preferred_username,
-          this.selectedServiceName,
+          this.selectedService?.name,
         );
       }
       sub.unsubscribe();
@@ -285,7 +286,7 @@ export class WorkspaceManagementComponent
     });
     this.workspaceService.removeWorkspace(
       this.user?.profile.preferred_username,
-      this.selectedServiceName,
+      this.selectedService?.name,
     );
   }
 
