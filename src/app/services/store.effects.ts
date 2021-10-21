@@ -176,15 +176,17 @@ export class StateEffects {
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
+   * - disbable the edit mode
    * - reset the success model and fetch the new success model
+   * - fetch the service message descriptions
    */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
       withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       tap(([{ service }, groupId]) => {
-        this.ngrxStore.dispatch(Action.resetSuccessModel());
         this.ngrxStore.dispatch(disableEdit());
+        this.ngrxStore.dispatch(Action.resetSuccessModel());
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
         );
