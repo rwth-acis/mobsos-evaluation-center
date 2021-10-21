@@ -328,7 +328,7 @@ export class QuestionnairesComponent implements OnInit {
     this.subscriptions$.push(sub);
 
     sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs.map((q) =>
+      this.availableQuestionnaires = qs?.map((q) =>
         Questionnaire.fromPlainObject(q),
       );
     });
