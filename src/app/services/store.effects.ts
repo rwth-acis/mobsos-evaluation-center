@@ -623,14 +623,17 @@ export class StateEffects {
             map((synced) => {
               if (synced) {
                 let username = action.username;
-
+                let owner = action.owner;
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
+                  if (!owner) {
+                    owner = username;
+                  }
                 }
                 try {
                   // try joining the workspace
                   this.workspaceService.joinWorkspace(
-                    action.owner,
+                    owner,
                     action.serviceName,
                     username,
                     null,
@@ -685,7 +688,7 @@ export class StateEffects {
               } else {
                 const error = new Error('Could not sync with yjs');
                 console.error(error.message);
-                throw error;
+                return Action.failure();
               }
             }),
             catchError((err) => {
