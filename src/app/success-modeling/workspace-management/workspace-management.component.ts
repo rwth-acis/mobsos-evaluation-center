@@ -162,14 +162,14 @@ export class WorkspaceManagementComponent
         void dialogRef
           .afterClosed()
           .toPromise()
-          .then((result: boolean) => {
+          .then((confirmation: boolean) => {
             if (username && serviceName) {
               this.ngrxStore.dispatch(
                 joinWorkSpace({
                   groupId,
                   serviceName,
                   username,
-                  copyModel: result,
+                  copyModel: confirmation,
                 }),
               );
             }
