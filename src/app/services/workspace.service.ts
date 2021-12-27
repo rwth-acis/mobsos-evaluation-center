@@ -112,6 +112,7 @@ export class WorkspaceService {
    * @param selectedService the service which is currently selected
    * @param measureCatalog the measure catalog of the community
    * @param successModel the success model of the community.
+   * @param copyModel whether
    */
   initWorkspace(
     groupID: string,
@@ -120,6 +121,7 @@ export class WorkspaceService {
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
     visualizationData?: VisualizationCollection,
+    copyModel?: boolean,
   ): void {
     if (!username) {
       throw new Error('user cannot be null');
@@ -138,11 +140,12 @@ export class WorkspaceService {
       communityWorkspace[username] = {};
     }
     const userWorkspace = communityWorkspace[username];
+
     if (!Object.keys(userWorkspace).includes(selectedService.name)) {
       if (!measureCatalog) {
         measureCatalog = new MeasureCatalog({});
       }
-      if (!successModel) {
+      if (!copyModel || !successModel) {
         successModel =
           SuccessModel.emptySuccessModel(selectedService);
       }
