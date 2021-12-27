@@ -24,7 +24,11 @@
     </button>
   </mat-card-header>
   <mat-card-content *ngIf="model$ | async as model">
-    <p *ngIf="model && model.questionnaires.length === 0">
+    <p
+      *ngIf="
+        !model.questionnaires || model.questionnaires.length === 0
+      "
+    >
       {{
         'success-modeling.questionnaires.no-questionnaires'
           | translate
@@ -40,7 +44,7 @@
           let i = index
         "
       >
-        <div *ngIf="questionnaire">
+        <div *ngIf="questionnaire" class="questionnaire-row">
           <td *ngIf="canEdit$ | async">
             <button
               mat-icon-button
@@ -59,11 +63,10 @@
             <mat-icon
               id="info-icon"
               matTooltipShowDelay="0"
+              matTooltipPosition="above"
               matTooltip="{{
                 getQuestionnaireByName(questionnaire.name)
-                  ? getQuestionnaireByName(questionnaire.name)
-                      .description
-                  : ''
+                  ?.description
               }}"
             >
               info_outline
@@ -73,7 +76,9 @@
             <a
               mat-icon-button
               [href]="
-                mobsosSurveysUrl + 'surveys/' + questionnaire.surveyId
+                mobsosSurveysUrl +
+                '/surveys/' +
+                questionnaire.surveyId
               "
               color="primary"
               target="_blank"

@@ -6,9 +6,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import {
   disableEdit,
+  enableEdit,
   joinWorkSpace,
   setService,
-  toggleEdit,
 } from '../../services/store.actions';
 
 import { User } from '../../models/user.model';
@@ -37,8 +37,8 @@ import { combineLatest, Subscription } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
-  first,
   map,
+  take,
   withLatestFrom,
 } from 'rxjs/operators';
 
@@ -100,8 +100,8 @@ export class WorkspaceManagementComponent
   checked: boolean;
   // these variables represent what the user has selected, not necessarily the current state
   selectedService: ServiceInformation;
-  selectedServiceName: string;
   selectedGroupId: string;
+  editMode: boolean;
 
   constructor(
     private _snackBar: MatSnackBar,
@@ -111,42 +111,11 @@ export class WorkspaceManagementComponent
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     let sub = this.selectedService$
-      .pipe(filter((service) => service !== undefined))
+      .pipe(filter((service) => !!service))
       .subscribe((service) => {
         this.selectedService = service;
-        this.selectedServiceName = service.name;
-      });
-    this.subscriptions$.push(sub);
-
-    sub = this.ngrxStore
-      .select(EDIT_MODE)
-      .pipe(
-        distinctUntilChanged(),
-        withLatestFrom(
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-          this.ngrxStore.select(USER),
-        ),
-      )
-      .subscribe(([editMode, groupId, owner, serviceName, user]) => {
-        const username = user?.profile.preferred_username;
-
-        if (editMode && username && serviceName) {
-          if (!owner) {
-            owner = user?.profile.preferred_username;
-          }
-          this.ngrxStore.dispatch(
-            joinWorkSpace({
-              groupId,
-              owner,
-              serviceName,
-              username,
-            }),
-          );
-        }
       });
     this.subscriptions$.push(sub);
 
@@ -167,29 +136,78 @@ export class WorkspaceManagementComponent
         this.workspaceOwner = owner;
       });
     this.subscriptions$.push(sub);
-    sub = this.editMode$.pipe(first()).subscribe((mode) => {
-      if (mode !== this.checked) this.checked = mode;
-    });
+
+    sub = this.ngrxStore
+      .select(EDIT_MODE)
+      .pipe(
+        distinctUntilChanged(),
+        filter((mode) => mode),
+        withLatestFrom(
+          this.ngrxStore.select(_SELECTED_GROUP_ID),
+          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+          this.ngrxStore.select(USER),
+        ),
+      )
+      .subscribe(([, groupId, serviceName, user]) => {
+        const username = user?.profile.preferred_username;
+
+        const dialogRef = this.dialog.open(
+          ConfirmationDialogComponent,
+          {
+            minWidth: 300,
+            width: '80%',
+            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
+          },
+        );
+        void dialogRef
+          .afterClosed()
+          .toPromise()
+          .then((confirmation: boolean) => {
+            if (username && serviceName) {
+              this.ngrxStore.dispatch(
+                joinWorkSpace({
+                  groupId,
+                  serviceName,
+                  username,
+                  copyModel: confirmation,
+                }),
+              );
+            }
+          });
+      });
     this.subscriptions$.push(sub);
+
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+    if (editMode !== this.checked) this.checked = editMode;
   }
 
   async onServiceSelected(
     service: ServiceInformation,
   ): Promise<void> {
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+
     const confirmation =
-      (await this.openClearWorkspaceDialog()) as boolean;
-    if (confirmation) {
+      editMode && (await this.openClearWorkspaceDialog()); // only open the dialog if we are in the edit mode
+    if (!editMode || confirmation) {
       this.workspaceService.removeWorkspace(
         this.user?.profile.preferred_username,
-        this.selectedServiceName,
+        this.selectedService?.name,
       );
       this.ngrxStore.dispatch(disableEdit());
       this.ngrxStore.dispatch(setService({ service }));
     }
   }
 
-  onEditModeChanged(): void {
-    this.ngrxStore.dispatch(toggleEdit());
+  async onEditModeToggled(): Promise<void> {
+    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+    if (editMode) {
+      const confirmation = await this.openClearWorkspaceDialog();
+      if (confirmation) {
+        this.ngrxStore.dispatch(disableEdit());
+      }
+    } else {
+      this.ngrxStore.dispatch(enableEdit());
+    }
   }
 
   /**
@@ -201,7 +219,7 @@ export class WorkspaceManagementComponent
     this.ngrxStore.dispatch(
       joinWorkSpace({
         groupId: this.selectedGroupId,
-        serviceName: this.selectedServiceName,
+        serviceName: this.selectedService?.name,
         owner,
         username: this.user.profile.preferred_username,
       }),
@@ -216,7 +234,7 @@ export class WorkspaceManagementComponent
     this.workspaceService.changeVisitorRole(
       visitorName,
       this.workspaceOwner,
-      this.selectedServiceName,
+      this.selectedService?.name,
       role,
     );
     event.stopPropagation();
@@ -254,7 +272,7 @@ export class WorkspaceManagementComponent
         this.workspaceService.copyWorkspace(
           owner,
           this.user?.profile.preferred_username,
-          this.selectedServiceName,
+          this.selectedService?.name,
         );
       }
       sub.unsubscribe();
@@ -267,11 +285,11 @@ export class WorkspaceManagementComponent
     });
     this.workspaceService.removeWorkspace(
       this.user?.profile.preferred_username,
-      this.selectedServiceName,
+      this.selectedService?.name,
     );
   }
 
-  private openClearWorkspaceDialog() {
+  private openClearWorkspaceDialog(): Promise<boolean> {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
     if (this.user) {
       const message = this.translate.instant(
@@ -284,7 +302,7 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      return dialogRef.afterClosed().toPromise();
+      return dialogRef.afterClosed().toPromise() as Promise<boolean>;
     }
   }
 }

@@ -20,13 +20,13 @@ export class EditFactorDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 
   onCancelClick(): void {
     this.dialogRef.close();
   }
 
-  onOkClick() {
+  onOkClick(): void {
     if (!!this.data.factor.name) {
       this.dialogRef.close(this.data.factor);
     }

@@ -17,14 +17,15 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
 import {
-  catchError,
   delayWhen,
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
   filter,
   map,
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   ChartVisualization,
   VisualizationData,
@@ -96,6 +97,7 @@ export class ChartVisualizerComponent
         ),
       ),
       filter((query) => !!query),
+      distinctUntilChanged(),
     );
 
     // selects the query data for the query from the store
@@ -105,6 +107,8 @@ export class ChartVisualizerComponent
           VISUALIZATION_DATA_FOR_QUERY({ queryString }),
         ),
       ),
+      filter((data) => !!data),
+      distinctUntilKeyChanged('fetchDate'),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
@@ -194,7 +198,8 @@ export class ChartVisualizerComponent
     visualization = visualization as ChartVisualization;
 
     const labelTypes = dataTable[1];
-    let rows = dataTable.slice(2);
+    let rows = dataTable.slice(2) || [];
+
     for (let i = 0; i < labelTypes.length; i++) {
       if (labelTypes[i] === 'datetime' || labelTypes[i] === 'date') {
         this.formatters.push({
@@ -229,6 +234,5 @@ export class ChartVisualizerComponent
         ],
       },
     );
-    this.chartInitialized = true;
   }
 }

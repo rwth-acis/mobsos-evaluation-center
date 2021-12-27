@@ -18,6 +18,7 @@ import {
   tap,
   delay,
   distinctUntilKeyChanged,
+  timeout,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
@@ -99,12 +100,20 @@ export class StateEffects {
       ofType(Action.fetchGroups),
       mergeMap(() =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
+          timeout(30000),
           map((response) => {
             if (response instanceof HttpErrorResponse) {
-              throw response;
+              return Action.failureResponse({
+                reason: response.error,
+              });
+            }
+            if (!response || Object.keys(response).length === 0) {
+              return Action.storeGroups({
+                groupsFromContactService: null,
+              });
             }
             return Action.storeGroups({
-              groupsFromContactService: response ? response : [],
+              groupsFromContactService: response,
             });
           }),
           catchError((err) => {
@@ -167,13 +176,16 @@ export class StateEffects {
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
+   * - disbable the edit mode
    * - reset the success model and fetch the new success model
+   * - fetch the service message descriptions
    */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
       withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       tap(([{ service }, groupId]) => {
+        this.ngrxStore.dispatch(disableEdit());
         this.ngrxStore.dispatch(Action.resetSuccessModel());
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
@@ -419,6 +431,7 @@ export class StateEffects {
         const dataForQuery = data[query];
 
         if (
+          query &&
           !Object.keys(StateEffects.visualizationCalls).includes(
             query,
           ) &&
@@ -447,10 +460,10 @@ export class StateEffects {
                     error: null,
                   });
               }),
-              catchError((err) =>
+              catchError((error) =>
                 of(
                   Action.storeVisualizationData({
-                    error: err,
+                    error,
                     query,
                   }),
                 ),
@@ -500,7 +513,7 @@ export class StateEffects {
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
-                xml,
+                xml: xml || null,
               }),
             ),
             catchError(() => {
@@ -565,6 +578,22 @@ export class StateEffects {
     ),
   );
 
+  storeGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeGroup),
+      tap(({ group }) =>
+        this.ngrxStore.dispatch(
+          Action.setGroup({ groupId: group.id }),
+        ),
+      ),
+      mergeMap(() => of(Action.success())),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.addReqBazarProject),
@@ -593,14 +622,18 @@ export class StateEffects {
           .pipe(
             map((synced) => {
               if (synced) {
-                let owner = action.owner;
                 let username = action.username;
+                let owner = action.owner;
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
+                  if (!owner) {
+                    owner = username;
+                  }
                 }
                 try {
-                  this.workspaceService.switchWorkspace(
-                    action.owner,
+                  // try joining the workspace
+                  this.workspaceService.joinWorkspace(
+                    owner,
                     action.serviceName,
                     username,
                     null,
@@ -608,9 +641,12 @@ export class StateEffects {
                     catalog,
                     action.role,
                     vdata,
+                    action.copyModel,
                   );
                 } catch (error) {
+                  // exception occurs when the workspace cannot be joined
                   if (user?.signedIn) {
+                    // If we are signed in we create a new workspace
                     this.workspaceService.initWorkspace(
                       action.groupId,
                       username,
@@ -619,8 +655,9 @@ export class StateEffects {
                       model,
                       vdata,
                     );
-                    owner = user?.profile.preferred_username;
                   } else {
+                    // probably some property is undefined
+                    console.error(error);
                     return Action.failure();
                   }
                 }
@@ -646,14 +683,12 @@ export class StateEffects {
                 } else {
                   return Action.setCommunityWorkspace({
                     workspace: currentCommunityWorkspace,
-                    owner,
-                    serviceName: action.serviceName,
                   });
                 }
               } else {
                 const error = new Error('Could not sync with yjs');
                 console.error(error.message);
-                throw error;
+                return Action.failure();
               }
             }),
             catchError((err) => {

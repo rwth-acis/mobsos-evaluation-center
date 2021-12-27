@@ -44,23 +44,32 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     query: string,
     service: ServiceInformation,
   ): string {
-    if (!query?.includes('$SERVICES$')) {
-      return query;
-    }
-    let servicesString = '(';
-    const services = [];
-    if (!this.service) {
-      this.service = service;
-    }
-    if (!service?.mobsosIDs) {
-      console.error('Service agent id cannot be null');
-      return query;
-    }
-    for (const mobsosID of service.mobsosIDs) {
-      services.push(`"${mobsosID.agentID}"`);
-    }
-    servicesString += services.join(',') + ')';
-    return query?.replace('$SERVICES$', servicesString);
+    if (query?.includes('$SERVICES$')) {
+      let servicesString = '(';
+      const services = [];
+      if (!this.service) {
+        this.service = service;
+      }
+      if (!service?.mobsosIDs) {
+        console.error('Service agent id cannot be null');
+        return query;
+      }
+      for (const mobsosID of service.mobsosIDs) {
+        services.push(`"${mobsosID.agentID}"`);
+      }
+      servicesString += services.join(',') + ')';
+      return query?.replace('$SERVICES$', servicesString);
+    } else if (query?.includes('$SERVICE$')) {
+      if (!(service?.mobsosIDs.length > 0)) {
+        console.error('Service agent id cannot be null');
+        return query;
+      }
+
+      return query?.replace(
+        '$SERVICE$',
+        ` ${service.mobsosIDs[0].agentID} `,
+      );
+    } else return query;
   }
 
   getParamsForQuery(query: string): string[] {

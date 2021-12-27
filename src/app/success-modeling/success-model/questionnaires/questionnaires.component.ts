@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-
+import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -11,7 +11,6 @@ import {
   MEASURES,
   SELECTED_GROUP,
   SELECTED_SERVICE,
-  SUCCESS_MODEL,
   USER_HAS_EDIT_RIGHTS,
   EDIT_MODE,
   QUESTIONNAIRES,
@@ -36,14 +35,15 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
+  addCatalogToWorkspace,
+  addModelToWorkSpace,
   addQuestionnaireToModel,
   fetchQuestionnaires,
-  storeCatalog,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-questionnaires',
@@ -51,24 +51,25 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./questionnaires.component.scss'],
 })
 export class QuestionnairesComponent implements OnInit {
-  availableQuestionnaires: Questionnaire[];
-  measures: MeasureMap;
-  model: SuccessModel;
-  service: ServiceInformation;
-  editMode = false;
-  group: GroupInformation;
+  @Input() model$: Observable<SuccessModel>;
 
-  mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  group$ = this.ngrxStore.select(SELECTED_GROUP);
-  model$ = this.ngrxStore.select(SUCCESS_MODEL);
   measures$ = this.ngrxStore.select(MEASURES);
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
-
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
+  group$ = this.ngrxStore.select(SELECTED_GROUP);
 
-  subscriptions$: Subscription[] = [];
+  mobsosSurveysUrl = environment.mobsosSurveysUrl;
+
+  private availableQuestionnaires: Questionnaire[];
+  private measures: MeasureMap;
+  private model: SuccessModel;
+  private service: ServiceInformation;
+  private group: GroupInformation;
+
+  private subscriptions$: Subscription[] = [];
+
   constructor(
     private dialog: MatDialog,
     private las2peer: Las2peerService,
@@ -231,44 +232,17 @@ export class QuestionnairesComponent implements OnInit {
     return new Date(year + 100, month, day).toISOString();
   }
 
-  ngOnInit(): void {
-    this.ngrxStore.dispatch(fetchQuestionnaires());
-    let sub = this.group$.subscribe((group) => {
-      this.group = group;
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs.map((q) =>
-        Questionnaire.fromPlainObject(q),
-      );
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.measures$.subscribe(
-      (measures) => (this.measures = measures),
+  getQuestionnaireByName(name: string): Questionnaire {
+    return this.availableQuestionnaires?.find(
+      (value) => value.name === name,
     );
-    this.subscriptions$.push(sub);
-
-    sub = this.model$.subscribe((model) => (this.model = model));
-    this.subscriptions$.push(sub);
-
-    sub = this.service$.subscribe((service) => {
-      this.service = service;
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.editMode$.subscribe(
-      (editMode) => (this.editMode = editMode),
-    );
-    this.subscriptions$.push(sub);
   }
 
   async openPickQuestionnaireDialog(): Promise<void> {
     // remove questionnaires that already have been chosen
     const questionnaires = this.availableQuestionnaires.filter(
       (questionnaire) =>
-        !!this.model.questionnaires.find(
+        !this.model.questionnaires.find(
           (q) => q.id === questionnaire.id,
         ),
     );
@@ -347,7 +321,46 @@ export class QuestionnairesComponent implements OnInit {
     }
   }
 
-  async createNewSurvey(
+  async ngOnInit(): Promise<void> {
+    let sub = this.group$.subscribe((group) => {
+      this.group = group;
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.questionnaires$.subscribe((qs) => {
+      this.availableQuestionnaires = qs?.map((q) =>
+        Questionnaire.fromPlainObject(q),
+      );
+    });
+    this.subscriptions$.push(sub);
+
+    sub = this.measures$.subscribe(
+      (measures) =>
+        (this.measures = cloneDeep(measures) as MeasureMap),
+    );
+    this.subscriptions$.push(sub);
+
+    sub = this.model$.subscribe(
+      (model) => (this.model = cloneDeep(model) as SuccessModel),
+    );
+    this.subscriptions$.push(sub);
+
+    sub = this.service$.subscribe((service) => {
+      this.service = service;
+    });
+    this.subscriptions$.push(sub);
+
+    await this.editMode$
+      .pipe(
+        filter((edit) => !!edit),
+        take(1),
+      )
+      .toPromise();
+    // questionnaires will be fetched once after the edit mode is toggled
+    this.ngrxStore.dispatch(fetchQuestionnaires());
+  }
+
+  private async createNewSurvey(
     questionnaire: IQuestionnaire,
     addMeasures: boolean,
     assignMeasures: boolean,
@@ -375,7 +388,7 @@ export class QuestionnairesComponent implements OnInit {
         this.service.alias,
         questionnaire.lang,
       );
-      if (!('id' in response)) {
+      if (!response || !('id' in response)) {
         throw new Error('Invalid survey id: undefined');
       }
 
@@ -391,6 +404,7 @@ export class QuestionnairesComponent implements OnInit {
         questionnaire.id,
         surveyId,
       );
+
       this.ngrxStore.dispatch(
         addQuestionnaireToModel({ questionnaire: q }),
       );
@@ -406,10 +420,13 @@ export class QuestionnairesComponent implements OnInit {
             this.model,
           );
         this.ngrxStore.dispatch(
-          storeSuccessModel({ xml: newModel.toXml().outerHTML }),
+          addModelToWorkSpace({
+            xml: SuccessModel.fromPlainObject(newModel).toXml()
+              .outerHTML,
+          }),
         );
         this.ngrxStore.dispatch(
-          storeCatalog({
+          addCatalogToWorkspace({
             xml: new MeasureCatalog(newMeasures).toXml().outerHTML,
           }),
         );
@@ -417,11 +434,5 @@ export class QuestionnairesComponent implements OnInit {
     } catch (error) {
       console.error(error);
     }
-  }
-
-  private getQuestionnaireByName(name: string): Questionnaire {
-    return this.availableQuestionnaires?.find(
-      (value) => value.name === name,
-    );
   }
 }

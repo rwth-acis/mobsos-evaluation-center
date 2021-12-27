@@ -17,6 +17,7 @@ export class Questionnaire implements IQuestionnaire {
     public name: string,
     public id: number,
     public surveyId: number,
+    public description?: string,
   ) {}
 
   static fromXml(xml: Element): Questionnaire {
@@ -27,7 +28,12 @@ export class Questionnaire implements IQuestionnaire {
   }
 
   public static fromPlainObject(obj: IQuestionnaire): Questionnaire {
-    return new Questionnaire(obj.name, obj.id, obj.surveyId);
+    return new Questionnaire(
+      obj.name,
+      obj.id,
+      obj.surveyId,
+      obj.description,
+    );
   }
 
   toXml(): Element {

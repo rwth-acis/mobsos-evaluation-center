@@ -41,7 +41,6 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../../models/service.model';
 import { IQuestionnaire } from '../../models/questionnaire.model';
-import { ofType } from '@ngrx/effects';
 @Component({
   selector: 'app-success-model',
   templateUrl: './success-model.component.html',

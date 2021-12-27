@@ -36,7 +36,6 @@ import {
   _SELECTED_SERVICE_NAME,
 } from './services/store.selectors';
 import {
-  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
@@ -55,6 +54,7 @@ import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
+import { WorkspaceService } from './services/workspace.service';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -112,6 +112,7 @@ export class AppComponent
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private workspaceService: WorkspaceService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -119,7 +120,7 @@ export class AppComponent
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 800px)');
+    this.mobileQuery = window.matchMedia('(max-width: 1000px)');
     this.mobileQueryListener = () =>
       this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
@@ -208,6 +209,7 @@ export class AppComponent
     this.ngrxStore.dispatch(fetchServices());
     if (groupId) {
       this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+      this.workspaceService.syncWithCommunnityWorkspace(groupId);
       if (serviceName) {
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName }),

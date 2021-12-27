@@ -15,6 +15,7 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
+import { Questionnaire } from '../models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -34,7 +35,10 @@ const _Reducer = createReducer(
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    groups: mergeGroupData(state.groups, groupsFromContactService),
+    groups: mergeGroupData(
+      state.groups || null,
+      groupsFromContactService,
+    ),
   })),
 
   on(Actions.resetSuccessModel, (state) => ({
@@ -116,6 +120,13 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
+  on(Actions.addQuestionnaireToModel, (state, { questionnaire }) => ({
+    ...state,
+    communityWorkspace: addQuestionnaireToSuccessModel(
+      state,
+      questionnaire,
+    ),
+  })),
   on(Actions.setUserName, (state, props) => ({
     ...state,
     user: {
@@ -130,10 +141,7 @@ const _Reducer = createReducer(
     ...state,
     selectedServiceName: props.serviceName,
   })),
-  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
-    ...state,
-    currentWorkSpaceOwner: props.owner,
-  })),
+
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModelInitialized: true,
@@ -182,17 +190,11 @@ const _Reducer = createReducer(
   })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
-    editMode: true,
     communityWorkspace: props.workspace,
-    selectedGroupId: props.selectedGroupId
-      ? props.selectedGroupId
-      : state.selectedGroupId,
-    selectedServiceName: props.serviceName
-      ? props.serviceName
-      : state.selectedServiceName,
-    currentWorkSpaceOwner: props.owner
-      ? props.owner
-      : state.currentWorkSpaceOwner,
+  })),
+  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner,
   })),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
@@ -293,6 +295,14 @@ const _Reducer = createReducer(
       state.selectedServiceName,
       name,
     ),
+  })),
+  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addModelToCurrentWorkSpace(state, xml),
+  })),
+  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),
 );
 
@@ -434,37 +444,42 @@ function mergeServiceData(
         alias: serviceAlias,
       };
 
-      const mobsosIDs = serviceCollection[serviceName].mobsosIDs;
-      if (
-        mobsosIDs?.length < 100 &&
-        Date.now() - registrationTime > ONE_YEAR
-      ) {
-        mobsosIDs.push({
-          agentID: serviceAgentID,
-          registrationTime,
-        });
+      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
+      if (!mobsosIDs) {
+        mobsosIDs = [];
       }
+
+      mobsosIDs.push({
+        agentID: serviceAgentID,
+        registrationTime,
+      });
+
       mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime,
+      );
+
+      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
+        0,
+        100,
       );
     }
   }
   return serviceCollection;
 }
 
-const ONE_YEAR = 1601968704;
+// const ONE_YEAR = 1601968704;
 
-function getMessageDescriptionForService(
-  messageDescriptions,
-  serviceIdentifier: string,
-) {
-  let serviceMessageDescriptions = {};
-  if (messageDescriptions && messageDescriptions[serviceIdentifier])
-    serviceMessageDescriptions =
-      messageDescriptions[serviceIdentifier];
+// function getMessageDescriptionForService(
+//   messageDescriptions,
+//   serviceIdentifier: string,
+// ) {
+//   let serviceMessageDescriptions = {};
+//   if (messageDescriptions && messageDescriptions[serviceIdentifier])
+//     serviceMessageDescriptions =
+//       messageDescriptions[serviceIdentifier];
 
-  return serviceMessageDescriptions;
-}
+//   return serviceMessageDescriptions;
+// }
 
 /**
  * Convert data from both group sources into a common format.
@@ -478,7 +493,8 @@ function mergeGroupData(
   groupsFromContactService,
   groupsFromMobSOS?,
 ) {
-  groups = cloneDeep(groups);
+  groups = cloneDeep(groups) ||{};
+
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
     for (const groupID of Object.keys(groupsFromContactService)) {
@@ -686,21 +702,12 @@ function addMeasureToFactorInModel(
   );
   const successModel = appWorkspace.model;
 
-  const factorList = successModel.dimensions[
-    props.dimensionName
-  ].filter(
-    (factor: SuccessFactor) => factor.name === props.factorName,
+  const factor = successModel.dimensions[props.dimensionName].find(
+    (f: SuccessFactor) => f.name === props.factorName,
   );
-  const copyFactorList = [];
-  for (let factor of factorList) {
-    factor = {
-      ...factor,
-      measures: [...factor.measures],
-    } as SuccessFactor;
-    factor.measures.unshift(props.measure.name);
-    copyFactorList.push(factor);
-  }
-  successModel.dimensions[props.dimensionName] = copyFactorList;
+
+  factor.measures.unshift(props.measure.name);
+
   return copy;
 }
 
@@ -922,5 +929,61 @@ function resetFetchDateForQuery(
     fetchDate: undefined,
     loading: true,
   };
+  return copy;
+}
+function addModelToCurrentWorkSpace(
+  state: AppState,
+  xml: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const model = SuccessModel.fromXml(doc.documentElement);
+  appWorkspace.model = model;
+  return copy;
+}
+
+function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const catalog = MeasureCatalog.fromXml(doc.documentElement);
+  appWorkspace.catalog = catalog;
+  return copy;
+}
+function addQuestionnaireToSuccessModel(
+  state: AppState,
+  questionnaire: Questionnaire,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace.model.questionnaires) {
+    appWorkspace.model.questionnaires = [];
+  }
+  appWorkspace.model.questionnaires.push(questionnaire);
   return copy;
 }

@@ -44,7 +44,7 @@ describe('SuccessModelingComponent', () => {
   let store: MockStore<AppState>;
   beforeEach(
     waitForAsync(() => {
-      TestBed.configureTestingModule({
+      void TestBed.configureTestingModule({
         declarations: [
           SuccessModelingComponent,
           SuccessDimensionComponent,
@@ -97,6 +97,6 @@ describe('SuccessModelingComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    void expect(component).toBeTruthy();
   });
 });

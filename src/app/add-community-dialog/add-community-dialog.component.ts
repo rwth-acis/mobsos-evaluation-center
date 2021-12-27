@@ -20,9 +20,9 @@ import {
   Observable,
   Subscription,
 } from 'rxjs';
-import { catchError, map, timeout } from 'rxjs/operators';
+import { catchError, map, take, timeout } from 'rxjs/operators';
 import { GroupInformation } from '../models/community.model';
-import { storeGroup } from '../services/store.actions';
+import { addGroup, storeGroup } from '../services/store.actions';
 import { StateEffects } from '../services/store.effects';
 import { GROUPS, USER_GROUPS } from '../services/store.selectors';
 
@@ -93,45 +93,47 @@ export class AddCommunityDialogComponent
     );
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     const name = (this.form.value as string)?.trim();
+    this.ngrxStore.dispatch(addGroup({ groupName: name }));
 
-    const sub = this.effects.addGroup$
+    const res = await this.effects.addGroup$
       .pipe(
-        timeout(3000),
+        timeout(30000),
         catchError(() =>
           of({ reason: 'Service request Timeout', status: 504 }),
         ),
+        take(1),
       )
-      .subscribe((res) => {
-        if ('group' in res && res.group.id) {
-          this._snackBar.open('Group added', null, {
-            duration: 1000,
-          });
-          sub.unsubscribe();
-          this.dialogRef.close();
-        } else if (
-          'reason' in res &&
-          (res.reason as HttpErrorResponse).status === 400
-        ) {
-          this.ngrxStore.dispatch(
-            storeGroup({
-              group: { name, id: 'unknown', member: false },
-            }),
-          );
+      .toPromise();
 
-          this.errorSubject$.next({
-            groupName: name,
-            message: 'This group name is already taken',
-          });
-          sub.unsubscribe();
-          return;
-        } else {
-          console.error(res);
-          sub.unsubscribe();
-          return;
-        }
+    if ('group' in res && res.group.id) {
+      this._snackBar.open('Group added', null, {
+        duration: 5000,
       });
+
+      this.dialogRef.close();
+    } else if (
+      'reason' in res &&
+      (res.reason as HttpErrorResponse).status === 400
+    ) {
+      this.ngrxStore.dispatch(
+        storeGroup({
+          group: { name, id: 'unknown', member: false },
+        }),
+      );
+
+      this.errorSubject$.next({
+        groupName: name,
+        message: 'This group name is already taken',
+      });
+
+      return;
+    } else {
+      console.error(res);
+
+      return;
+    }
   }
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
