@@ -22,6 +22,7 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  startWith,
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -107,6 +108,11 @@ export class ChartVisualizerComponent
           VISUALIZATION_DATA_FOR_QUERY({ queryString }),
         ),
       ),
+      startWith({
+        data: undefined,
+        loading: true,
+        fetchDate: undefined,
+      }),
       filter((data) => !!data),
       distinctUntilKeyChanged('fetchDate'),
     );

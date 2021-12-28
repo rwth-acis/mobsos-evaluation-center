@@ -22,7 +22,7 @@ import {
   editMeasure,
   removeMeasureFromModel,
 } from 'src/app/services/store.actions';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';

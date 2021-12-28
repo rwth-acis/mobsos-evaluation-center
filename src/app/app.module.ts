@@ -44,7 +44,6 @@ import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
 
-import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 import { SharedModule } from './shared/shared.module';
 import { RawEditModule } from './raw-edit/raw-edit.module';
 import { SuccessModelingModule } from './success-modeling/success-modeling.module';
@@ -97,7 +96,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     OidcSigninComponent,
     OidcSignoutComponent,
     OidcSilentComponent,
-    AddCommunityDialogComponent,
     JoinWorkSpaceComponent,
   ],
   imports: [
@@ -122,8 +120,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     MatSidenavModule,
     MatListModule,
     MatProgressBarModule,
-    FormsModule,
-
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
     }),

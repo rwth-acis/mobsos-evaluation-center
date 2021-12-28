@@ -654,6 +654,7 @@ export class StateEffects {
                       catalog,
                       model,
                       vdata,
+                      action.copyModel,
                     );
                   } else {
                     // probably some property is undefined

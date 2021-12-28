@@ -22,23 +22,34 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog/confirmation-dialog.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { SqlTableComponent } from './sql-table/sql-table.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { AddCommunityDialogComponent } from './dialogs/add-community-dialog/add-community-dialog.component';
+import { UnavailableServicesDialogComponent } from './dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  declarations: [ConfirmationDialogComponent, SqlTableComponent],
+  declarations: [
+    ConfirmationDialogComponent,
+    SqlTableComponent,
+    AddCommunityDialogComponent,
+    UnavailableServicesDialogComponent,
+  ],
   imports: [
     CommonModule,
     TranslateModule,
     MatButtonModule,
     MatDialogModule,
+    FormsModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     MatPaginatorModule,
+    MatInputModule,
+    MatIconModule,
     MatTableModule,
   ],
   exports: [
