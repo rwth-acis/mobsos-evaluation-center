@@ -55,6 +55,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
+import { Las2peerService } from './services/las2peer.service';
+import { ConfirmationDialogComponent } from './shared/dialogs/confirmation-dialog/confirmation-dialog.component';
+import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -112,6 +115,7 @@ export class AppComponent
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private l2p: Las2peerService,
     private workspaceService: WorkspaceService,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -221,6 +225,8 @@ export class AppComponent
         );
       }
     }
+
+    this.checkCoreServices();
   }
 
   ngOnDestroy(): void {
@@ -261,5 +267,19 @@ export class AppComponent
       data: null,
       disableClose: true,
     });
+  }
+
+  async checkCoreServices(): Promise<void> {
+    const unavailableServices = await this.l2p
+      .unavailableServices()
+      .toPromise();
+    if (unavailableServices.length > 0) {
+      console.warn(unavailableServices);
+      this.dialog.open(UnavailableServicesDialogComponent, {
+        data: {
+          services: unavailableServices,
+        },
+      });
+    }
   }
 }
