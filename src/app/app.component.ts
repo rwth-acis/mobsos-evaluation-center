@@ -52,7 +52,7 @@ import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
+import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 

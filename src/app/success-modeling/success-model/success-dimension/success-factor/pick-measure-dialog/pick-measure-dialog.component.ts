@@ -32,7 +32,7 @@ import {
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
 } from 'src/app/services/store.selectors';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';

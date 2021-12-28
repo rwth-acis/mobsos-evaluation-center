@@ -8,7 +8,7 @@ import { Store } from '@ngrx/store';
 
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { SuccessFactor } from 'src/app/models/success.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { MeasureMap } from 'src/app/models/measure.catalog';

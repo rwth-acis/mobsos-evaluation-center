@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>Unavailable Services</h1>
+<div mat-dialog-content>
+  The following services are unavailable:
+  <ul>
+    <li *ngFor="let service of data?.services">
+      {{ service }}
+    </li>
+  </ul>
+</div>
