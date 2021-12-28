@@ -10,6 +10,7 @@ import {
 import { forkJoin, Observable, of } from 'rxjs';
 import {
   catchError,
+  filter,
   map,
   share,
   switchMap,
@@ -56,6 +57,37 @@ export class Las2peerService {
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
   userCredentials: { token: string; preferred_username: string };
+
+  coreServices = {
+    'mobsos-success-modeling': {
+      url: joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.SUCCESS_MODELING_SERVICE_PATH,
+      ),
+      name: 'MobSOS Success Modeling',
+    },
+    // 'mobsos-surveys': {
+    //   url: joinAbsoluteUrlPath(
+    //     environment.las2peerWebConnectorUrl,
+    //     this.SURVEYS_SERVICE_PATH,
+    //   ),
+    //   name: 'MobSOS Surveys',
+    // },
+    contactservice: {
+      url: joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.CONTACT_SERVICE_PATH,
+      ),
+      name: 'Contact Service',
+    },
+    'query-visualization-service': {
+      url: joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
+      ),
+      name: 'MobSOS Query Visualization Service',
+    },
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -255,6 +287,31 @@ export class Las2peerService {
     );
     return this.makeRequestAndObserve<SuccessModel>(url).pipe(
       map((response: { xml: string }) => response.xml),
+    );
+  }
+
+  /**
+   * checks if all services are available and returns a list of all services that are not available
+   * @returns all unavailable services
+   */
+  unavailableServices() {
+    const requests = Object.values(this.coreServices).map(
+      (service) => {
+        const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
+        return {
+          name: service.name,
+          request: this.makeRequestAndObserve(url),
+        };
+      },
+    );
+    return forkJoin(requests.map((r) => r.request)).pipe(
+      map(
+        (responses) =>
+          responses.map((response, index) =>
+            response.status >= 400 ? requests[index].name : undefined,
+          ), // retruns a list of names of the services that are not available
+      ),
+      map((services) => services.filter((r) => r !== undefined)), // removes undefined values
     );
   }
 
