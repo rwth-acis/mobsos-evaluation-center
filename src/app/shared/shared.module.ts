@@ -48,6 +48,8 @@ import { UnavailableServicesDialogComponent } from './dialogs/unavailable-servic
     ReactiveFormsModule,
     MatFormFieldModule,
     MatPaginatorModule,
+    MatInputModule,
+    MatIconModule,
     MatTableModule,
   ],
   exports: [
