@@ -20,7 +20,7 @@ $material-design-icons-font-directory-path: '~material-design-icons-iconfont/dis
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $mobsos-evaluation-center-primary:  mat.define-palette($mat-teal);
-$mobsos-evaluation-center-accent:  mat.define-palette($mat-pink, A200, A100, A400);
+$mobsos-evaluation-center-accent:  mat.define-palette($mat-orange, A200, 100, A700);
 
 h2 {
   margin: 5px;
