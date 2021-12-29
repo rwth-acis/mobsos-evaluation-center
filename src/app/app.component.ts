@@ -136,6 +136,7 @@ export class AppComponent
   }
 
   ngOnInit(): void {
+    void this.checkCoreServices();
     void this.ngrxStore
       .select(_SELECTED_GROUP_ID)
       .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
@@ -195,6 +196,8 @@ export class AppComponent
   }
 
   async ngAfterViewInit(): Promise<void> {
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
     const [, groupId, serviceName] = await this.user$
       .pipe(
         filter((user) => !!user),
@@ -207,29 +210,22 @@ export class AppComponent
         take(1),
       )
       .toPromise();
-
-    // only gets called once if user is signed in
+    // only gets called ONCE if user is signed in
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
-    if (groupId) {
-      this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-      this.workspaceService.syncWithCommunnityWorkspace(groupId);
-      if (serviceName) {
-        this.ngrxStore.dispatch(
-          fetchSuccessModel({ groupId, serviceName }),
-        );
-        this.ngrxStore.dispatch(
-          fetchMessageDescriptions({
-            serviceName,
-          }),
-        );
-      }
-    }
-
-    this.checkCoreServices();
-    const noob = localStorage.getItem('notNewbie');
-    this.noobInfo = noob == null;
+    if (!groupId) return;
+    this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+    this.workspaceService.syncWithCommunnityWorkspace(groupId);
+    if (!serviceName) return;
+    this.ngrxStore.dispatch(
+      fetchSuccessModel({ groupId, serviceName }),
+    );
+    this.ngrxStore.dispatch(
+      fetchMessageDescriptions({
+        serviceName,
+      }),
+    );
   }
 
   ngOnDestroy(): void {
