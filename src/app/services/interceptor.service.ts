@@ -58,10 +58,12 @@ export class Interceptor implements HttpInterceptor {
             res instanceof HttpErrorResponse ||
             res instanceof HttpResponse,
         ),
-        timeoutWith(2 * ONE_MINUTE_IN_MS, throwError('Timeout')),
+        timeoutWith(ONE_MINUTE_IN_MS, throwError('Timeout')),
         tap((res) => {
           if (res instanceof HttpResponse) {
             this.handleResponse(res, req);
+          } else {
+            throw new HttpErrorResponse({ error: res });
           }
         }),
         catchError((err) => {
