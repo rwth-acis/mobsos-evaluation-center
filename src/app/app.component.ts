@@ -106,6 +106,7 @@ export class AppComponent
 
   private userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
+  noobInfo: boolean;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -227,6 +228,8 @@ export class AppComponent
     }
 
     this.checkCoreServices();
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
   }
 
   ngOnDestroy(): void {
@@ -267,6 +270,11 @@ export class AppComponent
       data: null,
       disableClose: true,
     });
+  }
+
+  dismissNoobInfo() {
+    localStorage.setItem('notNewbie', 'true');
+    this.noobInfo = false;
   }
 
   async checkCoreServices(): Promise<void> {

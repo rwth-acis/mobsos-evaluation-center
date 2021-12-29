@@ -1,6 +1,8 @@
 @import '../styles';
 
 $primary: map-get($mobsos-evaluation-center-theme, primary);
+$accent: map-get($mobsos-evaluation-center-theme, accent);
+
 
 mat-sidenav-container {
   min-height: 100%;
@@ -18,7 +20,7 @@ mat-sidenav-container {
       flex-direction: column !important;
     }
     #noGroups {
-        margin-top: 5px;
+      margin-top: 5px;
       padding-left: 16px;
       padding-right: 16px;
     }
@@ -65,6 +67,19 @@ mat-sidenav-container {
 
   mat-sidenav-content {
     height: 100vh;
+    .noob-info {
+      background-color: mat-color($accent, lighter);
+      color: mat-color($accent, darker);
+      display: flex;
+      align-items: center;
+      .align-left {
+        margin-left: auto;
+      }
+      .yt-link{
+        margin: 0 2px 0 2px 
+      }
+    }
+
     // position: relative;
     mat-progress-bar {
       top: 0;
