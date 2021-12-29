@@ -70,10 +70,10 @@
           <mat-icon matListIcon>show_chart</mat-icon>
           {{ 'shared.pages.query' | translate }}
         </a>
-        <!-- <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
+        <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
           <mat-icon matListIcon>open_in_browser</mat-icon>
           {{ 'shared.pages.manage-questionnaires' | translate }}
-        </a> -->
+        </a>
         <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
           <mat-icon matListIcon>open_in_browser</mat-icon>
           {{ 'shared.pages.manage-requirements' | translate }}
@@ -140,6 +140,26 @@
       *ngIf="loading$ | async"
     ></mat-progress-bar>
     <main>
+      <mat-card class="noob-info" *ngIf="noobInfo">
+        Watch
+        <a
+          class="yt-link"
+          href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
+          target="_blank"
+          rel="noopener noreferrer"
+          >this video</a
+        >
+        to learn how to use the MobSOS EC.
+        <button
+          type="button"
+          class="align-left"
+          mat-icon-button
+          color="warn"
+          (click)="dismissNoobInfo()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card>
       <router-outlet></router-outlet>
     </main>
     <footer id="footer">

@@ -66,13 +66,10 @@ export class Las2peerService {
       ),
       name: 'MobSOS Success Modeling',
     },
-    // 'mobsos-surveys': {
-    //   url: joinAbsoluteUrlPath(
-    //     environment.las2peerWebConnectorUrl,
-    //     this.SURVEYS_SERVICE_PATH,
-    //   ),
-    //   name: 'MobSOS Surveys',
-    // },
+    'mobsos-surveys': {
+      url: environment.mobsosSurveysUrl,
+      name: 'MobSOS Surveys',
+    },
     contactservice: {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
