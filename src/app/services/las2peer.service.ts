@@ -168,11 +168,13 @@ export class Las2peerService {
       .pipe(
         catchError((err) =>
           err.status === 401
-            ? this.http.request(
-                options.method,
-                url,
-                ngHttpOptionsNoAuthorization,
-              )
+            ? this.http
+                .request(
+                  options.method,
+                  url,
+                  ngHttpOptionsNoAuthorization,
+                )
+                .pipe(catchError((err) => of(err)))
             : of(err),
         ),
       );
@@ -305,7 +307,9 @@ export class Las2peerService {
       map(
         (responses) =>
           responses.map((response, index) =>
-            response.status >= 400 ? requests[index].name : undefined,
+            response.status === 0 || response.status >= 400
+              ? requests[index].name
+              : undefined,
           ), // retruns a list of names of the services that are not available
       ),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values
