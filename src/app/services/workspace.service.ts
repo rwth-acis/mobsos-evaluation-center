@@ -69,7 +69,7 @@ export class WorkspaceService {
 
     // updates the workspace in store
     this.communityWorkspace$.subscribe((workspace) => {
-      if (!isEmpty(workspace)) {
+      if (workspace && !isEmpty(workspace)) {
         this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
       }
     });
@@ -131,15 +131,14 @@ export class WorkspaceService {
     }
     // get the current workspace state from yjs
     const communityWorkspace =
-      this.getCurrentCommunityWorkspaceFromYJS(groupID);
-
+      this.getCurrentCommunityWorkspaceFromYJS(groupID) || {};
     /** *****************************
      * Add our local stuff to the community workspace
      */
     if (!Object.keys(communityWorkspace).includes(username)) {
       communityWorkspace[username] = {};
     }
-    const userWorkspace = communityWorkspace[username];
+    const userWorkspace = communityWorkspace[username] || {};
 
     if (!Object.keys(userWorkspace).includes(selectedService.name)) {
       if (!measureCatalog) {
@@ -246,7 +245,11 @@ export class WorkspaceService {
     serviceName: string,
   ): ApplicationWorkspace {
     const communityWorkspace = this.communityWorkspace$.getValue();
-    if (!Object.keys(communityWorkspace).includes(username)) {
+
+    if (
+      !communityWorkspace ||
+      !Object.keys(communityWorkspace).includes(username)
+    ) {
       return;
     }
     const userWorkspace = this.getWorkspaceByUserAndService(
@@ -438,7 +441,10 @@ export class WorkspaceService {
     this.communityWorkspace$
       .pipe(
         throttleTime(10),
-        filter((obj) => !isEmpty(obj) && !isEqual(obj, map.toJSON())),
+        filter(
+          (obj) =>
+            !!obj && !isEmpty(obj) && !isEqual(obj, map.toJSON()),
+        ),
       )
       .subscribe((obj) => {
         // if the subject changes the object will be synced with yjs
@@ -480,7 +486,6 @@ export class WorkspaceService {
     if (!isEqual(cloneObj, this.communityWorkspace$.getValue())) {
       this.communityWorkspace$.next(cloneObj);
     }
-
     this.syncDone$.next(true);
   }
 
