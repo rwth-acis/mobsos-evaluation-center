@@ -339,37 +339,6 @@ export class StateEffects {
     ),
   );
 
-  /**
-   * @deprecated MobSOS groups might be outdated. We should not rely on them.
-   * Thus there is no need to transfer groups from the contact service to mobsos
-   */
-  transferMissingGroupsToMobSOS$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.transferMissingGroupsToMobSOS),
-      switchMap((action) => {
-        if (action.groupsFromContactService) {
-          const missingGroups = Object.values(
-            action.groupsFromContactService,
-          )?.filter(
-            (group: GroupInformation) =>
-              !action.groupsFromMobSOS?.find(
-                (g) => g.name === group.name,
-              ),
-          );
-          return this.l2p
-            .saveGroupsToMobSOS(missingGroups)
-            .pipe(map(() => Action.successResponse()));
-        }
-        return of(Action.failure());
-      }),
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failureResponse(err));
-      }),
-      share(),
-    ),
-  );
-
   saveModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveModel),
