@@ -34,7 +34,12 @@ export const environment = {
   // enable to use the blockchain based service discovery of las2peer
   useLas2peerServiceDiscovery: false,
 
-  yJsWebsocketUrl: 'ws://localhost:1234',
+  // yJsWebsocketUrl: 'ws://localhost:1234',
+  // yJsWebsocketUrl:
+  //   window.env.yJsWebsocketUrl || 'ws://localhost:1234',
+  yJsWebsocketUrl:
+    window.env.yJsWebsocketUrl ||
+    'wss://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
   // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   // URL of the Requirements Bazaar frontend
