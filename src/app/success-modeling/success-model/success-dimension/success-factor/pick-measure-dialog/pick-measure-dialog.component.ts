@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Inject,
@@ -88,6 +89,7 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private dialog: MatDialog,
     private ngrxStore: Store,
+    private changeDetectorRef: ChangeDetectorRef,
     private translate: TranslateService,
   ) {}
 
@@ -114,6 +116,7 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
   }
 
   async openNewMeasureDialog() {
+    this.changeDetectorRef.detach(); // Detach change detection before the dialog opens.
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
       maxHeight: '90vh',
       width: '80%',
@@ -129,6 +132,7 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
       },
     });
     const result = await dialogRef.afterClosed().toPromise();
+    this.changeDetectorRef.reattach();
     if (result) {
       this.data.measures.unshift(result);
       this.ngrxStore.dispatch(

@@ -736,7 +736,10 @@ function updateMeasure(
     owner,
     serviceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('no workspace found for owner ' + owner);
+    return communityWorkspace;
+  }
 
   const measureCatalog = appWorkspace.catalog;
   const successModel = appWorkspace.model;

@@ -266,6 +266,7 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onAddOperationClicked(): void {
+    // closes the dialog
     const kpiVisualization = this.data.measure
       .visualization as KpiVisualization;
     kpiVisualization.operationsElements.push(
