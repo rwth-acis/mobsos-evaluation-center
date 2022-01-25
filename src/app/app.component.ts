@@ -17,11 +17,13 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   fetchGroups,
   fetchMeasureCatalog,
   fetchMessageDescriptions,
   fetchServices,
   fetchSuccessModel,
+  setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -136,6 +138,7 @@ export class AppComponent
   }
 
   ngOnInit(): void {
+    this.ngrxStore.dispatch(disableEdit());
     void this.checkCoreServices();
     void this.ngrxStore
       .select(_SELECTED_GROUP_ID)
@@ -145,32 +148,10 @@ export class AppComponent
         this.selectedGroupId = id;
       });
 
-    const silentLoginFunc = () =>
-      this.userManager
-        .signinSilentCallback()
-        .then(() => {})
-        .catch(() => {
-          this.setUser(null);
-          console.error('Silent login failed');
-        });
-    void silentLoginFunc();
+    silentSignin();
+  }
 
-    let sub = this.user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
-      .subscribe((user) => {
-        // callback only called when signedIn state changes
-        clearInterval(this.silentSigninIntervalHandle); // clear old interval
-        if (user?.signedIn) {
-          // if signed in, create a new interval
-          this.silentSigninIntervalHandle = setInterval(
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            silentLoginFunc,
-            environment.openIdSilentLoginInterval * 1000,
-          );
-        }
-      });
-    this.subscriptions$.push(sub);
-
+  async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
       this.title = 'MobSOS Evaluation Center (dev)';
       this.snackBar.open(
@@ -178,27 +159,18 @@ export class AppComponent
         'OK',
         { duration: 10000 },
       );
-      // Logging in dev mode
-      sub = this.ngrxStore
+      // Logging the state in dev mode
+      const sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
         .subscribe((state) => {
           console.log(state);
         });
       this.subscriptions$.push(sub);
-
-      // sub = this.ngrxStore
-      //   .select(APPLICATION_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
-      // this.subscriptions$.push(sub);
     }
-  }
-
-  async ngAfterViewInit(): Promise<void> {
     const noob = localStorage.getItem('notNewbie');
     this.noobInfo = noob == null;
-    const [, groupId, serviceName] = await this.user$
+
+    const [user, groupId, serviceName] = await this.user$
       .pipe(
         filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
@@ -217,6 +189,11 @@ export class AppComponent
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
+    this.ngrxStore.dispatch(
+      setCommunityWorkspaceOwner({
+        owner: user.profile.preferred_username,
+      }),
+    );
     if (!serviceName) return;
     this.ngrxStore.dispatch(
       fetchSuccessModel({ groupId, serviceName }),
@@ -286,4 +263,31 @@ export class AppComponent
       });
     }
   }
+}
+function silentSignin() {
+  const silentLoginFunc = () =>
+    this.userManager
+      .signinSilentCallback()
+      .then(() => {})
+      .catch(() => {
+        this.setUser(null);
+        console.error('Silent login failed');
+      });
+  void silentLoginFunc();
+
+  let sub = this.user$
+    .pipe(distinctUntilKeyChanged('signedIn'))
+    .subscribe((user) => {
+      // callback only called when signedIn state changes
+      clearInterval(this.silentSigninIntervalHandle); // clear old interval
+      if (user?.signedIn) {
+        // if signed in, create a new interval
+        this.silentSigninIntervalHandle = setInterval(
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          silentLoginFunc,
+          environment.openIdSilentLoginInterval * 1000,
+        );
+      }
+    });
+  this.subscriptions$.push(sub);
 }
