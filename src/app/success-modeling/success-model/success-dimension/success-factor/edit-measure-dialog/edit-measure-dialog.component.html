@@ -310,6 +310,7 @@
         *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="primary"
+        type="button"
         (click)="onAddQueryClicked()"
       >
         {{
@@ -321,6 +322,7 @@
         *ngIf="measureForm.get('visualization.type').value === 'KPI'"
         mat-button
         color="warn"
+        type="button"
         (click)="onRemoveQueryClicked()"
         [disabled]="data.measure.queries.length <= 1"
       >
