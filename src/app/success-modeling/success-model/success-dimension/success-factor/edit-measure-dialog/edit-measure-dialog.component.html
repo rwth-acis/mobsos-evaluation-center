@@ -114,10 +114,8 @@
             <ng-container *ngSwitchCase="'KPI'">
               <ng-container
                 *ngIf="
-                  measureForm.get('visualization.parameters')?.value
-                    ?.length > 0 &&
-                    measureForm.get('visualization.parameters')
-                      .value[0].name !== '';
+                  measureForm.get('queries')?.value?.length > 0 &&
+                    measureForm.get('queries').value[0].name !== '';
                   else noQueries
                 "
               >
@@ -129,10 +127,11 @@
                     let i = index
                   "
                 >
-                  <mat-form-field *ngIf="i % 2 === 0">
+                  <!-- Operand -->
+                  <mat-form-field *ngIf="i % 2 === 0; else Operator">
                     <mat-label>Operand</mat-label>
                     <mat-select
-                      [formControl]="termPart"
+                      [formControlName]="i"
                       (selectionChange)="
                         onKpiOperandChange($event.value, i)
                       "
@@ -148,22 +147,27 @@
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
-                  <mat-form-field *ngIf="i % 2 !== 0">
-                    <mat-label>Operator</mat-label>
-                    <mat-select
-                      [formControl]="termPart"
-                      (selectionChange)="
-                        onKpiOperatorChange($event.value, i)
-                      "
-                    >
-                      <mat-option
-                        *ngFor="let operator of ['+', '-', '*', '/']"
-                        [value]="operator"
+                  <!-- Operator -->
+                  <ng-template #Operator>
+                    <mat-form-field>
+                      <mat-label>Operator</mat-label>
+                      <mat-select
+                        [formControl]="termPart"
+                        (selectionChange)="
+                          onKpiOperatorChange($event.value, i)
+                        "
                       >
-                        {{ operator }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                        <mat-option
+                          *ngFor="
+                            let operator of ['+', '-', '*', '/']
+                          "
+                          [value]="operator"
+                        >
+                          {{ operator }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </ng-template>
                 </ng-container>
 
                 <button
@@ -381,4 +385,6 @@
   </mat-stepper>
 </form>
 
-<ng-template #noQueries> Add a query with a name first </ng-template>
+<ng-template #noQueries>
+  Add a query with a name first in step 2</ng-template
+>
