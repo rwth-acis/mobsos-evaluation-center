@@ -493,7 +493,7 @@ function mergeGroupData(
   groupsFromContactService,
   groupsFromMobSOS?,
 ) {
-  groups = cloneDeep(groups) ||{};
+  groups = cloneDeep(groups) || {};
 
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
@@ -566,9 +566,15 @@ function addFactorToDimension(
     owner,
     selectedServiceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('App workspace not found for owner ' + owner);
+    return communityWorkspace;
+  }
   const successModel = appWorkspace.model;
-  if (!successModel) return communityWorkspace;
+  if (!successModel) {
+    console.error('Success model not found');
+    return communityWorkspace;
+  }
   let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
   factorsList.unshift(props.factor);
