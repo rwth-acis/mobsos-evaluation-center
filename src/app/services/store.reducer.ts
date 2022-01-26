@@ -358,6 +358,10 @@ function updateVisualizationData(
 ) {
   currentVisualizationData = cloneDeep(currentVisualizationData);
   if (!props?.query || props?.error?.status === 0) {
+    console.error(
+      'The query is missing or it has led to an error: ',
+      props,
+    );
     return currentVisualizationData;
   }
   if (props?.data) {

@@ -1,7 +1,7 @@
 <h1 mat-dialog-title>
   {{ 'success-modeling.pick-measure-dialog.title' | translate }}
 </h1>
-<div mat-dialog-content>
+<div mat-dialog-content class="dialog-content">
   <ng-container
     *ngIf="filteredMeasures$ | async as measures; else noMeasures"
   >

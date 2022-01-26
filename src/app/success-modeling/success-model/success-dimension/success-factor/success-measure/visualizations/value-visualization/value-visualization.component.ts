@@ -93,7 +93,7 @@ export class ValueVisualizationComponent
         (visualizationData: VisualizationData) =>
           visualizationData?.data,
       ),
-      filter((data) => !!data),
+      filter((data) => !!data && Array.isArray(data)),
       map((data) =>
         data.slice(-1)[0].length === 0
           ? '0'

@@ -806,7 +806,12 @@ export class Las2peerService {
       headers: {
         ...authorHeader,
       },
-    });
+    }).pipe(
+      catchError((err) => {
+        console.error(err);
+        return of(null);
+      }),
+    );
   }
 
   async searchProjectOnReqBaz(project: string) {

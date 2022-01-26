@@ -417,12 +417,27 @@ export class StateEffects {
                   delete StateEffects.visualizationCalls[query];
               }),
               map((response) => {
-                if (response instanceof HttpErrorResponse)
+                if (
+                  !response ||
+                  (response instanceof HttpErrorResponse &&
+                    response.status >= 400)
+                )
                   return Action.storeVisualizationData({
                     error: response,
                     query,
                   });
-                else
+                else if (
+                  response instanceof HttpErrorResponse &&
+                  response.status == 201
+                ) {
+                  console.error(
+                    'Response is 201 but should be 404 since an error occured',
+                  );
+                  return Action.storeVisualizationData({
+                    query,
+                    error: response.error,
+                  });
+                } else
                   return Action.storeVisualizationData({
                     data: response,
                     query,

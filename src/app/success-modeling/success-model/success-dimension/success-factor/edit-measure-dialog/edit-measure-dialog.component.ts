@@ -154,9 +154,7 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
       case 'KPI':
         measure.visualization = new KpiVisualization(
-          value.visualization.parameters
-            ? value.visualization.parameters
-            : value.visualization.operationsElements,
+          value.visualization.operationsElements,
         );
         break;
     }
@@ -297,6 +295,15 @@ export class EditMeasureDialogComponent implements OnInit {
       kpiVisualization.operationsElements.pop();
       kpiVisualization.operationsElements.pop();
     }
+
+    if (this.formVisualizationParameters.controls.length > 2) {
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
+    }
   }
 
   onQueryNameChanged(value: string, i: number): void {
@@ -376,15 +383,21 @@ export class EditMeasureDialogComponent implements OnInit {
       return;
     }
 
-    // populate the form
-    for (let i = 0; i < operationsElements.length; i++) {
-      const term = operationsElements.find(
-        (element) => element.index === i,
-      );
-
+    operationsElements.forEach((opElement) => {
       this.formVisualizationParameters.push(
-        new FormControl([term.name]),
+        this.fb.control(opElement.name),
       );
-    }
+    });
+
+    // // populate the form
+    // for (let i = 0; i < operationsElements.length; i++) {
+    //   const term = operationsElements.find(
+    //     (element) => element.index === i,
+    //   );
+
+    //   this.formVisualizationParameters.push(
+    //     new FormControl([term.name]),
+    //   );
+    // }
   }
 }
