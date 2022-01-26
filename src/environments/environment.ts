@@ -14,36 +14,29 @@ declare global {
   }
 }
 
-export const environment = {
-  production: false,
-  // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
+export const environment: Environment = {
+  production: window.env.production
+    ? window.env.production.toLocaleLowerCase() === 'true'
+    : true,
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId:
     window?.env?.openIdClientId || 'www.localclient.com',
-  openIdSilentLoginInterval: 60, // interval in seconds to silently sign in the user
-  // las2peerWebConnectorUrl: 'https://cloud10.dbis.rwth-aachen.de:8084',
+  openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl:
+    window.env.las2peerWebConnectorUrl ||
     'https://git.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
+    window.env.mobsosSurveysUrl ||
     'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
-  // mobsosSurveysUrl: 'http://127.0.0.1:8080/mobsos-surveys/',
-  servicePollingInterval: 120,
-  // interval at which visualizations should be refetched in minutes
-  visualizationRefreshInterval: 30,
-  // enable to use the blockchain based service discovery of las2peer
+  visualizationRefreshInterval: 5,
   useLas2peerServiceDiscovery: false,
-
-  // yJsWebsocketUrl: 'ws://localhost:1234',
-  // yJsWebsocketUrl:
-  //   window.env.yJsWebsocketUrl || 'ws://localhost:1234',
   yJsWebsocketUrl:
     window.env.yJsWebsocketUrl ||
     'wss://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
-  // URL of the Requirements Bazaar API
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
-  // URL of the Requirements Bazaar frontend
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
+  mobsosSurveysDatabaseName: 'mobsos',
 };
 
 /*
@@ -53,4 +46,5 @@ export const environment = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-import 'zone.js/dist/zone-error'; // Included with Angular CLI.
+import 'zone.js/dist/zone-error'; // Included with Angular CLI.import { Environment } from './environment.model';
+import { Environment } from './environment.model';
