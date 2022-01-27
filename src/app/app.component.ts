@@ -106,7 +106,7 @@ export class AppComponent
 
   selectedGroupId: string; // used to show the selected group in the form field
 
-  private userManager = new UserManager({});
+  static userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
   noobInfo: boolean;
 
@@ -149,6 +149,9 @@ export class AppComponent
       });
 
     silentSignin();
+    if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -266,7 +269,7 @@ export class AppComponent
 }
 function silentSignin() {
   const silentLoginFunc = () =>
-    this.userManager
+    AppComponent.userManager
       .signinSilentCallback()
       .then(() => {})
       .catch(() => {
