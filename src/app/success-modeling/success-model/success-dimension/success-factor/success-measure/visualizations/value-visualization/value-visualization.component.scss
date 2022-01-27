@@ -3,18 +3,25 @@
 
 $primary: map-get($mobsos-evaluation-center-theme, primary);
 
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .value-visualization {
-  font-size: 2em;
+
+  font-size: 2rem;
   font-weight: bold;
   margin-right: 1rem;
   color: mat-color($primary);
 }
-#value-info{
- margin: auto;
- padding: 1rem
+#value-info {
+  margin: auto;
+  padding: 1rem;
+
 }
-#value-row{
-    display: flex;
-    justify-content: left;
-    align-items: flex-start
+.controls{
+    justify-self: flex-end;
 }
