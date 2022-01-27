@@ -15,25 +15,18 @@ declare global {
 }
 
 export const environment: Environment = {
-  production: window.env.production
-    ? window.env.production.toLocaleLowerCase() === 'true'
-    : true,
+  production: false,
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
-  openIdClientId:
-    window?.env?.openIdClientId || 'www.localclient.com',
+  openIdClientId: 'localtestclient',
   openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl:
-    window.env.las2peerWebConnectorUrl ||
     'https://git.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
-    window.env.mobsosSurveysUrl ||
     'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   visualizationRefreshInterval: 5,
   useLas2peerServiceDiscovery: false,
-  yJsWebsocketUrl:
-    window.env.yJsWebsocketUrl ||
-    'wss://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
+  yJsWebsocketUrl: 'ws://locahost:1243',
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
