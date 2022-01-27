@@ -7,7 +7,7 @@
     "start-yjs": "node ./node_modules/y-websocket/bin/server.js PORT=1234",
     "build": "ng build --configuration production",
     "build:prod": "ng build --configuration production",
-    "build:prod-sbf-dev": "ng build --configuration development --base-href /monitor/ ",
+    "build:prod-sbf-dev": "ng build --source-map --base-href /monitor/ ",
     "build:prod:single-bundle": "ng build --configuration production --single-bundle",
     "test": "ng test",
     "lint": "npx ng lint mobsos-evaluation-center",
