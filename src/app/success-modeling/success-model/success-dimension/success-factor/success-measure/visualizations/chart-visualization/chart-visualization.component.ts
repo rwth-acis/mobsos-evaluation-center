@@ -139,7 +139,7 @@ export class ChartVisualizerComponent
       .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
-        const queryParams = this.getParamsForQuery(query);
+        const queryParams = super.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
         super.fetchVisualizationData(query, queryParams);

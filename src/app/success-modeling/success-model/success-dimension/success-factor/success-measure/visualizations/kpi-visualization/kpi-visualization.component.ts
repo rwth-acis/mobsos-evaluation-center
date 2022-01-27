@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   applyCompatibilityFixForVisualizationService,
   VisualizationComponent,
@@ -17,11 +17,14 @@ import {
   VisualizationData,
 } from 'src/app/models/visualization.model';
 import {
+  catchError,
   distinctUntilChanged,
   filter,
   first,
   map,
   mergeMap,
+  switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
@@ -34,7 +37,7 @@ import { refreshVisualization } from 'src/app/services/store.actions';
 })
 export class KpiVisualizationComponent
   extends VisualizationComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   @Input() measure$: Observable<Measure>;
 
@@ -50,6 +53,12 @@ export class KpiVisualizationComponent
     super(ngrxStore, dialog);
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions$.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
+  }
+
   ngOnInit(): void {
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
@@ -58,8 +67,10 @@ export class KpiVisualizationComponent
         // apply replacement for each query
         measure.queries.map((query) => {
           let q = query.sql;
+          const params = super.getParamsForQuery(q);
           q = this.applyVariableReplacements(q, service);
           q = applyCompatibilityFixForVisualizationService(q);
+          super.fetchVisualizationData(q, params);
           return q;
         }),
       ),
@@ -69,7 +80,7 @@ export class KpiVisualizationComponent
     // selects the query data for each query from the store
     this.dataArray$ = this.queries$.pipe(
       filter((qs) => !!qs),
-      mergeMap((queries) =>
+      switchMap((queries) =>
         forkJoin(
           queries.map(
             (queryString: string): Observable<VisualizationData> =>
@@ -79,7 +90,18 @@ export class KpiVisualizationComponent
           ),
         ),
       ),
+      tap((data) => {
+        console.log(data);
+      }),
+      catchError((error) => {
+        console.log(error);
+        return [];
+      }),
     );
+
+    this.dataArray$.subscribe((queries) => {
+      console.log(queries);
+    });
 
     this.fetchDate$ = this.dataArray$.pipe(
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
