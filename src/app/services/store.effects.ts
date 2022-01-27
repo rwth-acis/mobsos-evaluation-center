@@ -439,7 +439,7 @@ export class StateEffects {
                   });
                 } else
                   return Action.storeVisualizationData({
-                    data: response,
+                    data: (response as HttpResponse<any>).body,
                     query,
                     error: null,
                   });
