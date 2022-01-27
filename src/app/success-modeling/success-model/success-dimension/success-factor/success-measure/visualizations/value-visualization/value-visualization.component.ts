@@ -99,6 +99,9 @@ export class ValueVisualizationComponent
           ? '0'
           : (data.slice(-1)[0][0] as string),
       ),
+      map((value) =>
+        typeof value === 'string' ? value : (value as any).toString(),
+      ),
     );
 
     const sub = this.measure$
