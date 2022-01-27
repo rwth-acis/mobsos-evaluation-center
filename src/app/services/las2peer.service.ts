@@ -162,6 +162,10 @@ export class Las2peerService {
       ngHttpOptions['responseType'] = options.responseType;
       ngHttpOptionsNoAuthorization['responseType'] = a.responseType;
     }
+    if (options.observe) {
+      ngHttpOptions['observe'] = options.observe;
+      ngHttpOptionsNoAuthorization['observe'] = a.observe;
+    }
 
     return this.http
       .request(options.method, url, ngHttpOptions)
