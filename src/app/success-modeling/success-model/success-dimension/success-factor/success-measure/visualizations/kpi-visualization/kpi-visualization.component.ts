@@ -10,7 +10,7 @@ import {
   RESTRICTED_MODE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store.selectors';
-import { Observable, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { Measure } from 'src/app/models/measure.model';
 import {
   KpiVisualization,
@@ -19,10 +19,12 @@ import {
 import {
   catchError,
   distinctUntilChanged,
+  distinctUntilKeyChanged,
   filter,
   first,
   map,
   mergeMap,
+  startWith,
   switchMap,
   tap,
   withLatestFrom,
@@ -67,41 +69,27 @@ export class KpiVisualizationComponent
         // apply replacement for each query
         measure.queries.map((query) => {
           let q = query.sql;
-          const params = super.getParamsForQuery(q);
           q = this.applyVariableReplacements(q, service);
           q = applyCompatibilityFixForVisualizationService(q);
-          super.fetchVisualizationData(q, params);
           return q;
         }),
       ),
       distinctUntilChanged(),
     );
 
+    this.fetchData(this.queries$);
+
     // selects the query data for each query from the store
     this.dataArray$ = this.queries$.pipe(
       filter((qs) => !!qs),
       switchMap((queries) =>
-        forkJoin(
-          queries.map(
-            (queryString: string): Observable<VisualizationData> =>
-              this.ngrxStore.select(
-                VISUALIZATION_DATA_FOR_QUERY({ queryString }),
-              ),
-          ),
-        ),
+        getDataFromStore(queries, this.ngrxStore),
       ),
-      tap((data) => {
-        console.log(data);
-      }),
       catchError((error) => {
-        console.log(error);
-        return [];
+        console.error(error);
+        return [null, null];
       }),
     );
-
-    this.dataArray$.subscribe((queries) => {
-      console.log(queries);
-    });
 
     this.fetchDate$ = this.dataArray$.pipe(
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
@@ -115,9 +103,12 @@ export class KpiVisualizationComponent
 
     // true if any query is still loading
     this.dataIsLoading$ = this.dataArray$.pipe(
+      startWith(undefined),
       map(
         (data: VisualizationData[]) =>
-          data === undefined || data.some((v) => v.loading),
+          data === undefined ||
+          data.some((v) => v === null) ||
+          data.some((v) => v.loading),
       ),
     );
 
@@ -132,28 +123,32 @@ export class KpiVisualizationComponent
     // this.subscriptions$.push(sub);
 
     this.kpi$ = this.dataArray$.pipe(
-      filter((data) => !data.find((vdata) => vdata.error)), // only proceed if no error occurred
+      filter((data) => allDataLoaded(data)),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
       withLatestFrom(this.measure$),
       map(([data, measure]) => {
         const abstractTerm = [];
         const term = [];
+        data = data.map((data) =>
+          data.length === 3 ? data[2][0] : undefined,
+        );
         let visualization: KpiVisualization =
           measure?.visualization as KpiVisualization;
         if (!(visualization instanceof KpiVisualization)) {
-          visualization = new KpiVisualization(
-            (visualization as KpiVisualization).operationsElements,
-          );
+          try {
+            visualization = new KpiVisualization(
+              (visualization as KpiVisualization).operationsElements,
+            );
+          } catch (error) {
+            console.error(error);
+          }
         }
 
         for (const operationElement of visualization.operationsElements) {
           abstractTerm.push(operationElement.name);
           // even index means, that this must be an operand since we only support binary operators
           if (operationElement.index % 2 === 0) {
-            const value =
-              data.slice(-1)[0].length === 0
-                ? 0
-                : data.slice(-1)[0][0];
+            const value = data[operationElement.index / 2];
             term.push(value);
           } else {
             term.push(operationElement.name);
@@ -161,7 +156,7 @@ export class KpiVisualizationComponent
         }
         if (term.length > 1) {
           abstractTerm.push('=');
-          abstractTerm.push(this.measure.name);
+          abstractTerm.push(measure.name);
           let termResult = visualization.evaluateTerm(term);
           if (typeof termResult === 'number') {
             termResult = termResult.toFixed(2);
@@ -189,12 +184,49 @@ export class KpiVisualizationComponent
     this.subscriptions$.push(sub);
   }
 
-  onRefreshClicked(query: string): void {
-    this.ngrxStore.dispatch(
-      refreshVisualization({
-        query,
-        queryParams: super.getParamsForQuery(query),
-      }),
-    );
+  onRefreshClicked(queries: string[]): void {
+    queries.forEach((query) => {
+      this.ngrxStore.dispatch(
+        refreshVisualization({
+          query,
+          queryParams: super.getParamsForQuery(query),
+        }),
+      );
+    });
   }
+
+  fetchData(qs$: Observable<string[]>) {
+    const sub = qs$.subscribe((queries) => {
+      queries.forEach((query) => {
+        const queryParams = super.getParamsForQuery(query);
+        super.fetchVisualizationData(query, queryParams);
+      });
+    });
+    this.subscriptions$.push(sub);
+  }
+}
+function getDataFromStore(
+  queries: string[],
+  store: Store<any>,
+): Observable<VisualizationData[]> {
+  const data = queries.map(
+    (queryString: string): Observable<VisualizationData> =>
+      store
+        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
+        .pipe(
+          filter((data) => !!data),
+          distinctUntilKeyChanged('fetchDate'),
+        ),
+  );
+
+  return combineLatest(data);
+}
+function allDataLoaded(data: VisualizationData[]): boolean {
+  if (!data) return false;
+
+  return (
+    !data.some((v) => v.data === null) &&
+    !data.some((vdata) => vdata.error) &&
+    !data.some((vdata) => vdata.loading)
+  );
 }

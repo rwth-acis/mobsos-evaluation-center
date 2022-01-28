@@ -104,9 +104,9 @@ export class ChartVisualizerComponent
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
       switchMap((queryString) =>
-        this.ngrxStore.select(
-          VISUALIZATION_DATA_FOR_QUERY({ queryString }),
-        ),
+        this.ngrxStore
+          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
+          .pipe(distinctUntilKeyChanged('fetchDate')),
       ),
       startWith({
         data: undefined,

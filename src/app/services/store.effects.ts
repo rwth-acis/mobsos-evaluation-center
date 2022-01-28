@@ -412,37 +412,16 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((res: HttpResponse<any> | HttpErrorResponse) => {
-                if (res.status < 400)
-                  delete StateEffects.visualizationCalls[query];
-              }),
+              tap(
+                (
+                  res: HttpResponse<any> | HttpErrorResponse | string,
+                ) => {
+                  if (res instanceof HttpResponse && res.status < 400)
+                    delete StateEffects.visualizationCalls[query];
+                },
+              ),
               map((response) => {
-                if (
-                  !response ||
-                  (response instanceof HttpErrorResponse &&
-                    response.status >= 400)
-                )
-                  return Action.storeVisualizationData({
-                    error: response,
-                    query,
-                  });
-                else if (
-                  response instanceof HttpErrorResponse &&
-                  response.status == 201
-                ) {
-                  console.error(
-                    'Response is 201 but should be 404 since an error occured',
-                  );
-                  return Action.storeVisualizationData({
-                    query,
-                    error: response.error,
-                  });
-                } else
-                  return Action.storeVisualizationData({
-                    data: (response as HttpResponse<any>).body,
-                    query,
-                    error: null,
-                  });
+                return handleResponse(response, query);
               }),
               catchError((error) =>
                 of(
@@ -757,4 +736,64 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     }
   }
   return true; // should not be reached
+}
+
+/**
+ * Handles a new visualization data response
+ * @param response repsonse form the visualization data service
+ * @param query the query for which we want to retrieve the data
+ * @returns the action that the store should dispatch. In case of success the data is stored. In case of an error the error is stored
+ */
+function handleResponse(
+  response: string | HttpResponse<any> | HttpErrorResponse,
+  query: string,
+) {
+  if (!response) {
+    return Action.storeVisualizationData({
+      error: 'response was empty',
+      query,
+    });
+  }
+  if (response === 'Timeout') {
+    return Action.storeVisualizationData({
+      error:
+        'Timeout occured while fetching data. The query might be too complex, or the server is overloaded.',
+      query,
+    });
+  }
+
+  if (response instanceof HttpErrorResponse) {
+    if (response.status === 0) {
+      return Action.storeVisualizationData({
+        error: 'An unknown error occured while fetching data.',
+        query,
+      });
+    }
+    if (response.status === 201) {
+      console.error(
+        'Response is 201 but should be 404 since an error occured',
+      ); //should not occur
+      return Action.storeVisualizationData({
+        query,
+        error: response.error,
+      });
+    }
+    return Action.storeVisualizationData({
+      query,
+      error: response.message,
+    });
+  } else if (response instanceof HttpResponse) {
+    if (!response.body) {
+      return Action.storeVisualizationData({
+        query,
+        error:
+          'Got response, but it contains no data. There might not be any data available',
+      });
+    }
+    return Action.storeVisualizationData({
+      data: response.body,
+      query,
+      error: null,
+    });
+  } else return Action.failure(); // should not be reached
 }

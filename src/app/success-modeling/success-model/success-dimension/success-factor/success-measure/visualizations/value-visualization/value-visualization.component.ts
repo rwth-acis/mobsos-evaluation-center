@@ -17,6 +17,7 @@ import {
   first,
   map,
   mergeMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -78,9 +79,15 @@ export class ValueVisualizationComponent
     this.data$ = this.query$.pipe(
       filter((query) => !!query),
       mergeMap((queryString) =>
-        this.ngrxStore.select(
-          VISUALIZATION_DATA_FOR_QUERY({ queryString }),
-        ),
+        this.ngrxStore
+          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
+          .pipe(
+            tap((data) => {
+              console.log(data);
+            }),
+            filter((data) => !!data),
+            distinctUntilKeyChanged('fetchDate'),
+          ),
       ),
     );
 
@@ -89,10 +96,14 @@ export class ValueVisualizationComponent
       map((data) => data === undefined || data?.loading),
     );
     this.value$ = this.data$.pipe(
+      tap((data) => {
+        console.log(data);
+      }),
       map(
         (visualizationData: VisualizationData) =>
           visualizationData?.data,
       ),
+
       filter((data) => !!data && Array.isArray(data)),
       map((data) =>
         data.slice(-1)[0].length === 0
