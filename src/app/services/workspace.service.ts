@@ -69,7 +69,7 @@ export class WorkspaceService {
 
     // updates the workspace in store
     this.communityWorkspace$.subscribe((workspace) => {
-      if (!isEmpty(workspace)) {
+      if (workspace && !isEmpty(workspace)) {
         this.ngrxStore.dispatch(setCommunityWorkspace({ workspace }));
       }
     });
@@ -112,6 +112,7 @@ export class WorkspaceService {
    * @param selectedService the service which is currently selected
    * @param measureCatalog the measure catalog of the community
    * @param successModel the success model of the community.
+   * @param copyModel whether
    */
   initWorkspace(
     groupID: string,
@@ -120,6 +121,7 @@ export class WorkspaceService {
     measureCatalog?: MeasureCatalog,
     successModel?: SuccessModel,
     visualizationData?: VisualizationCollection,
+    copyModel?: boolean,
   ): void {
     if (!username) {
       throw new Error('user cannot be null');
@@ -129,20 +131,20 @@ export class WorkspaceService {
     }
     // get the current workspace state from yjs
     const communityWorkspace =
-      this.getCurrentCommunityWorkspaceFromYJS(groupID);
-
+      this.getCurrentCommunityWorkspaceFromYJS(groupID) || {};
     /** *****************************
      * Add our local stuff to the community workspace
      */
     if (!Object.keys(communityWorkspace).includes(username)) {
       communityWorkspace[username] = {};
     }
-    const userWorkspace = communityWorkspace[username];
+    const userWorkspace = communityWorkspace[username] || {};
+
     if (!Object.keys(userWorkspace).includes(selectedService.name)) {
       if (!measureCatalog) {
         measureCatalog = new MeasureCatalog({});
       }
-      if (!successModel) {
+      if (!copyModel || !successModel) {
         successModel =
           SuccessModel.emptySuccessModel(selectedService);
       }
@@ -243,7 +245,11 @@ export class WorkspaceService {
     serviceName: string,
   ): ApplicationWorkspace {
     const communityWorkspace = this.communityWorkspace$.getValue();
-    if (!Object.keys(communityWorkspace).includes(username)) {
+
+    if (
+      !communityWorkspace ||
+      !Object.keys(communityWorkspace).includes(username)
+    ) {
       return;
     }
     const userWorkspace = this.getWorkspaceByUserAndService(
@@ -435,7 +441,10 @@ export class WorkspaceService {
     this.communityWorkspace$
       .pipe(
         throttleTime(10),
-        filter((obj) => !isEmpty(obj) && !isEqual(obj, map.toJSON())),
+        filter(
+          (obj) =>
+            !!obj && !isEmpty(obj) && !isEqual(obj, map.toJSON()),
+        ),
       )
       .subscribe((obj) => {
         // if the subject changes the object will be synced with yjs
@@ -477,7 +486,6 @@ export class WorkspaceService {
     if (!isEqual(cloneObj, this.communityWorkspace$.getValue())) {
       this.communityWorkspace$.next(cloneObj);
     }
-
     this.syncDone$.next(true);
   }
 

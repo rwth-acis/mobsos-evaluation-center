@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>
+  <mat-icon>error</mat-icon> <span>Unavailable Services</span>
+</h1>
+<div mat-dialog-content>
+  The following core services are unreachable:
+  <ul>
+    <li *ngFor="let service of data?.services">
+      {{ service }}
+    </li>
+  </ul>
+  Please contact the administrator.
+</div>

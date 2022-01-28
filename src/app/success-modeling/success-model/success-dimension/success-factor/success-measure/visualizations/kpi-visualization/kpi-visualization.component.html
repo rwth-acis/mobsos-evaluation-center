@@ -1,19 +1,19 @@
 <ng-container *ngIf="!(dataIsLoading$ | async); else loading">
   <ng-container *ngIf="kpi$ | async as kpi; else noData">
-    <div>{{ kpi.abstractTerm.join(' ') }}</div>
+    <math>{{ kpi.abstractTerm.join(' ') }}</math>
     <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
     <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon> info_outline </mat-icon>
     </button>
     <ng-container *ngIf="!(restricted$ | async)">
       <button
-        *ngIf="query$ | async as query"
+        *ngIf="queries$ | async as queries"
         mat-icon-button
         matTooltipShowDelay="0"
         matTooltip="{{
           'success-modeling.visualization.refresh-data' | translate
         }}"
-        (click)="onRefreshClicked(query)"
+        (click)="onRefreshClicked(queries)"
       >
         <mat-icon color="primary">sync</mat-icon>
       </button></ng-container

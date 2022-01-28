@@ -358,6 +358,10 @@ function updateVisualizationData(
 ) {
   currentVisualizationData = cloneDeep(currentVisualizationData);
   if (!props?.query || props?.error?.status === 0) {
+    console.error(
+      'The query is missing or it has led to an error: ',
+      props,
+    );
     return currentVisualizationData;
   }
   if (props?.data) {
@@ -493,7 +497,7 @@ function mergeGroupData(
   groupsFromContactService,
   groupsFromMobSOS?,
 ) {
-  groups = cloneDeep(groups) ||{};
+  groups = cloneDeep(groups) || {};
 
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
@@ -566,9 +570,15 @@ function addFactorToDimension(
     owner,
     selectedServiceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('App workspace not found for owner ' + owner);
+    return communityWorkspace;
+  }
   const successModel = appWorkspace.model;
-  if (!successModel) return communityWorkspace;
+  if (!successModel) {
+    console.error('Success model not found');
+    return communityWorkspace;
+  }
   let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
   factorsList.unshift(props.factor);
@@ -730,7 +740,10 @@ function updateMeasure(
     owner,
     serviceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('no workspace found for owner ' + owner);
+    return communityWorkspace;
+  }
 
   const measureCatalog = appWorkspace.catalog;
   const successModel = appWorkspace.model;

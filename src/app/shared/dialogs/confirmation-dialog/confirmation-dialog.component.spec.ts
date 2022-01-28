@@ -11,7 +11,7 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../../app.module';
+import { createTranslateLoader } from '../../../app.module';
 import {
   MatDialogModule,
   MatDialogRef,

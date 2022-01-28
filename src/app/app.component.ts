@@ -17,11 +17,13 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   fetchGroups,
   fetchMeasureCatalog,
   fetchMessageDescriptions,
   fetchServices,
   fetchSuccessModel,
+  setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -52,9 +54,12 @@ import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
+import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
+import { Las2peerService } from './services/las2peer.service';
+import { ConfirmationDialogComponent } from './shared/dialogs/confirmation-dialog/confirmation-dialog.component';
+import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -101,8 +106,9 @@ export class AppComponent
 
   selectedGroupId: string; // used to show the selected group in the form field
 
-  private userManager = new UserManager({});
+  static userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
+  noobInfo: boolean;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -112,6 +118,7 @@ export class AppComponent
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private l2p: Las2peerService,
     private workspaceService: WorkspaceService,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -131,6 +138,8 @@ export class AppComponent
   }
 
   ngOnInit(): void {
+    this.ngrxStore.dispatch(disableEdit());
+    void this.checkCoreServices();
     void this.ngrxStore
       .select(_SELECTED_GROUP_ID)
       .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
@@ -139,32 +148,13 @@ export class AppComponent
         this.selectedGroupId = id;
       });
 
-    const silentLoginFunc = () =>
-      this.userManager
-        .signinSilentCallback()
-        .then(() => {})
-        .catch(() => {
-          this.setUser(null);
-          console.error('Silent login failed');
-        });
-    void silentLoginFunc();
+    silentSignin();
+    if (!environment.production) {
+      this.title = 'MobSOS Evaluation Center (dev)';
+    }
+  }
 
-    let sub = this.user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
-      .subscribe((user) => {
-        // callback only called when signedIn state changes
-        clearInterval(this.silentSigninIntervalHandle); // clear old interval
-        if (user?.signedIn) {
-          // if signed in, create a new interval
-          this.silentSigninIntervalHandle = setInterval(
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            silentLoginFunc,
-            environment.openIdSilentLoginInterval * 1000,
-          );
-        }
-      });
-    this.subscriptions$.push(sub);
-
+  async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
       this.title = 'MobSOS Evaluation Center (dev)';
       this.snackBar.open(
@@ -172,25 +162,18 @@ export class AppComponent
         'OK',
         { duration: 10000 },
       );
-      // Logging in dev mode
-      sub = this.ngrxStore
+      // Logging the state in dev mode
+      const sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
         .subscribe((state) => {
           console.log(state);
         });
       this.subscriptions$.push(sub);
-
-      // sub = this.ngrxStore
-      //   .select(APPLICATION_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
-      // this.subscriptions$.push(sub);
     }
-  }
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
 
-  async ngAfterViewInit(): Promise<void> {
-    const [, groupId, serviceName] = await this.user$
+    const [user, groupId, serviceName] = await this.user$
       .pipe(
         filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
@@ -202,25 +185,27 @@ export class AppComponent
         take(1),
       )
       .toPromise();
-
-    // only gets called once if user is signed in
+    // only gets called ONCE if user is signed in
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
-    if (groupId) {
-      this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-      this.workspaceService.syncWithCommunnityWorkspace(groupId);
-      if (serviceName) {
-        this.ngrxStore.dispatch(
-          fetchSuccessModel({ groupId, serviceName }),
-        );
-        this.ngrxStore.dispatch(
-          fetchMessageDescriptions({
-            serviceName,
-          }),
-        );
-      }
-    }
+    if (!groupId) return;
+    this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+    this.workspaceService.syncWithCommunnityWorkspace(groupId);
+    this.ngrxStore.dispatch(
+      setCommunityWorkspaceOwner({
+        owner: user.profile.preferred_username,
+      }),
+    );
+    if (!serviceName) return;
+    this.ngrxStore.dispatch(
+      fetchSuccessModel({ groupId, serviceName }),
+    );
+    this.ngrxStore.dispatch(
+      fetchMessageDescriptions({
+        serviceName,
+      }),
+    );
   }
 
   ngOnDestroy(): void {
@@ -262,4 +247,50 @@ export class AppComponent
       disableClose: true,
     });
   }
+
+  dismissNoobInfo() {
+    localStorage.setItem('notNewbie', 'true');
+    this.noobInfo = false;
+  }
+
+  async checkCoreServices(): Promise<void> {
+    const unavailableServices = await this.l2p
+      .unavailableServices()
+      .toPromise();
+    if (unavailableServices.length > 0) {
+      console.warn(unavailableServices);
+      this.dialog.open(UnavailableServicesDialogComponent, {
+        data: {
+          services: unavailableServices,
+        },
+      });
+    }
+  }
+}
+function silentSignin() {
+  const silentLoginFunc = () =>
+    AppComponent.userManager
+      .signinSilentCallback()
+      .then(() => {})
+      .catch(() => {
+        this.setUser(null);
+        console.error('Silent login failed');
+      });
+  void silentLoginFunc();
+
+  let sub = this.user$
+    .pipe(distinctUntilKeyChanged('signedIn'))
+    .subscribe((user) => {
+      // callback only called when signedIn state changes
+      clearInterval(this.silentSigninIntervalHandle); // clear old interval
+      if (user?.signedIn) {
+        // if signed in, create a new interval
+        this.silentSigninIntervalHandle = setInterval(
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          silentLoginFunc,
+          environment.openIdSilentLoginInterval * 1000,
+        );
+      }
+    });
+  this.subscriptions$.push(sub);
 }

@@ -339,37 +339,6 @@ export class StateEffects {
     ),
   );
 
-  /**
-   * @deprecated MobSOS groups might be outdated. We should not rely on them.
-   * Thus there is no need to transfer groups from the contact service to mobsos
-   */
-  transferMissingGroupsToMobSOS$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.transferMissingGroupsToMobSOS),
-      switchMap((action) => {
-        if (action.groupsFromContactService) {
-          const missingGroups = Object.values(
-            action.groupsFromContactService,
-          )?.filter(
-            (group: GroupInformation) =>
-              !action.groupsFromMobSOS?.find(
-                (g) => g.name === group.name,
-              ),
-          );
-          return this.l2p
-            .saveGroupsToMobSOS(missingGroups)
-            .pipe(map(() => Action.successResponse()));
-        }
-        return of(Action.failure());
-      }),
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failureResponse(err));
-      }),
-      share(),
-    ),
-  );
-
   saveModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveModel),
@@ -443,22 +412,16 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((res: HttpResponse<any> | HttpErrorResponse) => {
-                if (res.status < 400)
-                  delete StateEffects.visualizationCalls[query];
-              }),
+              tap(
+                (
+                  res: HttpResponse<any> | HttpErrorResponse | string,
+                ) => {
+                  if (res instanceof HttpResponse && res.status < 400)
+                    delete StateEffects.visualizationCalls[query];
+                },
+              ),
               map((response) => {
-                if (response instanceof HttpErrorResponse)
-                  return Action.storeVisualizationData({
-                    error: response,
-                    query,
-                  });
-                else
-                  return Action.storeVisualizationData({
-                    data: response,
-                    query,
-                    error: null,
-                  });
+                return handleResponse(response, query);
               }),
               catchError((error) =>
                 of(
@@ -654,6 +617,7 @@ export class StateEffects {
                       catalog,
                       model,
                       vdata,
+                      action.copyModel,
                     );
                   } else {
                     // probably some property is undefined
@@ -772,4 +736,64 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     }
   }
   return true; // should not be reached
+}
+
+/**
+ * Handles a new visualization data response
+ * @param response repsonse form the visualization data service
+ * @param query the query for which we want to retrieve the data
+ * @returns the action that the store should dispatch. In case of success the data is stored. In case of an error the error is stored
+ */
+function handleResponse(
+  response: string | HttpResponse<any> | HttpErrorResponse,
+  query: string,
+) {
+  if (!response) {
+    return Action.storeVisualizationData({
+      error: 'response was empty',
+      query,
+    });
+  }
+  if (response === 'Timeout') {
+    return Action.storeVisualizationData({
+      error:
+        'Timeout occured while fetching data. The query might be too complex, or the server is overloaded.',
+      query,
+    });
+  }
+
+  if (response instanceof HttpErrorResponse) {
+    if (response.status === 0) {
+      return Action.storeVisualizationData({
+        error: 'An unknown error occured while fetching data.',
+        query,
+      });
+    }
+    if (response.status === 201) {
+      console.error(
+        'Response is 201 but should be 404 since an error occured',
+      ); //should not occur
+      return Action.storeVisualizationData({
+        query,
+        error: response.error,
+      });
+    }
+    return Action.storeVisualizationData({
+      query,
+      error: response.message,
+    });
+  } else if (response instanceof HttpResponse) {
+    if (!response.body) {
+      return Action.storeVisualizationData({
+        query,
+        error:
+          'Got response, but it contains no data. There might not be any data available',
+      });
+    }
+    return Action.storeVisualizationData({
+      data: response.body,
+      query,
+      error: null,
+    });
+  } else return Action.failure(); // should not be reached
 }

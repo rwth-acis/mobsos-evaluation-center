@@ -22,6 +22,7 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  startWith,
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -103,10 +104,15 @@ export class ChartVisualizerComponent
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
       switchMap((queryString) =>
-        this.ngrxStore.select(
-          VISUALIZATION_DATA_FOR_QUERY({ queryString }),
-        ),
+        this.ngrxStore
+          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
+          .pipe(distinctUntilKeyChanged('fetchDate')),
       ),
+      startWith({
+        data: undefined,
+        loading: true,
+        fetchDate: undefined,
+      }),
       filter((data) => !!data),
       distinctUntilKeyChanged('fetchDate'),
     );
@@ -133,7 +139,7 @@ export class ChartVisualizerComponent
       .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
-        const queryParams = this.getParamsForQuery(query);
+        const queryParams = super.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
         super.fetchVisualizationData(query, queryParams);

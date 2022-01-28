@@ -1,7 +1,7 @@
 export interface GroupInformation {
-  id: string;
+  id?: string;
   name: string;
-  member: boolean;
+  member?: boolean;
 }
 
 export interface GroupCollection {

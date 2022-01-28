@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 
-import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '../../shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import {
   disableEdit,
   enableEdit,
@@ -228,7 +228,7 @@ export class WorkspaceManagementComponent
 
   onChangeRole(
     visitorName: string,
-    role?: string,
+    role: string = 'visitor',
     event?: Event,
   ): void {
     this.workspaceService.changeVisitorRole(
@@ -237,7 +237,9 @@ export class WorkspaceManagementComponent
       this.selectedService?.name,
       role,
     );
-    event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+    }
   }
 
   shareWorkspaceLink(): void {
@@ -255,7 +257,7 @@ export class WorkspaceManagementComponent
       const message = this.translate.instant(
         'copied-to-clipboard',
       ) as string;
-      this._snackBar.open(message, null, { duration: 3000 });
+      this._snackBar.open(message, undefined, { duration: 3000 });
     }
   }
 
@@ -289,7 +291,7 @@ export class WorkspaceManagementComponent
     );
   }
 
-  private openClearWorkspaceDialog(): Promise<boolean> {
+  private openClearWorkspaceDialog(): Promise<boolean> | undefined {
     // only open this dialog if a user is logged in, because else the user's workspace should not be removed anyway
     if (this.user) {
       const message = this.translate.instant(
