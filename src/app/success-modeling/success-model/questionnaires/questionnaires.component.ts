@@ -141,14 +141,7 @@ export class QuestionnairesComponent implements OnInit {
   ) {
     const dbName = environment.mobsosSurveysDatabaseName;
 
-    if (dbName)
-      return `SELECT ${dbName}.JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
-        SqlString.escape(surveyId.toString()) as string
-      } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
-        question.code
-      }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
-
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
+    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM ${dbName}.MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
       SqlString.escape(surveyId.toString()) as string
     } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
       question.code
