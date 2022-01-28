@@ -267,7 +267,9 @@ export class AppComponent
     }
   }
 }
-function silentSignin() {
+function silentSignin(
+  user$: Observable<User> = this.ngrxStore.select(USER),
+) {
   const silentLoginFunc = () =>
     AppComponent.userManager
       .signinSilentCallback()
@@ -278,7 +280,7 @@ function silentSignin() {
       });
   void silentLoginFunc();
 
-  let sub = this.user$
+  let sub = user$
     .pipe(distinctUntilKeyChanged('signedIn'))
     .subscribe((user) => {
       // callback only called when signedIn state changes
