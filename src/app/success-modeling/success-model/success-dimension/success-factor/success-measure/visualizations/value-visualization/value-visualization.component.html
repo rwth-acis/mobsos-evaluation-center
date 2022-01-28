@@ -34,13 +34,11 @@
     </ng-container>
 
     <mat-menu #menu="matMenu" yPosition="above">
-      <div id="value-info">
-        <app-visualization-info
-          [fetchDate]="data.fetchDate"
-          [fetchError]="data.error?.error"
-          [description]="(measure$ | async)?.description"
-        ></app-visualization-info>
-      </div>
+      <app-visualization-info
+        [fetchDate]="data.fetchDate"
+        [fetchError]="data.error?.error"
+        [description]="(measure$ | async)?.description"
+      ></app-visualization-info>
     </mat-menu>
   </div>
 

@@ -11,17 +11,12 @@ $primary: map-get($mobsos-evaluation-center-theme, primary);
 }
 
 .value-visualization {
-
   font-size: 2rem;
   font-weight: bold;
   margin-right: 1rem;
   color: mat-color($primary);
 }
-#value-info {
-  margin: auto;
-  padding: 1rem;
 
-}
-.controls{
-    justify-self: flex-end;
+.controls {
+  justify-self: flex-end;
 }
