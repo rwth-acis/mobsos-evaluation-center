@@ -148,7 +148,7 @@ export class AppComponent
         this.selectedGroupId = id;
       });
 
-    silentSignin();
+    this.silentSignin();
     if (!environment.production) {
       this.title = 'MobSOS Evaluation Center (dev)';
     }
@@ -266,33 +266,34 @@ export class AppComponent
       });
     }
   }
-}
-function silentSignin(
-  user$: Observable<User> = this.ngrxStore.select(USER),
-) {
-  const silentLoginFunc = () =>
-    AppComponent.userManager
-      .signinSilentCallback()
-      .then(() => {})
-      .catch(() => {
-        this.setUser(null);
-        console.error('Silent login failed');
-      });
-  void silentLoginFunc();
 
-  let sub = user$
-    .pipe(distinctUntilKeyChanged('signedIn'))
-    .subscribe((user) => {
-      // callback only called when signedIn state changes
-      clearInterval(this.silentSigninIntervalHandle); // clear old interval
-      if (user?.signedIn) {
-        // if signed in, create a new interval
-        this.silentSigninIntervalHandle = setInterval(
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          silentLoginFunc,
-          environment.openIdSilentLoginInterval * 1000,
-        );
-      }
-    });
-  this.subscriptions$.push(sub);
+  silentSignin(
+    user$: Observable<User> = this.ngrxStore.select(USER),
+  ) {
+    const silentLoginFunc = () =>
+      AppComponent.userManager
+        .signinSilentCallback()
+        .then(() => {})
+        .catch(() => {
+          this.setUser(null);
+          console.error('Silent login failed');
+        });
+    void silentLoginFunc();
+
+    let sub = user$
+      .pipe(distinctUntilKeyChanged('signedIn'))
+      .subscribe((user) => {
+        // callback only called when signedIn state changes
+        clearInterval(this.silentSigninIntervalHandle); // clear old interval
+        if (user?.signedIn) {
+          // if signed in, create a new interval
+          this.silentSigninIntervalHandle = setInterval(
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            silentLoginFunc,
+            environment.openIdSilentLoginInterval * 1000,
+          );
+        }
+      });
+    this.subscriptions$.push(sub);
+  }
 }
