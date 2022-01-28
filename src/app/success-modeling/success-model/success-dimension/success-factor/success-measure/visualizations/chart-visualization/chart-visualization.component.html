@@ -53,13 +53,12 @@
 >
 
 <mat-menu #menu="matMenu" yPosition="above">
-  <div id="chart-info" *ngIf="data$ | async as data">
-    <app-visualization-info
-      [fetchDate]="data.fetchDate"
-      [fetchError]="data.error?.error"
-      [description]="(measure$ | async)?.description"
-    ></app-visualization-info>
-  </div>
+  <app-visualization-info
+    *ngIf="data$ | async as data"
+    [fetchDate]="data.fetchDate"
+    [fetchError]="data.error?.error"
+    [description]="(measure$ | async)?.description"
+  ></app-visualization-info>
 </mat-menu>
 
 <ng-template #noData>

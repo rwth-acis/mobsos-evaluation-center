@@ -154,9 +154,7 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
       case 'KPI':
         measure.visualization = new KpiVisualization(
-          value.visualization.parameters
-            ? value.visualization.parameters
-            : value.visualization.operationsElements,
+          value.visualization.operationsElements,
         );
         break;
     }
@@ -239,12 +237,12 @@ export class EditMeasureDialogComponent implements OnInit {
 
   onAddQueryClicked(): void {
     this.formQueries.push(this.fb.group({ name: [''], sql: [''] }));
-    this.data.measure.queries.push(new Query('', ''));
+    // this.data.measure.queries.push(new Query('', ''));
   }
 
   onRemoveQueryClicked(): void {
     this.formQueries.removeAt(this.formQueries.length - 1);
-    this.data.measure.queries.pop();
+    // this.data.measure.queries.pop();
   }
 
   onKpiOperandChange(operandName: string, index: number): void {
@@ -263,24 +261,31 @@ export class EditMeasureDialogComponent implements OnInit {
       operatorName,
       index,
     );
+    this.formVisualizationParameters.push(new FormControl(''));
   }
 
   onAddOperationClicked(): void {
-    // closes the dialog
     const kpiVisualization = this.data.measure
       .visualization as KpiVisualization;
-    kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperator(
-        '',
-        kpiVisualization.operationsElements.length,
-      ),
-    );
-    kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperand(
-        '',
-        kpiVisualization.operationsElements.length,
-      ),
-    );
+
+    this.formVisualizationParameters.push(new FormControl(''));
+
+    if (this.formVisualizationParameters.controls.length === 1) {
+      this.formVisualizationParameters.push(new FormControl(''));
+    }
+
+    // kpiVisualization.operationsElements.push(
+    //   new KpiVisualizationOperator(
+    //     '',
+    //     kpiVisualization.operationsElements.length,
+    //   ),
+    // );
+    // kpiVisualization.operationsElements.push(
+    //   new KpiVisualizationOperand(
+    //     '',
+    //     kpiVisualization.operationsElements.length,
+    //   ),
+    // );
   }
 
   onRemoveOperationClicked(): void {
@@ -289,6 +294,15 @@ export class EditMeasureDialogComponent implements OnInit {
     if (kpiVisualization.operationsElements.length >= 3) {
       kpiVisualization.operationsElements.pop();
       kpiVisualization.operationsElements.pop();
+    }
+
+    if (this.formVisualizationParameters.controls.length > 2) {
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
     }
   }
 
@@ -365,24 +379,25 @@ export class EditMeasureDialogComponent implements OnInit {
     this.formVisualizationParameters.clear();
     // no initial terms set so we add one operand
     if (!operationsElements || operationsElements.length === 0) {
-      this.formVisualizationParameters.push(new FormControl(''));
+      // this.formVisualizationParameters.push(new FormControl(''));
       return;
     }
 
-    // populate the form
-    for (let i = 0; i < operationsElements.length; i++) {
-      const term = operationsElements.find(
-        (element) => element.index === i,
-      ); // we need to search because the elements might not be sorted by index
-      if (i % 2 === 0) {
-        this.formVisualizationParameters.push(
-          this.fb.group(new FormControl([term.name])),
-        );
-      } else {
-        this.formVisualizationParameters.push(
-          new FormControl([term.name]),
-        );
-      }
-    }
+    operationsElements.forEach((opElement) => {
+      this.formVisualizationParameters.push(
+        this.fb.control(opElement.name),
+      );
+    });
+
+    // // populate the form
+    // for (let i = 0; i < operationsElements.length; i++) {
+    //   const term = operationsElements.find(
+    //     (element) => element.index === i,
+    //   );
+
+    //   this.formVisualizationParameters.push(
+    //     new FormControl([term.name]),
+    //   );
+    // }
   }
 }

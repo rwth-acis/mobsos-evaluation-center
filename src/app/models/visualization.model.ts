@@ -242,7 +242,8 @@ export class KpiVisualization extends Visualization {
     const operatorSigns = Object.keys(this.operators);
     // find first operator
     let result;
-    term.forEach((termPart, index) => {
+    for (let index = 0; index < term.length; index++) {
+      const termPart = term[index];
       if (operatorSigns.includes(termPart)) {
         const operatorFunc: CallableFunction =
           this.operators[termPart];
@@ -252,7 +253,8 @@ export class KpiVisualization extends Visualization {
         );
         result = operatorFunc(leftHandSide, rightHandSide);
       }
-    });
+    }
+
     if (!result) {
       result = parseFloat(term[0]);
     }

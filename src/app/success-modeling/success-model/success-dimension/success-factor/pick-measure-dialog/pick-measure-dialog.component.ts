@@ -37,7 +37,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 
 export interface DialogData {
   measures: Measure[];
@@ -161,6 +161,10 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
         }),
       );
     }
+  }
+
+  getMeasureObservableByIndex(index: number): Observable<Measure> {
+    return this.measures$.pipe(map((measures) => measures[index]));
   }
 
   async deleteMeasure(measure: Measure) {
