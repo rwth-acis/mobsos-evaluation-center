@@ -399,7 +399,7 @@ function mergeServiceData(
   servicesFromMobSOS,
 ): ServiceCollection {
   serviceCollection = cloneDeep(serviceCollection);
-  if (servicesFromL2P) {
+  if (servicesFromL2P && Array.isArray(servicesFromL2P)) {
     for (const service of servicesFromL2P) {
       if (service) {
         // use most recent release and extract the human readable name
@@ -425,6 +425,7 @@ function mergeServiceData(
         };
       }
     }
+    console.warn('serviceCollection not an array, ', servicesFromL2P);
   }
 
   if (servicesFromMobSOS) {
