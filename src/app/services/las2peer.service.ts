@@ -807,6 +807,7 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url, {
       method: 'POST',
       body: JSON.stringify(requestBody),
+      observe: 'response',
       headers: {
         ...authorHeader,
       },
