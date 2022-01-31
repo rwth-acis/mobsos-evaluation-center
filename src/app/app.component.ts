@@ -109,6 +109,7 @@ export class AppComponent
   static userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
   noobInfo: boolean;
+  version = environment.version;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -148,15 +149,16 @@ export class AppComponent
         this.selectedGroupId = id;
       });
 
-    silentSignin();
+    this.silentSignin();
     if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
+      this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
+    } else {
+      this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
   }
 
   async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available / fully functional yet',
         'OK',
@@ -266,31 +268,34 @@ export class AppComponent
       });
     }
   }
-}
-function silentSignin() {
-  const silentLoginFunc = () =>
-    AppComponent.userManager
-      .signinSilentCallback()
-      .then(() => {})
-      .catch(() => {
-        this.setUser(null);
-        console.error('Silent login failed');
-      });
-  void silentLoginFunc();
 
-  let sub = this.user$
-    .pipe(distinctUntilKeyChanged('signedIn'))
-    .subscribe((user) => {
-      // callback only called when signedIn state changes
-      clearInterval(this.silentSigninIntervalHandle); // clear old interval
-      if (user?.signedIn) {
-        // if signed in, create a new interval
-        this.silentSigninIntervalHandle = setInterval(
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          silentLoginFunc,
-          environment.openIdSilentLoginInterval * 1000,
-        );
-      }
-    });
-  this.subscriptions$.push(sub);
+  silentSignin(
+    user$: Observable<User> = this.ngrxStore.select(USER),
+  ) {
+    const silentLoginFunc = () =>
+      AppComponent.userManager
+        .signinSilentCallback()
+        .then(() => {})
+        .catch(() => {
+          this.setUser(null);
+          console.error('Silent login failed');
+        });
+    void silentLoginFunc();
+
+    let sub = user$
+      .pipe(distinctUntilKeyChanged('signedIn'))
+      .subscribe((user) => {
+        // callback only called when signedIn state changes
+        clearInterval(this.silentSigninIntervalHandle); // clear old interval
+        if (user?.signedIn) {
+          // if signed in, create a new interval
+          this.silentSigninIntervalHandle = setInterval(
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            silentLoginFunc,
+            environment.openIdSilentLoginInterval * 1000,
+          );
+        }
+      });
+    this.subscriptions$.push(sub);
+  }
 }
