@@ -109,6 +109,7 @@ export class AppComponent
   static userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
   noobInfo: boolean;
+  version = environment.version;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -150,13 +151,14 @@ export class AppComponent
 
     this.silentSignin();
     if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
+      this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
+    } else {
+      this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
   }
 
   async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available / fully functional yet',
         'OK',

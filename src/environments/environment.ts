@@ -2,6 +2,8 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import packageInfo from '../../package.json';
+
 declare global {
   interface Window {
     env: {
@@ -30,6 +32,7 @@ export const environment: Environment = {
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
+  version: packageInfo.version,
 };
 
 /*

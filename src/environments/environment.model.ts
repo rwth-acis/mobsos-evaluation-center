@@ -12,4 +12,5 @@ export interface Environment {
   yJsWebsocketUrl: string; // URL of the yjs websocket
   reqBazUrl: string; // URL of the Requirements Bazaar API
   reqBazFrontendUrl: string; // URL of the Requirements Bazaar frontend
+  version?: string; // version of the application
 }
