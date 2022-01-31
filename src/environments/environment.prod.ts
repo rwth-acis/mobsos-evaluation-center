@@ -1,4 +1,6 @@
 import { Environment } from './environment.model';
+import { version } from '../../package.json';
+import packageInfo from '../../package.json';
 
 declare global {
   interface Window {
@@ -36,4 +38,5 @@ export const environment: Environment = {
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
+  version: packageInfo.version,
 };
