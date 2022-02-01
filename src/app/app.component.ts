@@ -260,7 +260,10 @@ export class AppComponent
       .checkServiceAvailability()
       .toPromise();
     if (unavailableServices.length > 0) {
-      console.warn(unavailableServices);
+      console.warn(
+        'Some services are unavailable: ',
+        unavailableServices,
+      );
       this.dialog.open(UnavailableServicesDialogComponent, {
         data: {
           services: unavailableServices,
