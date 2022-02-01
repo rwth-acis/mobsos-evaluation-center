@@ -204,6 +204,24 @@ export class Las2peerService {
       .catch((response) => console.error(response));
   }
 
+  checkAuthorization() {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      '/las2peer/auth/login',
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        return response.status === 200;
+      }),
+      catchError((error) => {
+        console.error(error);
+        return of(false);
+      }),
+    );
+  }
+
   fetchMobSOSGroupsAndObserve() {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,

@@ -210,6 +210,20 @@ export class AppComponent
         serviceName,
       }),
     );
+    setTimeout(async () => {
+      const authorized = await this.l2p
+        .checkAuthorization()
+        .toPromise();
+      if (!authorized) {
+        alert(
+          'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
+        );
+        const statusbar = document.querySelector(
+          'las2peer-frontend-statusbar',
+        );
+        this.setUser(null);
+      }
+    }, 3000);
   }
 
   ngOnDestroy(): void {
@@ -231,6 +245,7 @@ export class AppComponent
 
   setUser(user: User): void {
     this.ngrxStore.dispatch(storeUser({ user }));
+    clearInterval(this.silentSigninIntervalHandle);
   }
 
   onGroupSelected(groupId: string): void {
