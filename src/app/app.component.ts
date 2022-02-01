@@ -257,7 +257,7 @@ export class AppComponent
 
   async checkCoreServices(): Promise<void> {
     const unavailableServices = await this.l2p
-      .checkAvailableServices()
+      .checkServiceAvailability()
       .toPromise();
     if (unavailableServices.length > 0) {
       console.warn(unavailableServices);

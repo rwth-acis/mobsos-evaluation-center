@@ -2,3 +2,10 @@ h1{
     display: flex;
     align-items: center;
 }
+table {
+  width: 100%;
+}
+::ng-deep td{
+    padding-left: 24px;
+    padding-right: 24px;
+}

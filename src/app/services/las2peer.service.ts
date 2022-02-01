@@ -31,6 +31,8 @@ interface HttpOptions {
   observe?: 'body' | 'events' | 'response';
 }
 
+const ONE_SECOND_IN_MS = 1000;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -114,6 +116,7 @@ export class Las2peerService {
   makeRequestAndObserve<T>(
     url: string,
     options: HttpOptions = {},
+    anonymous: boolean = false,
   ): Observable<T | Request | any> {
     options = merge(
       {
@@ -126,62 +129,41 @@ export class Las2peerService {
       options,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    this.userCredentials = JSON.parse(
-      localStorage.getItem('profile'),
-    );
-    const username = this.userCredentials?.preferred_username;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const sub = JSON.parse(localStorage.getItem('profile'))
-      ?.sub as string;
-    const token = localStorage.getItem('access_token');
-    if (username) {
-      options.headers.Authorization =
-        'Basic ' + btoa(`${username}:${sub}`);
-      options.headers.access_token = token;
+    if (!anonymous) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      this.userCredentials = JSON.parse(
+        localStorage.getItem('profile'),
+      );
+      const username = this.userCredentials?.preferred_username;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const sub = JSON.parse(localStorage.getItem('profile'))
+        ?.sub as string;
+      const token = localStorage.getItem('access_token');
+      if (username) {
+        options.headers.Authorization =
+          'Basic ' + btoa(`${username}:${sub}`);
+      }
+      if (token) {
+        options.headers.access_token = token;
+      }
     }
 
-    const a = cloneDeep(options);
-    delete a.headers.Authorization;
-    delete a.headers.access_token;
-
     const ngHttpOptions = {};
-    const ngHttpOptionsNoAuthorization = {};
 
     if (options.headers) {
       ngHttpOptions['headers'] = new HttpHeaders(options.headers);
-      ngHttpOptionsNoAuthorization['headers'] = new HttpHeaders(
-        a.headers,
-      );
     }
     if (options.body) {
       ngHttpOptions['body'] = options.body;
-      ngHttpOptionsNoAuthorization['body'] = a.body;
     }
     if (options.responseType) {
       ngHttpOptions['responseType'] = options.responseType;
-      ngHttpOptionsNoAuthorization['responseType'] = a.responseType;
     }
     if (options.observe) {
       ngHttpOptions['observe'] = options.observe;
-      ngHttpOptionsNoAuthorization['observe'] = a.observe;
     }
 
-    return this.http
-      .request(options.method, url, ngHttpOptions)
-      .pipe(
-        catchError((err) =>
-          err.status === 401
-            ? this.http
-                .request(
-                  options.method,
-                  url,
-                  ngHttpOptionsNoAuthorization,
-                )
-                .pipe(catchError((err) => of(err)))
-            : of(err),
-        ),
-      );
+    return this.http.request(options.method, url, ngHttpOptions);
   }
 
   fetchServicesFromDiscoveryAndObserve(): Observable<any> {
@@ -297,15 +279,21 @@ export class Las2peerService {
    * checks if all services are available and returns a list of all services that are not available
    * @returns all unavailable services
    */
-  checkAvailableServices() {
+  checkServiceAvailability() {
     const requests = Object.values(this.coreServices).map(
       (service) => {
         const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
         return {
           name: service.name,
-          request: this.makeRequestAndObserve(url).pipe(
-            timeout(5000),
-            catchError((err) => of(err)),
+          request: this.makeRequestAndObserve(
+            url,
+            { observe: 'response' },
+            true,
+          ).pipe(
+            timeout(ONE_SECOND_IN_MS),
+            catchError((err) => {
+              return of(err);
+            }),
           ),
         };
       },
@@ -313,11 +301,45 @@ export class Las2peerService {
     return forkJoin(requests.map((r) => r.request)).pipe(
       map(
         (responses) =>
-          responses.map((response, index) =>
-            !response?.status || response.status >= 400
-              ? requests[index].name
-              : undefined,
-          ), // retruns a list of names of the services that are not available
+          responses.map((response, index) => {
+            if (!response?.status) {
+              if (
+                typeof response?.message === 'string' &&
+                response?.message
+                  ?.toLocaleLowerCase()
+                  .includes('timeout')
+              ) {
+                return {
+                  name: requests[index].name,
+                  reason: 'A timeout occurred',
+                };
+              }
+              return {
+                name: requests[index].name,
+                reason: 'An unknown error occurred',
+              };
+            } else if (response.status === 404) {
+              return {
+                name: requests[index].name,
+                reason: 'Service not found in the network',
+              };
+            } else if (response.status === 401) {
+              return {
+                name: requests[index].name,
+                reason:
+                  'You are not authorized to access this service. You might need to login again.',
+              };
+            } else if (
+              response.status >= 200 &&
+              response.status < 300
+            ) {
+              return undefined;
+            }
+            return {
+              name: requests[index].name,
+              reason: 'An unknown error occurred',
+            };
+          }), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
