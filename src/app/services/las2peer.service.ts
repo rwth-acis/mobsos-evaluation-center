@@ -297,13 +297,16 @@ export class Las2peerService {
    * checks if all services are available and returns a list of all services that are not available
    * @returns all unavailable services
    */
-  unavailableServices() {
+  checkAvailableServices() {
     const requests = Object.values(this.coreServices).map(
       (service) => {
         const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
         return {
           name: service.name,
-          request: this.makeRequestAndObserve(url),
+          request: this.makeRequestAndObserve(url).pipe(
+            timeout(5000),
+            catchError((err) => of(err)),
+          ),
         };
       },
     );
@@ -311,12 +314,12 @@ export class Las2peerService {
       map(
         (responses) =>
           responses.map((response, index) =>
-            response.status === 0 || response.status >= 400
+            !response?.status || response.status >= 400
               ? requests[index].name
               : undefined,
           ), // retruns a list of names of the services that are not available
       ),
-      map((services) => services.filter((r) => r !== undefined)), // removes undefined values
+      map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
   }
 
