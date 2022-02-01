@@ -857,7 +857,7 @@ export class Las2peerService {
     }).pipe(
       catchError((err) => {
         console.error(err);
-        return of(null);
+        return of(err);
       }),
     );
   }

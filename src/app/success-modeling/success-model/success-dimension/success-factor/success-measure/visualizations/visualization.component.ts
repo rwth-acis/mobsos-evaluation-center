@@ -104,7 +104,9 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    */
   ngOnDestroy(): void {}
   ngOnInit(): void {}
-  openErrorDialog(error?: HttpErrorResponse | string): void {
+  openErrorDialog(
+    error?: HttpErrorResponse | { error: SyntaxError } | string,
+  ): void {
     let errorText = 'Unknown error';
     if (error instanceof HttpErrorResponse) {
       errorText =
@@ -113,6 +115,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       if (typeof error.error === 'string') {
         errorText += ': ' + error.error;
       }
+    } else if (Object.keys(error).includes('error')) {
+      errorText = (error as { error: SyntaxError }).error.message;
     } else if (typeof error === 'string') {
       errorText = error;
     }
