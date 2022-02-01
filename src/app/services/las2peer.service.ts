@@ -290,7 +290,7 @@ export class Las2peerService {
             { observe: 'response' },
             true,
           ).pipe(
-            timeout(ONE_SECOND_IN_MS),
+            timeout(15 * ONE_SECOND_IN_MS),
             catchError((err) => {
               return of(err);
             }),
