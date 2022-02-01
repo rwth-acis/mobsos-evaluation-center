@@ -92,6 +92,8 @@ export class AppComponent
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
+  successModelingAvailable = true;
+  contactServiceAvailable = true;
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
@@ -269,6 +271,12 @@ export class AppComponent
           services: unavailableServices,
         },
       });
+      this.successModelingAvailable = !unavailableServices.find(
+        (service) => service.name === 'MobSOS Success Modeling',
+      );
+      this.contactServiceAvailable = !unavailableServices.find(
+        (service) => service.name === 'Contact Service',
+      );
     }
   }
 
