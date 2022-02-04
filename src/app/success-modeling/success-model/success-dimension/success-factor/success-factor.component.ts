@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-dialog.component';
@@ -8,7 +14,7 @@ import { Store } from '@ngrx/store';
 
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { SuccessFactor } from 'src/app/models/success.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { MeasureMap } from 'src/app/models/measure.catalog';
@@ -47,6 +53,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private dialog: MatDialog,
     private ngrxStore: Store,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +85,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
   }
 
   async openPickMeasureDialog(): Promise<void> {
+    this.changeDetectorRef.detach(); // Detach change detection before the dialog opens.
     const dialogRef = this.dialog.open(PickMeasureDialogComponent, {
       minWidth: 300,
       width: '80%',
@@ -89,6 +97,7 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
       },
     });
     const result = await dialogRef.afterClosed().toPromise();
+    this.changeDetectorRef.reattach();
     if (result) {
       this.factor.measures.push((result as Measure).name);
       this.ngrxStore.dispatch(

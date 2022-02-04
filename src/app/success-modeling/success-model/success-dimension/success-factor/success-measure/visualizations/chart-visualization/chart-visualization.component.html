@@ -1,29 +1,30 @@
-<div id="chart-row" *ngIf="!(dataIsLoading$ | async); else loading">
-  <ng-container *ngIf="data$ | async as data; else noData">
-    <div *ngIf="chartInitialized; else noData"></div>
+<div id="chart-row" *ngIf="dataIsReady$ | async; else loading">
+  <ng-container *ngIf="chartData?.data?.length > 0; else noData">
     <google-chart
-      *ngIf="chartData"
-      [title]="this.chartData.title"
-      [type]="this.chartData.chartType"
-      [data]="this.chartData.data"
-      [options]="this.chartData.options"
+      [title]="chartData.title"
+      [type]="chartData.chartType"
+      [data]="chartData.data"
+      [options]="chartData.options"
       [formatters]="formatters"
-      [columns]="columnNames"
+      [columns]="chartData.columns"
       dynamicResize="true"
       [style]="fadeInAnimation()"
       class="content"
       style="width: 100%"
-      (ready)="this.chartInitialized = true"
-    ></google-chart>
-  </ng-container>
+      (ready)="chartInitialized = true"
+    ></google-chart
+  ></ng-container>
 </div>
+
 <button
   *ngIf="chartInitialized"
   mat-icon-button
   [matMenuTriggerFor]="menu"
+  type="button"
 >
   <mat-icon> info_outline </mat-icon>
 </button>
+
 <ng-container *ngIf="expertMode$ | async">
   <button
     *ngIf="data$ | async as data"
@@ -36,6 +37,7 @@
     <mat-icon>poll</mat-icon>
   </button>
 </ng-container>
+
 <ng-container *ngIf="!(restricted$ | async)">
   <button
     *ngIf="query$ | async as query"
@@ -49,20 +51,35 @@
     <mat-icon color="primary">sync</mat-icon>
   </button></ng-container
 >
+
 <mat-menu #menu="matMenu" yPosition="above">
-  <div id="chart-info" *ngIf="data$ | async as data">
-    <app-visualization-info
-      [fetchDate]="data.fetchDate"
-      [fetchError]="data.error?.error"
-      [description]="(measure$ | async)?.description"
-    ></app-visualization-info>
-  </div>
+  <app-visualization-info
+    *ngIf="data$ | async as data"
+    [fetchDate]="data.fetchDate"
+    [fetchError]="data.error?.error"
+    [description]="(measure$ | async)?.description"
+  ></app-visualization-info>
 </mat-menu>
 
 <ng-template #noData>
+  <ng-container
+    *ngIf="error$ | async as error; else noDataAndNoError"
+  >
+    <ng-container
+      *ngTemplateOutlet="Error; context: { error: error }"
+    ></ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #noDataAndNoError
+  ><ng-container *ngIf="dataIsReady$ | async; else loading">
+    No data available yet
+  </ng-container>
+</ng-template>
+
+<ng-template #Error let-errorInput="error">
   <span
-    *ngIf="error$ | async as error"
-    (click)="openErrorDialog(error)"
+    (click)="openErrorDialog(errorInput)"
     class="visualization-error"
   >
     <button mat-button>

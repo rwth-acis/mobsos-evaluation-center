@@ -1,4 +1,7 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -14,10 +17,13 @@ import {
   share,
   tap,
   delay,
+  distinctUntilKeyChanged,
+  timeout,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupInformation } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
+import { ServiceMessageDescriptions } from '../models/service.model';
 
 import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -94,16 +100,31 @@ export class StateEffects {
       ofType(Action.fetchGroups),
       mergeMap(() =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
-          map((groupsFromContactService) =>
-            Action.storeGroups({
-              groupsFromContactService,
-              groupsFromMobSOS: null,
-            }),
-          ),
+          timeout(30000),
+          map((response) => {
+            if (response instanceof HttpErrorResponse) {
+              return Action.failureResponse({
+                reason: response.error,
+              });
+            }
+            if (!response || Object.keys(response).length === 0) {
+              return Action.storeGroups({
+                groupsFromContactService: null,
+              });
+            }
+            return Action.storeGroups({
+              groupsFromContactService: response,
+            });
+          }),
           catchError((err) => {
             console.error(
               'Could not groups services from Contact service:' +
                 JSON.stringify(err),
+            );
+            this.ngrxStore.dispatch(
+              Action.storeGroups({
+                groupsFromContactService: [],
+              }),
             );
             return of(Action.failureResponse(err));
           }),
@@ -111,6 +132,11 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
+        this.ngrxStore.dispatch(
+          Action.storeGroups({
+            groupsFromContactService: [],
+          }),
+        );
         return of(Action.failureResponse(err));
       }),
       share(),
@@ -150,23 +176,17 @@ export class StateEffects {
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
+   * - disbable the edit mode
    * - reset the success model and fetch the new success model
+   * - fetch the service message descriptions
    */
   setService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.setService),
-      withLatestFrom(
-        this.ngrxStore.select(_SELECTED_GROUP_ID),
-        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-      ),
-      filter(
-        ([{ service }, , currentServiceName]) =>
-          !!service && service.name !== currentServiceName,
-      ),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
       tap(([{ service }, groupId]) => {
-        this.ngrxStore.dispatch(
-          Action.storeSuccessModel({ xml: undefined }),
-        );
+        this.ngrxStore.dispatch(disableEdit());
+        this.ngrxStore.dispatch(Action.resetSuccessModel());
         this.ngrxStore.dispatch(
           fetchSuccessModel({ groupId, serviceName: service.name }),
         );
@@ -194,10 +214,14 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchMessageDescriptions),
       filter(({ serviceName }) => !!serviceName),
+      distinctUntilKeyChanged('serviceName'),
       switchMap(({ serviceName }) =>
         this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions) =>
-            Action.storeMessageDescriptions(descriptions),
+          map((descriptions: ServiceMessageDescriptions) =>
+            Action.storeMessageDescriptions({
+              descriptions,
+              serviceName,
+            }),
           ),
           catchError((err) => {
             console.error(err);
@@ -315,37 +339,6 @@ export class StateEffects {
     ),
   );
 
-  /**
-   * @deprecated MobSOS groups might be outdated. We should not rely on them.
-   * Thus there is no need to transfer groups from the contact service to mobsos
-   */
-  transferMissingGroupsToMobSOS$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.transferMissingGroupsToMobSOS),
-      switchMap((action) => {
-        if (action.groupsFromContactService) {
-          const missingGroups = Object.values(
-            action.groupsFromContactService,
-          )?.filter(
-            (group: GroupInformation) =>
-              !action.groupsFromMobSOS?.find(
-                (g) => g.name === group.name,
-              ),
-          );
-          return this.l2p
-            .saveGroupsToMobSOS(missingGroups)
-            .pipe(map(() => Action.successResponse()));
-        }
-        return of(Action.failure());
-      }),
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failureResponse(err));
-      }),
-      share(),
-    ),
-  );
-
   saveModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.saveModel),
@@ -401,10 +394,13 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
       withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([{ query, queryParams }, data]) => {
+      mergeMap(([props, data]) => {
+        const query = props.query;
+        const queryParams = props.queryParams;
         const dataForQuery = data[query];
 
         if (
+          query &&
           !Object.keys(StateEffects.visualizationCalls).includes(
             query,
           ) &&
@@ -416,21 +412,22 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
-              tap((success) => {
-                if (success)
-                  delete StateEffects.visualizationCalls[query];
-              }),
-              map((vdata) =>
-                Action.storeVisualizationData({
-                  data: vdata,
-                  query,
-                  error: null,
-                }),
+              tap(
+                (
+                  res: HttpResponse<any> | HttpErrorResponse | string,
+                ) => {
+                  if (res instanceof HttpResponse && res.status < 400)
+                    delete StateEffects.visualizationCalls[query];
+                },
               ),
-              catchError((err) =>
+              map((response) => {
+                return handleResponse(response, query);
+              }),
+              catchError((error) =>
                 of(
                   Action.storeVisualizationData({
-                    error: err,
+                    error,
+                    query,
                   }),
                 ),
               ),
@@ -448,6 +445,24 @@ export class StateEffects {
     ),
   );
 
+  refreshVisualization$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.refreshVisualization),
+      tap(({ query }) => {
+        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
+        this.ngrxStore.dispatch(resetFetchDate({ query }));
+      }),
+      delay(100),
+      mergeMap(({ query, queryParams }) =>
+        of(Action.fetchVisualizationData({ query, queryParams })),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
@@ -461,7 +476,7 @@ export class StateEffects {
           .pipe(
             map((xml) =>
               Action.storeSuccessModel({
-                xml,
+                xml: xml || null,
               }),
             ),
             catchError(() => {
@@ -526,11 +541,15 @@ export class StateEffects {
     ),
   );
 
-  addRequirementsBazarProject$ = createEffect(() =>
+  storeGroup$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(Action.addReqBazarProject),
-      delay(1000),
-      map(() => Action.updateSuccessModel()),
+      ofType(Action.storeGroup),
+      tap(({ group }) =>
+        this.ngrxStore.dispatch(
+          Action.setGroup({ groupId: group.id }),
+        ),
+      ),
+      mergeMap(() => of(Action.success())),
       catchError((err: HttpErrorResponse) => {
         return of(Action.failureResponse({ reason: err }));
       }),
@@ -538,17 +557,12 @@ export class StateEffects {
     ),
   );
 
-  refreshVisualization$ = createEffect(() =>
+  addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(Action.refreshVisualization),
-      tap(({ query }) => {
-        // we need to reset the fetch date to allow refetching before the next refresh cycle (also sets visualization state to loading)
-        this.ngrxStore.dispatch(resetFetchDate({ query }));
-      }),
-      mergeMap(({ query, queryParams }) =>
-        of(Action.fetchVisualizationData({ query, queryParams })),
-      ),
-      catchError((err) => {
+      ofType(Action.addReqBazarProject),
+      delay(1000),
+      map(() => Action.updateSuccessModel()),
+      catchError((err: HttpErrorResponse) => {
         return of(Action.failureResponse({ reason: err }));
       }),
       share(),
@@ -571,14 +585,18 @@ export class StateEffects {
           .pipe(
             map((synced) => {
               if (synced) {
-                let owner = action.owner;
                 let username = action.username;
+                let owner = action.owner;
                 if (user?.signedIn) {
                   username = user.profile.preferred_username;
+                  if (!owner) {
+                    owner = username;
+                  }
                 }
                 try {
-                  this.workspaceService.switchWorkspace(
-                    action.owner,
+                  // try joining the workspace
+                  this.workspaceService.joinWorkspace(
+                    owner,
                     action.serviceName,
                     username,
                     null,
@@ -586,9 +604,12 @@ export class StateEffects {
                     catalog,
                     action.role,
                     vdata,
+                    action.copyModel,
                   );
                 } catch (error) {
+                  // exception occurs when the workspace cannot be joined
                   if (user?.signedIn) {
+                    // If we are signed in we create a new workspace
                     this.workspaceService.initWorkspace(
                       action.groupId,
                       username,
@@ -596,9 +617,11 @@ export class StateEffects {
                       catalog,
                       model,
                       vdata,
+                      action.copyModel,
                     );
-                    owner = user?.profile.preferred_username;
                   } else {
+                    // probably some property is undefined
+                    console.error(error);
                     return Action.failure();
                   }
                 }
@@ -624,14 +647,12 @@ export class StateEffects {
                 } else {
                   return Action.setCommunityWorkspace({
                     workspace: currentCommunityWorkspace,
-                    owner,
-                    serviceName: action.serviceName,
                   });
                 }
               } else {
                 const error = new Error('Could not sync with yjs');
                 console.error(error.message);
-                throw error;
+                return Action.failure();
               }
             }),
             catchError((err) => {
@@ -669,7 +690,7 @@ const REFETCH_INTERVAL =
  *
  */
 function shouldFetch(dataForQuery: VisualizationData): boolean {
-  if (!(dataForQuery?.data || dataForQuery?.error)) return true; // initial state: we dont have any data or error yet
+  if (!dataForQuery?.data && !dataForQuery?.error) return true; // initial state: we dont have any data or error yet
   if (dataForQuery?.data && dataForQuery?.fetchDate) {
     // data was fetched beforehand: now check if data is not too old
     if (
@@ -688,8 +709,9 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     // the query had led to an error
     // in this case we want to  refetch from the server in a shorter interval of 5 minutes
     if (
+      !dataForQuery.fetchDate ||
       Date.now() - Date.parse(dataForQuery.fetchDate) >
-      5 * ONE_MINUTE_IN_MS
+        5 * ONE_MINUTE_IN_MS
     ) {
       if (!status) {
         // Unknown error
@@ -714,4 +736,64 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
     }
   }
   return true; // should not be reached
+}
+
+/**
+ * Handles a new visualization data response
+ * @param response repsonse form the visualization data service
+ * @param query the query for which we want to retrieve the data
+ * @returns the action that the store should dispatch. In case of success the data is stored. In case of an error the error is stored
+ */
+function handleResponse(
+  response: string | HttpResponse<any> | HttpErrorResponse,
+  query: string,
+) {
+  if (!response) {
+    return Action.storeVisualizationData({
+      error: 'response was empty',
+      query,
+    });
+  }
+  if (response === 'Timeout') {
+    return Action.storeVisualizationData({
+      error:
+        'Timeout occured while fetching data. The query might be too complex, or the server is overloaded.',
+      query,
+    });
+  }
+
+  if (response instanceof HttpErrorResponse) {
+    if (response.status === 0) {
+      return Action.storeVisualizationData({
+        error: 'An unknown error occured while fetching data.',
+        query,
+      });
+    }
+    if (response.status === 201) {
+      console.error(
+        'Response is 201 but should be 404 since an error occured',
+      ); //should not occur
+      return Action.storeVisualizationData({
+        query,
+        error: response.error,
+      });
+    }
+    return Action.storeVisualizationData({
+      query,
+      error: response.message,
+    });
+  } else if (response instanceof HttpResponse) {
+    if (!response.body) {
+      return Action.storeVisualizationData({
+        query,
+        error:
+          'Got response, but it contains no data. There might not be any data available',
+      });
+    }
+    return Action.storeVisualizationData({
+      data: response.body,
+      query,
+      error: null,
+    });
+  } else return Action.failure(); // should not be reached
 }

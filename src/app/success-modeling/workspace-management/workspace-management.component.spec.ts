@@ -3,17 +3,14 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { createTranslateLoader } from '../../app.module';
-import {
-  AppState,
-  INITIAL_APP_STATE,
-} from '../../models/state.model';
+import { INITIAL_APP_STATE } from '../../models/state.model';
 import { StateEffects } from '../../services/store.effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { MatMenuModule } from '@angular/material/menu';
@@ -54,6 +51,6 @@ describe('WorkspaceManagementComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    void expect(component).toBeTruthy();
   });
 });

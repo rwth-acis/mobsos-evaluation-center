@@ -38,7 +38,6 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../../models/service.model';
 import { IQuestionnaire } from '../../models/questionnaire.model';
@@ -119,9 +118,9 @@ export class SuccessModelComponent implements OnInit {
   numberOfRequirements = 0;
 
   subscriptions$: Subscription[] = [];
+  saveSubScription: Subscription;
 
   constructor(
-    private dialog: MatDialog,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
     private ngrxStore: Store,
@@ -136,7 +135,7 @@ export class SuccessModelComponent implements OnInit {
           ? service.alias
           : service.name;
         // this is used so that the initial success model is fetched. We should rather use a new effect for this
-        this.ngrxStore.dispatch(setService({ service }));
+        // this.ngrxStore.dispatch(setService({ service }));
       });
     this.subscriptions$.push(sub);
 
@@ -181,7 +180,7 @@ export class SuccessModelComponent implements OnInit {
     this.saveInProgress = true;
     this.ngrxStore.dispatch(saveModelAndCatalog());
     if (this.saveInProgress) {
-      const sub = this.actionState.saveModelAndCatalog$
+      this.saveSubScription = this.actionState.saveModelAndCatalog$
         .pipe(
           timeout(300000),
           catchError(() => {
@@ -213,7 +212,7 @@ export class SuccessModelComponent implements OnInit {
             }
             this.snackBar.open(message, 'Ok');
           }
-          sub.unsubscribe();
+          this.saveSubScription.unsubscribe();
         });
     }
   }

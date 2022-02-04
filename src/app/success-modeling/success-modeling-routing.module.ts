@@ -1,13 +1,14 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-
-import { WorkspaceComponent } from './workspace/workspace.component';
+import { SuccessModelingComponent } from './success-modeling.component';
+import { VisitorComponent } from './visitor/visitor.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: WorkspaceComponent,
+    component: SuccessModelingComponent,
   },
+  { path: 'visitor', component: VisitorComponent },
 ];
 
 @NgModule({

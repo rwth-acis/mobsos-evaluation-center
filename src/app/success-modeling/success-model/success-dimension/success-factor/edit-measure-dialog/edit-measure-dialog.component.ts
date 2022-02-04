@@ -22,6 +22,9 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+
 export interface DialogData {
   measure: Measure;
   service: ServiceInformation;
@@ -63,6 +66,7 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   measureForm: FormGroup;
+  measure$: Observable<Measure>;
 
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
@@ -71,20 +75,28 @@ export class EditMeasureDialogComponent implements OnInit {
     private fb: FormBuilder,
   ) {
     const measure = this.data.measure;
-    this.measureForm = this.fb.group({
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      name: [measure.name, Validators.required],
-      description: [measure.description, Validators.maxLength(500)],
-      visualization: this.fb.group({
-        type: measure.visualization.type,
-        parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
-      }),
-      queries: this.fb.array([]),
-    });
+    this.measureForm = this.fb.group(
+      {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        name: [measure.name, Validators.required],
+        description: [measure.description, Validators.maxLength(500)],
+        visualization: this.fb.group({
+          type: measure.visualization.type,
+          parameters: this.fb.array([]), // parameters are specific for each visualization type and thus populated dynamically
+        }),
+        queries: this.fb.array([], { updateOn: 'blur' }),
+      },
+      { updateOn: 'blur' },
+    );
     // queries are dynamically added to the form
-    measure.queries.forEach((query) =>
+    measure.queries.forEach((q) =>
       this.formQueries.push(
-        this.fb.group({ name: [query.name], sql: [query.sql] }),
+        this.fb.group({
+          name: [q.name],
+          sql: [
+            EditMeasureDialogComponent.replaceXMLEncodings(q.sql),
+          ],
+        }),
       ),
     );
     switch (measure.visualization.type) {
@@ -106,6 +118,48 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
     }
   }
+  private static encodeXML(sql: string): string {
+    sql = sql.replace(/>/g, '&gt;');
+    sql = sql.replace(/</g, '&lt;');
+    return sql;
+  }
+
+  private static replaceXMLEncodings(sql: string) {
+    sql = sql.replace(/&gt;/g, '>');
+    sql = sql.replace(/&lt;/g, '<');
+    return sql;
+  }
+
+  private static getMeasureFromForm(value: any): Measure {
+    const measure = value as Measure;
+    measure.queries = measure.queries.map((q) =>
+      Query.fromPlainObject({
+        ...q,
+        sql: EditMeasureDialogComponent.encodeXML(q.sql),
+      }),
+    );
+
+    switch (measure.visualization.type) {
+      case 'Value':
+        const unit = value.visualization.parameters
+          ? value.visualization.parameters[0].unit
+          : value.visualization.unit;
+        measure.visualization = new ValueVisualization(unit);
+        break;
+      case 'Chart':
+        const chartType = value.visualization.parameters
+          ? value.visualization.parameters[0].chartType
+          : value.visualization.chartType;
+        measure.visualization = new ChartVisualization(chartType);
+        break;
+      case 'KPI':
+        measure.visualization = new KpiVisualization(
+          value.visualization.operationsElements,
+        );
+        break;
+    }
+    return measure;
+  }
 
   get formVisualizationParameters(): FormArray {
     return this.measureForm.get(
@@ -117,7 +171,14 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
-  controlsForFirstStepInValid() {
+  /**
+   * Transforms the value of a form into a Success Measure object.
+   *
+   * @param value the value of the form
+   * @returns corresponding success measure object
+   */
+
+  controlsForFirstStepInValid(): boolean {
     return (
       this.measureForm.get('name').invalid ||
       this.measureForm.get('description').invalid ||
@@ -125,11 +186,21 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  controlsForSecondStepInValid() {
+  controlsForSecondStepInValid(): boolean {
     return this.measureForm.get('queries').invalid;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.measure$ = this.measureForm.valueChanges.pipe(
+      startWith(this.data.measure),
+      distinctUntilChanged(),
+      map((value) =>
+        EditMeasureDialogComponent.getMeasureFromForm(
+          value ? value : this.data.measure,
+        ),
+      ),
+    );
+  }
 
   onVisualizationChange(visualizationType: string): void {
     this.measureForm
@@ -154,48 +225,24 @@ export class EditMeasureDialogComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.measureForm.valid) {
-      console.log('you shall not pass');
-      return;
+      return; // should not happen because submit button is disabled if form is invalid
     }
-    console.log('subission', this.measureForm.value);
-    const measure = this.measureForm.value;
-    this.data.measure = {
-      ...this.data.measure,
-      description: measure.description,
-      name: measure.name,
-      queries: measure.queries,
-    } as Measure;
-    switch (measure.visualization.type) {
-      case 'Value':
-        const unit = measure.visualization.parameters[0].unit;
-        this.data.measure.visualization = new ValueVisualization(
-          unit,
-        );
-        break;
-      case 'Chart':
-        const chartType =
-          measure.visualization.parameters[0].chartType;
-        this.data.measure.visualization = new ChartVisualization(
-          chartType,
-        );
-        break;
-      case 'KPI':
-        this.data.measure.visualization = new KpiVisualization(
-          measure.measure.visualization.parameters,
-        );
-        break;
-    }
-    this.dialogRef.close(this.data.measure);
+
+    const measure = EditMeasureDialogComponent.getMeasureFromForm(
+      this.measureForm.value,
+    );
+
+    this.dialogRef.close(measure);
   }
 
   onAddQueryClicked(): void {
     this.formQueries.push(this.fb.group({ name: [''], sql: [''] }));
-    this.data.measure.queries.push(new Query('', ''));
+    // this.data.measure.queries.push(new Query('', ''));
   }
 
   onRemoveQueryClicked(): void {
     this.formQueries.removeAt(this.formQueries.length - 1);
-    this.data.measure.queries.pop();
+    // this.data.measure.queries.pop();
   }
 
   onKpiOperandChange(operandName: string, index: number): void {
@@ -214,23 +261,31 @@ export class EditMeasureDialogComponent implements OnInit {
       operatorName,
       index,
     );
+    this.formVisualizationParameters.push(new FormControl(''));
   }
 
   onAddOperationClicked(): void {
     const kpiVisualization = this.data.measure
       .visualization as KpiVisualization;
-    kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperator(
-        '',
-        kpiVisualization.operationsElements.length,
-      ),
-    );
-    kpiVisualization.operationsElements.push(
-      new KpiVisualizationOperand(
-        '',
-        kpiVisualization.operationsElements.length,
-      ),
-    );
+
+    this.formVisualizationParameters.push(new FormControl(''));
+
+    if (this.formVisualizationParameters.controls.length === 1) {
+      this.formVisualizationParameters.push(new FormControl(''));
+    }
+
+    // kpiVisualization.operationsElements.push(
+    //   new KpiVisualizationOperator(
+    //     '',
+    //     kpiVisualization.operationsElements.length,
+    //   ),
+    // );
+    // kpiVisualization.operationsElements.push(
+    //   new KpiVisualizationOperand(
+    //     '',
+    //     kpiVisualization.operationsElements.length,
+    //   ),
+    // );
   }
 
   onRemoveOperationClicked(): void {
@@ -239,6 +294,15 @@ export class EditMeasureDialogComponent implements OnInit {
     if (kpiVisualization.operationsElements.length >= 3) {
       kpiVisualization.operationsElements.pop();
       kpiVisualization.operationsElements.pop();
+    }
+
+    if (this.formVisualizationParameters.controls.length > 2) {
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
+      this.formVisualizationParameters.removeAt(
+        this.formVisualizationParameters.length - 1,
+      );
     }
   }
 
@@ -269,7 +333,7 @@ export class EditMeasureDialogComponent implements OnInit {
     return messageName.replace(/_/g, ' ');
   }
 
-  getParamsForQuery(query: string): string[] {
+  getParamsForQuery(q: string): string[] {
     if (
       !this.data.service ||
       this.data.service?.mobsosIDs?.length === 0
@@ -279,7 +343,7 @@ export class EditMeasureDialogComponent implements OnInit {
       return [];
     }
     const serviceRegex = /\$SERVICE\$/g;
-    const matches = query?.match(serviceRegex);
+    const matches = q?.match(serviceRegex);
     const params = [];
     if (matches) {
       for (const match of matches) {
@@ -315,24 +379,25 @@ export class EditMeasureDialogComponent implements OnInit {
     this.formVisualizationParameters.clear();
     // no initial terms set so we add one operand
     if (!operationsElements || operationsElements.length === 0) {
-      this.formVisualizationParameters.push(new FormControl(''));
+      // this.formVisualizationParameters.push(new FormControl(''));
       return;
     }
 
-    // populate the form
-    for (let i = 0; i < operationsElements.length; i++) {
-      const term = operationsElements.find(
-        (element) => element.index === i,
-      ); // we need to search because the elements might not be sorted by index
-      if (i % 2 === 0) {
-        this.formVisualizationParameters.push(
-          this.fb.group(new FormControl([term.name])),
-        );
-      } else {
-        this.formVisualizationParameters.push(
-          new FormControl([term.name]),
-        );
-      }
-    }
+    operationsElements.forEach((opElement) => {
+      this.formVisualizationParameters.push(
+        this.fb.control(opElement.name),
+      );
+    });
+
+    // // populate the form
+    // for (let i = 0; i < operationsElements.length; i++) {
+    //   const term = operationsElements.find(
+    //     (element) => element.index === i,
+    //   );
+
+    //   this.formVisualizationParameters.push(
+    //     new FormControl([term.name]),
+    //   );
+    // }
   }
 }

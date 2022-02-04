@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -10,31 +9,29 @@ import {
 import 'oidc-client';
 import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
 import { environment } from '../environments/environment';
-import { NGXLogger } from 'ngx-logger';
 
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
-import { SwUpdate } from '@angular/service-worker';
-import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  disableEdit,
   fetchGroups,
   fetchMeasureCatalog,
+  fetchMessageDescriptions,
   fetchServices,
   fetchSuccessModel,
+  setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
   toggleExpertMode,
 } from './services/store.actions';
 import {
   EXPERT_MODE,
-  FOREIGN_GROUPS,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
-  SELECTED_GROUP,
   USER,
   USER_GROUPS,
   _SELECTED_GROUP_ID,
@@ -43,11 +40,13 @@ import {
 import {
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
+  take,
+  timeout,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+
+import { Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -55,8 +54,12 @@ import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
+import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
+import { WorkspaceService } from './services/workspace.service';
+import { Las2peerService } from './services/las2peer.service';
+import { ConfirmationDialogComponent } from './shared/dialogs/confirmation-dialog/confirmation-dialog.component';
+import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -89,6 +92,8 @@ export class AppComponent
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
+  successModelingAvailable = true;
+  contactServiceAvailable = true;
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
@@ -101,30 +106,23 @@ export class AppComponent
     .select(USER)
     .pipe(filter((user) => !!user));
 
-  groupsAreLoaded$: Observable<boolean> = combineLatest([
-    this.userGroups$,
-    this.user$,
-  ]).pipe(map(([userGroups, user]) => user && !!userGroups));
-
-  selectedGroupId$ = this.ngrxStore.select(SELECTED_GROUP).pipe(
-    filter((group) => !!group),
-    distinctUntilKeyChanged('id'),
-    map((group) => group.id),
-  );
-
   selectedGroupId: string; // used to show the selected group in the form field
 
-  private userManager = new UserManager({});
+  static userManager = new UserManager({});
   private silentSigninIntervalHandle: Timer;
+  noobInfo: boolean;
+  version = environment.version;
 
   constructor(
-    public languageService: LanguageService, //public so that we can access it in the template
+    public languageService: LanguageService, // public so that we can access it in the template
     private changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
+    private l2p: Las2peerService,
+    private workspaceService: WorkspaceService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -132,7 +130,7 @@ export class AppComponent
         'assets/icons/reqbaz-logo.svg',
       ),
     );
-    this.mobileQuery = window.matchMedia('(max-width: 600px)');
+    this.mobileQuery = window.matchMedia('(max-width: 1000px)');
     this.mobileQueryListener = () =>
       this.changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener(
@@ -142,9 +140,44 @@ export class AppComponent
     );
   }
 
-  ngAfterViewInit() {
-    const sub = this.ngrxStore
-      .select(USER)
+  ngOnInit(): void {
+    this.ngrxStore.dispatch(disableEdit());
+    void this.checkCoreServices();
+    void this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
+      .toPromise()
+      .then((id) => {
+        this.selectedGroupId = id;
+      });
+
+    this.silentSignin();
+    if (!environment.production) {
+      this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
+    } else {
+      this.title = `MobSOS Evaluation Center v${environment.version}`;
+    }
+  }
+
+  async ngAfterViewInit(): Promise<void> {
+    if (!environment.production) {
+      this.snackBar.open(
+        'You are currently in the development network. Please note that some features might not be available / fully functional yet',
+        'OK',
+        { duration: 10000 },
+      );
+      // Logging the state in dev mode
+      const sub = this.ngrxStore
+        .pipe(map((store: StoreState) => store.Reducer))
+        .subscribe((state) => {
+          console.log(state);
+        });
+      this.subscriptions$.push(sub);
+    }
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
+
+    const [user, groupId, serviceName] = await this.user$
       .pipe(
         filter((user) => !!user),
         distinctUntilKeyChanged('signedIn'),
@@ -153,23 +186,44 @@ export class AppComponent
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ),
-        first(),
+        take(1),
       )
-      .subscribe(([, groupId, serviceName]) => {
-        // only gets called once if user is signed in
-        // initial fetching
-        this.ngrxStore.dispatch(fetchGroups());
-        this.ngrxStore.dispatch(fetchServices());
-        if (groupId) {
-          this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-          if (serviceName) {
-            this.ngrxStore.dispatch(
-              fetchSuccessModel({ groupId, serviceName }),
-            );
-          }
-        }
-      });
-    this.subscriptions$.push(sub);
+      .toPromise();
+    // only gets called ONCE if user is signed in
+    // initial fetching
+    this.ngrxStore.dispatch(fetchGroups());
+    this.ngrxStore.dispatch(fetchServices());
+    if (!groupId) return;
+    this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
+    this.workspaceService.syncWithCommunnityWorkspace(groupId);
+    this.ngrxStore.dispatch(
+      setCommunityWorkspaceOwner({
+        owner: user.profile.preferred_username,
+      }),
+    );
+    if (!serviceName) return;
+    this.ngrxStore.dispatch(
+      fetchSuccessModel({ groupId, serviceName }),
+    );
+    this.ngrxStore.dispatch(
+      fetchMessageDescriptions({
+        serviceName,
+      }),
+    );
+    setTimeout(async () => {
+      const authorized = await this.l2p
+        .checkAuthorization()
+        .toPromise();
+      if (!authorized) {
+        alert(
+          'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
+        );
+        const statusbar = document.querySelector(
+          'las2peer-frontend-statusbar',
+        );
+        this.setUser(null);
+      }
+    }, 3000);
   }
 
   ngOnDestroy(): void {
@@ -191,6 +245,7 @@ export class AppComponent
 
   setUser(user: User): void {
     this.ngrxStore.dispatch(storeUser({ user }));
+    clearInterval(this.silentSigninIntervalHandle);
   }
 
   onGroupSelected(groupId: string): void {
@@ -205,63 +260,68 @@ export class AppComponent
     }
   }
 
-  ngOnInit(): void {
-    let sub = this.selectedGroupId$.subscribe((id) => {
-      this.selectedGroupId = id;
+  openAddCommunityDialog(): void {
+    this.dialog.open(AddCommunityDialogComponent, {
+      data: null,
+      disableClose: true,
     });
-    this.subscriptions$.push(sub);
+  }
 
+  dismissNoobInfo() {
+    localStorage.setItem('notNewbie', 'true');
+    this.noobInfo = false;
+  }
+
+  async checkCoreServices(): Promise<void> {
+    const unavailableServices = await this.l2p
+      .checkServiceAvailability()
+      .toPromise();
+    if (unavailableServices.length > 0) {
+      console.warn(
+        'Some services are unavailable: ',
+        unavailableServices,
+      );
+      this.dialog.open(UnavailableServicesDialogComponent, {
+        data: {
+          services: unavailableServices,
+        },
+      });
+      this.successModelingAvailable = !unavailableServices.find(
+        (service) => service.name === 'MobSOS Success Modeling',
+      );
+      this.contactServiceAvailable = !unavailableServices.find(
+        (service) => service.name === 'Contact Service',
+      );
+    }
+  }
+
+  silentSignin(
+    user$: Observable<User> = this.ngrxStore.select(USER),
+  ) {
     const silentLoginFunc = () =>
-      this.userManager
+      AppComponent.userManager
         .signinSilentCallback()
         .then(() => {})
         .catch(() => {
           this.setUser(null);
           console.error('Silent login failed');
         });
-    silentLoginFunc();
+    void silentLoginFunc();
 
-    sub = this.user$
+    let sub = user$
       .pipe(distinctUntilKeyChanged('signedIn'))
       .subscribe((user) => {
-        clearInterval(this.silentSigninIntervalHandle);
+        // callback only called when signedIn state changes
+        clearInterval(this.silentSigninIntervalHandle); // clear old interval
         if (user?.signedIn) {
+          // if signed in, create a new interval
           this.silentSigninIntervalHandle = setInterval(
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             silentLoginFunc,
             environment.openIdSilentLoginInterval * 1000,
           );
         }
       });
     this.subscriptions$.push(sub);
-
-    if (!environment.production) {
-      this.title = 'MobSOS Evaluation Center (dev)';
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available/ fully functional yet',
-        'OK',
-        { duration: 10000 },
-      );
-      // Logging in dev mode
-      sub = this.ngrxStore
-        .pipe(map((store: StoreState) => store.Reducer))
-        .subscribe((state) => {
-          console.log(state);
-        });
-      this.subscriptions$.push(sub);
-
-      // sub = this.ngrxStore
-      //   .select(APPLICATION_WORKSPACE)
-      //   .subscribe((a) => {
-      //     console.log(a);
-      //   });
-      // this.subscriptions$.push(sub);
-    }
-  }
-
-  openAddCommunityDialog(): void {
-    this.dialog.open(AddCommunityDialogComponent, {
-      data: null,
-      disableClose: true,
-    });
   }
 }

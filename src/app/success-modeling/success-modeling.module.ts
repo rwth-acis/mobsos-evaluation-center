@@ -15,7 +15,7 @@ import { SuccessDimensionComponent } from './success-model/success-dimension/suc
 import { SuccessMeasureComponent } from './success-model/success-dimension/success-factor/success-measure/success-measure.component';
 import { SuccessFactorComponent } from './success-model/success-dimension/success-factor/success-factor.component';
 import { ErrorDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/error-dialog/error-dialog.component';
-import { BaseVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization.component';
+import { VisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization.component';
 import { ValueVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/value-visualization/value-visualization.component';
 import { ChartVisualizerComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/chart-visualization/chart-visualization.component';
 import { KpiVisualizationComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/kpi-visualization/kpi-visualization.component';
@@ -25,10 +25,10 @@ import { PickMeasureDialogComponent } from './success-model/success-dimension/su
 import { QuestionnairesComponent } from './success-model/questionnaires/questionnaires.component';
 import { PickQuestionnaireDialogComponent } from './success-model/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
 import { DeleteQuestionnaireDialogComponent } from './success-model/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
-import { SqlTableComponent } from './success-model/success-dimension/success-factor/edit-measure-dialog/sql-table/sql-table.component';
 import { VisualizationInfoComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/visualization-info/visualization-info.component';
 import { RawDataDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/raw-data-dialog/raw-data-dialog.component';
 import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
+import { SuccessModelingRoutingModule } from './success-modeling-routing.module';
 
 @NgModule({
   declarations: [
@@ -37,7 +37,7 @@ import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/p
     SuccessFactorComponent,
     SuccessModelingComponent,
     ErrorDialogComponent,
-    BaseVisualizationComponent,
+    VisualizationComponent,
     ValueVisualizationComponent,
     ChartVisualizerComponent,
     KpiVisualizationComponent,
@@ -48,7 +48,6 @@ import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/p
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
-    SqlTableComponent,
     PickReqbazProjectComponent,
     WorkspaceManagementComponent,
     VisitorComponent,
@@ -57,6 +56,11 @@ import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/p
     RawDataDialogComponent,
     SuccessModelComponent,
   ],
-  imports: [CommonModule, SharedModule, GoogleChartsModule],
+  imports: [
+    CommonModule,
+    SharedModule,
+    GoogleChartsModule,
+    SuccessModelingRoutingModule,
+  ],
 })
 export class SuccessModelingModule {}

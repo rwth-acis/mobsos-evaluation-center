@@ -114,7 +114,9 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
                 role: UserRole.LURKER,
               }),
             );
-            void this.router.navigateByUrl('/visitor');
+            void this.router.navigateByUrl(
+              '/success-modeling/visitor',
+            );
           }
         },
       );
@@ -156,7 +158,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
       }),
     );
 
-    void this.router.navigateByUrl('/visitor');
+    void this.router.navigateByUrl('/success-modeling/visitor');
   }
 
   ngOnDestroy(): void {

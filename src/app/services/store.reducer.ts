@@ -15,6 +15,7 @@ import {
   GroupInformation,
 } from '../models/community.model';
 import { ServiceCollection } from '../models/service.model';
+import { Questionnaire } from '../models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -25,25 +26,25 @@ const _Reducer = createReducer(
     (state, { servicesFromL2P, servicesFromMobSOS }) => ({
       ...state,
       services: mergeServiceData(
-        { ...state.services },
+        state.services,
         servicesFromL2P,
-        { ...state.messageDescriptions },
         servicesFromMobSOS,
       ),
     }),
   ),
-  on(
-    Actions.storeGroups,
-    (state, { groupsFromContactService, groupsFromMobSOS }) => ({
-      ...state,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      groups: mergeGroupData(
-        { ...state.groups },
-        groupsFromContactService,
-        groupsFromMobSOS,
-      ),
-    }),
-  ),
+  on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
+    ...state,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    groups: mergeGroupData(
+      state.groups || null,
+      groupsFromContactService,
+    ),
+  })),
+
+  on(Actions.resetSuccessModel, (state) => ({
+    ...state,
+    successModel: initialState.successModel,
+  })),
 
   on(
     Actions.storeMessageDescriptions,
@@ -119,6 +120,13 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
+  on(Actions.addQuestionnaireToModel, (state, { questionnaire }) => ({
+    ...state,
+    communityWorkspace: addQuestionnaireToSuccessModel(
+      state,
+      questionnaire,
+    ),
+  })),
   on(Actions.setUserName, (state, props) => ({
     ...state,
     user: {
@@ -133,10 +141,7 @@ const _Reducer = createReducer(
     ...state,
     selectedServiceName: props.serviceName,
   })),
-  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
-    ...state,
-    currentWorkSpaceOwner: props.owner,
-  })),
+
   on(Actions.storeSuccessModel, (state, { xml }) => ({
     ...state,
     successModelInitialized: true,
@@ -179,24 +184,22 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: workspace,
   })),
+  on(Actions.storeQuestionnaires, (state, { questionnaires }) => ({
+    ...state,
+    questionnaires,
+  })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
-    editMode: true,
     communityWorkspace: props.workspace,
-    selectedGroupId: props.selectedGroupId
-      ? props.selectedGroupId
-      : state.selectedGroupId,
-    selectedServiceName: props.serviceName
-      ? props.serviceName
-      : state.selectedServiceName,
-    currentWorkSpaceOwner: props.owner
-      ? props.owner
-      : state.currentWorkSpaceOwner,
+  })),
+  on(Actions.setCommunityWorkspaceOwner, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner,
   })),
   on(Actions.storeVisualizationData, (state, props) => ({
     ...state,
     visualizationData: updateVisualizationData(
-      { ...state.visualizationData },
+      state.visualizationData,
       props,
     ),
   })),
@@ -293,6 +296,14 @@ const _Reducer = createReducer(
       name,
     ),
   })),
+  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addModelToCurrentWorkSpace(state, xml),
+  })),
+  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+    ...state,
+    communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {
@@ -345,10 +356,15 @@ function updateVisualizationData(
     error?: HttpErrorResponse;
   },
 ) {
-  if (!props.query || props?.error?.status < 200) {
+  currentVisualizationData = cloneDeep(currentVisualizationData);
+  if (!props?.query || props?.error?.status === 0) {
+    console.error(
+      'The query is missing or it has led to an error: ',
+      props,
+    );
     return currentVisualizationData;
   }
-  if (props.data) {
+  if (props?.data) {
     // overwrite existing data
     currentVisualizationData[props.query] = {
       data: props.data,
@@ -358,7 +374,9 @@ function updateVisualizationData(
     };
   } else {
     currentVisualizationData[props.query] = {
-      ...currentVisualizationData[props.query],
+      data: currentVisualizationData[props.query]
+        ? currentVisualizationData[props.query]?.data
+        : null,
       error: props?.error,
       fetchDate: new Date().toISOString(),
       loading: false,
@@ -378,11 +396,10 @@ function updateVisualizationData(
 function mergeServiceData(
   serviceCollection: ServiceCollection,
   servicesFromL2P,
-  messageDescriptions,
   servicesFromMobSOS,
 ): ServiceCollection {
-  serviceCollection = { ...serviceCollection };
-  if (servicesFromL2P) {
+  serviceCollection = cloneDeep(serviceCollection);
+  if (servicesFromL2P && Array.isArray(servicesFromL2P)) {
     for (const service of servicesFromL2P) {
       if (service) {
         // use most recent release and extract the human readable name
@@ -402,13 +419,13 @@ function mergeServiceData(
           name: serviceIdentifier,
           alias: latestRelease?.supplement?.name,
           mobsosIDs: [],
-          serviceMessageDescriptions: getMessageDescriptionForService(
-            messageDescriptions,
-            serviceIdentifier,
-          ),
+          serviceMessageDescriptions:
+            serviceCollection[serviceIdentifier]
+              ?.serviceMessageDescriptions,
         };
       }
     }
+    console.warn('serviceCollection not an array, ', servicesFromL2P);
   }
 
   if (servicesFromMobSOS) {
@@ -420,55 +437,54 @@ function mergeServiceData(
       const serviceName = tmp[0];
       let serviceAlias =
         servicesFromMobSOS[serviceAgentID]?.serviceAlias;
-      const registrationTime =
+      const registrationTime: number =
         servicesFromMobSOS[serviceAgentID]?.registrationTime;
       if (!serviceAlias) {
         serviceAlias = serviceName;
       }
 
-      // only add mobsos service data if the data from the discovery is missing
-      const serviceMessageDescriptions =
-        getMessageDescriptionForService(
-          messageDescriptions,
-          serviceName,
-        );
-      if (!(serviceName in serviceCollection)) {
-        serviceCollection[serviceName] = {
-          name: serviceName,
-          alias: serviceAlias,
-          mobsosIDs: [],
-          serviceMessageDescriptions,
-        };
+      serviceCollection[serviceName] = {
+        ...serviceCollection[serviceName],
+        name: serviceName,
+        alias: serviceAlias,
+      };
+
+      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
+      if (!mobsosIDs) {
+        mobsosIDs = [];
       }
-      if (!serviceCollection[serviceName]) continue;
-      const mobsosIDs = [...serviceCollection[serviceName].mobsosIDs];
+
       mobsosIDs.push({
         agentID: serviceAgentID,
         registrationTime,
       });
-      mobsosIDs.sort(
+
+      mobsosIDs?.sort(
         (a, b) => a.registrationTime - b.registrationTime,
       );
-      serviceCollection[serviceName] = {
-        ...serviceCollection[serviceName],
-        serviceMessageDescriptions: { ...serviceMessageDescriptions },
-      };
+
+      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
+        0,
+        100,
+      );
     }
   }
   return serviceCollection;
 }
 
-function getMessageDescriptionForService(
-  messageDescriptions,
-  serviceIdentifier: string,
-) {
-  let serviceMessageDescriptions = {};
-  if (messageDescriptions && messageDescriptions[serviceIdentifier])
-    serviceMessageDescriptions =
-      messageDescriptions[serviceIdentifier];
+// const ONE_YEAR = 1601968704;
 
-  return serviceMessageDescriptions;
-}
+// function getMessageDescriptionForService(
+//   messageDescriptions,
+//   serviceIdentifier: string,
+// ) {
+//   let serviceMessageDescriptions = {};
+//   if (messageDescriptions && messageDescriptions[serviceIdentifier])
+//     serviceMessageDescriptions =
+//       messageDescriptions[serviceIdentifier];
+
+//   return serviceMessageDescriptions;
+// }
 
 /**
  * Convert data from both group sources into a common format.
@@ -480,11 +496,12 @@ function getMessageDescriptionForService(
 function mergeGroupData(
   groups,
   groupsFromContactService,
-  groupsFromMobSOS,
+  groupsFromMobSOS?,
 ) {
+  groups = cloneDeep(groups) || {};
+
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
-    groups = {};
     for (const groupID of Object.keys(groupsFromContactService)) {
       const groupName = groupsFromContactService[groupID];
       groups[groupID] = {
@@ -554,9 +571,15 @@ function addFactorToDimension(
     owner,
     selectedServiceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('App workspace not found for owner ' + owner);
+    return communityWorkspace;
+  }
   const successModel = appWorkspace.model;
-  if (!successModel) return communityWorkspace;
+  if (!successModel) {
+    console.error('Success model not found');
+    return communityWorkspace;
+  }
   let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
   factorsList.unshift(props.factor);
@@ -690,21 +713,12 @@ function addMeasureToFactorInModel(
   );
   const successModel = appWorkspace.model;
 
-  const factorList = successModel.dimensions[
-    props.dimensionName
-  ].filter(
-    (factor: SuccessFactor) => factor.name === props.factorName,
+  const factor = successModel.dimensions[props.dimensionName].find(
+    (f: SuccessFactor) => f.name === props.factorName,
   );
-  const copyFactorList = [];
-  for (let factor of factorList) {
-    factor = {
-      ...factor,
-      measures: [...factor.measures],
-    } as SuccessFactor;
-    factor.measures.unshift(props.measure.name);
-    copyFactorList.push(factor);
-  }
-  successModel.dimensions[props.dimensionName] = copyFactorList;
+
+  factor.measures.unshift(props.measure.name);
+
   return copy;
 }
 
@@ -727,7 +741,10 @@ function updateMeasure(
     owner,
     serviceName,
   );
-  if (!appWorkspace) return communityWorkspace;
+  if (!appWorkspace) {
+    console.error('no workspace found for owner ' + owner);
+    return communityWorkspace;
+  }
 
   const measureCatalog = appWorkspace.catalog;
   const successModel = appWorkspace.model;
@@ -926,5 +943,61 @@ function resetFetchDateForQuery(
     fetchDate: undefined,
     loading: true,
   };
+  return copy;
+}
+function addModelToCurrentWorkSpace(
+  state: AppState,
+  xml: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const model = SuccessModel.fromXml(doc.documentElement);
+  appWorkspace.model = model;
+  return copy;
+}
+
+function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  const doc = parseXml(xml);
+  const catalog = MeasureCatalog.fromXml(doc.documentElement);
+  appWorkspace.catalog = catalog;
+  return copy;
+}
+function addQuestionnaireToSuccessModel(
+  state: AppState,
+  questionnaire: Questionnaire,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace.model.questionnaires) {
+    appWorkspace.model.questionnaires = [];
+  }
+  appWorkspace.model.questionnaires.push(questionnaire);
   return copy;
 }
