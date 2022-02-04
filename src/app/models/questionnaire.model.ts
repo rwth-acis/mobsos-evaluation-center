@@ -1,21 +1,23 @@
 // interface for questionnaire which describes the questionnaires received from the surveys backend
 export interface IQuestionnaire {
   id: number;
-  description: string;
-  lang: string;
-  logo: string;
-  name: string;
-  organization: string;
-  owner: string;
-  url: string;
-  formXML: string;
+  description?: string;
+  lang?: string;
+  logo?: string;
+  name?: string;
+  organization?: string;
+  owner?: string;
+  url?: string;
+  formXML?: string;
+  surveyId?: number;
 }
 // internal questionnaire class
-export class Questionnaire {
+export class Questionnaire implements IQuestionnaire {
   constructor(
     public name: string,
     public id: number,
     public surveyId: number,
+    public description?: string,
   ) {}
 
   static fromXml(xml: Element): Questionnaire {
@@ -25,8 +27,13 @@ export class Questionnaire {
     return new Questionnaire(name, id, surveyId);
   }
 
-  public static fromPlainObject(obj: Questionnaire): Questionnaire {
-    return new Questionnaire(obj.name, obj.id, obj.surveyId);
+  public static fromPlainObject(obj: IQuestionnaire): Questionnaire {
+    return new Questionnaire(
+      obj.name,
+      obj.id,
+      obj.surveyId,
+      obj.description,
+    );
   }
 
   toXml(): Element {
@@ -37,4 +44,12 @@ export class Questionnaire {
     questionnaire.setAttribute('surveyId', this.surveyId.toString());
     return questionnaire;
   }
+}
+
+export interface Question {
+  code: string;
+  type: 'ordinal' | 'dichotomous';
+  dimensionRecommendation: string;
+  factorRecommendation: string;
+  instructions: string;
 }

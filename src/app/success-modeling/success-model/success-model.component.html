@@ -35,7 +35,9 @@
     <ng-container *ngIf="successModel$ | async as successModel">
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
         <!-- questionnaires -->
-        <app-questionnaires></app-questionnaires>
+        <app-questionnaires
+          [model$]="successModel$"
+        ></app-questionnaires>
         <!-- success dimensions -->
         <div id="dimensions">
           <app-success-dimension

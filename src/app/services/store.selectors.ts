@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
-import { createSelector, Selector, State } from '@ngrx/store';
-import { create } from 'domain';
+import { createSelector } from '@ngrx/store';
 import {
   GroupCollection,
   GroupInformation,
@@ -11,12 +11,8 @@ import {
 } from '../models/measure.catalog';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
-import { SuccessModel } from '../models/success.model';
-import { User } from '../models/user.model';
-import {
-  VisualizationCollection,
-  VisualizationData,
-} from '../models/visualization.model';
+import { SuccessFactor, SuccessModel } from '../models/success.model';
+import { VisualizationCollection } from '../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
@@ -26,11 +22,15 @@ import {
 
 /**
  * Function which returns true if any http call is currently loading
+ *
  * @param state state of the store
  * @returns true if any http call is being processed
  */
 export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
   state.Reducer?.currentNumberOfHttpCalls > 0;
+
+export const QUESTIONNAIRES = (state: StoreState) =>
+  state.Reducer.questionnaires;
 
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
@@ -69,11 +69,13 @@ export const _SELECTED_GROUP_ID = (state: StoreState) =>
 const _GROUPS = (state: StoreState) => state.Reducer?.groups;
 
 export const GROUPS = (state: StoreState) =>
-  state.Reducer?.groups
-    ? Object.values(state.Reducer.groups).sort((a, b) =>
+  state.Reducer.groups === undefined
+    ? undefined
+    : state.Reducer.groups === null
+    ? []
+    : Object.values(state.Reducer.groups).sort((a, b) =>
         sortGroupsByName(a, b),
-      )
-    : undefined;
+      );
 
 export const USER_GROUPS = createSelector(GROUPS, (groups) =>
   groups?.filter((g) => g.member),
@@ -211,7 +213,9 @@ export const SUCCESS_MODEL = createSelector(
 export const DIMENSIONS_IN_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) =>
-    model?.dimensions ? Object.values(model.dimensions) : undefined,
+    model?.dimensions
+      ? (Object.values(model.dimensions) as [SuccessFactor[]])
+      : undefined,
 );
 
 export const SUCCESS_MODEL_IS_EMPTY = createSelector(
@@ -220,9 +224,18 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
     !dimensions?.find((dimension) => dimension.length > 0),
 );
 
-export const QUESTIONNAIRES = createSelector(
+export const QUESTIONNAIRES_FROM_SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) => model?.questionnaires,
+);
+
+export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(
+  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
+  QUESTIONNAIRES,
+  (qsInModel, qs) =>
+    qs?.filter(
+      (q) => !qsInModel.find((qfromModel) => (qfromModel.id = q.id)),
+    ),
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
@@ -277,11 +290,10 @@ export const MEASURES = createSelector(
   (catalog) => catalog?.measures,
 );
 
-export const MEASURE = createSelector(
-  MEASURES,
-  (measures: MeasureMap, measureName: string) =>
-    measures ? measures[measureName] : undefined,
-);
+export const MEASURE = (props: { measureName: string }) =>
+  createSelector(MEASURES, (measures: MeasureMap) =>
+    measures ? measures[props.measureName] : undefined,
+  );
 
 export const MEASURE_CATALOG_XML = (state: StoreState) =>
   state.Reducer.measureCatalog
@@ -320,20 +332,22 @@ export const VISUALIZATION_DATA = createSelector(
     editMode && dataFromWorkspace ? dataFromWorkspace : datafromQVS,
 );
 
-export const VISUALIZATION_DATA_FOR_QUERY = createSelector(
-  VISUALIZATION_DATA_FROM_QVS,
-  VISUALIZATION_DATA_FROM_WORKSPACE,
-  (
-    workspacedata: VisualizationCollection,
-    qvsdata: VisualizationCollection,
-    queryString: string,
-  ) =>
-    workspacedata && workspacedata[queryString]
-      ? workspacedata[queryString]
-      : qvsdata
-      ? qvsdata[queryString]
-      : undefined,
-);
+export const VISUALIZATION_DATA_FOR_QUERY = (props: {
+  queryString: string;
+}) =>
+  createSelector(
+    VISUALIZATION_DATA_FROM_QVS,
+    VISUALIZATION_DATA_FROM_WORKSPACE,
+    (
+      workspacedata: VisualizationCollection,
+      qvsdata: VisualizationCollection,
+    ) =>
+      workspacedata && workspacedata[props.queryString]
+        ? workspacedata[props.queryString]
+        : qvsdata
+        ? qvsdata[props.queryString]
+        : undefined,
+  );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
   SUCCESS_MODEL,
@@ -348,7 +362,7 @@ export const MODEL_AND_CATALOG_LOADED = createSelector(
 export const SELECTED_SERVICE = createSelector(
   _SELECTED_SERVICE,
   APPLICATION_WORKSPACE,
-  (service, workspace) => (service ? service : workspace.service),
+  (service, workspace) => (service ? service : workspace?.service),
 );
 
 function parseXml(xml: string) {
@@ -375,9 +389,10 @@ function parseModel(xml: string): SuccessModel {
 }
 /**
  * filter groups that the user is a part of
+ *
  * @param groups groups as a collection
  */
-function _userGroups(groups: GroupCollection) {
+function _userGroups(groups: GroupCollection): GroupInformation[] {
   if (!groups) {
     return undefined;
   }
@@ -390,10 +405,10 @@ function _userGroups(groups: GroupCollection) {
       userGroups.push(groups[groupId]);
     }
   }
-  return userGroups;
+  return userGroups as GroupInformation[];
 }
 
-function _foreignGroups(groups: GroupCollection) {
+function _foreignGroups(groups: GroupCollection): GroupInformation[] {
   if (!groups) {
     return undefined;
   }
@@ -406,13 +421,13 @@ function _foreignGroups(groups: GroupCollection) {
       userGroups.push(groups[groupId]);
     }
   }
-  return userGroups;
+  return userGroups as GroupInformation[];
 }
 function sortGroupsByName(
   a: GroupInformation,
   b: GroupInformation,
 ): number {
-  if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase()) {
+  if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase()) {
     return -1;
   } else return 1;
 }
@@ -423,11 +438,11 @@ function sortServicesByName(
   if (a.alias && !b.alias) return -1;
   else if (b.alias && !a.alias) return 1;
   if (a.alias && b.alias) {
-    if (a.alias.toLocaleLowerCase() < b.alias.toLocaleLowerCase())
+    if (a.alias?.toLocaleLowerCase() < b.alias?.toLocaleLowerCase())
       return -1;
     else return 1;
   } else {
-    if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase())
+    if (a.name?.toLocaleLowerCase() < b.name?.toLocaleLowerCase())
       return -1;
     else return 1;
   }
@@ -467,7 +482,7 @@ function getAllWorkspacesForService(
   const userWorkspaces = Object.values(workspace);
   for (const userWorkspace of userWorkspaces) {
     if (Object.keys(userWorkspace).includes(serviceName)) {
-      result.push(userWorkspace[serviceName] as ApplicationWorkspace);
+      result.push(userWorkspace[serviceName]);
     }
   }
   return (result as ApplicationWorkspace[])?.sort((a, b) =>
@@ -477,6 +492,7 @@ function getAllWorkspacesForService(
 
 /**
  * Get the workspace for the current workspace.
+ *
  * @param owner The owner of the current user workspace
  * @param communityWorkspace The workspace of the community
  * @param user The current user

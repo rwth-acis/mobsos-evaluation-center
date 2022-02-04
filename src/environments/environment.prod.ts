@@ -1,3 +1,7 @@
+import { Environment } from './environment.model';
+import { version } from '../../package.json';
+import packageInfo from '../../package.json';
+
 declare global {
   interface Window {
     env: {
@@ -5,15 +9,15 @@ declare global {
       yJsWebsocketUrl: string;
       openIdClientId: string;
       production: string;
+      mobsosSurveysUrl?: string;
     };
   }
 }
 
-export const environment = {
+export const environment: Environment = {
   production: window.env.production
     ? window.env.production.toLocaleLowerCase() === 'true'
     : true,
-  // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: false,
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId:
@@ -24,18 +28,15 @@ export const environment = {
     window.env.las2peerWebConnectorUrl ||
     'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
-    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys/',
-  servicePollingInterval: 10,
-  // interval at which visualizations should be refetched from server
-  visualizationRefreshInterval: 12 * 60,
-  // enable to use the blockchain based service discovery of las2peer
+    window.env.mobsosSurveysUrl ||
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
+  visualizationRefreshInterval: 12 * 60, // 12 hours
   useLas2peerServiceDiscovery: true,
-  // URL of the y-js websocket server
   yJsWebsocketUrl:
     window.env.yJsWebsocketUrl ||
-    'ws://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
-  // URL of the Requirements Bazaar API
+    'wss://tech4comp.dbis.rwth-aachen.de/yjs-websocket',
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
-  // URL of the Requirements Bazaar frontend
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
+  mobsosSurveysDatabaseName: 'mobsos',
+  version: packageInfo.version,
 };

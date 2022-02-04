@@ -26,7 +26,7 @@
     <mat-slide-toggle
       labelPosition="before"
       [checked]="editMode$ | async"
-      (toggleChange)="onEditModeChanged()"
+      (toggleChange)="onEditModeToggled()"
       [disabled]="!(memberOfGroup$ | async)"
       [matTooltip]="
         (memberOfGroup$ | async)

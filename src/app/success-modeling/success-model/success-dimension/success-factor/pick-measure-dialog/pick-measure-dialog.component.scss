@@ -14,10 +14,8 @@ mat-card {
     flex-grow: 1;
   }
 }
-
 #create-measure-button {
-  margin-top: 15px;
-  width: 100%;
+  height: 3rem;
 }
 
 #edit-controls {
@@ -41,13 +39,21 @@ mat-panel-description {
 }
 mat-panel-title {
   align-items: center;
-  margin:10px 0 10px 0;
+  margin: 10px 0 10px 0;
 }
 
-mat-expansion-panel-header{
+mat-expansion-panel-header {
   height: 100%;
 }
 
 .example-headers-align .mat-form-field + .mat-form-field {
   margin-left: 8px;
+}
+.measure-operations {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dialog-content{
+  margin-bottom: 1rem;
 }

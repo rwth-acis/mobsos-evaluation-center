@@ -1,17 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { of, Subscription } from 'rxjs';
-import {
-  catchError,
-  delay,
-  filter,
-  first,
-  map,
-  takeUntil,
-  takeWhile,
-  timeout,
-} from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { User } from 'src/app/models/user.model';
 // eslint-disable-next-line max-len
 import {
@@ -75,7 +65,7 @@ export class VisitorComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

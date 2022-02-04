@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>
+  <mat-icon>error</mat-icon> <span>Unavailable Services</span>
+</h1>
+<div mat-dialog-content>
+  The following core services from
+  <a [href]="network" target="_blank" rel="noopener noreferrer">{{
+    network
+  }}</a>
+  are <strong>unreachable</strong> or took too long to respond:
+  <table *ngIf="dataSource" mat-table [dataSource]="dataSource">
+    <ng-container
+      *ngFor="let col of displayedColumns; let i = index"
+      [matColumnDef]="col"
+    >
+      <th mat-header-cell *matHeaderCellDef>{{ col }}</th>
+      <td mat-cell *matCellDef="let element">
+        {{ element[columns[i]] }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  <br />
+  Please contact the administrator.
+</div>

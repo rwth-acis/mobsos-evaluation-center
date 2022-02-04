@@ -7,6 +7,7 @@ export const translations = {
       'success-modeling': 'Success Modeling',
       'raw-edit': 'Raw Edit',
       'add-community': 'Add Community',
+      query: 'Query Visualizer',
     },
     elements: {
       'cancel-label': 'Cancel',
@@ -18,6 +19,7 @@ export const translations = {
       'ok-label': 'OK',
       'save-label': 'Save',
       'yes-label': 'Yes',
+      visualization: 'Visualization',
     },
   },
   app: {
@@ -81,6 +83,7 @@ export const translations = {
     'remove-measure-tooltip': 'Remove Measure',
   },
   'success-modeling': {
+    requirements: { title: 'Requirements' },
     visualization: {
       'fetch-info':
         'Showing data fetched on {{date}} from the server ',
@@ -137,6 +140,7 @@ export const translations = {
       'description-placeholder':
         'Describe your visualization here in more detail',
       'preview-title': 'Preview',
+      'data-source-label': 'Data Source',
       'next-label': 'Next',
       'back-label': 'Back',
       'query-name-placeholder': 'Query Name',

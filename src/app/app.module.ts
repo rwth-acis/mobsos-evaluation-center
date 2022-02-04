@@ -5,10 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
@@ -46,7 +44,6 @@ import { StateEffects } from './services/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
 
-import { AddCommunityDialogComponent } from './add-community-dialog/add-community-dialog.component';
 import { SharedModule } from './shared/shared.module';
 import { RawEditModule } from './raw-edit/raw-edit.module';
 import { SuccessModelingModule } from './success-modeling/success-modeling.module';
@@ -72,18 +69,15 @@ export function localStorageSyncReducer(
     keys: [
       {
         Reducer: [
-          'services',
           'groups',
+          'services',
           'selectedGroupId',
           'selectedServiceName',
           'questionnaires',
           'expertMode',
           'measureCatalog',
           'user',
-          'successModel',
-          'editMode',
           'visualizationData',
-          'currentWorkSpaceOwner',
         ],
       },
     ],
@@ -101,7 +95,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     OidcSigninComponent,
     OidcSignoutComponent,
     OidcSilentComponent,
-    AddCommunityDialogComponent,
     JoinWorkSpaceComponent,
   ],
   imports: [
@@ -119,15 +112,13 @@ const metaReducers: Array<MetaReducer<any, any>> = [
         useFactory: createTranslateLoader,
       },
     }),
+    MonacoEditorModule.forRoot(),
     MarkdownModule.forRoot(),
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
     MatListModule,
     MatProgressBarModule,
-    MonacoEditorModule.forRoot(),
-    FormsModule,
-
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
     }),
