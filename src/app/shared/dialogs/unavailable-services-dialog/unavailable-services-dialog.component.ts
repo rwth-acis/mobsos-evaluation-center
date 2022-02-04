@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-unavailable-services-dialog',
@@ -10,6 +11,7 @@ export class UnavailableServicesDialogComponent implements OnInit {
   dataSource: { name: string; reason: string }[];
   displayedColumns: string[];
   columns: string[];
+  network = environment.las2peerWebConnectorUrl;
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: { services: { name: string; reason: string }[] },

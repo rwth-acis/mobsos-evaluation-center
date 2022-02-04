@@ -2,8 +2,11 @@
   <mat-icon>error</mat-icon> <span>Unavailable Services</span>
 </h1>
 <div mat-dialog-content>
-  The following core services are <strong>unreachable</strong> or took
-  too long to respond:
+  The following core services from
+  <a [href]="network" target="_blank" rel="noopener noreferrer">{{
+    network
+  }}</a>
+  are <strong>unreachable</strong> or took too long to respond:
   <table *ngIf="dataSource" mat-table [dataSource]="dataSource">
     <ng-container
       *ngFor="let col of displayedColumns; let i = index"
