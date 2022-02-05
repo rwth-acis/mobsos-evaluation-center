@@ -4,7 +4,10 @@ import { GroupInformation } from '../models/community.model';
 import { Measure } from '../models/measure.model';
 import { Questionnaire } from '../models/questionnaire.model';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
-import { ServiceInformation } from '../models/service.model';
+import {
+  ServiceInformation,
+  ServicesFromMobSOS,
+} from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
 import { User } from '../models/user.model';
 
@@ -125,7 +128,10 @@ export const storeQuestionnaires = createAction(
 
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
-  props<{ servicesFromL2P; servicesFromMobSOS }>(),
+  props<{
+    servicesFromL2P;
+    servicesFromMobSOS: ServicesFromMobSOS;
+  }>(),
 );
 export const addFactorToDimension = createAction(
   StoreActions.ADD_FACTOR_TO_DIMENSION,
