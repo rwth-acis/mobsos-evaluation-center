@@ -31,12 +31,14 @@ const _Reducer = createReducer(
         servicesFromMobSOS,
       ),
       selectedServiceName:
-        Object.keys(servicesFromL2P).includes(
-          state.selectedServiceName,
-        ) ||
-        Object.keys(servicesFromMobSOS).includes(
-          state.selectedServiceName,
-        )
+        (servicesFromL2P &&
+          Object.keys(servicesFromL2P).includes(
+            state.selectedServiceName,
+          )) ||
+        (servicesFromMobSOS &&
+          Object.keys(servicesFromMobSOS).includes(
+            state.selectedServiceName,
+          ))
           ? state.selectedServiceName
           : initialState.selectedServiceName,
     }),
@@ -44,11 +46,13 @@ const _Reducer = createReducer(
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    selectedGroupId: Object.keys(groupsFromContactService).includes(
-      state.selectedGroupId,
-    )
-      ? state.selectedGroupId
-      : initialState.selectedGroupId,
+    selectedGroupId:
+      groupsFromContactService &&
+      Object.keys(groupsFromContactService).includes(
+        state.selectedGroupId,
+      )
+        ? state.selectedGroupId
+        : initialState.selectedGroupId,
     groups: mergeGroupData(
       state.groups || null,
       groupsFromContactService,
