@@ -64,7 +64,7 @@ export class AddCommunityDialogComponent
   ) {}
 
   ngOnInit(): void {
-    let sub = this.ngrxStore
+    const sub = this.ngrxStore
       .select(USER_GROUPS)
       .subscribe((groups) => {
         this.groups = groups;

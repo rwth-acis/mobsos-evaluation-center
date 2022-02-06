@@ -11,6 +11,7 @@
     "build:prod:single-bundle": "ng build --configuration production --single-bundle",
     "test": "ng test",
     "lint": "npx ng lint mobsos-evaluation-center",
+    "lint:fix": "npx ng lint --fix mobsos-evaluation-center",
     "e2e": "ng e2e"
   },
   "private": true,

@@ -1020,6 +1020,7 @@ function addQuestionnaireToSuccessModel(
 }
 /**
  * Function which checks if service is in the service list returned by the server
+ *
  * @param selectedServiceName  service name to be checked
  * @param servicesFromL2P  service list returned by  las2peer
  * @param servicesFromMobSOS  service list returned by MobSOS

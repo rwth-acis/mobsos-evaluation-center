@@ -151,16 +151,16 @@ export class Las2peerService {
     const ngHttpOptions = {};
 
     if (options.headers) {
-      ngHttpOptions['headers'] = new HttpHeaders(options.headers);
+      ngHttpOptions.headers = new HttpHeaders(options.headers);
     }
     if (options.body) {
-      ngHttpOptions['body'] = options.body;
+      ngHttpOptions.body = options.body;
     }
     if (options.responseType) {
-      ngHttpOptions['responseType'] = options.responseType;
+      ngHttpOptions.responseType = options.responseType;
     }
     if (options.observe) {
-      ngHttpOptions['observe'] = options.observe;
+      ngHttpOptions.observe = options.observe;
     }
 
     return this.http.request(options.method, url, ngHttpOptions);
@@ -295,6 +295,7 @@ export class Las2peerService {
 
   /**
    * checks if all services are available and returns a list of all services that are not available
+   *
    * @returns all unavailable services
    */
   checkServiceAvailability() {

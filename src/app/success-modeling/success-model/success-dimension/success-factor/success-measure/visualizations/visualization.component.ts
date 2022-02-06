@@ -83,6 +83,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     const matches = query?.match(serviceRegex);
     const params = [];
     if (matches) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet
