@@ -6,37 +6,29 @@ import {
   HttpRequest,
   HttpResponse,
   HttpErrorResponse,
-  HttpUserEvent,
 } from '@angular/common/http';
 
-import {
-  BehaviorSubject,
-  EMPTY,
-  Observable,
-  of,
-  throwError,
-} from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import {
   catchError,
   filter,
-  share,
   shareReplay,
   tap,
-  timeout,
   timeoutWith,
 } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { decrementLoading, incrementLoading } from './store.actions';
-import { delayedRetry } from './retryOperator';
 const ONE_MINUTE_IN_MS = 60000;
-/** Pass untouched request through to the next request handler. */
+interface RequestCache {
+  [key: string]: Observable<HttpEvent<any>>;
+}
 @Injectable({
   providedIn: 'root',
 })
 export class Interceptor implements HttpInterceptor {
-  constructor(public ngrxStore: Store) {}
-  cachedRequests: object = {};
+  cachedRequests: RequestCache = {};
   unreachableServices = {};
+  constructor(public ngrxStore: Store) {}
 
   intercept(
     req: HttpRequest<any>,
