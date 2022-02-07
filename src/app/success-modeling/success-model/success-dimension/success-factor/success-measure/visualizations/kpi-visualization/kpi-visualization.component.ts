@@ -124,14 +124,28 @@ export class KpiVisualizationComponent
 
     this.kpi$ = this.dataArray$.pipe(
       filter((data) => allDataLoaded(data)),
+      distinctUntilChanged(
+        (prev, current) =>
+          getLatestFetchDate(prev) + THIRTY_SECONDS >=
+          getLatestFetchDate(current),
+      ),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
       withLatestFrom(this.measure$),
       map(([data, measure]) => {
         const abstractTerm = [];
         const term = [];
-        data = data.map((data) =>
-          data.length === 3 ? data[2][0] : undefined,
-        );
+
+        const values: number[] = data.map((array) => {
+          const lastEntry = array[array.length - 1][0];
+          if (typeof lastEntry === 'number') {
+            return lastEntry;
+          }
+          if (typeof lastEntry === 'string') {
+            return parseFloat(lastEntry);
+          }
+          console.warn('cannot parse data', lastEntry);
+          return 0;
+        });
         let visualization: KpiVisualization =
           measure?.visualization as KpiVisualization;
         if (!(visualization instanceof KpiVisualization)) {
@@ -148,7 +162,7 @@ export class KpiVisualizationComponent
           abstractTerm.push(operationElement.name);
           // even index means, that this must be an operand since we only support binary operators
           if (operationElement.index % 2 === 0) {
-            const value = data[operationElement.index / 2];
+            const value = values[operationElement.index / 2];
             term.push(value);
           } else {
             term.push(operationElement.name);
@@ -157,12 +171,13 @@ export class KpiVisualizationComponent
         if (term.length > 1) {
           abstractTerm.push('=');
           abstractTerm.push(measure.name);
-          let termResult = visualization.evaluateTerm(term);
-          if (typeof termResult === 'number') {
-            termResult = termResult.toFixed(2);
-          }
           term.push('=');
-          term.push(termResult);
+          const termResult = visualization.evaluateTerm(term);
+          if (typeof termResult === 'number') {
+            term.push(termResult.toFixed(2));
+          } else {
+            term.push(termResult);
+          }
         }
         return { abstractTerm, term };
       }),
@@ -230,3 +245,19 @@ function allDataLoaded(data: VisualizationData[]): boolean {
     !data.some((vdata) => vdata.loading)
   );
 }
+/**
+ * Function which returns the greatest timestamp when comparing fetchDate
+ *
+ * @param data
+ */
+function getLatestFetchDate(data: VisualizationData[]): number {
+  if (!data) return null;
+  return data.reduce(
+    (max, curr) =>
+      new Date(curr.fetchDate).getTime() > new Date(max).getTime()
+        ? new Date(curr.fetchDate).getTime()
+        : max,
+    0,
+  );
+}
+const THIRTY_SECONDS = 30000;
