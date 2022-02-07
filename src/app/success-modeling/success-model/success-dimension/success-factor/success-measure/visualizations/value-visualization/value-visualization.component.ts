@@ -82,9 +82,6 @@ export class ValueVisualizationComponent
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
           .pipe(
-            tap((data) => {
-              console.log(data);
-            }),
             filter((data) => !!data),
             distinctUntilKeyChanged('fetchDate'),
           ),

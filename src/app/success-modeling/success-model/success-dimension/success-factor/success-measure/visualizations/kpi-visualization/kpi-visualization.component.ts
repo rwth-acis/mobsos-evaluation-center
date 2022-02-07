@@ -129,9 +129,6 @@ export class KpiVisualizationComponent
           getLatestFetchDate(prev) + THIRTY_SECONDS >=
           getLatestFetchDate(current),
       ),
-      tap((data) => {
-        console.log(data[0]?.fetchDate);
-      }),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
       withLatestFrom(this.measure$),
       map(([data, measure]) => {
@@ -143,7 +140,11 @@ export class KpiVisualizationComponent
           if (typeof lastEntry === 'number') {
             return lastEntry;
           }
-          return parseFloat(lastEntry);
+          if (typeof lastEntry === 'string') {
+            return parseFloat(lastEntry);
+          }
+          console.warn('cannot parse data', lastEntry);
+          return 0;
         });
         let visualization: KpiVisualization =
           measure?.visualization as KpiVisualization;
