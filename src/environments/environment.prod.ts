@@ -1,5 +1,4 @@
 import { Environment } from './environment.model';
-import { version } from '../../package.json';
 import packageInfo from '../../package.json';
 
 declare global {

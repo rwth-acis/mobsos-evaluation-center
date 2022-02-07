@@ -7,7 +7,7 @@ import {
   HttpHeaders,
   HttpParams,
 } from '@angular/common/http';
-import { forkJoin, Observable, of } from 'rxjs';
+import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import {
   catchError,
   filter,
@@ -30,7 +30,16 @@ interface HttpOptions {
   responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
   observe?: 'body' | 'events' | 'response';
 }
-
+class NgHttpOptions implements HttpOptions {
+  constructor(
+    public headers?: {
+      [header: string]: string | string[];
+    },
+    public body?: string,
+    public responseType?: 'arraybuffer' | 'blob' | 'json' | 'text',
+    public observe?: 'body' | 'events' | 'response',
+  ) {}
+}
 const ONE_SECOND_IN_MS = 1000;
 
 @Injectable({
@@ -106,6 +115,9 @@ export class Las2peerService {
     this.userCredentials = null;
   }
 
+  /**
+   * @deprecated Use makeRequestAndObserve instead. If you need a promise use firstValueFrom from rxjs
+   */
   async makeRequest<T>(
     url: string,
     options: HttpOptions = {},
@@ -148,19 +160,19 @@ export class Las2peerService {
       }
     }
 
-    const ngHttpOptions = {};
+    const ngHttpOptions: NgHttpOptions = {};
 
     if (options.headers) {
-      ngHttpOptions['headers'] = new HttpHeaders(options.headers);
+      ngHttpOptions.headers = options.headers;
     }
     if (options.body) {
-      ngHttpOptions['body'] = options.body;
+      ngHttpOptions.body = options.body;
     }
     if (options.responseType) {
-      ngHttpOptions['responseType'] = options.responseType;
+      ngHttpOptions.responseType = options.responseType;
     }
     if (options.observe) {
-      ngHttpOptions['observe'] = options.observe;
+      ngHttpOptions.observe = options.observe;
     }
 
     return this.http.request(options.method, url, ngHttpOptions);
@@ -240,15 +252,11 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url);
   }
 
-  async fetchMobSOSGroups(): Promise<[]> {
-    const url = joinAbsoluteUrlPath(
-      environment.las2peerWebConnectorUrl,
-      this.SUCCESS_MODELING_SERVICE_PATH,
-      this.SUCCESS_MODELING_GROUP_PATH,
-    );
-    return this.makeRequest(url);
-  }
-
+  /**
+   * @deprecated Use the fetchMobSOSGroupAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   * @param groupID
+   * @returns
+   */
   async fetchMobSOSGroup(groupID: string) {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -259,6 +267,12 @@ export class Las2peerService {
     return this.makeRequest(url);
   }
 
+  /**
+   * @deprecated Use the fetchMobSOSGroupAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   * @param groupID
+   * @param service
+   * @returns
+   */
   async fetchSuccessModel(groupID: string, service: string) {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -295,6 +309,7 @@ export class Las2peerService {
 
   /**
    * checks if all services are available and returns a list of all services that are not available
+   *
    * @returns all unavailable services
    */
   checkServiceAvailability() {
@@ -379,6 +394,10 @@ export class Las2peerService {
     );
   }
 
+  /**
+   *
+   * @deprecated Use the fetchMobSOSQuestionnairesAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   */
   async fetchMobSOSQuestionnaires() {
     const url = joinAbsoluteUrlPath(
       environment.mobsosSurveysUrl,
@@ -390,7 +409,9 @@ export class Las2peerService {
       { headers: { access_token: null, Authorization: null } },
     )
       .then((response) =>
-        this.fetchQuestionnaireForms(response.questionnaires),
+        this.fetchQuestionnaireForms(
+          response.questionnaires as IQuestionnaire[],
+        ),
       )
       .then((response) => {
         for (const questionnaire of response) {
@@ -437,6 +458,11 @@ export class Las2peerService {
       timeout(60000),
     );
   }
+  /**
+   * @deprecated Use the fetchQuestionnaireFormsAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   * @param questionnaires
+   * @returns
+   */
   async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = joinAbsoluteUrlPath(
@@ -495,6 +521,7 @@ export class Las2peerService {
       environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
+    // TODO: replace deprecated function
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify({
@@ -521,6 +548,7 @@ export class Las2peerService {
       surveyId,
       this.SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX,
     );
+    // TODO replace deprecated function
     return this.makeRequest(url, {
       method: 'POST',
       body: JSON.stringify({ qid: questionnaireId }),
@@ -544,8 +572,8 @@ export class Las2peerService {
    * Thus there is no need to transfer groups from the contact service to mobsos
    */
   async saveGroupToMobSOS(groupID: string, groupName: string) {
-    let method;
-    let url;
+    let method: string;
+    let url: string;
     try {
       await this.fetchMobSOSGroup(groupID);
       method = 'PUT';
@@ -596,6 +624,13 @@ export class Las2peerService {
     );
   }
 
+  /**
+   * @deprecated Use the saveSuccessModelAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   * @param groupID
+   * @param service
+   * @param xml
+   * @returns
+   */
   async saveSuccessModel(
     groupID: string,
     service: string,
@@ -616,15 +651,19 @@ export class Las2peerService {
       groupID,
       service,
     );
-    return this.makeRequest<{ xml: string }>(url, {
-      method,
-      body: JSON.stringify({ xml }),
-    })
-      .then((response) => response.xml)
-      .catch((response) => {
-        console.error(response);
-        throw response;
-      });
+    const xmlFromResponse = await firstValueFrom(
+      this.makeRequestAndObserve<{ xml: string }>(url, {
+        method,
+        body: JSON.stringify({ xml }),
+      }).pipe(
+        map((res) => (res as { xml: string })?.xml),
+        catchError((err) => {
+          console.error(err);
+          return null;
+        }),
+      ),
+    );
+    return xmlFromResponse;
   }
 
   saveSuccessModelAndObserve(
@@ -646,6 +685,11 @@ export class Las2peerService {
     });
   }
 
+  /**
+   * @deprecated Use the fetchMeasureCatalogAndObserve method instead. If you need a promise use firstValueFrom from rxjs
+   * @param groupID
+   * @returns
+   */
   async fetchMeasureCatalog(groupID: string) {
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
@@ -700,6 +744,12 @@ export class Las2peerService {
     );
   }
 
+  /**
+   * @deprecated Use {@link #saveMeasureCatalogAndObserve} instead. If you need a promise use firstValueFrom from rxjs
+   * @param groupID
+   * @param xml
+   * @returns
+   */
   async saveMeasureCatalog(groupID: string, xml: string) {
     let method;
     try {
@@ -741,6 +791,11 @@ export class Las2peerService {
     });
   }
 
+  /**
+   * @deprecated Use {@link #fetchMessageDescriptionsAndObserve} instead. If you need a promise use firstValueFrom from rxjs
+   * @param serviceName
+   * @returns
+   */
   async fetchMessageDescriptions(serviceName: string) {
     return this.fetchMessageDescriptionsAndObserve(
       serviceName,
@@ -757,6 +812,13 @@ export class Las2peerService {
     return this.makeRequestAndObserve(url);
   }
 
+  /**
+   * @deprecated Use the effect from ngrxStore instead. If you need a promise use firstValueFrom from rxjs
+   * @param query
+   * @param queryParams
+   * @param format
+   * @returns
+   */
   async visualizeQuery(
     query: string,
     queryParams: string[],
@@ -875,6 +937,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -892,6 +955,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -911,6 +975,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -949,6 +1014,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -970,6 +1036,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -991,6 +1058,7 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
@@ -1012,11 +1080,14 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
+    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 }
 
-export function joinAbsoluteUrlPath(...args) {
+export function joinAbsoluteUrlPath(
+  ...args: (string | number)[]
+): string {
   return args
     .map((pathPart: string | number) => {
       if (typeof pathPart === 'number') {

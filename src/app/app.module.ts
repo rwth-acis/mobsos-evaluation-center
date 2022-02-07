@@ -23,7 +23,6 @@ import {
   NgxMonacoEditorConfig,
 } from 'ngx-monaco-editor';
 
-import { FormsModule } from '@angular/forms';
 import { Location, PlatformLocation } from '@angular/common';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';

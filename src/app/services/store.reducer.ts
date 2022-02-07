@@ -14,7 +14,10 @@ import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
-import { ServiceCollection } from '../models/service.model';
+import {
+  ServiceCollection,
+  ServicesFromMobSOS,
+} from '../models/service.model';
 import { Questionnaire } from '../models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
@@ -30,11 +33,25 @@ const _Reducer = createReducer(
         servicesFromL2P,
         servicesFromMobSOS,
       ),
+      selectedServiceName: selectedServiceIncludedInServiceList(
+        state.selectedServiceName,
+        servicesFromL2P,
+        servicesFromMobSOS,
+      )
+        ? state.selectedServiceName
+        : initialState.selectedServiceName,
     }),
   ),
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    selectedGroupId:
+      groupsFromContactService &&
+      Object.keys(groupsFromContactService).includes(
+        state.selectedGroupId,
+      )
+        ? state.selectedGroupId
+        : initialState.selectedGroupId,
     groups: mergeGroupData(
       state.groups || null,
       groupsFromContactService,
@@ -1000,4 +1017,38 @@ function addQuestionnaireToSuccessModel(
   }
   appWorkspace.model.questionnaires.push(questionnaire);
   return copy;
+}
+/**
+ * Function which checks if service is in the service list returned by the server
+ *
+ * @param selectedServiceName  service name to be checked
+ * @param servicesFromL2P  service list returned by  las2peer
+ * @param servicesFromMobSOS  service list returned by MobSOS
+ * @returns true if service is in the service list
+ */
+function selectedServiceIncludedInServiceList(
+  selectedServiceName: string,
+  servicesFromL2P: any,
+  servicesFromMobSOS: ServicesFromMobSOS,
+) {
+  let found = false;
+  if (servicesFromL2P) {
+    found = !!Object.values(servicesFromL2P).find(
+      (service) =>
+        (service as { name: string }).name === selectedServiceName,
+    );
+    if (found) {
+      return true;
+    }
+  }
+  if (servicesFromMobSOS) {
+    found = !!Object.values(servicesFromMobSOS).find(
+      (service) =>
+        (service as { serviceName: string }).serviceName?.split(
+          '@',
+        )[0] === selectedServiceName,
+    );
+    return found;
+  }
+  return false;
 }

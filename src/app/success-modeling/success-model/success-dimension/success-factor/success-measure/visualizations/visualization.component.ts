@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import { distinctUntilKeyChanged } from 'rxjs/operators';
+import { distinctUntilKeyChanged, filter } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
 import { SELECTED_SERVICE } from 'src/app/services/store.selectors';
@@ -21,9 +21,10 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 export class VisualizationComponent implements OnInit, OnDestroy {
   @Input() measure$: Observable<Measure>;
   measure: Measure;
-  service$ = this.ngrxStore
-    .select(SELECTED_SERVICE)
-    .pipe(distinctUntilKeyChanged('name'));
+  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
+    filter((service) => !!service),
+    distinctUntilKeyChanged('name'),
+  );
 
   error$: Observable<HttpErrorResponse>;
 
@@ -82,6 +83,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     const matches = query?.match(serviceRegex);
     const params = [];
     if (matches) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet

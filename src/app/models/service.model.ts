@@ -13,3 +13,13 @@ export interface ServiceCollection {
 export interface ServiceMessageDescriptions {
   [key: string]: string;
 }
+
+export interface ServicesFromMobSOS {
+  [key: string]: MobSOSService;
+}
+
+export interface MobSOSService {
+  serviceAlias?: string;
+  registrationTime?: number;
+  serviceName: string;
+}

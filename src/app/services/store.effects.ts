@@ -740,6 +740,7 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
 
 /**
  * Handles a new visualization data response
+ *
  * @param response repsonse form the visualization data service
  * @param query the query for which we want to retrieve the data
  * @returns the action that the store should dispatch. In case of success the data is stored. In case of an error the error is stored
@@ -772,7 +773,7 @@ function handleResponse(
     if (response.status === 201) {
       console.error(
         'Response is 201 but should be 404 since an error occured',
-      ); //should not occur
+      ); // should not occur
       return Action.storeVisualizationData({
         query,
         error: response.error,

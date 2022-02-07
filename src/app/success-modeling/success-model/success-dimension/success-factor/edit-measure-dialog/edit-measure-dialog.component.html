@@ -226,49 +226,57 @@
       <mat-accordion id="hints-accordion">
         <mat-expansion-panel>
           <mat-expansion-panel-header>
-            <mat-panel-title>Hints</mat-panel-title>
+            <mat-panel-title
+              ><mat-icon class="padding-right">help_outline</mat-icon>
+              Help</mat-panel-title
+            >
             <mat-panel-description>
               See descriptions and examples of the logged data.
             </mat-panel-description>
           </mat-expansion-panel-header>
           <ng-template matExpansionPanelContent>
+            In general, the monitored messages are stored in the
+            MobSOS database under the <code>MESSAGE</code> table under
+            <code>REMARKS</code> as string or JSON data. The
+            <code>EVENT</code> is a code that descibeds the type of
+            the event. For more information visit
+            <a
+              href="https://github.com/rwth-acis/mobsos-success-modeling/wiki/Manual#23-making-sure-to-get-the-right-data"
+              target="_blank"
+              rel="noopener noreferrer"
+              >our wiki</a
+            >.
+            <br />
             <div
               *ngFor="
                 let item of data.service.serviceMessageDescriptions
                   | keyvalue
               "
             >
-              <h2>{{ prettifyCustomMessageName(item.key) }}</h2>
-              <mat-accordion [multi]="true">
-                <mat-expansion-panel [expanded]="false">
-                  <mat-expansion-panel-header>
-                    <mat-panel-title>Description</mat-panel-title>
-                  </mat-expansion-panel-header>
-                  <ng-template matExpansionPanelContent>
-                    <markdown ngPreserveWhitespaces>{{
-                      item.value
-                    }}</markdown>
-                  </ng-template>
-                </mat-expansion-panel>
-                <mat-expansion-panel [expanded]="false">
-                  <mat-expansion-panel-header>
-                    <mat-panel-title
-                      >Latest Log Entries</mat-panel-title
-                    >
-                  </mat-expansion-panel-header>
-                  <ng-template matExpansionPanelContent>
-                    <app-sql-table
-                      [service]="data.service"
-                      [query]="
-                        'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
-                        item.key +
-                        '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
-                      "
-                    >
-                    </app-sql-table>
-                  </ng-template>
-                </mat-expansion-panel>
-              </mat-accordion>
+              <h4>{{ prettifyCustomMessageName(item.key) }}</h4>
+              <h6>Description</h6>
+              <markdown ngPreserveWhitespaces>{{
+                item.value
+              }}</markdown>
+
+              <mat-expansion-panel [expanded]="false">
+                <mat-expansion-panel-header>
+                  <mat-panel-title
+                    >Latest Log Entries</mat-panel-title
+                  >
+                </mat-expansion-panel-header>
+                <ng-template matExpansionPanelContent>
+                  <app-sql-table
+                    [service]="data.service"
+                    [query]="
+                      'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
+                      item.key +
+                      '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
+                    "
+                  >
+                  </app-sql-table>
+                </ng-template>
+              </mat-expansion-panel>
             </div>
           </ng-template>
         </mat-expansion-panel>
