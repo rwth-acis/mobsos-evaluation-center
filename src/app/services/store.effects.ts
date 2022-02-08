@@ -420,6 +420,7 @@ export class StateEffects {
           return this.l2p
             .fetchVisualizationData(query, queryParams)
             .pipe(
+              timeout(30000),
               tap(
                 (
                   res: HttpResponse<any> | HttpErrorResponse | string,
@@ -431,14 +432,7 @@ export class StateEffects {
               map((response) => {
                 return handleResponse(response, query);
               }),
-              catchError((error) =>
-                of(
-                  Action.storeVisualizationData({
-                    error,
-                    query,
-                  }),
-                ),
-              ),
+              catchError((error) => of(handleResponse(error, query))),
             );
         }
         return of(Action.failureResponse(undefined));
@@ -753,10 +747,7 @@ function shouldFetch(dataForQuery: VisualizationData): boolean {
  * @param query the query for which we want to retrieve the data
  * @returns the action that the store should dispatch. In case of success the data is stored. In case of an error the error is stored
  */
-function handleResponse(
-  response: string | HttpResponse<any> | HttpErrorResponse,
-  query: string,
-) {
+function handleResponse(response: any, query: string) {
   if (!response) {
     return Action.storeVisualizationData({
       error: 'response was empty',
