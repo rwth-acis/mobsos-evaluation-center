@@ -18,6 +18,9 @@ export interface ServicesFromMobSOS {
   [key: string]: MobSOSService;
 }
 
+export interface ServicesFromL2P {
+  [key: string]: { name: string };
+}
 export interface MobSOSService {
   serviceAlias?: string;
   registrationTime?: number;
