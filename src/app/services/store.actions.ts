@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { Action } from 'rxjs/internal/scheduler/Action';
 import { GroupInformation } from '../models/community.model';
 
 import { Measure } from '../models/measure.model';
@@ -6,6 +7,7 @@ import { Questionnaire } from '../models/questionnaire.model';
 import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import {
   ServiceInformation,
+  ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../models/service.model';
 import { SuccessFactor } from '../models/success.model';
@@ -31,8 +33,8 @@ export enum HttpActions {
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
   REFRESH_VISUALIZATION = 'Refresh the current visualization manually',
   ADD_GROUP = 'adds a new group on the server',
-  SUCCESS_RESPONSE = 'response was successfully',
-  FAILURE_RESPONSE = 'response was not successfully',
+  SUCCESS_RESPONSE = 'response was successful',
+  FAILURE_RESPONSE = 'response was not successful',
 }
 
 export enum StoreActions {
@@ -83,6 +85,7 @@ export enum StateActions {
   TOGGLE_EXPERT_MODE = 'Toggle the expert mode for raw edit of success model and measure catalog',
   RESET_FETCH_DATE = 'set the fetch date to null',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
+  NOOP = 'No operation',
 }
 
 // fetching
@@ -129,7 +132,7 @@ export const storeQuestionnaires = createAction(
 export const storeServices = createAction(
   StoreActions.STORE_SERVICES,
   props<{
-    servicesFromL2P;
+    servicesFromL2P: ServicesFromL2P;
     servicesFromMobSOS: ServicesFromMobSOS;
   }>(),
 );
@@ -379,3 +382,5 @@ export const addCatalogToWorkspace = createAction(
 export const success = createAction('action was successful');
 
 export const failure = createAction('action was not successful');
+
+export const noop = createAction(StateActions.NOOP);
