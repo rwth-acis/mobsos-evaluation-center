@@ -16,9 +16,11 @@ import {
 } from '../models/community.model';
 import {
   ServiceCollection,
+  ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../models/service.model';
 import { Questionnaire } from '../models/questionnaire.model';
+import { isArray } from 'util';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -1028,7 +1030,7 @@ function addQuestionnaireToSuccessModel(
  */
 function selectedServiceIncludedInServiceList(
   selectedServiceName: string,
-  servicesFromL2P: any,
+  servicesFromL2P: ServicesFromL2P,
   servicesFromMobSOS: ServicesFromMobSOS,
 ) {
   let found = false;
