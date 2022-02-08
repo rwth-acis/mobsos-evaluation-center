@@ -249,7 +249,7 @@ export class Las2peerService {
       this.CONTACT_SERVICE_PATH,
       this.CONTACT_GROUPS_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 
   /**
@@ -500,7 +500,12 @@ export class Las2peerService {
         );
         return this.makeRequestAndObserve<string>(formUrl, {
           responseType: 'text',
-        });
+        }).pipe(
+          catchError((err) => {
+            console.log(err);
+            return of(undefined);
+          }),
+        );
       },
     );
     return forkJoin(questionaireFormRequests);

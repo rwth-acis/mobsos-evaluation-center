@@ -1,6 +1,7 @@
 import {
   HttpErrorResponse,
   HttpResponse,
+  HttpResponseBase,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -54,6 +55,25 @@ export class StateEffects {
   // I will leave it here for the demo but should not be necessary. Removal should not cause any problems
   static visualizationCalls = {};
 
+  /**
+   * This effect just logs errors emitted by the other effects
+   */
+  failureResponse$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.failureResponse),
+      tap((action) => {
+        if (action.reason) {
+          console.warn('A Failure occured: ', action.reason);
+        }
+      }),
+      mergeMap(() => of(Action.noop())),
+      share(),
+    ),
+  );
+
+  /**
+   * This effect is used to fetch the services from the las2peer network
+   */
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchServices),
@@ -61,21 +81,21 @@ export class StateEffects {
         forkJoin([
           this.l2p.fetchServicesFromDiscoveryAndObserve().pipe(
             catchError((err) => {
-              console.error(
-                'Could not fetch services from service discovery:' +
-                  JSON.stringify(err),
+              console.warn(
+                'Could not fetch services from service discovery:',
+                err,
               );
-              return of(undefined);
+              return of(Action.failureResponse({ reason: err }));
             }),
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
             catchError((err) => {
-              console.error(
-                'Could not fetch services from service MobSOS:' +
-                  JSON.stringify(err),
+              console.warn(
+                'Could not fetch services from service MobSOS:',
+                err,
               );
 
-              return of(Action.failureResponse(err));
+              return of(Action.failureResponse({ reason: err }));
             }),
           ),
         ]).pipe(
@@ -88,13 +108,15 @@ export class StateEffects {
         ),
       ),
       catchError((err) => {
-        console.error(err);
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
   );
 
+  /**
+   * This effect is used to fetch the groups from the las2peer network
+   */
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
@@ -102,42 +124,61 @@ export class StateEffects {
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
           timeout(30000),
           map((response) => {
+            if (!response) {
+              return Action.storeGroups({
+                groupsFromContactService: null,
+              });
+            }
+            if (response instanceof HttpResponse) {
+              return Action.storeGroups({
+                groupsFromContactService: response.body,
+              });
+            }
             if (response instanceof HttpErrorResponse) {
               return Action.failureResponse({
                 reason: response.error,
               });
             }
-            if (!response || Object.keys(response).length === 0) {
-              return Action.storeGroups({
-                groupsFromContactService: null,
-              });
-            }
+
             return Action.storeGroups({
-              groupsFromContactService: response,
+              groupsFromContactService: null,
             });
           }),
+          catchError((err) =>
+            of(Action.failureResponse({ reason: err })),
+          ),
+        ),
+      ),
+      catchError(() => of(Action.failure())),
+      share(),
+    ),
+  );
+
+  /** ****************************
+   * This effect is called whenever the user selects a new service
+   * In this case we do the following:
+   * - reset the success model and fetch the new success model
+   */
+  fetchMessageDescriptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchMessageDescriptions),
+      filter(({ serviceName }) => !!serviceName),
+      distinctUntilKeyChanged('serviceName'),
+      switchMap(({ serviceName }) =>
+        this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
+          map((descriptions: ServiceMessageDescriptions) =>
+            Action.storeMessageDescriptions({
+              descriptions,
+              serviceName,
+            }),
+          ),
           catchError((err) => {
-            console.error(
-              'Could not groups services from Contact service:' +
-                JSON.stringify(err),
-            );
-            this.ngrxStore.dispatch(
-              Action.storeGroups({
-                groupsFromContactService: [],
-              }),
-            );
-            return of(Action.failureResponse(err));
+            return of(Action.failureResponse({ reason: err }));
           }),
         ),
       ),
       catchError((err) => {
-        console.error(err);
-        this.ngrxStore.dispatch(
-          Action.storeGroups({
-            groupsFromContactService: [],
-          }),
-        );
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -165,9 +206,8 @@ export class StateEffects {
         this.ngrxStore.dispatch(disableEdit());
       }),
       switchMap(() => of(Action.success())),
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failure());
+      catchError(() => {
+        return of(Action.noop());
       }),
       share(),
     ),
@@ -199,39 +239,7 @@ export class StateEffects {
       switchMap(() => of(Action.success())),
       catchError((err) => {
         console.error(err);
-        return of(Action.failure());
-      }),
-      share(),
-    ),
-  );
-
-  /** ****************************
-   * This effect is called whenever the user selects a new service
-   * In this case we do the following:
-   * - reset the success model and fetch the new success model
-   */
-  fetchMessageDescriptions$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(Action.fetchMessageDescriptions),
-      filter(({ serviceName }) => !!serviceName),
-      distinctUntilKeyChanged('serviceName'),
-      switchMap(({ serviceName }) =>
-        this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions: ServiceMessageDescriptions) =>
-            Action.storeMessageDescriptions({
-              descriptions,
-              serviceName,
-            }),
-          ),
-          catchError((err) => {
-            console.error(err);
-            return of(Action.failure());
-          }),
-        ),
-      ),
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failure());
+        return of(Action.noop());
       }),
       share(),
     ),
@@ -272,7 +280,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failure());
+        return of(Action.failureResponse({ reason: err }));
       }),
     ),
   );
@@ -298,13 +306,13 @@ export class StateEffects {
             map(() => Action.saveCatalogSuccess()),
             catchError((err) => {
               console.error(err);
-              return of(Action.failureResponse(err));
+              return of(Action.failureResponse({ reason: err }));
             }),
           ),
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -333,7 +341,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -362,7 +370,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -384,7 +392,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse(err));
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -506,8 +514,8 @@ export class StateEffects {
           }),
         ),
       ),
-      catchError(() => {
-        return of(Action.failure());
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -781,7 +789,7 @@ function handleResponse(
     }
     return Action.storeVisualizationData({
       query,
-      error: response.message,
+      error: response.error,
     });
   } else if (response instanceof HttpResponse) {
     if (!response.body) {
@@ -796,5 +804,10 @@ function handleResponse(
       query,
       error: null,
     });
-  } else return Action.failure(); // should not be reached
+  }
+  return Action.failureResponse({
+    reason: new Error(
+      'Unknown errror for fetching Visualization data',
+    ),
+  }); // should not be reached
 }
