@@ -444,6 +444,7 @@ export class Las2peerService {
         ]),
       ),
       map(([forms, questionnaires]) => {
+        questionnaires = cloneDeep(questionnaires);
         for (let index = 0; index < questionnaires?.length; index++) {
           const questionnaire = questionnaires[index];
           questionnaire.name = decodeURIComponent(questionnaire.name);

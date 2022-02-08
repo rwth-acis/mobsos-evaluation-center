@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
-import { combineLatest, forkJoin, of } from 'rxjs';
+import { combineLatest, forkJoin, of, TimeoutError } from 'rxjs';
 import {
   map,
   mergeMap,
@@ -754,7 +754,11 @@ function handleResponse(response: any, query: string) {
       query,
     });
   }
-  if (response === 'Timeout') {
+  if (
+    response === 'Timeout' ||
+    response instanceof TimeoutError ||
+    response.message?.includes('Timeout')
+  ) {
     return Action.storeVisualizationData({
       error:
         'Timeout occured while fetching data. The query might be too complex, or the server is overloaded.',
