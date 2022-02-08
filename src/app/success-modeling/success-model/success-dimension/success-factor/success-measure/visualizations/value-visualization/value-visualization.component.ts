@@ -93,14 +93,10 @@ export class ValueVisualizationComponent
       map((data) => data === undefined || data?.loading),
     );
     this.value$ = this.data$.pipe(
-      tap((data) => {
-        console.log(data);
-      }),
       map(
         (visualizationData: VisualizationData) =>
           visualizationData?.data,
       ),
-
       filter((data) => !!data && Array.isArray(data)),
       map((data) =>
         data.slice(-1)[0].length === 0
