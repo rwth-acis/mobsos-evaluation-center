@@ -35,7 +35,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import {
   addCatalogToWorkspace,
   addModelToWorkSpace,
@@ -139,9 +139,9 @@ export class QuestionnairesComponent implements OnInit {
     surveyId: number,
     question: { code: string },
   ) {
-    const dbName = environment.mobsosSurveysDatabaseName;
+    // const dbName = environment.mobsosSurveysDatabaseName; Might be needed later if we want to use the actual survey response instead of the logged message
 
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM ${dbName}.MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
+    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
       SqlString.escape(surveyId.toString()) as string
     } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
       question.code
@@ -255,13 +255,14 @@ export class QuestionnairesComponent implements OnInit {
         data: questionnaires,
       },
     );
-    const result = await dialogRef.afterClosed().toPromise();
+    const { selectedQuestionnaire, addMeasures, assignMeasures } =
+      await firstValueFrom(dialogRef.afterClosed());
 
-    if (result) {
+    if (selectedQuestionnaire) {
       void this.createNewSurvey(
-        result.selectedQuestionnaire as IQuestionnaire,
-        result.addMeasures,
-        result.assignMeasures,
+        selectedQuestionnaire as IQuestionnaire,
+        addMeasures as boolean,
+        assignMeasures as boolean,
       );
     }
   }
@@ -298,7 +299,7 @@ export class QuestionnairesComponent implements OnInit {
           this.model.dimensions,
         )) {
           // collect empty factors here
-          const factorsToBeRemoved = [];
+          const factorsToBeRemoved: SuccessFactor[] = [];
           for (const factor of dimension as SuccessFactor[]) {
             for (const measureName of measureNamesToBeRemoved) {
               if (factor.measures.includes(measureName)) {

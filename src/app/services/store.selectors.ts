@@ -93,6 +93,11 @@ export const SELECTED_GROUP = createSelector(
   (groupId, groups) => (groups ? groups[groupId] : undefined),
 );
 
+export const SELECTED_GROUP_MEMBERS = createSelector(
+  SELECTED_GROUP,
+  (group) => (group ? group.members : undefined),
+);
+
 export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   SELECTED_GROUP,
   USER,

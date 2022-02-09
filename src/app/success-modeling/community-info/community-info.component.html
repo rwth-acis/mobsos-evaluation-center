@@ -1,0 +1,7 @@
+<h2>{{ communityName$ | async }} Community Members</h2>
+<mat-list>
+  <mat-list-item *ngFor="let member of members$ | async">
+    <mat-icon matListIcon>person</mat-icon>
+    <h3 matLine>{{ member.name }}</h3>
+  </mat-list-item>
+</mat-list>
