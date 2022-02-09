@@ -597,6 +597,18 @@ export class StateEffects {
     ),
   );
 
+  removeRequirementsBazarProject$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.removeReqBazarProject),
+      delay(1000),
+      map(() => Action.updateSuccessModel()),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),

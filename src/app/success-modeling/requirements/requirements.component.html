@@ -82,30 +82,43 @@
 
     <button
       mat-flat-button
-      color="primary"
+      color="warn"
       (click)="openDisconnectProjectDialog()"
     >
+      <mat-icon>not_interested</mat-icon>
       {{
         'success-modeling.requirements-list.disconnect-project'
           | translate
       }}
     </button>
   </ng-container>
-  <ng-container *ngIf="(successModel$ | async)?.reqBazProject">
-    <p>
-      {{
-        'success-modeling.requirements-list.no-project' | translate
-      }}
-    </p>
-    <button
-      mat-flat-button
-      color="primary"
-      (click)="openPickProjectDialog()"
-    >
-      {{
-        'success-modeling.requirements-list.connect-project'
-          | translate
-      }}
-    </button>
+  <ng-container
+    *ngIf="successModel$ | async as successModel; else noSuccessModel"
+  >
+    <ng-container *ngIf="!successModel.reqBazProject">
+      <p>
+        {{
+          'success-modeling.requirements-list.no-project' | translate
+        }}
+      </p>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="openPickProjectDialog()"
+      >
+        <mat-icon> add_circle </mat-icon>
+        {{
+          'success-modeling.requirements-list.connect-project'
+            | translate
+        }}
+      </button>
+    </ng-container>
   </ng-container>
 </div>
+
+<ng-template #noSuccessModel>
+  <p>
+    There is no Success Model present. Please select an application
+    under the success modeling tab
+  </p>
+</ng-template>
