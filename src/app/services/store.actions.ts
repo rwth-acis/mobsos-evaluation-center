@@ -1,6 +1,8 @@
 import { createAction, props } from '@ngrx/store';
-import { Action } from 'rxjs/internal/scheduler/Action';
-import { GroupInformation } from '../models/community.model';
+import {
+  GroupInformation,
+  GroupMember,
+} from '../models/community.model';
 
 import { Measure } from '../models/measure.model';
 import { Questionnaire } from '../models/questionnaire.model';
@@ -21,6 +23,7 @@ import {
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
   FETCH_GROUPS = 'fetch groups from the network',
+  FETCH_GROUP_MEMBERS = 'fetch gorup members for a given group from the network',
   FETCH_SERVICE_MESSAGE_DESCRIPTIONS = 'fetch service descriptions for a service from the network ',
   FETCH_MEASURE_CATALOG_FOR_GROUP = 'fetch measure catalog for current Group',
   FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE = 'fetch success model for current Group and current service',
@@ -43,6 +46,7 @@ export enum StoreActions {
   STORE_GROUPS = 'store groups',
   STORE_USER = 'Store the user',
   STORE_GROUP = 'Stores a new group in state',
+  STORE_GROUP_MEMBERS = 'Stores the group members for a given group',
   STORE_USERNAME = 'Set the username. Called for anonymous users',
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
@@ -377,6 +381,15 @@ export const addModelToWorkSpace = createAction(
 export const addCatalogToWorkspace = createAction(
   StateActions.ADD_CATALOG_TO_WORKSPACE,
   props<{ xml: string }>(),
+);
+
+export const fetchGroupMembers = createAction(
+  HttpActions.FETCH_GROUP_MEMBERS,
+  props<{ groupId?: string }>(),
+);
+export const storeGroupMembers = createAction(
+  StoreActions.STORE_GROUP_MEMBERS,
+  props<{ groupMembers: GroupMember[]; groupId: string }>(),
 );
 
 export const success = createAction('action was successful');

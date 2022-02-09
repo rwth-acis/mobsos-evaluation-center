@@ -13,6 +13,7 @@ import { ReqbazProject, Requirement } from '../models/reqbaz.model';
 import {
   GroupCollection,
   GroupInformation,
+  GroupMember,
 } from '../models/community.model';
 import {
   ServiceCollection,
@@ -155,6 +156,14 @@ const _Reducer = createReducer(
         preferred_username: props.username,
       },
     },
+  })),
+  on(Actions.storeGroupMembers, (state, props) => ({
+    ...state,
+    groups: addGroupMembers(
+      state.groups,
+      props.groupId,
+      props.groupMembers,
+    ),
   })),
   on(Actions.setServiceName, (state, props) => ({
     ...state,
@@ -1053,4 +1062,15 @@ function selectedServiceIncludedInServiceList(
     return found;
   }
   return false;
+}
+function addGroupMembers(
+  groups: GroupCollection,
+  groupId: string,
+  groupMembers: GroupMember[],
+): GroupCollection {
+  const copy = cloneDeep(groups) as GroupCollection;
+  if (!groupId) return groups;
+  if (!copy[groupId]) return groups;
+  copy[groupId].members = groupMembers;
+  return copy;
 }

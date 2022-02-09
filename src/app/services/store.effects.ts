@@ -1,7 +1,6 @@
 import {
   HttpErrorResponse,
   HttpResponse,
-  HttpResponseBase,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -22,7 +21,7 @@ import {
   timeout,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { GroupInformation } from '../models/community.model';
+import { GroupMember } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
 import { ServiceMessageDescriptions } from '../models/service.model';
 
@@ -31,6 +30,7 @@ import { Las2peerService } from './las2peer.service';
 import * as Action from './store.actions';
 import {
   disableEdit,
+  fetchGroupMembers,
   fetchMeasureCatalog,
   fetchSuccessModel,
   resetFetchDate,
@@ -46,6 +46,7 @@ import {
   MEASURE_CATALOG_FROM_NETWORK,
   VISUALIZATION_DATA_FROM_QVS,
   SUCCESS_MODEL_XML,
+  SELECTED_GROUP,
 } from './store.selectors';
 import { WorkspaceService } from './workspace.service';
 
@@ -204,6 +205,7 @@ export class StateEffects {
         );
         this.ngrxStore.dispatch(fetchSuccessModel({ groupId }));
         this.ngrxStore.dispatch(disableEdit());
+        this.ngrxStore.dispatch(fetchGroupMembers({ groupId }));
       }),
       switchMap(() => of(Action.success())),
       catchError(() => {
@@ -213,6 +215,30 @@ export class StateEffects {
     ),
   );
 
+  fetchGroupMembers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchGroupMembers),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ groupId }, group]) =>
+        this.l2p.fetchGroupMembersAndObserve(group.name).pipe(
+          map((groupMembers: GroupMember[]) =>
+            Action.storeGroupMembers({
+              groupMembers,
+              groupId: groupId ? groupId : group.id,
+            }),
+          ),
+          catchError((err) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:

@@ -2,25 +2,15 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
-import {
-  HttpClient,
-  HttpHeaders,
-  HttpParams,
-} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
-import {
-  catchError,
-  filter,
-  map,
-  share,
-  switchMap,
-  timeout,
-} from 'rxjs/operators';
+import { catchError, map, switchMap, timeout } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { IQuestionnaire } from '../models/questionnaire.model';
 import { Requirement } from '../models/reqbaz.model';
+import { GroupMember } from '../models/community.model';
 interface HttpOptions {
   method?: string;
   headers?: {
@@ -49,6 +39,7 @@ export class Las2peerService {
   SERVICES_PATH = 'las2peer/services/services';
   CONTACT_SERVICE_PATH = 'contactservice';
   CONTACT_GROUPS_PATH = 'groups';
+  CONTACT_MEMBERS_PATH = 'member';
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
@@ -160,22 +151,22 @@ export class Las2peerService {
       }
     }
 
-    const ngHttpOptions: NgHttpOptions = {};
+    const httpOptions: NgHttpOptions = {};
 
     if (options.headers) {
-      ngHttpOptions.headers = options.headers;
+      httpOptions.headers = options.headers;
     }
     if (options.body) {
-      ngHttpOptions.body = options.body;
+      httpOptions.body = options.body;
     }
     if (options.responseType) {
-      ngHttpOptions.responseType = options.responseType;
+      httpOptions.responseType = options.responseType;
     }
     if (options.observe) {
-      ngHttpOptions.observe = options.observe;
+      httpOptions.observe = options.observe;
     }
 
-    return this.http.request(options.method, url, ngHttpOptions);
+    return this.http.request(options.method, url, httpOptions);
   }
 
   fetchServicesFromDiscoveryAndObserve(): Observable<any> {
@@ -199,6 +190,31 @@ export class Las2peerService {
       method: 'POST',
       responseType: 'text',
     });
+  }
+
+  fetchGroupMembersAndObserve(
+    groupName: string,
+  ): Observable<GroupMember[]> {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+      this.CONTACT_MEMBERS_PATH,
+    );
+    return this.makeRequestAndObserve<GroupMember[]>(url, {
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        if (response.status === 200 && response.body) {
+          const members = response.body as object;
+          return Object.keys(members).map((key) => {
+            return new GroupMember(key, members[key] as string);
+          });
+        }
+        return [];
+      }),
+    );
   }
 
   fetchServicesFromMobSOSAndObserve(): Observable<any> {
