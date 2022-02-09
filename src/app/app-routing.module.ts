@@ -13,6 +13,14 @@ const routes: Routes = [
     redirectTo: 'oidc-silent', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
   },
   {
+    path: 'success-modeling/oidc-signin',
+    redirectTo: 'oidc-signin', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+  },
+  {
+    path: 'success-modeling/oidc-signout',
+    redirectTo: 'oidc-signout', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+  },
+  {
     path: 'success-modeling',
     children: [
       {
