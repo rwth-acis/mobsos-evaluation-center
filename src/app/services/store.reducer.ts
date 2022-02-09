@@ -189,6 +189,10 @@ const _Reducer = createReducer(
   on(Actions.removeReqBazarProject, (state) => ({
     ...state,
     communityWorkspace: removeReqBazarProject(state),
+    successModel: {
+      ...state.successModel,
+      reqBazProject: undefined,
+    } as SuccessModel,
   })),
   on(Actions.storeRequirements, (state, { requirements }) => ({
     ...state,

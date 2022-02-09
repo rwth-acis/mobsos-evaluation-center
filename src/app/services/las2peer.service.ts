@@ -112,8 +112,13 @@ export class Las2peerService {
   async makeRequest<T>(
     url: string,
     options: HttpOptions = {},
+    anonymous = false,
   ): Promise<any> {
-    return this.makeRequestAndObserve(url, options).toPromise();
+    return this.makeRequestAndObserve(
+      url,
+      options,
+      anonymous,
+    ).toPromise();
   }
 
   makeRequestAndObserve<T>(
@@ -960,7 +965,28 @@ export class Las2peerService {
         'Bearer ' + this.userCredentials.token;
     }
     // TODO: replace deprecated funtion
-    return this.makeRequest(url, options);
+    return this.makeRequest(url, options).catch((response) => {
+      this.authenticateOnReqBaz().subscribe();
+      console.error(response);
+    });
+  }
+
+  authenticateOnReqBaz() {
+    const url = joinAbsoluteUrlPath(
+      environment.reqBazUrl,
+      '/auth/login',
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        return response.status === 200;
+      }),
+      catchError((error) => {
+        console.error(error);
+        return of(false);
+      }),
+    );
   }
 
   async searchCategoryOnReqBaz(projectId: number, category: string) {
@@ -978,7 +1004,10 @@ export class Las2peerService {
         'Bearer ' + this.userCredentials.token;
     }
     // TODO: replace deprecated funtion
-    return this.makeRequest(url, options);
+    return this.makeRequest(url, options).catch((response) => {
+      this.authenticateOnReqBaz().subscribe();
+      console.error(response);
+    });
   }
 
   async fetchRequirementsOnReqBaz(
