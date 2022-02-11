@@ -1,0 +1,17 @@
+<form
+  (action)="dropHandler($event)"
+  id="drop_zone"
+  (ondrop)="dropHandler($event)"
+>
+  <div>
+    <label for="files" class="btn"
+      >Drag one or more files to this Drop Zone ...</label
+    >
+    <input
+      id="files"
+      class="info-text"
+      placeholder="Drag one or more files to this Drop Zone ..."
+      type="file"
+    />
+  </div>
+</form>
