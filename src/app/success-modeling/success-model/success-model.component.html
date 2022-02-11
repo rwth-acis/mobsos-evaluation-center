@@ -34,9 +34,6 @@
     <!-- success model -->
     <ng-container *ngIf="successModel$ | async as successModel">
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-        <button mat-button color="accent" (click)="onExportClicked()">
-          Export
-        </button>
         <!-- questionnaires -->
         <app-questionnaires
           [model$]="successModel$"
