@@ -1,0 +1,36 @@
+<form
+  (action)="dropHandler($event)"
+  id="drop_zone"
+  (ondrop)="dropHandler($event)"
+>
+  <div id="drop">
+    {{ fileName || 'No file uploaded yet.' }}
+    <input
+      #fileInput
+      id="files"
+      class="info-text"
+      placeholder="Drag one or more files to this Drop Zone ..."
+      type="file"
+      accept=".xml"
+      style="display: none"
+      (change)="dropHandler($event)"
+    />
+    <button
+      mat-mini-fab
+      color="primary"
+      class="upload-btn"
+      (click)="fileInput.click()"
+    >
+      <mat-icon>attach_file</mat-icon>
+    </button>
+    <button
+      mat-button
+      *ngIf="fileInput.value"
+      color="primary"
+      class="upload-btn"
+      (click)="importXML()"
+    >
+      Import
+    </button>
+  </div>
+</form>

@@ -32,8 +32,10 @@ import {
   _SELECTED_GROUP_ID,
   NUMBER_OF_REQUIREMENTS,
   VISITORS,
+  SUCCESS_MODEL_XML,
+  MEASURE_CATALOG_XML,
 } from '../../services/store.selectors';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, lastValueFrom, Subscription } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
@@ -46,6 +48,8 @@ import { WorkspaceService } from '../../services/workspace.service';
 import { ServiceInformation } from '../../models/service.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { joinAbsoluteUrlPath } from '../../services/las2peer.service';
+import { FormControl } from '@angular/forms';
+import { ImportDialogComponent } from 'src/app/shared/dialogs/import-dialog/import-dialog.component';
 
 @Component({
   selector: 'app-workspace-management',
@@ -102,6 +106,8 @@ export class WorkspaceManagementComponent
   selectedService: ServiceInformation;
   selectedGroupId: string;
   editMode: boolean;
+  selections = new FormControl();
+  options = ['Success Model', 'Measure Catalog'];
 
   constructor(
     private _snackBar: MatSnackBar,
@@ -279,6 +285,46 @@ export class WorkspaceManagementComponent
       }
       sub.unsubscribe();
     });
+  }
+
+  async onExportClicked() {
+    console.log(this.selections.value);
+    if (!this.selectedGroupId)
+      return alert('Please select a group first'); // should not happen since component is not rendered in this case
+
+    if (this.selections.value.includes('Measure Catalog')) {
+      const measureCatalogXML = await lastValueFrom(
+        this.ngrxStore.select(MEASURE_CATALOG_XML).pipe(take(1)),
+      );
+      const blob = new Blob([measureCatalogXML], {
+        type: 'text/xml',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'measure-catalog.xml';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+    if (!this.selectedService)
+      return alert('You need to select a service first');
+
+    if (this.selections.value.includes('Success Model')) {
+      const successModelXML = await lastValueFrom(
+        this.ngrxStore.select(SUCCESS_MODEL_XML).pipe(take(1)),
+      );
+      const blob = new Blob([successModelXML], { type: 'text/xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'success-model.xml';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+  }
+
+  onImportClicked() {
+    this.dialog.open(ImportDialogComponent);
   }
 
   ngOnDestroy(): void {

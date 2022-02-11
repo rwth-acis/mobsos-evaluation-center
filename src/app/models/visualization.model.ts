@@ -62,6 +62,7 @@ export class Visualization {
     return visualization;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _toXml(visualizationNode: Element) {
     throw new Error('Override in subclass');
   }
@@ -199,19 +200,26 @@ export class KpiVisualization extends Visualization {
     return new KpiVisualization(operationsElements);
   }
 
-  static divide(left, right) {
+  static divide(left: number, right: number): number {
     return left / right;
   }
 
-  static multiply(left, right) {
+  static multiply(left: number, right: number): number {
     return left * right;
   }
 
-  static add(left, right) {
-    return left + right;
+  static add(left: number, right: number) {
+    if (typeof left === 'number' && typeof right === 'number') {
+      return left + right;
+    } else {
+      console.error(
+        `Cannot add ${left} and ${right} their type does not allow it`,
+      );
+      return;
+    }
   }
 
-  static subtract(left, right) {
+  static subtract(left: number, right: number): number {
     return left - right;
   }
 
@@ -238,7 +246,7 @@ export class KpiVisualization extends Visualization {
    *
    * @param term An array of symbols and operators like ["5", "+", "3"].
    */
-  public evaluateTerm(term: string[]) {
+  public evaluateTerm(term: string[]): number {
     const operatorSigns = Object.keys(this.operators);
     // find first operator
     let result;
@@ -251,14 +259,14 @@ export class KpiVisualization extends Visualization {
         const rightHandSide = this.evaluateTerm(
           term.slice(index + 1),
         );
-        result = operatorFunc(leftHandSide, rightHandSide);
+        result = operatorFunc(leftHandSide, rightHandSide) as number;
       }
     }
 
     if (!result) {
       result = parseFloat(term[0]);
     }
-    return result;
+    return result as number;
   }
 
   protected _toXml(visualizationNode: Element) {

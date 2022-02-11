@@ -46,7 +46,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -58,7 +58,6 @@ import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dial
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
-import { ConfirmationDialogComponent } from './shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 
 // workaround for openidconned-signin
@@ -81,6 +80,8 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
 export class AppComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
+  static userManager = new UserManager({});
+
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   selectedGroupForm = new FormControl('');
@@ -108,10 +109,10 @@ export class AppComponent
 
   selectedGroupId: string; // used to show the selected group in the form field
 
-  static userManager = new UserManager({});
-  private silentSigninIntervalHandle: Timer;
   noobInfo: boolean;
   version = environment.version;
+
+  private silentSigninIntervalHandle: Timer;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -179,9 +180,9 @@ export class AppComponent
 
     const [user, groupId, serviceName] = await this.user$
       .pipe(
-        filter((user) => !!user),
+        filter((value) => !!value),
         distinctUntilKeyChanged('signedIn'),
-        filter((user) => !!user?.signedIn),
+        filter((u) => !!u?.signedIn),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
@@ -210,19 +211,17 @@ export class AppComponent
         serviceName,
       }),
     );
-    setTimeout(async () => {
-      const authorized = await this.l2p
-        .checkAuthorization()
-        .toPromise();
-      if (!authorized) {
-        alert(
-          'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-        );
-        const statusbar = document.querySelector(
-          'las2peer-frontend-statusbar',
-        );
-        this.setUser(null);
-      }
+    setTimeout(() => {
+      void firstValueFrom(this.l2p.checkAuthorization()).then(
+        (authorized) => {
+          if (!authorized) {
+            alert(
+              'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
+            );
+            this.setUser(null);
+          }
+        },
+      );
     }, 3000);
   }
 
@@ -308,7 +307,7 @@ export class AppComponent
         });
     void silentLoginFunc();
 
-    let sub = user$
+    const sub = user$
       .pipe(distinctUntilKeyChanged('signedIn'))
       .subscribe((user) => {
         // callback only called when signedIn state changes

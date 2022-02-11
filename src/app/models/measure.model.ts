@@ -20,7 +20,7 @@ export class Measure {
         .textContent.trim();
     }
 
-    const queries = [];
+    const queries: Query[] = [];
     for (const queryNode of queryNodes) {
       queries.push(Query.fromXml(queryNode));
     }
@@ -29,7 +29,7 @@ export class Measure {
     )[0];
     const visualization = Visualization.fromXml(visualizationNode);
     const tagsCsv = xml.getAttribute('tags');
-    let tags = [];
+    let tags: string[] = [];
     if (tagsCsv) {
       tags = tagsCsv.split(';');
     }
@@ -44,6 +44,7 @@ export class Measure {
   /**
    * Transforms a JSON representation of the measure into JavaScript object.
    * The  JSON object is missing the transformation function toXML() thus we transform it to later transform it into XML format
+   *
    * @param obj JSON representation of the Measure
    * @returns JavaScript object representation
    */
@@ -68,6 +69,7 @@ export class Measure {
 
   /**
    * Transforms the javascript representation into xml representation
+   *
    * @returns XML element
    */
   toXml(): Element {

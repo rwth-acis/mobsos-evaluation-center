@@ -10,6 +10,7 @@ const DEFAULT_BACKOFF = 700;
 /**
  * Operator which tries to make a new request for a specified number of times each time with a greater backoff
  *  taken from  https://medium.com/angular-in-depth/retry-failed-http-requests-in-angular-f5959d486294
+ *
  * @param delayMs the initial delay between each call
  * @param maxRetry the maximum number of retries
  * @param backoffMs parameter to increase backoff

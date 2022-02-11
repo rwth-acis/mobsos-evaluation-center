@@ -106,7 +106,10 @@ export class ChartVisualizerComponent
       switchMap((queryString) =>
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
-          .pipe(distinctUntilKeyChanged('fetchDate')),
+          .pipe(
+            filter((data) => !!data),
+            distinctUntilKeyChanged('fetchDate'),
+          ),
       ),
       startWith({
         data: undefined,
