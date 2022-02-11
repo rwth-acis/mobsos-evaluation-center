@@ -22,6 +22,8 @@ import {
 })
 export class ImportDialogComponent implements OnInit {
   @HostListener('window:drop', ['$event.target'])
+  @ViewChild('fileInput')
+  fileInput;
   fileName: string;
   static xml: string;
   constructor(
@@ -33,6 +35,11 @@ export class ImportDialogComponent implements OnInit {
   dropHandler(ev) {
     const file = ev.target.files[0];
     this.fileName = file.name;
+    if (file.type !== 'text/xml') {
+      ImportDialogComponent.xml = null;
+      this.fileInput.nativeElement.value = '';
+      return alert('You can only upload xml files');
+    }
     if (this.fileName) {
       var reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
@@ -72,5 +79,8 @@ export class ImportDialogComponent implements OnInit {
       );
       this.dialogRef.close();
     }
+    return alert(
+      'The filetype is not supported. Please only submit valid success model or catalog files',
+    );
   }
 }
