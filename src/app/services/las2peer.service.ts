@@ -58,7 +58,11 @@ export class Las2peerService {
   SURVEYS_SURVEY_PATH = 'surveys';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
-  userCredentials: { token: string; preferred_username: string };
+  userCredentials: {
+    token: string;
+    preferred_username: string;
+    sub?: string;
+  };
 
   coreServices = {
     'mobsos-success-modeling': {
@@ -139,20 +143,22 @@ export class Las2peerService {
 
     if (!anonymous) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      this.userCredentials = JSON.parse(
-        localStorage.getItem('profile'),
-      );
-      const username = this.userCredentials?.preferred_username;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const sub = JSON.parse(localStorage.getItem('profile'))
-        ?.sub as string;
-      const token = localStorage.getItem('access_token');
-      if (username) {
-        options.headers.Authorization =
-          'Basic ' + btoa(`${username}:${sub}`);
-      }
-      if (token) {
-        options.headers.access_token = token;
+
+      try {
+        const cred = localStorage.getItem('profile');
+        const token = localStorage.getItem('access_token');
+        this.userCredentials = JSON.parse(cred);
+        const username = this.userCredentials?.preferred_username;
+        const sub = this.userCredentials?.sub;
+        if (username) {
+          options.headers.Authorization =
+            'Basic ' + btoa(`${username}:${sub}`);
+        }
+        if (token) {
+          options.headers.access_token = token;
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
 
