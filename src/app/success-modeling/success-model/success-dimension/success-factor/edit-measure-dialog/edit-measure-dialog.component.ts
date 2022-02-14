@@ -118,6 +118,17 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
     }
   }
+
+  get formVisualizationParameters(): FormArray {
+    return this.measureForm.get(
+      'visualization.parameters',
+    ) as FormArray;
+  }
+
+  get formQueries(): FormArray {
+    return this.measureForm.get('queries') as FormArray;
+  }
+
   private static encodeXML(sql: string): string {
     sql = sql.replace(/>/g, '&gt;');
     sql = sql.replace(/</g, '&lt;');
@@ -144,31 +155,26 @@ export class EditMeasureDialogComponent implements OnInit {
         const unit = value.visualization.parameters
           ? value.visualization.parameters[0].unit
           : value.visualization.unit;
-        measure.visualization = new ValueVisualization(unit);
+        measure.visualization = new ValueVisualization(
+          unit as string,
+        );
         break;
       case 'Chart':
         const chartType = value.visualization.parameters
           ? value.visualization.parameters[0].chartType
           : value.visualization.chartType;
-        measure.visualization = new ChartVisualization(chartType);
+        measure.visualization = new ChartVisualization(
+          chartType as string,
+        );
         break;
       case 'KPI':
-        measure.visualization = new KpiVisualization(
-          value.visualization.operationsElements,
-        );
+        const elements = value.visualization.operationsElements as
+          | KpiVisualizationOperand[]
+          | KpiVisualizationOperator[];
+        measure.visualization = new KpiVisualization(elements);
         break;
     }
     return measure;
-  }
-
-  get formVisualizationParameters(): FormArray {
-    return this.measureForm.get(
-      'visualization.parameters',
-    ) as FormArray;
-  }
-
-  get formQueries(): FormArray {
-    return this.measureForm.get('queries') as FormArray;
   }
 
   /**
@@ -265,27 +271,11 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onAddOperationClicked(): void {
-    const kpiVisualization = this.data.measure
-      .visualization as KpiVisualization;
-
     this.formVisualizationParameters.push(new FormControl(''));
 
     if (this.formVisualizationParameters.controls.length === 1) {
       this.formVisualizationParameters.push(new FormControl(''));
     }
-
-    // kpiVisualization.operationsElements.push(
-    //   new KpiVisualizationOperator(
-    //     '',
-    //     kpiVisualization.operationsElements.length,
-    //   ),
-    // );
-    // kpiVisualization.operationsElements.push(
-    //   new KpiVisualizationOperand(
-    //     '',
-    //     kpiVisualization.operationsElements.length,
-    //   ),
-    // );
   }
 
   onRemoveOperationClicked(): void {
@@ -346,6 +336,7 @@ export class EditMeasureDialogComponent implements OnInit {
     const matches = q?.match(serviceRegex);
     const params = [];
     if (matches) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
         // for now we just use the first ID
         // support for multiple IDs is not implemented yet

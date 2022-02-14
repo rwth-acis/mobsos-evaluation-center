@@ -20,18 +20,20 @@ import {
   USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   SUCCESS_MODEL_IS_EMPTY,
+  SUCCESS_MODEL_XML,
 } from '../../services/store.selectors';
 import {
   catchError,
   filter,
   map,
+  take,
   timeout,
   withLatestFrom,
 } from 'rxjs/operators';
 import { iconMap, translationMap } from '../config';
 import { SuccessModel } from '../../models/success.model';
 import { StateEffects } from '../../services/store.effects';
-import { combineLatest, of, Subscription } from 'rxjs';
+import { combineLatest, lastValueFrom, of, Subscription } from 'rxjs';
 import {
   animate,
   style,
@@ -215,5 +217,19 @@ export class SuccessModelComponent implements OnInit {
           this.saveSubScription.unsubscribe();
         });
     }
+  }
+
+  async onExportClicked() {
+    console.log(this.successModel);
+    const successModelXML = await lastValueFrom(
+      this.ngrxStore.select(SUCCESS_MODEL_XML).pipe(take(1)),
+    );
+    const blob = new Blob([successModelXML], { type: 'text/xml' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'success-model.xml';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }

@@ -68,7 +68,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'mobsos-evaluation-center'`, () => {
+  it('should have as title \'mobsos-evaluation-center\'', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app.title).toEqual('MobSOS Evaluation Center');

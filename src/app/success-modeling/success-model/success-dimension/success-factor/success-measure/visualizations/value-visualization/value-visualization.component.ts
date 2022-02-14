@@ -82,9 +82,6 @@ export class ValueVisualizationComponent
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
           .pipe(
-            tap((data) => {
-              console.log(data);
-            }),
             filter((data) => !!data),
             distinctUntilKeyChanged('fetchDate'),
           ),
@@ -96,22 +93,18 @@ export class ValueVisualizationComponent
       map((data) => data === undefined || data?.loading),
     );
     this.value$ = this.data$.pipe(
-      tap((data) => {
-        console.log(data);
-      }),
       map(
         (visualizationData: VisualizationData) =>
           visualizationData?.data,
       ),
-
       filter((data) => !!data && Array.isArray(data)),
       map((data) =>
         data.slice(-1)[0].length === 0
           ? '0'
           : (data.slice(-1)[0][0] as string),
       ),
-      map((value) =>
-        typeof value === 'string' ? value : (value as any).toString(),
+      map((value: string | number | boolean) =>
+        typeof value === 'string' ? value : value.toString(),
       ),
     );
 

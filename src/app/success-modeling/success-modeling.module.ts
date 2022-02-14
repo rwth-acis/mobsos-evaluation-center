@@ -29,6 +29,7 @@ import { VisualizationInfoComponent } from './success-model/success-dimension/su
 import { RawDataDialogComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/raw-data-dialog/raw-data-dialog.component';
 import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
 import { SuccessModelingRoutingModule } from './success-modeling-routing.module';
+import { CommunityInfoComponent } from './community-info/community-info.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { SuccessModelingRoutingModule } from './success-modeling-routing.module'
     RequirementsComponent,
     RawDataDialogComponent,
     SuccessModelComponent,
+    CommunityInfoComponent,
   ],
   imports: [
     CommonModule,

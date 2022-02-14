@@ -30,6 +30,8 @@ import { SqlTableComponent } from './sql-table/sql-table.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AddCommunityDialogComponent } from './dialogs/add-community-dialog/add-community-dialog.component';
 import { UnavailableServicesDialogComponent } from './dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
+import { MatListModule } from '@angular/material/list';
+import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.component';
 
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -38,6 +40,7 @@ import { UnavailableServicesDialogComponent } from './dialogs/unavailable-servic
     SqlTableComponent,
     AddCommunityDialogComponent,
     UnavailableServicesDialogComponent,
+    ImportDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -73,6 +76,7 @@ import { UnavailableServicesDialogComponent } from './dialogs/unavailable-servic
     MatBadgeModule,
     MatTooltipModule,
     MatInputModule,
+    MatListModule,
     MatIconModule,
     MatDividerModule,
     MatProgressSpinnerModule,

@@ -30,34 +30,15 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "node_modules/ngx-monaco-editor/assets/monaco",
-                "output": "./assets/monaco/"
-              },
-              {
-                "glob": "**/*",
-                "input": "node_modules/monaco-editor/assets/monaco",
-                "output": "./assets/min-maps/"
-              },
-              {
-                "glob": "**/*",
-                "input": "node_modules/ngx-monaco-editor/assets/monaco/vs/base/worker",
-                "output": "./assets/min-maps/vs/base/worker/workerMain.js.map"
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
               },
               "src/favicon.ico",
               "src/assets",
               "src/manifest.json"
             ],
-            "styles": [
-              "src/styles.scss",
-              "node_modules/prismjs/themes/prism-okaidia.css"
-            ],
-            "scripts": [
-              "node_modules/marked/lib/marked.js",
-              "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-sql.min.js",
-              "node_modules/prismjs/components/prism-json.min.js",
-              "node_modules/emoji-toolkit/lib/js/joypixels.min.js"
-            ]
+            "styles": ["src/styles.scss"],
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -150,16 +131,7 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              "src/styles.scss",
-              "node_modules/prismjs/themes/prism-okaidia.css"
-            ],
-            "scripts": [
-              "node_modules/marked/lib/marked.js",
-              "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-sql.min.js",
-              "node_modules/prismjs/components/prism-json.min.js"
-            ],
+            "styles": ["src/styles.scss"],
             "assets": [
               "src/favicon.ico",
               "src/assets",

@@ -125,4 +125,16 @@
       'success-modeling.pick-measure-dialog.no-measures' | translate
     }}</span>
   </mat-card>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="openNewMeasureDialog()"
+    id="create-measure-button"
+  >
+    <mat-icon> add </mat-icon>
+    {{
+      'success-modeling.pick-measure-dialog.create-measure-button'
+        | translate
+    }}
+  </button>
 </ng-template>
