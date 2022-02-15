@@ -466,7 +466,11 @@ function mergeServiceData(
     }
     console.warn('serviceCollection not an array, ', servicesFromL2P);
   }
-
+  const firstService = Object.values(serviceCollection)[0];
+  if (firstService && Array.isArray(firstService.mobsosIDs)) {
+    // initially mobsos IDs were an array of objects. Since we changed this we might need to reset the structure that is stored in localstorage to an object
+    serviceCollection = {};
+  }
   if (servicesFromMobSOS) {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
       if (
