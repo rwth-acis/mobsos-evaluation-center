@@ -162,7 +162,10 @@ export class SqlTableComponent
 
   protected getParamsForQuery(query: string) {
     if (!this.service) return [];
-    if (this.service.mobsosIDs.length === 0) {
+    if (
+      !this.service.mobsosIDs ||
+      Object.keys(this.service.mobsosIDs).length === 0
+    ) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
@@ -172,9 +175,15 @@ export class SqlTableComponent
     const params: string[] = [];
     if (matches) {
       for (const match of matches) {
-        // for now we just use the first ID
-        // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs.slice(-1)[0].agentID);
+        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+        const maxIndex = Object.values(this.service.mobsosIDs).reduce(
+          (max, time, index) => {
+            return time > max ? index : max;
+          },
+          0,
+        );
+
+        params.push(Object.keys(this.service.mobsosIDs)[maxIndex]);
       }
     }
     return params;
@@ -185,8 +194,8 @@ export class SqlTableComponent
     if (!this.service) {
       return query;
     }
-    for (const mobsosID of this.service?.mobsosIDs) {
-      ids.push(`"${mobsosID.agentID}"`);
+    for (const mobsosID of Object.keys(this.service.mobsosIDs)) {
+      ids.push(`"${mobsosID}"`);
     }
     let servicesString = '(';
     servicesString += ids.join(',') + ')';

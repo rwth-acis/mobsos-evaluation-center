@@ -421,9 +421,9 @@ function updateVisualizationData(
 /**
  * Convert data from both service sources into a common format.
  *
- * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
+ * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]: number}}.
  * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
- * {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
+ * {alias: "mobsos-success-modeling", mobsosIDs: {"3c3df6941ac59070c01d45611ce15107": 1000000, "3c3df6941ac59070c01d45611ce15107": 1000000,...}}}}}
  */
 function mergeServiceData(
   serviceCollection: ServiceCollection,
@@ -446,11 +446,18 @@ function mergeServiceData(
         if (!serviceIdentifier) continue;
         if (!latestRelease?.supplement?.class) continue;
         serviceIdentifier += latestRelease?.supplement?.class;
-
+        if (
+          serviceCollection[serviceIdentifier].mobsosIDs &&
+          Array.isArray(
+            serviceCollection[serviceIdentifier].mobsosIDs,
+          )
+        ) {
+          serviceCollection[serviceIdentifier].mobsosIDs = {};
+        }
         serviceCollection[serviceIdentifier] = {
           name: serviceIdentifier,
           alias: latestRelease?.supplement?.name,
-          mobsosIDs: [],
+          mobsosIDs: {},
           serviceMessageDescriptions:
             serviceCollection[serviceIdentifier]
               ?.serviceMessageDescriptions,
@@ -462,6 +469,12 @@ function mergeServiceData(
 
   if (servicesFromMobSOS) {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
+      if (
+        serviceCollection[serviceAgentID] &&
+        Array.isArray(serviceCollection[serviceAgentID].mobsosIDs)
+      ) {
+        serviceCollection[serviceAgentID].mobsosIDs = {};
+      }
       const tmp = servicesFromMobSOS[
         serviceAgentID
       ]?.serviceName?.split('@', 2);
@@ -475,30 +488,23 @@ function mergeServiceData(
         serviceAlias = serviceName;
       }
 
-      serviceCollection[serviceName] = {
+      const service = {
         ...serviceCollection[serviceName],
         name: serviceName,
         alias: serviceAlias,
       };
 
-      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
-      if (!mobsosIDs) {
-        mobsosIDs = [];
+      serviceCollection[serviceName] = service;
+
+      if (!service.mobsosIDs) {
+        service.mobsosIDs = {};
       }
-
-      mobsosIDs.push({
-        agentID: serviceAgentID,
-        registrationTime,
-      });
-
-      mobsosIDs?.sort(
-        (a, b) => a.registrationTime - b.registrationTime,
-      );
-
-      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
-        0,
-        100,
-      );
+      if (
+        !service.mobsosIDs[serviceAgentID] ||
+        service.mobsosIDs[serviceAgentID] < registrationTime
+      ) {
+        service.mobsosIDs[serviceAgentID] = registrationTime;
+      }
     }
   }
   return serviceCollection;

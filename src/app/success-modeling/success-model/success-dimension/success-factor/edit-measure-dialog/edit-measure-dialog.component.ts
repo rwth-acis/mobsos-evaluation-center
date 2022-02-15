@@ -338,9 +338,16 @@ export class EditMeasureDialogComponent implements OnInit {
     if (matches) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
-        // for now we just use the first ID
-        // support for multiple IDs is not implemented yet
-        params.push(this.data.service.mobsosIDs.slice(-1)[0].agentID);
+        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+        const maxIndex = Object.values(
+          this.data.service.mobsosIDs,
+        ).reduce((max, time, index) => {
+          return time > max ? index : max;
+        }, 0);
+
+        params.push(
+          Object.keys(this.data.service.mobsosIDs)[maxIndex],
+        );
       }
     }
     return params as string[];

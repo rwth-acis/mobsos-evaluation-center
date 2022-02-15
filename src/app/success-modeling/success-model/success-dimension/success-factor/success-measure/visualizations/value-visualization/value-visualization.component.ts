@@ -69,7 +69,7 @@ export class ValueVisualizationComponent
       withLatestFrom(this.service$),
       map(([measure, service]) => {
         let query = measure.queries[0].sql;
-        query = this.applyVariableReplacements(query, service);
+        query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
         return query;
       }),
