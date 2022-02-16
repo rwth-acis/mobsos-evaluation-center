@@ -90,12 +90,12 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       },
     });
 
-    const result = await dialogRef.afterClosed().toPromise();
+    const updatedMeasure = await dialogRef.afterClosed().toPromise();
 
-    if (result) {
+    if (updatedMeasure) {
       this.ngrxStore.dispatch(
         editMeasure({
-          measure: result,
+          measure: updatedMeasure,
           factorName: this.factorName,
           oldMeasureName,
           dimensionName: this.dimensionName,
@@ -104,9 +104,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       );
       this.measure = {
         ...this.measure,
-        name: result.name,
-        queries: result.queries,
-        visualization: result.visualization,
+        ...updatedMeasure,
       } as Measure;
     }
 
