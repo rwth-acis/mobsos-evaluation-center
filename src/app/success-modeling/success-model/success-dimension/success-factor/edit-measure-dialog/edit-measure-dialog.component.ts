@@ -23,7 +23,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  map,
+  share,
+  startWith,
+} from 'rxjs/operators';
 
 export interface DialogData {
   measure: Measure;
@@ -168,10 +173,17 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
       case 'KPI':
-        const elements = value.visualization.operationsElements as
-          | KpiVisualizationOperand[]
-          | KpiVisualizationOperator[];
-        measure.visualization = new KpiVisualization(elements);
+        const elements = value.visualization.parameters
+          ? value.visualization.parameters
+          : value.visualization.operationsElements;
+        const operationsElements = elements.map(
+          (e: string, index) => {
+            return { name: e, index };
+          },
+        );
+        measure.visualization = KpiVisualization.fromPlainObject({
+          operationsElements,
+        } as KpiVisualization);
         break;
     }
     return measure;
@@ -199,12 +211,15 @@ export class EditMeasureDialogComponent implements OnInit {
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
       startWith(this.data.measure),
-      distinctUntilChanged(),
+      distinctUntilChanged((prev, curr) => {
+        return queriesChanged(prev, curr);
+      }),
       map((value) =>
         EditMeasureDialogComponent.getMeasureFromForm(
           value ? value : this.data.measure,
         ),
       ),
+      share(),
     );
   }
 
@@ -386,16 +401,22 @@ export class EditMeasureDialogComponent implements OnInit {
         this.fb.control(opElement.name),
       );
     });
-
-    // // populate the form
-    // for (let i = 0; i < operationsElements.length; i++) {
-    //   const term = operationsElements.find(
-    //     (element) => element.index === i,
-    //   );
-
-    //   this.formVisualizationParameters.push(
-    //     new FormControl([term.name]),
-    //   );
-    // }
   }
+}
+function queriesChanged(
+  prev: { queries: Query[] },
+  curr: { queries: Query[] },
+): boolean {
+  if (prev.queries.length !== curr.queries.length) {
+    return true;
+  }
+  for (let i = 0; i < prev.queries.length; i++) {
+    if (prev.queries[i].name !== curr.queries[i].name) {
+      return true;
+    }
+    if (prev.queries[i].sql !== curr.queries[i].sql) {
+      return true;
+    }
+  }
+  return false;
 }
