@@ -4,7 +4,13 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
-import { catchError, map, switchMap, timeout } from 'rxjs/operators';
+import {
+  catchError,
+  map,
+  switchMap,
+  take,
+  timeout,
+} from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
@@ -110,19 +116,16 @@ export class Las2peerService {
     this.userCredentials = null;
   }
 
-  /**
-   * @deprecated Use makeRequestAndObserve instead. If you need a promise use firstValueFrom from rxjs
-   */
   async makeRequest<T>(
     url: string,
     options: HttpOptions = {},
     anonymous = false,
   ): Promise<any> {
-    return this.makeRequestAndObserve(
-      url,
-      options,
-      anonymous,
-    ).toPromise();
+    return firstValueFrom(
+      this.makeRequestAndObserve(url, options, anonymous).pipe(
+        take(1),
+      ),
+    );
   }
 
   makeRequestAndObserve<T>(
@@ -136,6 +139,7 @@ export class Las2peerService {
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
+          oidc_provider: 'https://api.learning-layers.eu/o/oauth2',
         },
       },
       options,
@@ -235,12 +239,6 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
     return this.makeRequestAndObserve(url);
-  }
-
-  async fetchContactServiceGroups() {
-    return this.fetchContactServiceGroupsAndObserve()
-      .toPromise()
-      .catch((response) => console.error(response));
   }
 
   checkAuthorization() {
@@ -972,11 +970,14 @@ export class Las2peerService {
     }
     // TODO: replace deprecated funtion
     return this.makeRequest(url, options).catch((response) => {
-      this.authenticateOnReqBaz().subscribe();
       console.error(response);
     });
   }
 
+  /**
+   * Authenticates the user on the requirements bazaar (response is 404 but user seems to be authenticated)
+   * @returns true if user is authenticated
+   */
   authenticateOnReqBaz() {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
@@ -984,12 +985,14 @@ export class Las2peerService {
     );
     return this.makeRequestAndObserve(url, {
       observe: 'response',
+      headers: {
+        'access-token': localStorage.getItem('access_token'),
+      },
     }).pipe(
       map((response) => {
         return response.status === 200;
       }),
-      catchError((error) => {
-        console.error(error);
+      catchError(() => {
         return of(false);
       }),
     );
@@ -1011,7 +1014,6 @@ export class Las2peerService {
     }
     // TODO: replace deprecated funtion
     return this.makeRequest(url, options).catch((response) => {
-      this.authenticateOnReqBaz().subscribe();
       console.error(response);
     });
   }

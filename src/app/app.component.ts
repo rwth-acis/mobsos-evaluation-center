@@ -142,6 +142,9 @@ export class AppComponent
   }
 
   ngOnInit(): void {
+    void firstValueFrom(
+      this.l2p.authenticateOnReqBaz().pipe(take(1)),
+    );
     this.ngrxStore.dispatch(disableEdit());
     void this.checkCoreServices();
     void this.ngrxStore
