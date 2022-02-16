@@ -112,6 +112,7 @@ export class AppComponent
   noobInfo: boolean;
   version = environment.version;
 
+  isLoading: boolean;
   private silentSigninIntervalHandle: Timer;
 
   constructor(
@@ -161,6 +162,11 @@ export class AppComponent
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
+    const sub = this.loading$.subscribe((loading) => {
+      this.isLoading = loading;
+      this.changeDetectorRef.detectChanges();
+    });
+    this.subscriptions$.push(sub);
   }
 
   async ngAfterViewInit(): Promise<void> {
