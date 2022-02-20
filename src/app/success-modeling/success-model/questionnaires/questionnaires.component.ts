@@ -139,13 +139,13 @@ export class QuestionnairesComponent implements OnInit {
     surveyId: number,
     question: { code: string },
   ) {
-    // const dbName = environment.mobsosSurveysDatabaseName; Might be needed later if we want to use the actual survey response instead of the logged message
+    const dbName = environment.mobsosSurveysDatabaseName;
 
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
+    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid = ${
       SqlString.escape(surveyId.toString()) as string
-    } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
+    } AND qkey = "${
       question.code
-    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
+    }" GROUP BY Answer ORDER BY number DESC`;
   }
 
   private static addMeasuresFromQuestionnaireToModel(
@@ -240,8 +240,10 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   async openPickQuestionnaireDialog(): Promise<void> {
+    if (this.availableQuestionnaires?.length === 0)
+      return alert('No Questionnaires Available');
     // remove questionnaires that already have been chosen
-    const questionnaires = this.availableQuestionnaires.filter(
+    const questionnaires = this.availableQuestionnaires?.filter(
       (questionnaire) =>
         !this.model.questionnaires.find(
           (q) => q.id === questionnaire.id,
