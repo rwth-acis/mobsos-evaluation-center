@@ -898,6 +898,7 @@ export class Las2peerService {
     query: string,
     queryParams: string[],
     format: string = 'JSON',
+    cache = true,
   ) {
     let url: string;
     if (format) {
@@ -916,7 +917,7 @@ export class Las2peerService {
     }
 
     const requestBody = {
-      cache: true,
+      cache,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',

@@ -99,7 +99,7 @@ export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
 export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
-  props<{ query: string; queryParams: string[] }>(),
+  props<{ query: string; queryParams: string[]; cache?: boolean }>(),
 );
 export const fetchMessageDescriptions = createAction(
   HttpActions.FETCH_SERVICE_MESSAGE_DESCRIPTIONS,
