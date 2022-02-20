@@ -147,6 +147,16 @@ const _Reducer = createReducer(
       questionnaire,
     ),
   })),
+  on(
+    Actions.removeQuestionnaireFromModel,
+    (state, { questionnaireId }) => ({
+      ...state,
+      communityWorkspace: removeQuestionnaireFromSuccessModel(
+        state,
+        questionnaireId,
+      ),
+    }),
+  ),
   on(Actions.setUserName, (state, props) => ({
     ...state,
     user: {
@@ -1086,5 +1096,26 @@ function addGroupMembers(
   if (!groupId) return groups;
   if (!copy[groupId]) return groups;
   copy[groupId].members = groupMembers;
+  return copy;
+}
+function removeQuestionnaireFromSuccessModel(
+  state: AppState,
+  questionnaireId: number,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  appWorkspace.model.questionnaires =
+    appWorkspace.model.questionnaires.filter(
+      (qs) => qs.surveyId !== questionnaireId,
+    );
+
   return copy;
 }

@@ -41,6 +41,7 @@ import {
   addModelToWorkSpace,
   addQuestionnaireToModel,
   fetchQuestionnaires,
+  removeQuestionnaireFromModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
@@ -321,7 +322,11 @@ export class QuestionnairesComponent implements OnInit {
           }
         }
       }
-      this.model.questionnaires.splice(questionnaireIndex, 1);
+      this.ngrxStore.dispatch(
+        removeQuestionnaireFromModel({
+          questionnaireId: surveyId,
+        }),
+      );
     }
   }
 
