@@ -157,6 +157,13 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+  on(
+    Actions.removeSurveyMeasuresFromModel,
+    (state, { measureTag }) => ({
+      ...state,
+      communityWorkspace: removeSurveyMeasures(state, measureTag),
+    }),
+  ),
   on(Actions.setUserName, (state, props) => ({
     ...state,
     user: {
@@ -1117,5 +1124,44 @@ function removeQuestionnaireFromSuccessModel(
       (qs) => qs.surveyId !== questionnaireId,
     );
 
+  return copy;
+}
+function removeSurveyMeasures(
+  state: AppState,
+  measureTag: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace.catalog) return copy;
+  const catalog = appWorkspace.catalog;
+  if (!catalog.measures) return copy;
+  const removed = [];
+  Object.keys(catalog.measures).forEach((measureName) => {
+    const measure = catalog.measures[measureName];
+    if (measure.tags?.includes(measureTag)) {
+      removed.push(measureName);
+      delete catalog.measures[measureName];
+    }
+  });
+  for (const measureName of removed) {
+    const model = appWorkspace.model;
+    for (const dimensionName of Object.keys(model.dimensions)) {
+      const factors = model.dimensions[dimensionName];
+      for (const factor of factors) {
+        factor.measures = factor.measures.filter(
+          (m: string) => m !== measureName,
+        );
+      }
+      model.dimensions[dimensionName] = factors;
+    }
+  }
   return copy;
 }

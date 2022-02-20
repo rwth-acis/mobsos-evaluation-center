@@ -42,6 +42,7 @@ import {
   addQuestionnaireToModel,
   fetchQuestionnaires,
   removeQuestionnaireFromModel,
+  removeSurveyMeasuresFromModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
@@ -142,7 +143,7 @@ export class QuestionnairesComponent implements OnInit {
   ) {
     const dbName = environment.mobsosSurveysDatabaseName;
 
-    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid = ${
+    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
       SqlString.escape(surveyId.toString()) as string
     } AND qkey = "${
       question.code
@@ -293,34 +294,9 @@ export class QuestionnairesComponent implements OnInit {
       }
       if (result.deleteMeasures) {
         const measureTag = `surveyId=${surveyId}`;
-        const measureNamesToBeRemoved = Object.keys(
-          this.measures,
-        ).filter((measureName) =>
-          this.measures[measureName].tags.includes(measureTag),
+        this.ngrxStore.dispatch(
+          removeSurveyMeasuresFromModel({ measureTag }),
         );
-        for (const dimension of Object.values(
-          this.model.dimensions,
-        )) {
-          // collect empty factors here
-          const factorsToBeRemoved: SuccessFactor[] = [];
-          for (const factor of dimension as SuccessFactor[]) {
-            for (const measureName of measureNamesToBeRemoved) {
-              if (factor.measures.includes(measureName)) {
-                const index = factor.measures.indexOf(measureName);
-                factor.measures.splice(index, 1);
-                if (factor.measures.length === 0) {
-                  factorsToBeRemoved.push(factor);
-                }
-              }
-            }
-          }
-          for (const factor of factorsToBeRemoved) {
-            const index = (dimension as SuccessFactor[]).indexOf(
-              factor,
-            );
-            (dimension as SuccessFactor[]).splice(index, 1);
-          }
-        }
       }
       this.ngrxStore.dispatch(
         removeQuestionnaireFromModel({
