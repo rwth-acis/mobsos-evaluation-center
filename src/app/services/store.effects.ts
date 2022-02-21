@@ -444,7 +444,12 @@ export class StateEffects {
             dataForQuery?.fetchDate;
 
           return this.l2p
-            .fetchVisualizationData(query, queryParams)
+            .fetchVisualizationData(
+              query,
+              queryParams,
+              'JSON',
+              props.cache,
+            )
             .pipe(
               timeout(30000),
               tap(
@@ -482,7 +487,13 @@ export class StateEffects {
       }),
       delay(100),
       mergeMap(({ query, queryParams }) =>
-        of(Action.fetchVisualizationData({ query, queryParams })),
+        of(
+          Action.fetchVisualizationData({
+            query,
+            queryParams,
+            cache: false,
+          }),
+        ),
       ),
       catchError((err) => {
         return of(Action.failureResponse({ reason: err }));

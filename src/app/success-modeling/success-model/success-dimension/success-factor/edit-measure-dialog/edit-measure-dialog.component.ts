@@ -23,7 +23,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  map,
+  share,
+  startWith,
+} from 'rxjs/operators';
 
 export interface DialogData {
   measure: Measure;
@@ -168,10 +173,17 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
       case 'KPI':
-        const elements = value.visualization.operationsElements as
-          | KpiVisualizationOperand[]
-          | KpiVisualizationOperator[];
-        measure.visualization = new KpiVisualization(elements);
+        const elements = value.visualization.parameters
+          ? value.visualization.parameters
+          : value.visualization.operationsElements;
+        const operationsElements = elements.map(
+          (e: string, index) => {
+            return { name: e, index };
+          },
+        );
+        measure.visualization = KpiVisualization.fromPlainObject({
+          operationsElements,
+        } as KpiVisualization);
         break;
     }
     return measure;
@@ -199,12 +211,15 @@ export class EditMeasureDialogComponent implements OnInit {
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
       startWith(this.data.measure),
-      distinctUntilChanged(),
+      distinctUntilChanged((prev, curr) => {
+        return queriesChanged(prev, curr);
+      }),
       map((value) =>
         EditMeasureDialogComponent.getMeasureFromForm(
           value ? value : this.data.measure,
         ),
       ),
+      share(),
     );
   }
 
@@ -338,9 +353,16 @@ export class EditMeasureDialogComponent implements OnInit {
     if (matches) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
-        // for now we just use the first ID
-        // support for multiple IDs is not implemented yet
-        params.push(this.data.service.mobsosIDs.slice(-1)[0].agentID);
+        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+        const maxIndex = Object.values(
+          this.data.service.mobsosIDs,
+        ).reduce((max, time, index) => {
+          return time > max ? index : max;
+        }, 0);
+
+        params.push(
+          Object.keys(this.data.service.mobsosIDs)[maxIndex],
+        );
       }
     }
     return params as string[];
@@ -379,16 +401,22 @@ export class EditMeasureDialogComponent implements OnInit {
         this.fb.control(opElement.name),
       );
     });
-
-    // // populate the form
-    // for (let i = 0; i < operationsElements.length; i++) {
-    //   const term = operationsElements.find(
-    //     (element) => element.index === i,
-    //   );
-
-    //   this.formVisualizationParameters.push(
-    //     new FormControl([term.name]),
-    //   );
-    // }
   }
+}
+function queriesChanged(
+  prev: { queries: Query[] },
+  curr: { queries: Query[] },
+): boolean {
+  if (prev.queries.length !== curr.queries.length) {
+    return true;
+  }
+  for (let i = 0; i < prev.queries.length; i++) {
+    if (prev.queries[i].name !== curr.queries[i].name) {
+      return true;
+    }
+    if (prev.queries[i].sql !== curr.queries[i].sql) {
+      return true;
+    }
+  }
+  return false;
 }

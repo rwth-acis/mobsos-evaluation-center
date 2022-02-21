@@ -36,6 +36,7 @@ import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 import { Measure } from 'src/app/models/measure.model';
+import { StaticChartComponent } from './static-chart/static-chart.component';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -242,6 +243,15 @@ export class ChartVisualizerComponent
           '#ffd600',
         ],
       },
+      this.formatters,
     );
+  }
+
+  expandChart(): void {
+    this.dialog.open(StaticChartComponent, {
+      data: this.chartData,
+      width: '90vw',
+      height: '90vh',
+    });
   }
 }

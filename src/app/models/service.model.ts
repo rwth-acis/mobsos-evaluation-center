@@ -1,9 +1,13 @@
 export interface ServiceInformation {
   name: string;
   alias: string;
-  mobsosIDs: { agentID: string; registrationTime?: number }[];
+  mobsosIDs: MobSOSIDs; // MobSOS IDs and their last registrationTime
   // key is custom message type (such as SERVICE_CUSTOM_MESSAGE_42)
   serviceMessageDescriptions: ServiceMessageDescriptions;
+}
+
+export interface MobSOSIDs {
+  [key: string]: number;
 }
 
 export interface ServiceCollection {

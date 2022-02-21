@@ -20,14 +20,19 @@ export class MeasureCatalog {
   }
 
   public static fromPlainObject(obj: MeasureCatalog): MeasureCatalog {
-    if (!obj?.measures) return;
-    const measureMap: MeasureMap = {};
-    for (const measureName of Object.keys(obj.measures)) {
-      measureMap[measureName] = Measure.fromPlainObject(
-        obj.measures[measureName],
-      );
+    try {
+      if (!obj?.measures) return;
+      const measureMap: MeasureMap = {};
+      for (const measureName of Object.keys(obj.measures)) {
+        measureMap[measureName] = Measure.fromPlainObject(
+          obj.measures[measureName],
+        );
+      }
+      return new MeasureCatalog(measureMap);
+    } catch (e) {
+      e.printStackTrace();
+      return;
     }
-    return new MeasureCatalog(measureMap);
   }
 
   toXml(): Element {

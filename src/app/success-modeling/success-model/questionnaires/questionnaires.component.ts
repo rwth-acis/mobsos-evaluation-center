@@ -41,6 +41,8 @@ import {
   addModelToWorkSpace,
   addQuestionnaireToModel,
   fetchQuestionnaires,
+  removeQuestionnaireFromModel,
+  removeSurveyMeasuresFromModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
@@ -139,13 +141,13 @@ export class QuestionnairesComponent implements OnInit {
     surveyId: number,
     question: { code: string },
   ) {
-    // const dbName = environment.mobsosSurveysDatabaseName; Might be needed later if we want to use the actual survey response instead of the logged message
+    const dbName = environment.mobsosSurveysDatabaseName;
 
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
+    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
       SqlString.escape(surveyId.toString()) as string
-    } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
+    } AND qkey = "${
       question.code
-    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
+    }" GROUP BY Answer ORDER BY number DESC`;
   }
 
   private static addMeasuresFromQuestionnaireToModel(
@@ -240,8 +242,10 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   async openPickQuestionnaireDialog(): Promise<void> {
+    if (this.availableQuestionnaires?.length === 0)
+      return alert('No Questionnaires Available');
     // remove questionnaires that already have been chosen
-    const questionnaires = this.availableQuestionnaires.filter(
+    const questionnaires = this.availableQuestionnaires?.filter(
       (questionnaire) =>
         !this.model.questionnaires.find(
           (q) => q.id === questionnaire.id,
@@ -290,36 +294,15 @@ export class QuestionnairesComponent implements OnInit {
       }
       if (result.deleteMeasures) {
         const measureTag = `surveyId=${surveyId}`;
-        const measureNamesToBeRemoved = Object.keys(
-          this.measures,
-        ).filter((measureName) =>
-          this.measures[measureName].tags.includes(measureTag),
+        this.ngrxStore.dispatch(
+          removeSurveyMeasuresFromModel({ measureTag }),
         );
-        for (const dimension of Object.values(
-          this.model.dimensions,
-        )) {
-          // collect empty factors here
-          const factorsToBeRemoved: SuccessFactor[] = [];
-          for (const factor of dimension as SuccessFactor[]) {
-            for (const measureName of measureNamesToBeRemoved) {
-              if (factor.measures.includes(measureName)) {
-                const index = factor.measures.indexOf(measureName);
-                factor.measures.splice(index, 1);
-                if (factor.measures.length === 0) {
-                  factorsToBeRemoved.push(factor);
-                }
-              }
-            }
-          }
-          for (const factor of factorsToBeRemoved) {
-            const index = (dimension as SuccessFactor[]).indexOf(
-              factor,
-            );
-            (dimension as SuccessFactor[]).splice(index, 1);
-          }
-        }
       }
-      this.model.questionnaires.splice(questionnaireIndex, 1);
+      this.ngrxStore.dispatch(
+        removeQuestionnaireFromModel({
+          questionnaireId: surveyId,
+        }),
+      );
     }
   }
 

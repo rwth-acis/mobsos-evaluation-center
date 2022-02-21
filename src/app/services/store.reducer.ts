@@ -147,6 +147,23 @@ const _Reducer = createReducer(
       questionnaire,
     ),
   })),
+  on(
+    Actions.removeQuestionnaireFromModel,
+    (state, { questionnaireId }) => ({
+      ...state,
+      communityWorkspace: removeQuestionnaireFromSuccessModel(
+        state,
+        questionnaireId,
+      ),
+    }),
+  ),
+  on(
+    Actions.removeSurveyMeasuresFromModel,
+    (state, { measureTag }) => ({
+      ...state,
+      communityWorkspace: removeSurveyMeasures(state, measureTag),
+    }),
+  ),
   on(Actions.setUserName, (state, props) => ({
     ...state,
     user: {
@@ -421,9 +438,9 @@ function updateVisualizationData(
 /**
  * Convert data from both service sources into a common format.
  *
- * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]}}.
+ * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]: number}}.
  * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
- * {alias: "mobsos-success-modeling", mobsosIDs: ["3c3df6941ac59070c01d45611ce15107"]}}
+ * {alias: "mobsos-success-modeling", mobsosIDs: {"3c3df6941ac59070c01d45611ce15107": 1000000, "3c3df6941ac59070c01d45611ce15107": 1000000,...}}}}}
  */
 function mergeServiceData(
   serviceCollection: ServiceCollection,
@@ -446,11 +463,18 @@ function mergeServiceData(
         if (!serviceIdentifier) continue;
         if (!latestRelease?.supplement?.class) continue;
         serviceIdentifier += latestRelease?.supplement?.class;
-
+        if (
+          serviceCollection[serviceIdentifier].mobsosIDs &&
+          Array.isArray(
+            serviceCollection[serviceIdentifier].mobsosIDs,
+          )
+        ) {
+          serviceCollection[serviceIdentifier].mobsosIDs = {};
+        }
         serviceCollection[serviceIdentifier] = {
           name: serviceIdentifier,
           alias: latestRelease?.supplement?.name,
-          mobsosIDs: [],
+          mobsosIDs: {},
           serviceMessageDescriptions:
             serviceCollection[serviceIdentifier]
               ?.serviceMessageDescriptions,
@@ -459,9 +483,19 @@ function mergeServiceData(
     }
     console.warn('serviceCollection not an array, ', servicesFromL2P);
   }
-
+  const firstService = Object.values(serviceCollection)[0];
+  if (firstService && Array.isArray(firstService.mobsosIDs)) {
+    // initially mobsos IDs were an array of objects. Since we changed this we might need to reset the structure that is stored in localstorage to an object
+    serviceCollection = {};
+  }
   if (servicesFromMobSOS) {
     for (const serviceAgentID of Object.keys(servicesFromMobSOS)) {
+      if (
+        serviceCollection[serviceAgentID] &&
+        Array.isArray(serviceCollection[serviceAgentID].mobsosIDs)
+      ) {
+        serviceCollection[serviceAgentID].mobsosIDs = {};
+      }
       const tmp = servicesFromMobSOS[
         serviceAgentID
       ]?.serviceName?.split('@', 2);
@@ -475,30 +509,23 @@ function mergeServiceData(
         serviceAlias = serviceName;
       }
 
-      serviceCollection[serviceName] = {
+      const service = {
         ...serviceCollection[serviceName],
         name: serviceName,
         alias: serviceAlias,
       };
 
-      let mobsosIDs = serviceCollection[serviceName].mobsosIDs;
-      if (!mobsosIDs) {
-        mobsosIDs = [];
+      serviceCollection[serviceName] = service;
+
+      if (!service.mobsosIDs) {
+        service.mobsosIDs = {};
       }
-
-      mobsosIDs.push({
-        agentID: serviceAgentID,
-        registrationTime,
-      });
-
-      mobsosIDs?.sort(
-        (a, b) => a.registrationTime - b.registrationTime,
-      );
-
-      serviceCollection[serviceName].mobsosIDs = mobsosIDs.slice(
-        0,
-        100,
-      );
+      if (
+        !service.mobsosIDs[serviceAgentID] ||
+        service.mobsosIDs[serviceAgentID] < registrationTime
+      ) {
+        service.mobsosIDs[serviceAgentID] = registrationTime;
+      }
     }
   }
   return serviceCollection;
@@ -1076,5 +1103,65 @@ function addGroupMembers(
   if (!groupId) return groups;
   if (!copy[groupId]) return groups;
   copy[groupId].members = groupMembers;
+  return copy;
+}
+function removeQuestionnaireFromSuccessModel(
+  state: AppState,
+  questionnaireId: number,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  appWorkspace.model.questionnaires =
+    appWorkspace.model.questionnaires.filter(
+      (qs) => qs.surveyId !== questionnaireId,
+    );
+
+  return copy;
+}
+function removeSurveyMeasures(
+  state: AppState,
+  measureTag: string,
+): CommunityWorkspace {
+  const serviceName = state.selectedServiceName;
+  const owner = state.currentWorkSpaceOwner;
+  const copy = cloneDeep(
+    state.communityWorkspace,
+  ) as CommunityWorkspace;
+  const appWorkspace = getWorkspaceByUserAndService(
+    copy,
+    owner,
+    serviceName,
+  );
+  if (!appWorkspace.catalog) return copy;
+  const catalog = appWorkspace.catalog;
+  if (!catalog.measures) return copy;
+  const removed = [];
+  Object.keys(catalog.measures).forEach((measureName) => {
+    const measure = catalog.measures[measureName];
+    if (measure.tags?.includes(measureTag)) {
+      removed.push(measureName);
+      delete catalog.measures[measureName];
+    }
+  });
+  for (const measureName of removed) {
+    const model = appWorkspace.model;
+    for (const dimensionName of Object.keys(model.dimensions)) {
+      const factors = model.dimensions[dimensionName];
+      for (const factor of factors) {
+        factor.measures = factor.measures.filter(
+          (m: string) => m !== measureName,
+        );
+      }
+      model.dimensions[dimensionName] = factors;
+    }
+  }
   return copy;
 }

@@ -24,6 +24,7 @@ import {
   first,
   map,
   mergeMap,
+  share,
   startWith,
   switchMap,
   tap,
@@ -126,11 +127,12 @@ export class KpiVisualizationComponent
       filter((data) => allDataLoaded(data)),
       distinctUntilChanged(
         (prev, current) =>
-          getLatestFetchDate(prev) + THIRTY_SECONDS >=
+          getLatestFetchDate(prev) + FIVE_MINUTES >=
           getLatestFetchDate(current),
       ),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
       withLatestFrom(this.measure$),
+      filter((data) => !!data),
       map(([data, measure]) => {
         const abstractTerm = [];
         const term = [];
@@ -181,6 +183,7 @@ export class KpiVisualizationComponent
         }
         return { abstractTerm, term };
       }),
+      share(),
     );
 
     const sub = this.measure$
@@ -261,3 +264,4 @@ function getLatestFetchDate(data: VisualizationData[]): number {
   );
 }
 const THIRTY_SECONDS = 30000;
+const FIVE_MINUTES = THIRTY_SECONDS * 2 * 5;

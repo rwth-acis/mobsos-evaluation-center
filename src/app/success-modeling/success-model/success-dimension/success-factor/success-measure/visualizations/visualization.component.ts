@@ -45,30 +45,38 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     query: string,
     service: ServiceInformation,
   ): string {
+    if (!this.service) {
+      this.service = service;
+    }
     if (query?.includes('$SERVICES$')) {
       let servicesString = '(';
       const services = [];
-      if (!this.service) {
-        this.service = service;
-      }
-      if (!service?.mobsosIDs) {
+
+      if (!this.service?.mobsosIDs) {
         console.error('Service agent id cannot be null');
         return query;
       }
-      for (const mobsosID of service.mobsosIDs) {
-        services.push(`"${mobsosID.agentID}"`);
+      for (const mobsosID of Object.keys(this.service.mobsosIDs)) {
+        services.push(`"${mobsosID}"`);
       }
       servicesString += services.join(',') + ')';
       return query?.replace('$SERVICES$', servicesString);
     } else if (query?.includes('$SERVICE$')) {
-      if (!(service?.mobsosIDs.length > 0)) {
+      if (!(Object.keys(this.service.mobsosIDs).length > 0)) {
         console.error('Service agent id cannot be null');
         return query;
       }
+      // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+      const maxIndex = Object.values(this.service.mobsosIDs).reduce(
+        (max, time, index) => {
+          return time > max ? index : max;
+        },
+        0,
+      );
 
       return query?.replace(
         '$SERVICE$',
-        ` ${service.mobsosIDs[0].agentID} `,
+        ` ${Object.keys(this.service.mobsosIDs)[maxIndex]} `,
       );
     } else return query;
   }
@@ -85,9 +93,15 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     if (matches) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
-        // for now we just use the first ID
-        // support for multiple IDs is not implemented yet
-        params.push(this.service.mobsosIDs.slice(-1)[0].agentID);
+        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+        const maxIndex = Object.values(this.service.mobsosIDs).reduce(
+          (max, time, index) => {
+            return time > max ? index : max;
+          },
+          0,
+        );
+
+        params.push(Object.keys(this.service.mobsosIDs)[maxIndex]);
       }
     }
     return params as string[];

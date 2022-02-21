@@ -144,7 +144,7 @@
     </las2peer-frontend-statusbar>
     <mat-progress-bar
       mode="indeterminate"
-      *ngIf="loading$ | async"
+      *ngIf="isLoading"
     ></mat-progress-bar>
     <main>
       <mat-card class="noob-info" *ngIf="noobInfo">
