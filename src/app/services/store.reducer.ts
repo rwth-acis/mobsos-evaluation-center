@@ -1160,7 +1160,9 @@ function removeSurveyMeasures(
           (m: string) => m !== measureName,
         );
       }
-      model.dimensions[dimensionName] = factors;
+      model.dimensions[dimensionName] = factors.filter(
+        (f: SuccessFactor) => f.measures?.length > 0,
+      );
     }
   }
   return copy;
