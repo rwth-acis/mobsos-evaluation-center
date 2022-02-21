@@ -377,11 +377,9 @@ export class WorkspaceService {
     visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
     currentApplicationWorkspace.visitors = visitors;
 
-    if (owner === username) {
-      currentApplicationWorkspace.catalog = catalog;
-      currentApplicationWorkspace.model = model;
-    }
-    this.communityWorkspace$.next(communityWorkspace);
+    this.communityWorkspace$.next(
+      communityWorkspace as CommunityWorkspace,
+    );
     setTimeout(() => {
       this.syncObject(this.currentGroupId);
     });
