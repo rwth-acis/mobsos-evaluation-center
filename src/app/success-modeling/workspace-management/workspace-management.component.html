@@ -24,9 +24,10 @@
     *ngIf="showWorkSpaceManagementControls$ | async"
   >
     <mat-slide-toggle
+      #editControls
       labelPosition="before"
       [checked]="editMode$ | async"
-      (toggleChange)="onEditModeToggled()"
+      (change)="onEditModeToggled($event)"
       [disabled]="!(memberOfGroup$ | async)"
       [matTooltip]="
         (memberOfGroup$ | async)

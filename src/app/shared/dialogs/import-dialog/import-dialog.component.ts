@@ -8,6 +8,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { SuccessModel } from 'src/app/models/success.model';
 import {
+  addModelToWorkSpace,
   enableEdit,
   setService,
   setServiceName,
@@ -62,25 +63,44 @@ export class ImportDialogComponent implements OnInit {
     const isMeasureCatalog = ImportDialogComponent.xml
       .slice(0, 10)
       .includes('Catalog');
+    if (!isSuccessModel && !isMeasureCatalog)
+      return alert(
+        'The filetype is not supported. Please only submit valid success model or catalog files',
+      );
 
     if (isSuccessModel) {
-      const model = SuccessModel.fromXml(XMLElement.documentElement);
-      this.store.dispatch(
-        setServiceName({ serviceName: model.service }),
-      );
-      this.store.dispatch(
-        storeSuccessModel({ xml: ImportDialogComponent.xml }),
-      );
-      this.store.dispatch(enableEdit());
-      this.dialogRef.close();
+      try {
+        const model = SuccessModel.fromXml(
+          XMLElement.documentElement,
+        );
+        this.store.dispatch(
+          setServiceName({ serviceName: model.service }),
+        );
+        this.store.dispatch(enableEdit());
+        setTimeout(() => {
+          this.store.dispatch(
+            addModelToWorkSpace({ xml: ImportDialogComponent.xml }),
+          );
+          alert(
+            'Success Model successfully imported. You still need to save the model for the chages to take effect.',
+          );
+          return this.dialogRef.close();
+        }, 1000);
+      } catch (e) {
+        return alert('The success model file is broken.');
+      }
     } else if (isMeasureCatalog) {
-      this.store.dispatch(
-        storeCatalog({ xml: ImportDialogComponent.xml }),
-      );
-      this.dialogRef.close();
+      try {
+        this.store.dispatch(
+          storeCatalog({ xml: ImportDialogComponent.xml }),
+        );
+        alert(
+          'Measure catalog successfully imported. You still need to save the model for the chages to take effect.',
+        );
+        return this.dialogRef.close();
+      } catch (e) {
+        return alert('The measure catalog file is broken.');
+      }
     }
-    return alert(
-      'The filetype is not supported. Please only submit valid success model or catalog files',
-    );
   }
 }

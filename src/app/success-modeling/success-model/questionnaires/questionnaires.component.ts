@@ -205,21 +205,19 @@ export class QuestionnairesComponent implements OnInit {
     measureName: string,
     dimension: SuccessFactor[],
   ): SuccessFactor[] {
-    let targetFactor: SuccessFactor;
-    for (const factor of dimension) {
-      if (factor.name === question.factorRecommendation) {
-        targetFactor = factor;
-        break;
-      }
-    }
+    let targetFactor: SuccessFactor = dimension.find(
+      (factor) => factor.name === question.factorRecommendation,
+    );
     if (!targetFactor) {
       targetFactor = new SuccessFactor(
         question.factorRecommendation,
         [],
       );
+
+      dimension.push(targetFactor);
     }
     targetFactor.measures.push(measureName);
-    dimension.push(targetFactor);
+
     return dimension;
   }
 
