@@ -21,7 +21,6 @@ import {
   ServicesFromMobSOS,
 } from '../models/service.model';
 import { Questionnaire } from '../models/questionnaire.model';
-import { isArray } from 'util';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -641,6 +640,14 @@ function addFactorToDimension(
   }
   let factorsList = successModel.dimensions[props.dimensionName];
   if (!factorsList) factorsList = [];
+
+  if (
+    factorsList.find(
+      (f: SuccessFactor) => f.name === props.factor.name,
+    )
+  )
+    return communityWorkspace;
+
   factorsList.unshift(props.factor);
   successModel.dimensions[props.dimensionName] = factorsList;
   return copy;
@@ -1054,7 +1061,7 @@ function addQuestionnaireToSuccessModel(
     owner,
     serviceName,
   );
-  if (!appWorkspace.model.questionnaires) {
+  if (!appWorkspace.model?.questionnaires) {
     appWorkspace.model.questionnaires = [];
   }
   appWorkspace.model.questionnaires.push(questionnaire);
