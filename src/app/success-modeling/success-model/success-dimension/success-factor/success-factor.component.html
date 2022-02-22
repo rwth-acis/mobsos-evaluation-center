@@ -11,7 +11,10 @@
   <h3 *ngIf="factor">{{ factor.name }}</h3>
 </div>
 
-<div *ngIf="factor && factor.measures?.length > 0" class="measures">
+<div
+  *ngIf="factor && factor.measures?.length > 0"
+  class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
+>
   <div *ngFor="let measure of factor.measures" class="measure">
     <app-success-measure
       [measureName]="measures[measure]?.name"

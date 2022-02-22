@@ -11,17 +11,4 @@ mat-icon[mat-card-avatar] {
 }
 
 
-.factor-row {
-  width: 100%;
-  display: inline-flex;
 
-  button {
-    margin-top: 5px;
-  }
-
-  app-success-factor {
-    width: 100%;
-    flex-basis: 0;
-    flex-grow: 1;
-  }
-}
