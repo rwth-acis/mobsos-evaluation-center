@@ -34,6 +34,7 @@
       >
         <mat-icon color="warn">remove_circle_outline</mat-icon>
       </button>
+      <mat-divider class="m-2" *ngIf="i > 0"></mat-divider>
       <app-success-factor
         [factor]="factor"
         dimensionName="{{ this.name }}"
