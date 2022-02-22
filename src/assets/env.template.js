@@ -5,4 +5,5 @@
   window['env']['yJsWebsocketUrl'] = '${Y_WEBSOCKET}';
   window['env']['openIdClientId'] = '${OIDC_CLIENT_ID}';
   window['env']['production'] = '${PRODUCTION}';
+  window['env']['mobsosSurveysUrl'] = '${SURVEYS_URL}';
 })(this);
