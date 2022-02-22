@@ -917,7 +917,7 @@ export class Las2peerService {
     }
 
     const requestBody = {
-      cache,
+      cache: environment.production || cache,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',
@@ -925,7 +925,7 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
-      save: true,
+      save: environment.production,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
