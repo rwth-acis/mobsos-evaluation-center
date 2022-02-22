@@ -20,23 +20,25 @@
   </mat-card-header>
   <mat-card-content>
     <div *ngFor="let factor of factors; let i = index" class="w-full">
-      <button
-        *ngIf="canEdit$ | async"
-        mat-icon-button
-        matTooltipShowDelay="0"
-        matTooltip="{{
-          'success-dimension.remove-factor-tooltip' | translate
-        }}"
-        (click)="openRemoveFactorDialog(i)"
-      >
-        <mat-icon color="warn">remove_circle_outline</mat-icon>
-      </button>
       <mat-divider class="m-2" *ngIf="i > 0"></mat-divider>
-      <app-success-factor
-        [factor]="factor"
-        dimensionName="{{ this.name }}"
-      >
-      </app-success-factor>
+      <div class="flex">
+        <button
+          *ngIf="canEdit$ | async"
+          mat-icon-button
+          matTooltipShowDelay="0"
+          matTooltip="{{
+            'success-dimension.remove-factor-tooltip' | translate
+          }}"
+          (click)="openRemoveFactorDialog(i)"
+        >
+          <mat-icon color="warn">remove_circle_outline</mat-icon>
+        </button>
+        <app-success-factor
+          [factor]="factor"
+          dimensionName="{{ this.name }}"
+        >
+        </app-success-factor>
+      </div>
     </div>
   </mat-card-content>
 </mat-card>
