@@ -1,5 +1,5 @@
 <mat-card>
-  <mat-card-header>
+  <mat-card-header class="flex">
     <mat-icon mat-card-avatar>help_outline</mat-icon>
     <mat-card-title>{{
       'success-modeling.questionnaires.title' | translate
@@ -7,10 +7,11 @@
     <mat-card-subtitle>{{
       'success-modeling.questionnaires.subtitle' | translate
     }}</mat-card-subtitle>
-    <div id="push-right"></div>
+
     <button
       *ngIf="canEdit$ | async"
       mat-icon-button
+      class="ml-auto"
       matTooltipShowDelay="0"
       matTooltip="{{
         'success-modeling.questionnaires.add-questionnaire-tooltip'
@@ -18,7 +19,10 @@
       }}"
       (click)="openPickQuestionnaireDialog()"
     >
-      <mat-icon color="primary" id="add-questionnaire-icon"
+      <mat-icon
+        color="primary"
+        id="add-questionnaire-icon"
+        class="text-2xl"
         >add</mat-icon
       >
     </button>
@@ -60,17 +64,12 @@
           </td>
           <th>{{ questionnaire.name }}</th>
           <td>
-            <mat-icon
-              id="info-icon"
-              matTooltipShowDelay="0"
-              matTooltipPosition="above"
-              matTooltip="{{
-                getQuestionnaireByName(questionnaire.name)
-                  ?.description
-              }}"
+            <button
+              mat-icon-button
+              (click)="openInfoDialog(questionnaire)"
             >
-              info_outline
-            </mat-icon>
+              <mat-icon id="info-icon"> info_outline </mat-icon>
+            </button>
           </td>
           <td>
             <a

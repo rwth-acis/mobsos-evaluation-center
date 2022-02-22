@@ -46,6 +46,8 @@ import {
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
+import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
+import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 
 @Component({
   selector: 'app-questionnaires',
@@ -341,6 +343,13 @@ export class QuestionnairesComponent implements OnInit {
       .toPromise();
     // questionnaires will be fetched once after the edit mode is toggled
     this.ngrxStore.dispatch(fetchQuestionnaires());
+  }
+
+  openInfoDialog(questionnaire: Questionnaire) {
+    const q = this.getQuestionnaireByName(questionnaire.name);
+    this.dialog.open(QuestionnaireInfoDialogComponent, {
+      data: q,
+    });
   }
 
   private async createNewSurvey(
