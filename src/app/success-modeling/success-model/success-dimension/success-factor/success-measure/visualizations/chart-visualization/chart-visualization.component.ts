@@ -125,6 +125,7 @@ export class ChartVisualizerComponent
 
     this.dataIsReady$ = this.data$.pipe(
       map((data) => data && !data.loading),
+      distinctUntilChanged(),
     );
 
     // loads the package for the charttype and emits if package is loaded
