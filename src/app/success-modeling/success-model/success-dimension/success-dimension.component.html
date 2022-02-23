@@ -5,10 +5,11 @@
       {{ name }}
     </mat-card-title>
     <mat-card-subtitle>{{ description }}</mat-card-subtitle>
-    <div id="push-right"></div>
+
     <button
       *ngIf="canEdit$ | async"
       mat-icon-button
+      class="ml-auto"
       matTooltipShowDelay="0"
       matTooltip="{{
         'success-dimension.add-factor-tooltip' | translate
@@ -19,9 +20,8 @@
     </button>
   </mat-card-header>
   <mat-card-content>
-    <div *ngFor="let factor of factors; let i = index" class="w-full">
-      <mat-divider class="m-2" *ngIf="i > 0"></mat-divider>
-      <div class="flex">
+    <ng-container *ngFor="let factor of factors; let i = index">
+      <div class="flex w-full factor">
         <button
           *ngIf="canEdit$ | async"
           mat-icon-button
@@ -36,9 +36,10 @@
         <app-success-factor
           [factor]="factor"
           dimensionName="{{ this.name }}"
+          class="w-full"
         >
         </app-success-factor>
       </div>
-    </div>
+    </ng-container>
   </mat-card-content>
 </mat-card>

@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="flex flex-col h-full">
   <div id="value-row" *ngIf="!(dataIsLoading$ | async); else loading">
     <ng-container *ngIf="data$ | async as data">
       <ng-container *ngIf="value$ | async as value; else noData">
@@ -14,7 +14,7 @@
     </ng-container>
   </div>
   <!-- meta info about the data -->
-  <div *ngIf="data$ | async as data" class="controls">
+  <div *ngIf="data$ | async as data" class="flex mt-auto">
     <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon> info_outline </mat-icon>
     </button>
@@ -41,22 +41,28 @@
       ></app-visualization-info>
     </mat-menu>
   </div>
-
-  <ng-template #noData>
-    <span
-      *ngIf="error$ | async as error; else noDataAndNoError"
-      class="visualization-error"
-      (click)="openErrorDialog(error)"
-    >
-      <button mat-button>
-        <mat-icon>warning</mat-icon>
-      </button>
-    </span>
-  </ng-template>
-
-  <ng-template #loading>
-    <span class="loading-placeholder">
-      <mat-spinner></mat-spinner>
-    </span>
-  </ng-template>
 </div>
+
+<ng-template #noData>
+  <span
+    *ngIf="error$ | async as error; else noDataAndNoError"
+    class="visualization-error"
+    (click)="openErrorDialog(error)"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
+    </button>
+  </span>
+</ng-template>
+
+<ng-template #noDataAndNoError
+  ><ng-container *ngIf="dataIsReady$ | async; else loading">
+    No data available yet
+  </ng-container>
+</ng-template>
+
+<ng-template #loading>
+  <span class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </span>
+</ng-template>

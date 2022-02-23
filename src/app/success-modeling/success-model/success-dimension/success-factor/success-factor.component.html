@@ -1,4 +1,4 @@
-<div>
+<div *ngIf="factor">
   <div id="factor-header">
     <button
       mat-icon-button
@@ -9,20 +9,20 @@
     >
       <mat-icon>edit</mat-icon>
     </button>
-    <h3 *ngIf="factor" class="font-semibold">{{ factor.name }}</h3>
+    <h3 class="font-semibold">{{ factor.name }}</h3>
   </div>
 
   <div
-    *ngIf="factor && factor.measures?.length > 0"
-    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
+    *ngIf="factor.measures?.length > 0; else noMeasures"
+    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-28"
   >
-    <div *ngFor="let measure of factor.measures">
+    <ng-container *ngFor="let measure of factor.measures">
       <app-success-measure
         [measureName]="measures[measure]?.name"
         [factorName]="factor.name"
         [dimensionName]="this.dimensionName"
       ></app-success-measure>
-    </div>
+    </ng-container>
   </div>
   <div *ngIf="canEdit$ | async as editMode">
     <button
@@ -39,3 +39,9 @@
     </div>
   </div>
 </div>
+
+<ng-template #noMeasures>
+  <p class="text-gray-400 hover:text-black">
+    There are no measures for this factor yet.
+  </p>
+</ng-template>
