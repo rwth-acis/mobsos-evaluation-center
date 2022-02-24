@@ -31,6 +31,7 @@ import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/p
 import { SuccessModelingRoutingModule } from './success-modeling-routing.module';
 import { CommunityInfoComponent } from './community-info/community-info.component';
 import { StaticChartComponent } from './success-model/success-dimension/success-factor/success-measure/visualizations/chart-visualization/static-chart/static-chart.component';
+import { PickSurveyDialogComponent } from './success-model/questionnaires/pick-survey-dialog/pick-survey-dialog.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { StaticChartComponent } from './success-model/success-dimension/success-
     SuccessModelComponent,
     CommunityInfoComponent,
     StaticChartComponent,
+    PickSurveyDialogComponent,
   ],
   imports: [
     CommonModule,
