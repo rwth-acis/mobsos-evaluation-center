@@ -327,28 +327,13 @@ export class QuestionnairesComponent implements OnInit {
     // questionnaires will be fetched once after the edit mode is toggled
   }
 
-  openInfoDialog(questionnaire: Questionnaire) {
-    const q = this.getQuestionnaireByName(questionnaire.name);
+  async openInfoDialog(survey: Survey) {
+    const questionnaires = await firstValueFrom(
+      this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
+    );
+    const q = questionnaires.find((q) => q.id === survey.qid);
     this.dialog.open(QuestionnaireInfoDialogComponent, {
       data: q,
     });
   }
-}
-
-function generateMeasuresFromSurvey(): Measure[] {
-  throw new Error('Function not implemented.');
-}
-
-function addGeneratedMeasuresFromSurveyToCatalog(
-  measures: MeasureMap,
-  measuresGeneratedFromSurvey: Measure[],
-): MeasureMap {
-  throw new Error('Function not implemented.');
-}
-
-function addMeasuresToModel(
-  model: SuccessModel,
-  generateMeasuresFromSurveyNames: string[],
-): SuccessModel {
-  throw new Error('Function not implemented.');
 }
