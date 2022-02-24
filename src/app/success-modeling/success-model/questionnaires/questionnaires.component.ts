@@ -15,7 +15,6 @@ import {
   QUESTIONNAIRE,
   MEASURE_CATALOG,
 } from 'src/app/services/store.selectors';
-import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import {
   MeasureCatalog,
@@ -35,13 +34,11 @@ import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import {
-  addMeasuresToCatalog,
   addSurveyToModel,
-  fetchQuestionnaires,
+  addModelToWorkSpace,
+  addCatalogToWorkspace,
   removeSurveyFromModel,
   removeSurveyMeasuresFromModel,
-  storeCatalog,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
@@ -137,17 +134,22 @@ export class QuestionnairesComponent implements OnInit {
     return result;
   }
 
-  private static getSQL(
-    surveyId: number,
-    question: { code: string },
-  ) {
+  private static getSQL(surveyId: number, question: Question) {
     const dbName = environment.mobsosSurveysDatabaseName;
 
-    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
-      SqlString.escape(surveyId.toString()) as string
-    } AND qkey = "${
-      question.code
-    }" GROUP BY Answer ORDER BY number DESC`;
+    if (question.type === 'ordinal') {
+      return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } AND qkey = "${
+        question.code
+      }" GROUP BY Answer ORDER BY number DESC`;
+    } else {
+      return `SELECT if(qval, 'Yes', 'No') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } AND qkey = "${
+        question.code
+      }" GROUP BY Answer ORDER BY number DESC`;
+    }
   }
 
   private static addMeasuresFromQuestionnaireToModelAndCatalog(
@@ -173,7 +175,7 @@ export class QuestionnairesComponent implements OnInit {
         measureName,
         [new Query('Answer Distribution', query)],
         new ChartVisualization(
-          'BarChart',
+          question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
           measureName,
           measureName,
           '300px',
@@ -196,6 +198,7 @@ export class QuestionnairesComponent implements OnInit {
           measureName,
           dimension,
         );
+        model[question.dimensionRecommendation] = dimension;
       }
     }
     return [model, measures];
@@ -205,15 +208,19 @@ export class QuestionnairesComponent implements OnInit {
     measureName: string,
     dimension: SuccessFactor[],
   ): SuccessFactor[] {
-    let targetFactor: SuccessFactor = dimension.find(
-      (factor) => factor.name === question.factorRecommendation,
-    );
+    let targetFactor: SuccessFactor;
+    for (const factor of dimension) {
+      if (factor.name === question.factorRecommendation) {
+        targetFactor = factor;
+        break;
+      }
+    }
+
     if (!targetFactor) {
       targetFactor = new SuccessFactor(
         question.factorRecommendation,
         [],
       );
-
       dimension.push(targetFactor);
     }
     targetFactor.measures.push(measureName);
@@ -265,13 +272,16 @@ export class QuestionnairesComponent implements OnInit {
             cloneDeep(model),
           );
         this.ngrxStore.dispatch(
-          storeCatalog({
+          addCatalogToWorkspace({
             xml: new MeasureCatalog(measures).toXml().outerHTML,
           }),
         );
         if (assignMeasures) {
           this.ngrxStore.dispatch(
-            storeSuccessModel({ xml: newModel.toXml().outerHTML }),
+            addModelToWorkSpace({
+              xml: SuccessModel.fromPlainObject(newModel).toXml()
+                .outerHTML,
+            }),
           );
         }
       }
