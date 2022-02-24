@@ -113,22 +113,17 @@ export class SuccessModel {
           );
         }
       }
-      const questionnaireCollectionNodes = Array.from(
-        xml.getElementsByTagName('questionnaires'),
+      const surveyCollectionNodes = Array.from(
+        xml.getElementsByTagName('surveys'),
       );
-      const questionnaires = [];
-      if (questionnaireCollectionNodes.length > 0) {
-        const questionnaireCollectionNode =
-          questionnaireCollectionNodes[0];
-        const questionnaireNodes = Array.from(
-          questionnaireCollectionNode.getElementsByTagName(
-            'questionnaire',
-          ),
+      const surveys = [];
+      if (surveyCollectionNodes.length > 0) {
+        const collectionNode = surveyCollectionNodes[0];
+        const surveyNodes = Array.from(
+          collectionNode.getElementsByTagName('survey'),
         );
-        for (const questionnaireNode of questionnaireNodes) {
-          questionnaires.push(
-            Questionnaire.fromXml(questionnaireNode),
-          );
+        for (const surveyNode of surveyNodes) {
+          surveys.push(Survey.fromXml(surveyNode));
         }
       }
 
@@ -144,7 +139,7 @@ export class SuccessModel {
         modelName,
         service,
         dimensions,
-        questionnaires,
+        surveys,
         reqBazProject,
       );
     } catch (e) {

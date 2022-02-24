@@ -47,6 +47,12 @@ export class Survey implements Survey {
     questionnaire.setAttribute('id', this.id.toString());
     return questionnaire;
   }
+  static fromXml(xml: Element): Survey {
+    const name = xml.getAttribute('name');
+    const id = parseInt(xml.getAttribute('id'), 10);
+    const qid = parseInt(xml.getAttribute('qid'), 10);
+    return new Survey({ name, id, qid });
+  }
   constructor(form: SurveyForm) {
     this.description = form?.description;
     this.start = new Date(form.start);
