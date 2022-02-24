@@ -21,6 +21,7 @@ import {
   ServicesFromMobSOS,
 } from '../models/service.model';
 import { Questionnaire } from '../models/questionnaire.model';
+import { Survey } from '../models/survey.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -139,23 +140,14 @@ const _Reducer = createReducer(
     ...state,
     measureCatalogInitialized: false,
   })),
-  on(Actions.addQuestionnaireToModel, (state, { questionnaire }) => ({
+  on(Actions.addSurveyToModel, (state, { survey }) => ({
     ...state,
-    communityWorkspace: addQuestionnaireToSuccessModel(
-      state,
-      questionnaire,
-    ),
+    communityWorkspace: addSurveyToModel(state, survey),
   })),
-  on(
-    Actions.removeQuestionnaireFromModel,
-    (state, { questionnaireId }) => ({
-      ...state,
-      communityWorkspace: removeQuestionnaireFromSuccessModel(
-        state,
-        questionnaireId,
-      ),
-    }),
-  ),
+  on(Actions.removeSurveyFromModel, (state, { id }) => ({
+    ...state,
+    communityWorkspace: removeSurveyFromSuccessModel(state, id),
+  })),
   on(
     Actions.removeSurveyMeasuresFromModel,
     (state, { measureTag }) => ({
@@ -235,6 +227,10 @@ const _Reducer = createReducer(
   on(Actions.storeQuestionnaires, (state, { questionnaires }) => ({
     ...state,
     questionnaires,
+  })),
+  on(Actions.storeSurveys, (state, { surveys }) => ({
+    ...state,
+    surveys,
   })),
   on(Actions.setCommunityWorkspace, (state, props) => ({
     ...state,
@@ -1047,9 +1043,9 @@ function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
   appWorkspace.catalog = catalog;
   return copy;
 }
-function addQuestionnaireToSuccessModel(
+function addSurveyToModel(
   state: AppState,
-  questionnaire: Questionnaire,
+  survey: Survey,
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
@@ -1061,10 +1057,10 @@ function addQuestionnaireToSuccessModel(
     owner,
     serviceName,
   );
-  if (!appWorkspace.model?.questionnaires) {
-    appWorkspace.model.questionnaires = [];
+  if (!appWorkspace.model?.surveys) {
+    appWorkspace.model.surveys = [];
   }
-  appWorkspace.model.questionnaires.push(questionnaire);
+  appWorkspace.model.surveys.push(survey);
   return copy;
 }
 /**
@@ -1112,9 +1108,9 @@ function addGroupMembers(
   copy[groupId].members = groupMembers;
   return copy;
 }
-function removeQuestionnaireFromSuccessModel(
+function removeSurveyFromSuccessModel(
   state: AppState,
-  questionnaireId: number,
+  id: number,
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
@@ -1126,10 +1122,9 @@ function removeQuestionnaireFromSuccessModel(
     owner,
     serviceName,
   );
-  appWorkspace.model.questionnaires =
-    appWorkspace.model.questionnaires.filter(
-      (qs) => qs.surveyId !== questionnaireId,
-    );
+  appWorkspace.model.surveys = appWorkspace.model.surveys.filter(
+    (s) => s.qid !== id && (s as any).surveyId !== id,
+  );
 
   return copy;
 }

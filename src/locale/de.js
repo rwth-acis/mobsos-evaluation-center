@@ -218,6 +218,7 @@ export const translations = {
         'pick-questionnaire-to-see-description':
           'Wähle einen Fragebogen aus, um die Beschreibung zu sehen. Bereits verwendete Fragebögen können nicht mehr ausgewählt werden.',
         'questionnaire-select': 'Fragebogen',
+        'survey-select': 'Umfrage',
         title: 'Fragebogenauswahl',
       },
       'remove-questionnaire-tooltip': 'Fragebogen entfernen',

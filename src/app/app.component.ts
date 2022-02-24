@@ -21,8 +21,10 @@ import {
   fetchGroups,
   fetchMeasureCatalog,
   fetchMessageDescriptions,
+  fetchQuestionnaires,
   fetchServices,
   fetchSuccessModel,
+  fetchSurveys,
   setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
@@ -203,6 +205,8 @@ export class AppComponent
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
+    this.ngrxStore.dispatch(fetchSurveys());
+    this.ngrxStore.dispatch(fetchQuestionnaires());
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
