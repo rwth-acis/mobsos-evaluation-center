@@ -1,7 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
@@ -17,37 +14,29 @@ import {
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
-import {
-  MeasureCatalog,
-  MeasureMap,
-} from 'src/app/models/measure.catalog';
+import { MeasureMap } from 'src/app/models/measure.catalog';
 import {
   SuccessFactor,
   SuccessModel,
 } from 'src/app/models/success.model';
 import {
-  IQuestionnaire,
   Question,
   Questionnaire,
-  Questionnaire as QuestionnaireModel,
 } from 'src/app/models/questionnaire.model';
 import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
-  addCatalogToWorkspace,
-  addModelToWorkSpace,
-  addQuestionnaireToModel,
   fetchQuestionnaires,
   removeQuestionnaireFromModel,
   removeSurveyMeasuresFromModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
-import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
+import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 
 @Component({
   selector: 'app-questionnaires',
@@ -73,6 +62,7 @@ export class QuestionnairesComponent implements OnInit {
   private group: GroupInformation;
 
   private subscriptions$: Subscription[] = [];
+  surveys: any;
 
   constructor(
     private dialog: MatDialog,
@@ -153,7 +143,7 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   private static addMeasuresFromQuestionnaireToModel(
-    questionnaire: IQuestionnaire,
+    questionnaire: Questionnaire,
     surveyId: number,
     assignMeasures: boolean = false,
     service: ServiceInformation,
@@ -223,18 +213,6 @@ export class QuestionnairesComponent implements OnInit {
     return dimension;
   }
 
-  private static nowAsIsoDate(): string {
-    return new Date().toISOString();
-  }
-
-  private static in100YearsAsIsoDate(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const day = now.getDate();
-    return new Date(year + 100, month, day).toISOString();
-  }
-
   getQuestionnaireByName(name: string): Questionnaire {
     return this.availableQuestionnaires?.find(
       (value) => value.name === name,
@@ -242,33 +220,10 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   async openPickQuestionnaireDialog(): Promise<void> {
-    if (this.availableQuestionnaires?.length === 0)
-      return alert('No Questionnaires Available');
-    // remove questionnaires that already have been chosen
-    const questionnaires = this.availableQuestionnaires?.filter(
-      (questionnaire) =>
-        !this.model.questionnaires.find(
-          (q) => q.id === questionnaire.id,
-        ),
-    );
-    const dialogRef = this.dialog.open(
-      PickQuestionnaireDialogComponent,
-      {
-        minWidth: 300,
-        width: '80%',
-        data: questionnaires,
-      },
-    );
-    const { selectedQuestionnaire, addMeasures, assignMeasures } =
-      await firstValueFrom(dialogRef.afterClosed());
-
-    if (selectedQuestionnaire) {
-      void this.createNewSurvey(
-        selectedQuestionnaire as IQuestionnaire,
-        addMeasures as boolean,
-        assignMeasures as boolean,
-      );
-    }
+    await this.dialog
+      .open(PickSurveyDialogComponent, { data: this.surveys })
+      .afterClosed()
+      .toPromise();
   }
 
   async openRemoveQuestionnaireDialog(
@@ -285,8 +240,7 @@ export class QuestionnairesComponent implements OnInit {
       deleteMeasures: boolean;
     };
     if (result) {
-      const surveyId =
-        this.model.questionnaires[questionnaireIndex].surveyId;
+      const surveyId = this.model.surveys[questionnaireIndex].qid;
       if (result.deleteSurvey) {
         this.las2peer
           .deleteSurvey(surveyId)
@@ -343,6 +297,10 @@ export class QuestionnairesComponent implements OnInit {
       .toPromise();
     // questionnaires will be fetched once after the edit mode is toggled
     this.ngrxStore.dispatch(fetchQuestionnaires());
+
+    this.las2peer.getSurveys().subscribe((surveys) => {
+      this.surveys = surveys;
+    });
   }
 
   openInfoDialog(questionnaire: Questionnaire) {
@@ -350,81 +308,5 @@ export class QuestionnairesComponent implements OnInit {
     this.dialog.open(QuestionnaireInfoDialogComponent, {
       data: q,
     });
-  }
-
-  private async createNewSurvey(
-    questionnaire: IQuestionnaire,
-    addMeasures: boolean,
-    assignMeasures: boolean,
-  ): Promise<void> {
-    let serviceName = this.service.name;
-    if (serviceName.includes('@')) {
-      serviceName = serviceName.split('@')[0];
-    }
-    const surveyName =
-      this.service.alias +
-      ': ' +
-      questionnaire.name +
-      '(' +
-      QuestionnairesComponent.nowAsIsoDate() +
-      ')';
-    try {
-      const response = await this.las2peer.createSurvey(
-        surveyName,
-        questionnaire.description,
-        this.group.name,
-        questionnaire.logo,
-        QuestionnairesComponent.nowAsIsoDate(),
-        QuestionnairesComponent.in100YearsAsIsoDate(),
-        serviceName,
-        this.service.alias,
-        questionnaire.lang,
-      );
-      if (!response || !('id' in response)) {
-        throw new Error('Invalid survey id: undefined');
-      }
-
-      const surveyId = parseInt((response as { id: string }).id, 10);
-
-      await this.las2peer.setQuestionnaireForSurvey(
-        questionnaire.id,
-        surveyId,
-      );
-
-      const q = new QuestionnaireModel(
-        questionnaire.name,
-        questionnaire.id,
-        surveyId,
-      );
-
-      this.ngrxStore.dispatch(
-        addQuestionnaireToModel({ questionnaire: q }),
-      );
-
-      if (addMeasures) {
-        const [newModel, newMeasures] =
-          QuestionnairesComponent.addMeasuresFromQuestionnaireToModel(
-            questionnaire,
-            surveyId,
-            assignMeasures,
-            this.service,
-            this.measures,
-            this.model,
-          );
-        this.ngrxStore.dispatch(
-          addModelToWorkSpace({
-            xml: SuccessModel.fromPlainObject(newModel).toXml()
-              .outerHTML,
-          }),
-        );
-        this.ngrxStore.dispatch(
-          addCatalogToWorkspace({
-            xml: new MeasureCatalog(newMeasures).toXml().outerHTML,
-          }),
-        );
-      }
-    } catch (error) {
-      console.error(error);
-    }
   }
 }
