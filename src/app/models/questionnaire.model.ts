@@ -1,18 +1,18 @@
 // interface for questionnaire which describes the questionnaires received from the surveys backend
-export interface IQuestionnaire {
+export interface Questionnaire {
   id: number;
   description?: string;
   lang?: string;
   logo?: string;
-  name?: string;
+  name: string;
   organization?: string;
   owner?: string;
   url?: string;
   formXML?: string;
-  surveyId?: number;
+  surveyId: number;
 }
 // internal questionnaire class
-export class Questionnaire implements IQuestionnaire {
+export class Questionnaire implements Questionnaire {
   constructor(
     public name: string,
     public id: number,
@@ -27,7 +27,7 @@ export class Questionnaire implements IQuestionnaire {
     return new Questionnaire(name, id, surveyId);
   }
 
-  public static fromPlainObject(obj: IQuestionnaire): Questionnaire {
+  public static fromPlainObject(obj: Questionnaire): Questionnaire {
     return new Questionnaire(
       obj.name,
       obj.id,

@@ -1,9 +1,10 @@
 import { GroupCollection } from './community.model';
 import { MeasureCatalog } from './measure.catalog';
-import { IQuestionnaire } from './questionnaire.model';
+import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
+import { Survey } from './survey.model';
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
@@ -29,7 +30,8 @@ export interface AppState {
   communityWorkspace: CommunityWorkspace;
   currentWorkSpaceOwner: string;
   requirements: Requirement[];
-  questionnaires: IQuestionnaire[];
+  questionnaires: Questionnaire[];
+  surveys: Survey[];
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -51,6 +53,7 @@ export const INITIAL_APP_STATE: AppState = {
   currentWorkSpaceOwner: undefined,
   requirements: undefined,
   questionnaires: undefined,
+  surveys: undefined,
 };
 /**
  * What the store looks like

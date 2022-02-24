@@ -15,24 +15,40 @@ export interface Survey {
 }
 
 export interface SurveyForm {
-  description: string;
-  start: string;
-  end: string;
-  id: number;
-  lang: string;
-  logo: string;
-  name: string;
-  organization: string;
-  owner: string;
-  url: string;
-  qid: number;
-  resource: string;
-  'resource-label': string;
+  description?: string;
+  start?: string;
+  end?: string;
+  id?: number;
+  lang?: string;
+  logo?: string;
+  name?: string;
+  organization?: string;
+  owner?: string;
+  url?: string;
+  qid?: number;
+  resource?: string;
+  'resource-label'?: string;
 }
 
 export class Survey implements Survey {
+  static fromPlainObject(s: Survey): any {
+    return new Survey({
+      name: s.name,
+      id: s.id,
+      qid: s.qid,
+      description: s.description,
+    });
+  }
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const questionnaire = doc.createElement('questionnaire');
+    questionnaire.setAttribute('name', this.name);
+    questionnaire.setAttribute('id', this.qid.toString());
+    questionnaire.setAttribute('surveyId', this.id.toString());
+    return questionnaire;
+  }
   constructor(form: SurveyForm) {
-    this.description = form.description;
+    this.description = form?.description;
     this.start = new Date(form.start);
     this.end = new Date(form.end);
     this.id = form.id;

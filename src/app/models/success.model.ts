@@ -2,6 +2,7 @@ import { merge } from 'lodash-es';
 import { Questionnaire } from './questionnaire.model';
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
+import { Survey } from './survey.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -26,7 +27,7 @@ export class SuccessModel {
     public name: string,
     public service: string,
     public dimensions: DimensionMap,
-    public questionnaires: Questionnaire[],
+    public surveys: Survey[],
     public reqBazProject: ReqbazProject,
   ) {}
 
@@ -68,14 +69,7 @@ export class SuccessModel {
         );
       }
     }
-    const questionnaires = [];
-    for (const objQuestionnaire of obj.questionnaires) {
-      if (objQuestionnaire) {
-        questionnaires.push(
-          Questionnaire.fromPlainObject(objQuestionnaire),
-        );
-      }
-    }
+    const surveys = obj.surveys.map((s) => Survey.fromPlainObject(s));
     let reqBazProject;
     if (obj.reqBazProject) {
       reqBazProject = ReqbazProject.fromPlainObject(
@@ -89,7 +83,7 @@ export class SuccessModel {
       obj.name,
       obj.service,
       dimensions,
-      questionnaires,
+      surveys,
       reqBazProject,
     );
   }
@@ -165,7 +159,7 @@ export class SuccessModel {
     successModel.setAttribute('name', this.name);
     successModel.setAttribute('service', this.service);
     const questionnaires = doc.createElement('questionnaires');
-    for (const questionnaireObj of this.questionnaires) {
+    for (const questionnaireObj of this.surveys) {
       questionnaires.appendChild(questionnaireObj.toXml());
     }
     successModel.appendChild(questionnaires);
