@@ -214,6 +214,7 @@ export const translations = {
         'pick-questionnaire-to-see-description':
           'Pick a questionnaire to see its description. You can not pick questionnaires that are already used.',
         'questionnaire-select': 'Questionnaire',
+        'survey-select': 'Survey',
         title: 'Pick a Questionnaire',
       },
       'remove-questionnaire-tooltip': 'Remove questionnaire',

@@ -6,27 +6,10 @@ mat-icon[mat-card-avatar] {
   font-size: 40px;
 }
 
-#push-right {
-  flex-grow: 1;
+.factor:not(:first-child){
+  margin-top: 3rem;
 }
 
-#add-factor-icon {
-  font-size: 40px;
-  margin-left: -15px;
-  margin-top: -3px;
-}
 
-.factor-row {
-  width: 100%;
-  display: inline-flex;
 
-  button {
-    margin-top: 5px;
-  }
 
-  app-success-factor {
-    width: 100%;
-    flex-basis: 0;
-    flex-grow: 1;
-  }
-}

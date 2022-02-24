@@ -14,7 +14,7 @@ import {
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
-import { IQuestionnaire } from '../models/questionnaire.model';
+import { Questionnaire } from '../models/questionnaire.model';
 import { Requirement } from '../models/reqbaz.model';
 import { GroupMember } from '../models/community.model';
 interface HttpOptions {
@@ -429,13 +429,13 @@ export class Las2peerService {
       this.SURVEYS_QUESTIONNAIRES_PATH,
       '?full=1',
     );
-    return this.makeRequest<{ questionnaires: IQuestionnaire[] }>(
+    return this.makeRequest<{ questionnaires: Questionnaire[] }>(
       url,
       { headers: { access_token: null, Authorization: null } },
     )
       .then((response) =>
         this.fetchQuestionnaireForms(
-          response.questionnaires as IQuestionnaire[],
+          response.questionnaires as Questionnaire[],
         ),
       )
       .then((response) => {
@@ -455,11 +455,11 @@ export class Las2peerService {
       this.SURVEYS_QUESTIONNAIRES_PATH,
       '?full=1',
     );
-    return this.makeRequestAndObserve<IQuestionnaire[]>(url, {
+    return this.makeRequestAndObserve<Questionnaire[]>(url, {
       headers: { access_token: '', Authorization: '' },
     }).pipe(
       map(
-        (response: { questionnaires: IQuestionnaire[] }) =>
+        (response: { questionnaires: Questionnaire[] }) =>
           response.questionnaires,
       ),
       switchMap((questionnaires) =>
@@ -489,7 +489,7 @@ export class Las2peerService {
    * @param questionnaires
    * @returns
    */
-  async fetchQuestionnaireForms(questionnaires: IQuestionnaire[]) {
+  async fetchQuestionnaireForms(questionnaires: Questionnaire[]) {
     for (const questionnaire of questionnaires) {
       const formUrl = joinAbsoluteUrlPath(
         environment.mobsosSurveysUrl,
@@ -513,9 +513,7 @@ export class Las2peerService {
    * @param questionnaires the questionnaires for which to fetch the forms
    * @returns an observable of the forms
    */
-  fetchQuestionnaireFormsAndObserve(
-    questionnaires: IQuestionnaire[],
-  ) {
+  fetchQuestionnaireFormsAndObserve(questionnaires: Questionnaire[]) {
     const questionaireFormRequests = questionnaires.map(
       (questionnaire) => {
         const formUrl = joinAbsoluteUrlPath(
@@ -597,6 +595,16 @@ export class Las2peerService {
       method: 'DELETE',
       responseType: 'text',
     });
+  }
+
+  getSurveys() {
+    const url = joinAbsoluteUrlPath(
+      environment.mobsosSurveysUrl,
+      this.SURVEYS_SURVEY_PATH,
+    );
+    return this.makeRequestAndObserve(url).pipe(
+      map(({ surveys }) => surveys),
+    );
   }
   /**
    * @deprecated MobSOS groups might be outdated. We should not rely on them.
@@ -917,7 +925,7 @@ export class Las2peerService {
     }
 
     const requestBody = {
-      cache,
+      cache: environment.production || cache,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',
@@ -925,7 +933,7 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
-      save: true,
+      save: environment.production,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
