@@ -598,6 +598,14 @@ export class Las2peerService {
       responseType: 'text',
     });
   }
+
+  getSurveys() {
+    const url = joinAbsoluteUrlPath(
+      environment.mobsosSurveysUrl,
+      this.SURVEYS_SURVEY_PATH,
+    );
+    return this.makeRequestAndObserve(url);
+  }
   /**
    * @deprecated MobSOS groups might be outdated. We should not rely on them.
    * Thus there is no need to transfer groups from the contact service to mobsos
