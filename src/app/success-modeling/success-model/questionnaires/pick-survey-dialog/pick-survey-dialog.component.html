@@ -44,6 +44,15 @@
     'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
       | translate
   }}</mat-checkbox>
+  <h5>Don't see your survey?</h5>
+  <button
+    mat-button
+    type="button"
+    color="primary"
+    (click)="openAddSurveyDialog()"
+  >
+    <mat-icon>add</mat-icon> Start a new survey
+  </button>
 </mat-dialog-content>
 
 <mat-dialog-actions>
