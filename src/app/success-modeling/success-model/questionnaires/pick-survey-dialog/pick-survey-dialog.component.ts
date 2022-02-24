@@ -32,8 +32,8 @@ import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/p
 })
 export class PickSurveyDialogComponent implements OnInit {
   selectedSurvey: Survey;
-  addMeasures: boolean;
-  assignMeasures: boolean;
+  addMeasures: boolean = true;
+  assignMeasures: boolean = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   surveys$ = this.ngrxStore.select(SURVEYS);
 
@@ -45,7 +45,13 @@ export class PickSurveyDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {}
-  onAddMeasuresChange(e) {}
+
+  onAddMeasuresChange(addMeasures: boolean): void {
+    if (!addMeasures) {
+      this.assignMeasures = false;
+    }
+    this.addMeasures = addMeasures;
+  }
   closeDialog() {
     this.dialogRef.close({
       selectedSurvey: this.selectedSurvey,
@@ -75,9 +81,11 @@ export class PickSurveyDialogComponent implements OnInit {
         selectedQuestionnaire as Questionnaire,
       );
 
-      this.ngrxStore.dispatch(
-        addSurveyToModel({ survey, addMeasures, assignMeasures }),
-      );
+      this.dialogRef.close({
+        selectedSurvey: survey,
+        addMeasures,
+        assignMeasures,
+      });
     }
   }
 

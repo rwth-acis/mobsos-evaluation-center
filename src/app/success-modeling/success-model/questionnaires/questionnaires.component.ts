@@ -27,7 +27,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import {
   fetchQuestionnaires,
   removeQuestionnaireFromModel,
@@ -56,10 +56,7 @@ export class QuestionnairesComponent implements OnInit {
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
 
   private availableQuestionnaires: Questionnaire[];
-  private measures: MeasureMap;
   private model: SuccessModel;
-  private service: ServiceInformation;
-  private group: GroupInformation;
 
   private subscriptions$: Subscription[] = [];
   surveys: any;
@@ -219,11 +216,14 @@ export class QuestionnairesComponent implements OnInit {
     );
   }
 
-  async openPickQuestionnaireDialog(): Promise<void> {
-    await this.dialog
-      .open(PickSurveyDialogComponent, { data: this.surveys })
-      .afterClosed()
-      .toPromise();
+  async openPickSurveyDialog(): Promise<void> {
+    const res = await firstValueFrom(
+      this.dialog
+        .open(PickSurveyDialogComponent, { data: this.surveys })
+        .afterClosed(),
+    );
+    console.log(res);
+    // TODO add survey to model and update view
   }
 
   async openRemoveQuestionnaireDialog(
@@ -261,34 +261,6 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    let sub = this.group$.subscribe((group) => {
-      this.group = group;
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs?.map((q) =>
-        Questionnaire.fromPlainObject(q),
-      );
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.measures$.subscribe(
-      (measures) =>
-        (this.measures = cloneDeep(measures) as MeasureMap),
-    );
-    this.subscriptions$.push(sub);
-
-    sub = this.model$.subscribe(
-      (model) => (this.model = cloneDeep(model) as SuccessModel),
-    );
-    this.subscriptions$.push(sub);
-
-    sub = this.service$.subscribe((service) => {
-      this.service = service;
-    });
-    this.subscriptions$.push(sub);
-
     await this.editMode$
       .pipe(
         filter((edit) => !!edit),
@@ -296,11 +268,6 @@ export class QuestionnairesComponent implements OnInit {
       )
       .toPromise();
     // questionnaires will be fetched once after the edit mode is toggled
-    this.ngrxStore.dispatch(fetchQuestionnaires());
-
-    this.las2peer.getSurveys().subscribe((surveys) => {
-      this.surveys = surveys;
-    });
   }
 
   openInfoDialog(questionnaire: Questionnaire) {
