@@ -31,6 +31,7 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
+export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
 
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
@@ -231,7 +232,7 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
 
 export const QUESTIONNAIRES_FROM_SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL,
-  (model) => model?.questionnaires,
+  (model) => model?.surveys,
 );
 
 export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(

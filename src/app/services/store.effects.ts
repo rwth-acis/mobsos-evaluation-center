@@ -24,6 +24,7 @@ import { environment } from 'src/environments/environment';
 import { GroupMember } from '../models/community.model';
 import { Questionnaire } from '../models/questionnaire.model';
 import { ServiceMessageDescriptions } from '../models/service.model';
+import { Survey } from '../models/survey.model';
 
 import { VisualizationData } from '../models/visualization.model';
 import { Las2peerService } from './las2peer.service';
@@ -538,6 +539,28 @@ export class StateEffects {
           map((questionnaires: Questionnaire[]) =>
             Action.storeQuestionnaires({
               questionnaires,
+            }),
+          ),
+          catchError((err: Error) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  fetchSurveys$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveys),
+      mergeMap(() =>
+        this.l2p.getSurveys().pipe(
+          map((surveys: Survey[]) =>
+            Action.storeSurveys({
+              surveys,
             }),
           ),
           catchError((err: Error) => {
