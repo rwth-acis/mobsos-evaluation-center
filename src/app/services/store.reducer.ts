@@ -144,16 +144,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: addSurveyToModel(state, survey),
   })),
-  on(
-    Actions.removeQuestionnaireFromModel,
-    (state, { questionnaireId }) => ({
-      ...state,
-      communityWorkspace: removeQuestionnaireFromSuccessModel(
-        state,
-        questionnaireId,
-      ),
-    }),
-  ),
+  on(Actions.removeSurveyFromModel, (state, { id }) => ({
+    ...state,
+    communityWorkspace: removeSurveyFromSuccessModel(state, id),
+  })),
   on(
     Actions.removeSurveyMeasuresFromModel,
     (state, { measureTag }) => ({
@@ -1114,9 +1108,9 @@ function addGroupMembers(
   copy[groupId].members = groupMembers;
   return copy;
 }
-function removeQuestionnaireFromSuccessModel(
+function removeSurveyFromSuccessModel(
   state: AppState,
-  questionnaireId: number,
+  id: number,
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
@@ -1129,7 +1123,7 @@ function removeQuestionnaireFromSuccessModel(
     serviceName,
   );
   appWorkspace.model.surveys = appWorkspace.model.surveys.filter(
-    (s) => s.qid !== questionnaireId,
+    (s) => s.qid !== id && (s as any).surveyId !== id,
   );
 
   return copy;

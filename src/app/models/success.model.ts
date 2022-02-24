@@ -158,9 +158,9 @@ export class SuccessModel {
     const successModel = doc.createElement('SuccessModel');
     successModel.setAttribute('name', this.name);
     successModel.setAttribute('service', this.service);
-    const questionnaires = doc.createElement('questionnaires');
-    for (const questionnaireObj of this.surveys) {
-      questionnaires.appendChild(questionnaireObj.toXml());
+    const questionnaires = doc.createElement('surveys');
+    for (const surveyObj of this.surveys) {
+      questionnaires.appendChild(surveyObj.toXml());
     }
     successModel.appendChild(questionnaires);
     if (this.reqBazProject) {

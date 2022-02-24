@@ -11,10 +11,16 @@ import {
   USER_HAS_EDIT_RIGHTS,
   EDIT_MODE,
   QUESTIONNAIRES,
+  SUCCESS_MODEL,
+  QUESTIONNAIRE,
+  MEASURE_CATALOG,
 } from 'src/app/services/store.selectors';
 import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { MeasureMap } from 'src/app/models/measure.catalog';
+import {
+  MeasureCatalog,
+  MeasureMap,
+} from 'src/app/models/measure.catalog';
 import {
   SuccessFactor,
   SuccessModel,
@@ -29,14 +35,19 @@ import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import {
+  addMeasuresToCatalog,
+  addSurveyToModel,
   fetchQuestionnaires,
-  removeQuestionnaireFromModel,
+  removeSurveyFromModel,
   removeSurveyMeasuresFromModel,
+  storeCatalog,
+  storeSuccessModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
+import { Survey } from 'src/app/models/survey.model';
 
 @Component({
   selector: 'app-questionnaires',
@@ -139,10 +150,10 @@ export class QuestionnairesComponent implements OnInit {
     }" GROUP BY Answer ORDER BY number DESC`;
   }
 
-  private static addMeasuresFromQuestionnaireToModel(
+  private static addMeasuresFromQuestionnaireToModelAndCatalog(
     questionnaire: Questionnaire,
     surveyId: number,
-    assignMeasures: boolean = false,
+    assignMeasures,
     service: ServiceInformation,
     measures: MeasureMap,
     model: SuccessModel,
@@ -217,13 +228,54 @@ export class QuestionnairesComponent implements OnInit {
   }
 
   async openPickSurveyDialog(): Promise<void> {
-    const res = await firstValueFrom(
-      this.dialog
-        .open(PickSurveyDialogComponent, { data: this.surveys })
-        .afterClosed(),
-    );
-    console.log(res);
-    // TODO add survey to model and update view
+    const { selectedSurvey, addMeasures, assignMeasures } =
+      await firstValueFrom(
+        this.dialog.open(PickSurveyDialogComponent).afterClosed(),
+      );
+    if (selectedSurvey) {
+      this.ngrxStore.dispatch(
+        addSurveyToModel({
+          survey: selectedSurvey,
+          addMeasures,
+          assignMeasures,
+        }),
+      );
+      if (addMeasures) {
+        const questionnaire = await firstValueFrom(
+          this.ngrxStore
+            .select(QUESTIONNAIRE({ qid: selectedSurvey.qid }))
+            .pipe(take(1)),
+        );
+        const service = await firstValueFrom(
+          this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
+        );
+        const model = await firstValueFrom(
+          this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+        );
+        const catalog = await firstValueFrom(
+          this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+        );
+        const [newModel, measures] =
+          QuestionnairesComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
+            questionnaire,
+            selectedSurvey.id,
+            addMeasures,
+            service,
+            cloneDeep(catalog.measures),
+            cloneDeep(model),
+          );
+        this.ngrxStore.dispatch(
+          storeCatalog({
+            xml: new MeasureCatalog(measures).toXml().outerHTML,
+          }),
+        );
+        if (assignMeasures) {
+          this.ngrxStore.dispatch(
+            storeSuccessModel({ xml: newModel.toXml().outerHTML }),
+          );
+        }
+      }
+    }
   }
 
   async openRemoveQuestionnaireDialog(
@@ -239,8 +291,13 @@ export class QuestionnairesComponent implements OnInit {
       deleteSurvey: boolean;
       deleteMeasures: boolean;
     };
+    const model = (await firstValueFrom(
+      this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+    )) as any;
     if (result) {
-      const surveyId = this.model.surveys[questionnaireIndex].qid;
+      const surveyId =
+        model.surveys[questionnaireIndex].qid ||
+        model.surveys[questionnaireIndex].surveyId;
       if (result.deleteSurvey) {
         this.las2peer
           .deleteSurvey(surveyId)
@@ -253,8 +310,8 @@ export class QuestionnairesComponent implements OnInit {
         );
       }
       this.ngrxStore.dispatch(
-        removeQuestionnaireFromModel({
-          questionnaireId: surveyId,
+        removeSurveyFromModel({
+          id: surveyId,
         }),
       );
     }
@@ -276,4 +333,22 @@ export class QuestionnairesComponent implements OnInit {
       data: q,
     });
   }
+}
+
+function generateMeasuresFromSurvey(): Measure[] {
+  throw new Error('Function not implemented.');
+}
+
+function addGeneratedMeasuresFromSurveyToCatalog(
+  measures: MeasureMap,
+  measuresGeneratedFromSurvey: Measure[],
+): MeasureMap {
+  throw new Error('Function not implemented.');
+}
+
+function addMeasuresToModel(
+  model: SuccessModel,
+  generateMeasuresFromSurveyNames: string[],
+): SuccessModel {
+  throw new Error('Function not implemented.');
 }

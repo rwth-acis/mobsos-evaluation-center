@@ -9,6 +9,7 @@ import {
   MeasureCatalog,
   MeasureMap,
 } from '../models/measure.catalog';
+import { Questionnaire } from '../models/questionnaire.model';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
@@ -312,6 +313,11 @@ export const WORKSPACE_CATALOG = createSelector(
   APPLICATION_WORKSPACE,
   (workspace) => workspace?.catalog,
 );
+
+export const QUESTIONNAIRE = (props: { qid: number }) =>
+  createSelector(QUESTIONNAIRES, (qs: Questionnaire[]) =>
+    qs ? qs.find((q) => q.id === props.qid) : undefined,
+  );
 
 export const WORKSPACE_CATALOG_XML = createSelector(
   WORKSPACE_CATALOG,

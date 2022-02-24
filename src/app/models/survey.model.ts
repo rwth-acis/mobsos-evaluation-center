@@ -41,10 +41,10 @@ export class Survey implements Survey {
   }
   toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
-    const questionnaire = doc.createElement('questionnaire');
+    const questionnaire = doc.createElement('survey');
     questionnaire.setAttribute('name', this.name);
-    questionnaire.setAttribute('id', this.qid.toString());
-    questionnaire.setAttribute('surveyId', this.id.toString());
+    questionnaire.setAttribute('qid', this.qid.toString());
+    questionnaire.setAttribute('id', this.id.toString());
     return questionnaire;
   }
   constructor(form: SurveyForm) {

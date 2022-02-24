@@ -28,11 +28,7 @@
     </button>
   </mat-card-header>
   <mat-card-content *ngIf="model$ | async as model">
-    <p
-      *ngIf="
-        !model.questionnaires || model.questionnaires.length === 0
-      "
-    >
+    <p *ngIf="!model.surveys || model.surveys.length === 0">
       {{
         'success-modeling.questionnaires.no-questionnaires'
           | translate
@@ -42,13 +38,8 @@
       }}</ng-container>
     </p>
     <table>
-      <tr
-        *ngFor="
-          let questionnaire of model.questionnaires;
-          let i = index
-        "
-      >
-        <div *ngIf="questionnaire" class="questionnaire-row">
+      <tr *ngFor="let survey of model.surveys; let i = index">
+        <div class="questionnaire-row">
           <td *ngIf="canEdit$ | async">
             <button
               mat-icon-button
@@ -62,23 +53,16 @@
               <mat-icon color="warn">remove_circle_outline</mat-icon>
             </button>
           </td>
-          <th>{{ questionnaire.name }}</th>
+          <th>{{ survey.name }}</th>
           <td>
-            <button
-              mat-icon-button
-              (click)="openInfoDialog(questionnaire)"
-            >
+            <button mat-icon-button (click)="openInfoDialog(survey)">
               <mat-icon id="info-icon"> info_outline </mat-icon>
             </button>
           </td>
           <td>
             <a
               mat-icon-button
-              [href]="
-                mobsosSurveysUrl +
-                '/surveys/' +
-                questionnaire.surveyId
-              "
+              [href]="mobsosSurveysUrl + '/surveys/' + survey.id"
               color="primary"
               target="_blank"
             >
