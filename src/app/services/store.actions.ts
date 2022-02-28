@@ -351,10 +351,10 @@ export const updateCommunityWorkspace = createAction(
 export const joinWorkSpace = createAction(
   StateActions.JOIN_WORKSPACE,
   props<{
-    groupId: string;
-    serviceName: string;
+    groupId?: string;
+    serviceName?: string;
     owner?: string;
-    username: string;
+    username?: string;
     role?: UserRole;
     copyModel?: boolean;
   }>(),

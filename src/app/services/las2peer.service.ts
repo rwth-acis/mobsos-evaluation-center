@@ -1000,6 +1000,7 @@ export class Las2peerService {
     }).pipe(
       map((response) => {
         return response.status === 200;
+        // will be 404 since the reqbazar does not support this method but we will still be authenticated.
       }),
       catchError(() => {
         return of(false);

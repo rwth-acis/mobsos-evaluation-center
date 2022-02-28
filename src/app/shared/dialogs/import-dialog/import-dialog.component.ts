@@ -57,12 +57,9 @@ export class ImportDialogComponent implements OnInit {
       ImportDialogComponent.xml,
       'text/xml',
     );
-    const isSuccessModel = ImportDialogComponent.xml
-      .slice(0, 10)
-      .includes('Success');
-    const isMeasureCatalog = ImportDialogComponent.xml
-      .slice(0, 10)
-      .includes('Catalog');
+    const rootNodeName = XMLElement.firstChild.nodeName;
+    const isSuccessModel = rootNodeName === 'SuccessModel';
+    const isMeasureCatalog = rootNodeName === 'MeasureCatalog';
     if (!isSuccessModel && !isMeasureCatalog)
       return alert(
         'The filetype is not supported. Please only submit valid success model or catalog files',
@@ -73,10 +70,10 @@ export class ImportDialogComponent implements OnInit {
         const model = SuccessModel.fromXml(
           XMLElement.documentElement,
         );
+        this.store.dispatch(enableEdit());
         this.store.dispatch(
           setServiceName({ serviceName: model.service }),
         );
-        this.store.dispatch(enableEdit());
         setTimeout(() => {
           this.store.dispatch(
             addModelToWorkSpace({ xml: ImportDialogComponent.xml }),

@@ -25,6 +25,7 @@ import {
   fetchServices,
   fetchSuccessModel,
   fetchSurveys,
+  joinWorkSpace,
   setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
@@ -210,12 +211,14 @@ export class AppComponent
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
+
     this.ngrxStore.dispatch(
       setCommunityWorkspaceOwner({
         owner: user.profile.preferred_username,
       }),
     );
     if (!serviceName) return;
+    this.ngrxStore.dispatch(joinWorkSpace({ groupId, serviceName }));
     this.ngrxStore.dispatch(
       fetchSuccessModel({ groupId, serviceName }),
     );
