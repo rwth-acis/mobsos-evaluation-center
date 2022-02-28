@@ -1021,6 +1021,7 @@ function addModelToCurrentWorkSpace(
     owner,
     serviceName,
   );
+  if (!appWorkspace) return state.communityWorkspace;
   const doc = parseXml(xml);
   const model = SuccessModel.fromXml(doc.documentElement);
   appWorkspace.model = model;
