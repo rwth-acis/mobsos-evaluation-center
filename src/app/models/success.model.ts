@@ -1,5 +1,4 @@
 import { merge } from 'lodash-es';
-import { Questionnaire } from './questionnaire.model';
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
 import { Survey } from './survey.model';
@@ -65,11 +64,13 @@ export class SuccessModel {
       dimensions[objDimensionName] = [];
       for (const objFactor of obj.dimensions[objDimensionName]) {
         dimensions[objDimensionName].push(
-          SuccessFactor.fromPlainObject(objFactor),
+          SuccessFactor.fromPlainObject(objFactor as SuccessFactor),
         );
       }
     }
-    const surveys = obj.surveys.map((s) => Survey.fromPlainObject(s));
+    const surveys = obj.surveys.map((s: Survey) =>
+      Survey.fromPlainObject(s),
+    );
     let reqBazProject;
     if (obj.reqBazProject) {
       reqBazProject = ReqbazProject.fromPlainObject(
@@ -84,7 +85,7 @@ export class SuccessModel {
       obj.service,
       dimensions,
       surveys,
-      reqBazProject,
+      reqBazProject as ReqbazProject,
     );
   }
 
@@ -116,7 +117,7 @@ export class SuccessModel {
       const surveyCollectionNodes = Array.from(
         xml.getElementsByTagName('surveys'),
       );
-      const surveys = [];
+      const surveys: Survey[] = [];
       if (surveyCollectionNodes.length > 0) {
         const collectionNode = surveyCollectionNodes[0];
         const surveyNodes = Array.from(
@@ -130,7 +131,7 @@ export class SuccessModel {
       const reqBazProjectNodes = Array.from(
         xml.getElementsByTagName('reqbaz-project'),
       );
-      let reqBazProject = null;
+      let reqBazProject: ReqbazProject = null;
       if (reqBazProjectNodes.length > 0) {
         reqBazProject = ReqbazProject.fromXml(reqBazProjectNodes[0]);
       }
@@ -143,9 +144,8 @@ export class SuccessModel {
         reqBazProject,
       );
     } catch (e) {
-      throw new Error('Parsing model failed: ' + e);
+      throw new Error('Parsing model failed');
     }
-    return null;
   }
 
   toXml(): Element {
@@ -182,13 +182,13 @@ export class SuccessFactor {
       const measureNodes = Array.from(
         xml.getElementsByTagName('measure'),
       );
-      const measures = [];
+      const measures: string[] = [];
       for (const measureNode of measureNodes) {
         measures.push(measureNode.getAttribute('name'));
       }
       return new SuccessFactor(factorName, measures);
     } catch (e) {
-      throw new Error('Parsing factor failed:' + e);
+      throw new Error('Parsing factor failed:');
     }
   }
 

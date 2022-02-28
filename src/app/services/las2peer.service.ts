@@ -985,6 +985,7 @@ export class Las2peerService {
 
   /**
    * Authenticates the user on the requirements bazaar (response is 404 but user seems to be authenticated)
+   *
    * @returns true if user is authenticated
    */
   authenticateOnReqBaz() {

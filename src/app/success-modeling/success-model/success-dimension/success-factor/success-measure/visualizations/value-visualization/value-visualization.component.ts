@@ -17,7 +17,6 @@ import {
   first,
   map,
   mergeMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';

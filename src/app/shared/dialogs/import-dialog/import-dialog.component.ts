@@ -42,7 +42,7 @@ export class ImportDialogComponent implements OnInit {
       return alert('You can only upload xml files');
     }
     if (this.fileName) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
       reader.onload = function (evt) {
         ImportDialogComponent.xml = evt.target.result as string;

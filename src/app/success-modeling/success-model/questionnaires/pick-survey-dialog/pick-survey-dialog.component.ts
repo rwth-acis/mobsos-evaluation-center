@@ -32,8 +32,8 @@ import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/p
 })
 export class PickSurveyDialogComponent implements OnInit {
   selectedSurvey: Survey;
-  addMeasures: boolean = true;
-  assignMeasures: boolean = true;
+  addMeasures = true;
+  assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   surveys$ = this.ngrxStore.select(SURVEYS);
 
@@ -105,21 +105,18 @@ export class PickSurveyDialogComponent implements OnInit {
     if (serviceName.includes('@')) {
       serviceName = serviceName.split('@')[0];
     }
-    const surveyName =
-      service.alias +
-      ': ' +
-      questionnaire.name +
-      '(' +
-      PickSurveyDialogComponent.nowAsIsoDate() +
-      ')';
+    const surveyName = `${service.alias}: ${
+      questionnaire.name
+    } (${nowAsIsoDate()}) `;
+
     try {
       const response = await this.l2p.createSurvey(
         surveyName,
         questionnaire.description,
         group.name,
         questionnaire.logo,
-        PickSurveyDialogComponent.nowAsIsoDate(),
-        PickSurveyDialogComponent.in100YearsAsIsoDate(),
+        nowAsIsoDate(),
+        in100YearsAsIsoDate(),
         serviceName,
         service.alias,
         questionnaire.lang,
@@ -142,8 +139,8 @@ export class PickSurveyDialogComponent implements OnInit {
         qid: questionnaire.id,
         logo: questionnaire.logo,
         lang: questionnaire.lang,
-        start: PickSurveyDialogComponent.nowAsIsoDate(),
-        end: PickSurveyDialogComponent.in100YearsAsIsoDate(),
+        start: nowAsIsoDate(),
+        end: in100YearsAsIsoDate(),
         organization: group.name,
         resource: serviceName,
         owner: user.profile.preferred_username,
@@ -158,16 +155,16 @@ export class PickSurveyDialogComponent implements OnInit {
       console.error(error);
     }
   }
+}
 
-  private static nowAsIsoDate(): string {
-    return new Date().toISOString();
-  }
+function nowAsIsoDate(): string {
+  return new Date().toISOString();
+}
 
-  private static in100YearsAsIsoDate(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const day = now.getDate();
-    return new Date(year + 100, month, day).toISOString();
-  }
+function in100YearsAsIsoDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const day = now.getDate();
+  return new Date(year + 100, month, day).toISOString();
 }

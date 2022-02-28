@@ -1,11 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   OnInit,
 } from '@angular/core';
 
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { QUESTIONNAIRES_NOT_IN_MODEL } from 'src/app/services/store.selectors';

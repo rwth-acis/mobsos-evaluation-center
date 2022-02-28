@@ -32,7 +32,7 @@ import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import {
   addSurveyToModel,
   addModelToWorkSpace,
@@ -42,9 +42,10 @@ import {
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
-import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
-import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
+
 import { Survey } from 'src/app/models/survey.model';
+import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
+import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 
 @Component({
   selector: 'app-questionnaires',
@@ -62,12 +63,9 @@ export class QuestionnairesComponent implements OnInit {
   group$ = this.ngrxStore.select(SELECTED_GROUP);
 
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  surveys: any;
 
   private availableQuestionnaires: Questionnaire[];
-  private model: SuccessModel;
-
-  private subscriptions$: Subscription[] = [];
-  surveys: any;
 
   constructor(
     private dialog: MatDialog,
@@ -265,11 +263,11 @@ export class QuestionnairesComponent implements OnInit {
         const [newModel, measures] =
           QuestionnairesComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
-            selectedSurvey.id,
+            selectedSurvey.id as number,
             addMeasures,
             service,
-            cloneDeep(catalog.measures),
-            cloneDeep(model),
+            cloneDeep(catalog.measures) as MeasureMap,
+            cloneDeep(model) as SuccessModel,
           );
         this.ngrxStore.dispatch(
           addCatalogToWorkspace({
@@ -305,7 +303,7 @@ export class QuestionnairesComponent implements OnInit {
       this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
     )) as any;
     if (result) {
-      const surveyId =
+      const surveyId: number =
         model.surveys[questionnaireIndex].qid ||
         model.surveys[questionnaireIndex].surveyId;
       if (result.deleteSurvey) {
@@ -341,9 +339,11 @@ export class QuestionnairesComponent implements OnInit {
     const questionnaires = await firstValueFrom(
       this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
     );
-    const q = questionnaires.find((q) => q.id === survey.qid);
+    const desiredQuestionnaire = questionnaires.find(
+      (q) => q.id === survey.qid,
+    );
     this.dialog.open(QuestionnaireInfoDialogComponent, {
-      data: q,
+      data: desiredQuestionnaire,
     });
   }
 }
