@@ -652,88 +652,95 @@ export class StateEffects {
         this.ngrxStore.select(SELECTED_SERVICE),
         this.ngrxStore.select(USER),
         this.ngrxStore.select(VISUALIZATION_DATA_FROM_QVS),
+        this.ngrxStore.select(SELECTED_GROUP),
       ),
-      switchMap(([action, model, catalog, service, user, vdata]) =>
-        this.workspaceService
-          .syncWithCommunnityWorkspace(action.groupId)
-          .pipe(
-            map((synced) => {
-              if (synced) {
-                let username = action.username;
-                let owner = action.owner;
-                if (user?.signedIn) {
-                  username = user.profile.preferred_username;
-                  if (!owner) {
-                    owner = username;
-                  }
-                }
-                try {
-                  // try joining the workspace
-                  this.workspaceService.joinWorkspace(
-                    owner,
-                    action.serviceName,
-                    username,
-                    null,
-                    model,
-                    catalog,
-                    action.role,
-                    vdata,
-                    action.copyModel,
-                  );
-                } catch (error) {
-                  // exception occurs when the workspace cannot be joined
+      switchMap(
+        ([action, model, catalog, service, user, vdata, group]) =>
+          this.workspaceService
+            .syncWithCommunnityWorkspace(
+              action.groupId ? action.groupId : group.id,
+            )
+            .pipe(
+              map((synced) => {
+                if (synced) {
+                  let username: string;
+                  let workspaceOwner: string;
                   if (user?.signedIn) {
-                    // If we are signed in we create a new workspace
+                    username = user.profile.preferred_username;
+                    if (!workspaceOwner) {
+                      workspaceOwner = username; // if no workspace owner is specified, the user is the workspace owner
+                    }
+                  } else {
+                    username = action.username;
+                    workspaceOwner = action.owner;
+                  }
+                  try {
+                    // try joining the workspace
+                    this.workspaceService.joinWorkspace(
+                      workspaceOwner,
+                      action.serviceName,
+                      username,
+                      null,
+                      model,
+                      catalog,
+                      action.role,
+                      vdata,
+                      action.copyModel,
+                    );
+                  } catch (error) {
+                    // exception occurs when the workspace cannot be joined
+                    if (user?.signedIn) {
+                      // If we are signed in we create a new workspace
+                      this.workspaceService.initWorkspace(
+                        action.groupId,
+                        username,
+                        service,
+                        catalog,
+                        model,
+                        vdata,
+                        action.copyModel,
+                      );
+                    } else {
+                      // probably some property is undefined
+                      console.error(error);
+                      return Action.failure();
+                    }
+                  }
+                  const currentCommunityWorkspace =
+                    this.workspaceService.currentCommunityWorkspace;
+                  if (
+                    user?.signedIn &&
+                    !currentCommunityWorkspace[
+                      user.profile.preferred_username
+                    ]
+                  ) {
                     this.workspaceService.initWorkspace(
                       action.groupId,
-                      username,
+                      user.profile.preferred_username,
                       service,
                       catalog,
                       model,
                       vdata,
-                      action.copyModel,
                     );
-                  } else {
-                    // probably some property is undefined
-                    console.error(error);
-                    return Action.failure();
                   }
-                }
-                const currentCommunityWorkspace =
-                  this.workspaceService.currentCommunityWorkspace;
-                if (
-                  user?.signedIn &&
-                  !currentCommunityWorkspace[
-                    user.profile.preferred_username
-                  ]
-                ) {
-                  this.workspaceService.initWorkspace(
-                    action.groupId,
-                    user.profile.preferred_username,
-                    service,
-                    catalog,
-                    model,
-                    vdata,
-                  );
-                }
-                if (!currentCommunityWorkspace) {
-                  return Action.failure();
+                  if (!currentCommunityWorkspace) {
+                    return Action.failure();
+                  } else {
+                    return Action.setCommunityWorkspace({
+                      workspace: currentCommunityWorkspace,
+                    });
+                  }
                 } else {
-                  return Action.setCommunityWorkspace({
-                    workspace: currentCommunityWorkspace,
-                  });
+                  const error = new Error('Could not sync with yjs');
+                  console.error(error.message);
+                  return Action.failure();
                 }
-              } else {
-                const error = new Error('Could not sync with yjs');
-                console.error(error.message);
-                return Action.failure();
-              }
-            }),
-            catchError((err) => {
-              console.error(err);
-              return of(Action.failure());
-            }),
-          ),
+              }),
+              catchError((err) => {
+                console.error(err);
+                return of(Action.failure());
+              }),
+            ),
       ),
       catchError(() => {
         return of(Action.failure());
