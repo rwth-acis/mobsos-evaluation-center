@@ -70,10 +70,10 @@ export class ImportDialogComponent implements OnInit {
         const model = SuccessModel.fromXml(
           XMLElement.documentElement,
         );
+        this.store.dispatch(enableEdit());
         this.store.dispatch(
           setServiceName({ serviceName: model.service }),
         );
-        this.store.dispatch(enableEdit());
         setTimeout(() => {
           this.store.dispatch(
             addModelToWorkSpace({ xml: ImportDialogComponent.xml }),
