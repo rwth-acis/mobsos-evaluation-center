@@ -1,11 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { userInfo } from 'os';
 import { firstValueFrom, take } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { Survey } from 'src/app/models/survey.model';
@@ -13,14 +8,12 @@ import {
   joinAbsoluteUrlPath,
   Las2peerService,
 } from 'src/app/services/las2peer.service';
-import { addSurveyToModel } from 'src/app/services/store.actions';
 import {
   QUESTIONNAIRES_NOT_IN_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SURVEYS,
   USER,
-  _SELECTED_SERVICE_NAME,
 } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/pick-questionnaire-dialog.component';
