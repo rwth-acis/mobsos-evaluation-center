@@ -6,7 +6,7 @@ import {
 
 import { Store } from '@ngrx/store';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
-import { QUESTIONNAIRES_NOT_IN_MODEL } from 'src/app/services/store.selectors';
+import { SURVEYS_NOT_IN_MODEL } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -20,9 +20,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  questionnaires$ = this.ngrxStore.select(
-    QUESTIONNAIRES_NOT_IN_MODEL,
-  );
+  questionnaires$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
 
   constructor(private ngrxStore: Store) {}
 
