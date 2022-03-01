@@ -9,11 +9,12 @@ import {
   Las2peerService,
 } from 'src/app/services/las2peer.service';
 import {
-  QUESTIONNAIRES_NOT_IN_MODEL,
+  SURVEYS_NOT_IN_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SURVEYS,
   USER,
+  QUESTIONNAIRES,
 } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/pick-questionnaire-dialog.component';
@@ -28,7 +29,7 @@ export class PickSurveyDialogComponent implements OnInit {
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  surveys$ = this.ngrxStore.select(SURVEYS);
+  surveys$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
 
   constructor(
     private dialogRef: MatDialogRef<PickSurveyDialogComponent>,
@@ -55,9 +56,7 @@ export class PickSurveyDialogComponent implements OnInit {
   async openAddSurveyDialog() {
     const availableQuestionnaires: Questionnaire[] =
       await firstValueFrom(
-        this.ngrxStore
-          .select(QUESTIONNAIRES_NOT_IN_MODEL)
-          .pipe(take(1)),
+        this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
       );
     const dialogRef = this.dialog.open(
       PickQuestionnaireDialogComponent,
