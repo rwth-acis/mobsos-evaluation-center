@@ -94,6 +94,9 @@ export class QuestionnairesComponent implements OnInit {
       );
     });
     for (const page of pages) {
+      const minLabel = page.getAttribute('minlabel');
+      const maxLabel = page.getAttribute('maxlabel');
+      const labels = { minLabel, maxLabel };
       const code = page.getAttribute('qid');
       let type: 'ordinal' | 'dichotomous';
       if (
@@ -127,6 +130,7 @@ export class QuestionnairesComponent implements OnInit {
         dimensionRecommendation,
         factorRecommendation,
         instructions,
+        labels,
       });
     }
     return result;
@@ -142,7 +146,10 @@ export class QuestionnairesComponent implements OnInit {
         question.code
       }" GROUP BY Answer ORDER BY number DESC`;
     } else {
-      return `SELECT if(qval, 'Yes', 'No') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      return `SELECT if(qval, '${question.labels['maxLabel']}',  '${
+        question.labels['minLabel']
+      }') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
         SqlString.escape(surveyId.toString()) as string
       } AND qkey = "${
         question.code

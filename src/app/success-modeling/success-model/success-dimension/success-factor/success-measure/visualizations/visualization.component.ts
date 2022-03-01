@@ -107,9 +107,13 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     return params as string[];
   }
 
-  fetchVisualizationData(query: string, queryParams: string[]): void {
+  fetchVisualizationData(
+    query: string,
+    queryParams: string[],
+    cache: boolean = true,
+  ): void {
     this.ngrxStore.dispatch(
-      fetchVisualizationData({ query, queryParams }),
+      fetchVisualizationData({ query, queryParams, cache }),
     );
   }
 
