@@ -21,6 +21,9 @@ import {
   UserRole,
 } from '../models/workspace.model';
 
+/**
+ * Actions to load from backend services
+ */
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
   FETCH_GROUPS = 'fetch groups from the network',
@@ -41,7 +44,9 @@ export enum HttpActions {
   SUCCESS_RESPONSE = 'response was successful',
   FAILURE_RESPONSE = 'response was not successful',
 }
-
+/**
+ * Actions that store data in the state store
+ */
 export enum StoreActions {
   STORE_SERVICE_MESSAGE_DESCRIPTIONS = 'store the service descriptions for a service from the network',
   STORE_SERVICES = 'store services',
@@ -79,11 +84,14 @@ export enum StoreActions {
   ADD_MEASURES_TO_CATALOG = 'Add a list of measures to the catalog',
 }
 
+/**
+ * Actions which manipulate the state of the application
+ */
 export enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
-  SET_SERVICE_NAME = 'set the current service by only providing  the name',
+  SET_SERVICE_NAME = 'set the current service by providing the name',
   JOIN_WORKSPACE = 'Join the workspace of another user',
   ADD_SUCCESS_MODEL_TO_WORKSPACE = 'add the success model to the workspace',
   ADD_CATALOG_TO_WORKSPACE = 'add the catalog to the workspace',
