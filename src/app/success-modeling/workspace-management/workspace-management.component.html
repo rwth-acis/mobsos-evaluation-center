@@ -1,32 +1,34 @@
-<mat-card id="header-card">
+<mat-card>
   <!-- service selection -->
-  <mat-toolbar-row>
-    <mat-form-field id="community-service-select">
-      <mat-label>{{
-        'success-modeling.select-application' | translate
-      }}</mat-label>
-      <mat-select
-        [(ngModel)]="selectedService"
-        (selectionChange)="onServiceSelected($event.value)"
+
+  <mat-form-field id="community-service-select">
+    <mat-label>{{
+      'success-modeling.select-application' | translate
+    }}</mat-label>
+    <mat-select
+      [(ngModel)]="selectedService"
+      (selectionChange)="onServiceSelected($event.value)"
+    >
+      <mat-option
+        *ngFor="let service of services$ | async"
+        [value]="service"
       >
-        <mat-option
-          *ngFor="let service of services$ | async"
-          [value]="service"
-        >
-          {{ service.alias ? service.alias : service.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </mat-toolbar-row>
+        {{ service.alias ? service.alias : service.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
   <!-- workspace management -->
-  <mat-toolbar-row
-    id="edit-controls"
+  <div
+    class="flex flex-wrap items-center justify-between"
     *ngIf="showWorkSpaceManagementControls$ | async"
   >
     <mat-slide-toggle
+      #editControls
+      class="pr-4"
       labelPosition="before"
       [checked]="editMode$ | async"
-      (toggleChange)="onEditModeToggled()"
+      (change)="onEditModeToggled($event)"
       [disabled]="!(memberOfGroup$ | async)"
       [matTooltip]="
         (memberOfGroup$ | async)
@@ -37,7 +39,7 @@
       {{ 'success-modeling.edit-mode-toggle' | translate }}
     </mat-slide-toggle>
 
-    <div id="workspace-controls" *ngIf="editMode$ | async">
+    <div *ngIf="editMode$ | async" class="flex justify-end mr-5">
       <ng-container *ngIf="visitors$ | async as visitors">
         <button
           mat-icon-button
@@ -92,8 +94,8 @@
       </button>
     </div>
 
-    <div id="import-export">
-      <mat-form-field>
+    <div class="flex ml-auto">
+      <mat-form-field class="flex-auto">
         <mat-label>Export</mat-label>
         <mat-select [formControl]="selections" multiple>
           <mat-select-trigger>
@@ -116,6 +118,7 @@
         </mat-select>
       </mat-form-field>
       <button
+        class="flex-none"
         *ngIf="this.selections.value?.length > 0"
         mat-button
         (click)="onExportClicked()"
@@ -124,7 +127,7 @@
       </button>
       <button mat-button (click)="onImportClicked()">Import</button>
     </div>
-  </mat-toolbar-row>
+  </div>
 </mat-card>
 
 <ng-container

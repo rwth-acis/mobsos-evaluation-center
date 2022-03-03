@@ -1,7 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { PickQuestionnaireDialogComponent } from './pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-
 import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
@@ -14,8 +11,10 @@ import {
   USER_HAS_EDIT_RIGHTS,
   EDIT_MODE,
   QUESTIONNAIRES,
+  SUCCESS_MODEL,
+  QUESTIONNAIRE,
+  MEASURE_CATALOG,
 } from 'src/app/services/store.selectors';
-import { GroupInformation } from 'src/app/models/community.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import {
   MeasureCatalog,
@@ -26,24 +25,27 @@ import {
   SuccessModel,
 } from 'src/app/models/success.model';
 import {
-  IQuestionnaire,
   Question,
   Questionnaire,
-  Questionnaire as QuestionnaireModel,
 } from 'src/app/models/questionnaire.model';
 import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import {
-  addCatalogToWorkspace,
+  addSurveyToModel,
   addModelToWorkSpace,
-  addQuestionnaireToModel,
-  fetchQuestionnaires,
+  addCatalogToWorkspace,
+  removeSurveyFromModel,
+  removeSurveyMeasuresFromModel,
 } from 'src/app/services/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
+
+import { Survey } from 'src/app/models/survey.model';
+import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
+import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 
 @Component({
   selector: 'app-questionnaires',
@@ -61,14 +63,9 @@ export class QuestionnairesComponent implements OnInit {
   group$ = this.ngrxStore.select(SELECTED_GROUP);
 
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  surveys: any;
 
   private availableQuestionnaires: Questionnaire[];
-  private measures: MeasureMap;
-  private model: SuccessModel;
-  private service: ServiceInformation;
-  private group: GroupInformation;
-
-  private subscriptions$: Subscription[] = [];
 
   constructor(
     private dialog: MatDialog,
@@ -97,6 +94,9 @@ export class QuestionnairesComponent implements OnInit {
       );
     });
     for (const page of pages) {
+      const minLabel = page.getAttribute('minlabel');
+      const maxLabel = page.getAttribute('maxlabel');
+      const labels = { minLabel, maxLabel };
       const code = page.getAttribute('qid');
       let type: 'ordinal' | 'dichotomous';
       if (
@@ -130,28 +130,37 @@ export class QuestionnairesComponent implements OnInit {
         dimensionRecommendation,
         factorRecommendation,
         instructions,
+        labels,
       });
     }
     return result;
   }
 
-  private static getSQL(
-    surveyId: number,
-    question: { code: string },
-  ) {
-    // const dbName = environment.mobsosSurveysDatabaseName; Might be needed later if we want to use the actual survey response instead of the logged message
+  private static getSQL(surveyId: number, question: Question) {
+    const dbName = environment.mobsosSurveysDatabaseName;
 
-    return `SELECT JSON_EXTRACT(REMARKS,"$.qval") AS Answer, COUNT(*) FROM MESSAGE m WHERE m.EVENT = "SERVICE_CUSTOM_MESSAGE_1" AND JSON_EXTRACT(REMARKS,"$.sid") = ${
-      SqlString.escape(surveyId.toString()) as string
-    } AND JSON_EXTRACT(REMARKS,"$.qkey") = "${
-      question.code
-    }" GROUP BY JSON_EXTRACT(REMARKS,"$.qval")`;
+    if (question.type === 'ordinal') {
+      return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } AND qkey = "${
+        question.code
+      }" GROUP BY Answer ORDER BY number DESC`;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      return `SELECT if(qval, '${question.labels['maxLabel']}',  '${
+        question.labels['minLabel']
+      }') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } AND qkey = "${
+        question.code
+      }" GROUP BY Answer ORDER BY number DESC`;
+    }
   }
 
-  private static addMeasuresFromQuestionnaireToModel(
-    questionnaire: IQuestionnaire,
+  private static addMeasuresFromQuestionnaireToModelAndCatalog(
+    questionnaire: Questionnaire,
     surveyId: number,
-    assignMeasures: boolean = false,
+    assignMeasures,
     service: ServiceInformation,
     measures: MeasureMap,
     model: SuccessModel,
@@ -171,7 +180,7 @@ export class QuestionnairesComponent implements OnInit {
         measureName,
         [new Query('Answer Distribution', query)],
         new ChartVisualization(
-          'BarChart',
+          question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
           measureName,
           measureName,
           '300px',
@@ -194,6 +203,7 @@ export class QuestionnairesComponent implements OnInit {
           measureName,
           dimension,
         );
+        model[question.dimensionRecommendation] = dimension;
       }
     }
     return [model, measures];
@@ -210,27 +220,17 @@ export class QuestionnairesComponent implements OnInit {
         break;
       }
     }
+
     if (!targetFactor) {
       targetFactor = new SuccessFactor(
         question.factorRecommendation,
         [],
       );
+      dimension.push(targetFactor);
     }
     targetFactor.measures.push(measureName);
-    dimension.push(targetFactor);
+
     return dimension;
-  }
-
-  private static nowAsIsoDate(): string {
-    return new Date().toISOString();
-  }
-
-  private static in100YearsAsIsoDate(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const day = now.getDate();
-    return new Date(year + 100, month, day).toISOString();
   }
 
   getQuestionnaireByName(name: string): Questionnaire {
@@ -239,31 +239,57 @@ export class QuestionnairesComponent implements OnInit {
     );
   }
 
-  async openPickQuestionnaireDialog(): Promise<void> {
-    // remove questionnaires that already have been chosen
-    const questionnaires = this.availableQuestionnaires.filter(
-      (questionnaire) =>
-        !this.model.questionnaires.find(
-          (q) => q.id === questionnaire.id,
-        ),
-    );
-    const dialogRef = this.dialog.open(
-      PickQuestionnaireDialogComponent,
-      {
-        minWidth: 300,
-        width: '80%',
-        data: questionnaires,
-      },
-    );
-    const { selectedQuestionnaire, addMeasures, assignMeasures } =
-      await firstValueFrom(dialogRef.afterClosed());
-
-    if (selectedQuestionnaire) {
-      void this.createNewSurvey(
-        selectedQuestionnaire as IQuestionnaire,
-        addMeasures as boolean,
-        assignMeasures as boolean,
+  async openPickSurveyDialog(): Promise<void> {
+    const { selectedSurvey, addMeasures, assignMeasures } =
+      await firstValueFrom(
+        this.dialog.open(PickSurveyDialogComponent).afterClosed(),
       );
+    if (selectedSurvey) {
+      this.ngrxStore.dispatch(
+        addSurveyToModel({
+          survey: selectedSurvey,
+          addMeasures,
+          assignMeasures,
+        }),
+      );
+      if (addMeasures) {
+        const questionnaire = await firstValueFrom(
+          this.ngrxStore
+            .select(QUESTIONNAIRE({ qid: selectedSurvey.qid }))
+            .pipe(take(1)),
+        );
+        const service = await firstValueFrom(
+          this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
+        );
+        const model = await firstValueFrom(
+          this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+        );
+        const catalog = await firstValueFrom(
+          this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+        );
+        const [newModel, measures] =
+          QuestionnairesComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
+            questionnaire,
+            selectedSurvey.id as number,
+            addMeasures,
+            service,
+            cloneDeep(catalog.measures) as MeasureMap,
+            cloneDeep(model) as SuccessModel,
+          );
+        this.ngrxStore.dispatch(
+          addCatalogToWorkspace({
+            xml: new MeasureCatalog(measures).toXml().outerHTML,
+          }),
+        );
+        if (assignMeasures) {
+          this.ngrxStore.dispatch(
+            addModelToWorkSpace({
+              xml: SuccessModel.fromPlainObject(newModel).toXml()
+                .outerHTML,
+            }),
+          );
+        }
+      }
     }
   }
 
@@ -280,9 +306,13 @@ export class QuestionnairesComponent implements OnInit {
       deleteSurvey: boolean;
       deleteMeasures: boolean;
     };
+    const model = (await firstValueFrom(
+      this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+    )) as any;
     if (result) {
-      const surveyId =
-        this.model.questionnaires[questionnaireIndex].surveyId;
+      const surveyId: number =
+        model.surveys[questionnaireIndex].qid ||
+        model.surveys[questionnaireIndex].surveyId;
       if (result.deleteSurvey) {
         this.las2peer
           .deleteSurvey(surveyId)
@@ -290,68 +320,19 @@ export class QuestionnairesComponent implements OnInit {
       }
       if (result.deleteMeasures) {
         const measureTag = `surveyId=${surveyId}`;
-        const measureNamesToBeRemoved = Object.keys(
-          this.measures,
-        ).filter((measureName) =>
-          this.measures[measureName].tags.includes(measureTag),
+        this.ngrxStore.dispatch(
+          removeSurveyMeasuresFromModel({ measureTag }),
         );
-        for (const dimension of Object.values(
-          this.model.dimensions,
-        )) {
-          // collect empty factors here
-          const factorsToBeRemoved: SuccessFactor[] = [];
-          for (const factor of dimension as SuccessFactor[]) {
-            for (const measureName of measureNamesToBeRemoved) {
-              if (factor.measures.includes(measureName)) {
-                const index = factor.measures.indexOf(measureName);
-                factor.measures.splice(index, 1);
-                if (factor.measures.length === 0) {
-                  factorsToBeRemoved.push(factor);
-                }
-              }
-            }
-          }
-          for (const factor of factorsToBeRemoved) {
-            const index = (dimension as SuccessFactor[]).indexOf(
-              factor,
-            );
-            (dimension as SuccessFactor[]).splice(index, 1);
-          }
-        }
       }
-      this.model.questionnaires.splice(questionnaireIndex, 1);
+      this.ngrxStore.dispatch(
+        removeSurveyFromModel({
+          id: surveyId,
+        }),
+      );
     }
   }
 
   async ngOnInit(): Promise<void> {
-    let sub = this.group$.subscribe((group) => {
-      this.group = group;
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.questionnaires$.subscribe((qs) => {
-      this.availableQuestionnaires = qs?.map((q) =>
-        Questionnaire.fromPlainObject(q),
-      );
-    });
-    this.subscriptions$.push(sub);
-
-    sub = this.measures$.subscribe(
-      (measures) =>
-        (this.measures = cloneDeep(measures) as MeasureMap),
-    );
-    this.subscriptions$.push(sub);
-
-    sub = this.model$.subscribe(
-      (model) => (this.model = cloneDeep(model) as SuccessModel),
-    );
-    this.subscriptions$.push(sub);
-
-    sub = this.service$.subscribe((service) => {
-      this.service = service;
-    });
-    this.subscriptions$.push(sub);
-
     await this.editMode$
       .pipe(
         filter((edit) => !!edit),
@@ -359,82 +340,17 @@ export class QuestionnairesComponent implements OnInit {
       )
       .toPromise();
     // questionnaires will be fetched once after the edit mode is toggled
-    this.ngrxStore.dispatch(fetchQuestionnaires());
   }
 
-  private async createNewSurvey(
-    questionnaire: IQuestionnaire,
-    addMeasures: boolean,
-    assignMeasures: boolean,
-  ): Promise<void> {
-    let serviceName = this.service.name;
-    if (serviceName.includes('@')) {
-      serviceName = serviceName.split('@')[0];
-    }
-    const surveyName =
-      this.service.alias +
-      ': ' +
-      questionnaire.name +
-      '(' +
-      QuestionnairesComponent.nowAsIsoDate() +
-      ')';
-    try {
-      const response = await this.las2peer.createSurvey(
-        surveyName,
-        questionnaire.description,
-        this.group.name,
-        questionnaire.logo,
-        QuestionnairesComponent.nowAsIsoDate(),
-        QuestionnairesComponent.in100YearsAsIsoDate(),
-        serviceName,
-        this.service.alias,
-        questionnaire.lang,
-      );
-      if (!response || !('id' in response)) {
-        throw new Error('Invalid survey id: undefined');
-      }
-
-      const surveyId = parseInt((response as { id: string }).id, 10);
-
-      await this.las2peer.setQuestionnaireForSurvey(
-        questionnaire.id,
-        surveyId,
-      );
-
-      const q = new QuestionnaireModel(
-        questionnaire.name,
-        questionnaire.id,
-        surveyId,
-      );
-
-      this.ngrxStore.dispatch(
-        addQuestionnaireToModel({ questionnaire: q }),
-      );
-
-      if (addMeasures) {
-        const [newModel, newMeasures] =
-          QuestionnairesComponent.addMeasuresFromQuestionnaireToModel(
-            questionnaire,
-            surveyId,
-            assignMeasures,
-            this.service,
-            this.measures,
-            this.model,
-          );
-        this.ngrxStore.dispatch(
-          addModelToWorkSpace({
-            xml: SuccessModel.fromPlainObject(newModel).toXml()
-              .outerHTML,
-          }),
-        );
-        this.ngrxStore.dispatch(
-          addCatalogToWorkspace({
-            xml: new MeasureCatalog(newMeasures).toXml().outerHTML,
-          }),
-        );
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  async openInfoDialog(survey: Survey) {
+    const questionnaires = await firstValueFrom(
+      this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
+    );
+    const desiredQuestionnaire = questionnaires.find(
+      (q) => q.id === survey.qid,
+    );
+    this.dialog.open(QuestionnaireInfoDialogComponent, {
+      data: desiredQuestionnaire,
+    });
   }
 }

@@ -33,7 +33,7 @@ describe('SqlTableComponent', () => {
     component.service = {
       name: 'TestName',
       alias: 'TestAlias',
-      mobsosIDs: [],
+      mobsosIDs: {},
       serviceMessageDescriptions: {},
     };
     fixture.detectChanges();

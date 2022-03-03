@@ -21,8 +21,11 @@ import {
   fetchGroups,
   fetchMeasureCatalog,
   fetchMessageDescriptions,
+  fetchQuestionnaires,
   fetchServices,
   fetchSuccessModel,
+  fetchSurveys,
+  joinWorkSpace,
   setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
@@ -112,6 +115,7 @@ export class AppComponent
   noobInfo: boolean;
   version = environment.version;
 
+  isLoading: boolean;
   private silentSigninIntervalHandle: Timer;
 
   constructor(
@@ -142,6 +146,9 @@ export class AppComponent
   }
 
   ngOnInit(): void {
+    void firstValueFrom(
+      this.l2p.authenticateOnReqBaz().pipe(take(1)),
+    );
     this.ngrxStore.dispatch(disableEdit());
     void this.checkCoreServices();
     void this.ngrxStore
@@ -158,6 +165,11 @@ export class AppComponent
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
+    const sub = this.loading$.subscribe((loading) => {
+      this.isLoading = loading;
+      this.changeDetectorRef.detectChanges();
+    });
+    this.subscriptions$.push(sub);
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -194,15 +206,19 @@ export class AppComponent
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
+    this.ngrxStore.dispatch(fetchSurveys());
+    this.ngrxStore.dispatch(fetchQuestionnaires());
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
+
     this.ngrxStore.dispatch(
       setCommunityWorkspaceOwner({
         owner: user.profile.preferred_username,
       }),
     );
     if (!serviceName) return;
+    this.ngrxStore.dispatch(joinWorkSpace({ groupId, serviceName }));
     this.ngrxStore.dispatch(
       fetchSuccessModel({ groupId, serviceName }),
     );

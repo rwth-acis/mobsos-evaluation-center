@@ -17,7 +17,6 @@ import {
   first,
   map,
   mergeMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -69,7 +68,7 @@ export class ValueVisualizationComponent
       withLatestFrom(this.service$),
       map(([measure, service]) => {
         let query = measure.queries[0].sql;
-        query = this.applyVariableReplacements(query, service);
+        query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
         return query;
       }),

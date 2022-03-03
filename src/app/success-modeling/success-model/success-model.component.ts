@@ -42,7 +42,7 @@ import {
 } from '@angular/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from '../../models/service.model';
-import { IQuestionnaire } from '../../models/questionnaire.model';
+import { Questionnaire } from '../../models/questionnaire.model';
 @Component({
   selector: 'app-success-model',
   templateUrl: './success-model.component.html',
@@ -116,7 +116,7 @@ export class SuccessModelComponent implements OnInit {
   workspaceUser;
 
   saveInProgress = false;
-  availableQuestionnaires: IQuestionnaire[];
+  availableQuestionnaires: Questionnaire[];
   numberOfRequirements = 0;
 
   subscriptions$: Subscription[] = [];

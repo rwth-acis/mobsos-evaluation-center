@@ -2,6 +2,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   ChartType,
+  Formatter,
   getPackageForChart,
   ScriptLoaderService,
 } from 'angular-google-charts';
@@ -36,6 +37,7 @@ import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 import { Measure } from 'src/app/models/measure.model';
+import { StaticChartComponent } from './static-chart/static-chart.component';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -60,7 +62,7 @@ export class ChartVisualizerComponent
   // Observable which periodically checks wheter the google charts library is ready
   dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
 
-  formatters = []; // formatters are used to format js dates into human readable format
+  formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
 
   subscriptions$: Subscription[] = [];
   constructor(
@@ -124,6 +126,7 @@ export class ChartVisualizerComponent
 
     this.dataIsReady$ = this.data$.pipe(
       map((data) => data && !data.loading),
+      distinctUntilChanged(),
     );
 
     // loads the package for the charttype and emits if package is loaded
@@ -133,7 +136,9 @@ export class ChartVisualizerComponent
           (measure.visualization as ChartVisualization).chartType,
       ),
       switchMap((chartType) => {
-        const type = getPackageForChart(ChartType[chartType]);
+        const type = getPackageForChart(
+          ChartType[chartType] as ChartType,
+        );
         return this.scriptLoader.loadChartPackages(type);
       }),
     );
@@ -142,10 +147,11 @@ export class ChartVisualizerComponent
       .pipe(withLatestFrom(this.service$))
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
+        const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
         const queryParams = super.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(query, queryParams);
+        super.fetchVisualizationData(query, queryParams, cache);
       });
     this.subscriptions$.push(sub);
 
@@ -192,6 +198,14 @@ export class ChartVisualizerComponent
     this.chartInitialized = false;
   }
 
+  expandChart(): void {
+    this.dialog.open(StaticChartComponent, {
+      data: this.chartData,
+      width: '90vw',
+      height: '90vh',
+    });
+  }
+
   /**
    * Prepares chart for given measure
    *
@@ -217,7 +231,7 @@ export class ChartVisualizerComponent
         });
         rows = rows.map((row) =>
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          row.map((entry, index) => {
+          row.map((entry: string, index) => {
             if (index === i) {
               return new Date(parseInt(entry, 10));
             }
@@ -232,7 +246,7 @@ export class ChartVisualizerComponent
       '',
       (visualization as ChartVisualization).chartType,
       rows,
-      dataTable[0],
+      dataTable[0] as string[],
       {
         colors: [
           '#00a895',
@@ -242,6 +256,7 @@ export class ChartVisualizerComponent
           '#ffd600',
         ],
       },
+      this.formatters,
     );
   }
 }

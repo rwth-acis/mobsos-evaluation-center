@@ -186,6 +186,7 @@ export class KpiVisualization extends Visualization {
     const operationsElements:
       | KpiVisualizationOperand[]
       | KpiVisualizationOperator[] = [];
+    if (!obj.operationsElements) return;
     obj.operationsElements.forEach((value, index) => {
       if (index % 2 === 0) {
         operationsElements.push(

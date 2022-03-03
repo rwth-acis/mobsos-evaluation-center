@@ -1,17 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   OnInit,
 } from '@angular/core';
 
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import {
-  IQuestionnaire,
-  Questionnaire,
-} from 'src/app/models/questionnaire.model';
-import { QUESTIONNAIRES_NOT_IN_MODEL } from 'src/app/services/store.selectors';
+import { Questionnaire } from 'src/app/models/questionnaire.model';
+import { SURVEYS_NOT_IN_MODEL } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -21,19 +16,13 @@ import { environment } from 'src/environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PickQuestionnaireDialogComponent implements OnInit {
-  selectedQuestionnaire: IQuestionnaire;
+  selectedQuestionnaire: Questionnaire;
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  questionnaires$ = this.ngrxStore.select(
-    QUESTIONNAIRES_NOT_IN_MODEL,
-  );
+  questionnaires$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA)
-    data: { questionnaires: Questionnaire[] },
-    private ngrxStore: Store,
-  ) {}
+  constructor(private ngrxStore: Store) {}
 
   static parseXml(xml: string): Document {
     const parser = new DOMParser();

@@ -37,7 +37,12 @@ import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation
 import { TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  Observable,
+  Subscription,
+} from 'rxjs';
 
 export interface DialogData {
   measures: Measure[];
@@ -71,7 +76,7 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
     this.measures$,
     this.input.valueChanges.pipe(startWith('')),
   ]).pipe(
-    map(([measures, input]) =>
+    map(([measures, input]: [Measure[], string]) =>
       input?.trim().length > 0
         ? measures.filter((measure) =>
             measure.name
@@ -131,12 +136,14 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
         create: true,
       },
     });
-    const result = await dialogRef.afterClosed().toPromise();
+    const newMeasure: Measure = await firstValueFrom(
+      dialogRef.afterClosed(),
+    );
     this.changeDetectorRef.reattach();
-    if (result) {
-      this.data.measures.unshift(result);
+    if (newMeasure) {
+      this.data.measures.unshift(newMeasure);
       this.ngrxStore.dispatch(
-        addMeasureToCatalog({ measure: result }),
+        addMeasureToCatalog({ measure: newMeasure }),
       );
       // this.measuresChanged.emit(this.data.measures);
     }

@@ -1,4 +1,9 @@
-export class ReqbazProject {
+export interface Project {
+  name: string;
+  id: number;
+}
+
+export class ReqbazProject implements Project {
   constructor(
     public name: string,
     public id: number,

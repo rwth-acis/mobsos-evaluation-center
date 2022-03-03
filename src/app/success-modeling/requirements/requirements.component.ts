@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-
 import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-project.component';
 import { ConfirmationDialogComponent } from '../../shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -27,7 +26,7 @@ import {
   Las2peerService,
 } from 'src/app/services/las2peer.service';
 import { cloneDeep } from 'lodash-es';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 @Component({
   selector: 'app-requirements',
   templateUrl: './requirements.component.html',
@@ -78,12 +77,18 @@ export class RequirementsComponent implements OnInit, OnDestroy {
       minWidth: 300,
       width: '80%',
     });
-    const result = await dialogRef.afterClosed().toPromise();
-    if (result) {
+    const {
+      selectedProject,
+      selectedCategory,
+    }: {
+      selectedProject: ReqbazProject;
+      selectedCategory: { id: number };
+    } = await firstValueFrom(dialogRef.afterClosed());
+    if (selectedProject && selectedCategory) {
       const project = new ReqbazProject(
-        result.selectedProject.name,
-        result.selectedProject.id,
-        result.selectedCategory.id,
+        selectedProject.name,
+        selectedProject.id,
+        selectedCategory.id,
       );
 
       this.ngrxStore.dispatch(
@@ -106,7 +111,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.successModel = SuccessModel.fromPlainObject(
-        cloneDeep(this.successModel),
+        cloneDeep(this.successModel) as SuccessModel,
       );
 
       this.ngrxStore.dispatch(removeReqBazarProject());

@@ -32,6 +32,7 @@ import { AddCommunityDialogComponent } from './dialogs/add-community-dialog/add-
 import { UnavailableServicesDialogComponent } from './dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 import { MatListModule } from '@angular/material/list';
 import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.component';
+import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -41,6 +42,7 @@ import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.com
     AddCommunityDialogComponent,
     UnavailableServicesDialogComponent,
     ImportDialogComponent,
+    QuestionnaireInfoDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -48,6 +50,7 @@ import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.com
     MatButtonModule,
     MatDialogModule,
     FormsModule,
+    MatCardModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatPaginatorModule,

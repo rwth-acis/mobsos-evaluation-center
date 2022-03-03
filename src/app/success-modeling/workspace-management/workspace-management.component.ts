@@ -1,4 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -35,13 +40,17 @@ import {
   SUCCESS_MODEL_XML,
   MEASURE_CATALOG_XML,
 } from '../../services/store.selectors';
-import { combineLatest, lastValueFrom, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  lastValueFrom,
+  Subscription,
+} from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
   map,
   take,
-  withLatestFrom,
 } from 'rxjs/operators';
 
 import { WorkspaceService } from '../../services/workspace.service';
@@ -50,6 +59,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { joinAbsoluteUrlPath } from '../../services/las2peer.service';
 import { FormControl } from '@angular/forms';
 import { ImportDialogComponent } from 'src/app/shared/dialogs/import-dialog/import-dialog.component';
+import {
+  MatSlideToggle,
+  MatSlideToggleChange,
+} from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-workspace-management',
@@ -59,6 +72,8 @@ import { ImportDialogComponent } from 'src/app/shared/dialogs/import-dialog/impo
 export class WorkspaceManagementComponent
   implements OnInit, OnDestroy
 {
+  @ViewChild(MatSlideToggle)
+  editControls: MatSlideToggle;
   // Observables from store
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
   measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
@@ -143,46 +158,6 @@ export class WorkspaceManagementComponent
       });
     this.subscriptions$.push(sub);
 
-    sub = this.ngrxStore
-      .select(EDIT_MODE)
-      .pipe(
-        distinctUntilChanged(),
-        filter((mode) => mode),
-        withLatestFrom(
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-          this.ngrxStore.select(USER),
-        ),
-      )
-      .subscribe(([, groupId, serviceName, user]) => {
-        const username = user?.profile.preferred_username;
-
-        const dialogRef = this.dialog.open(
-          ConfirmationDialogComponent,
-          {
-            minWidth: 300,
-            width: '80%',
-            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
-          },
-        );
-        void dialogRef
-          .afterClosed()
-          .toPromise()
-          .then((confirmation: boolean) => {
-            if (username && serviceName) {
-              this.ngrxStore.dispatch(
-                joinWorkSpace({
-                  groupId,
-                  serviceName,
-                  username,
-                  copyModel: confirmation,
-                }),
-              );
-            }
-          });
-      });
-    this.subscriptions$.push(sub);
-
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
     if (editMode !== this.checked) this.checked = editMode;
   }
@@ -204,15 +179,42 @@ export class WorkspaceManagementComponent
     }
   }
 
-  async onEditModeToggled(): Promise<void> {
-    const editMode = await this.editMode$.pipe(take(1)).toPromise();
-    if (editMode) {
+  async onEditModeToggled(e: MatSlideToggleChange): Promise<void> {
+    const [groupId, serviceName, user] = await firstValueFrom(
+      combineLatest([
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(_SELECTED_SERVICE_NAME),
+        this.ngrxStore.select(USER),
+      ]).pipe(take(1)),
+    );
+    const editMode = e.checked;
+
+    if (!editMode) {
       const confirmation = await this.openClearWorkspaceDialog();
       if (confirmation) {
         this.ngrxStore.dispatch(disableEdit());
+      } else {
+        this.editControls.writeValue(true);
       }
-    } else {
+    } else if (user?.profile.preferred_username && serviceName) {
       this.ngrxStore.dispatch(enableEdit());
+      const confirmation = await firstValueFrom(
+        this.dialog
+          .open(ConfirmationDialogComponent, {
+            minWidth: 300,
+            width: '80%',
+            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
+          })
+          .afterClosed(),
+      );
+      this.ngrxStore.dispatch(
+        joinWorkSpace({
+          groupId,
+          serviceName,
+          username: user?.profile.preferred_username,
+          copyModel: !!confirmation,
+        }),
+      );
     }
   }
 

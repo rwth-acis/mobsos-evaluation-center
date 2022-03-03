@@ -9,6 +9,7 @@ import {
   MeasureCatalog,
   MeasureMap,
 } from '../models/measure.catalog';
+import { Questionnaire } from '../models/questionnaire.model';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
@@ -31,6 +32,7 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
+export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
 
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
@@ -229,17 +231,20 @@ export const SUCCESS_MODEL_IS_EMPTY = createSelector(
     !dimensions?.find((dimension) => dimension.length > 0),
 );
 
-export const QUESTIONNAIRES_FROM_SUCCESS_MODEL = createSelector(
+export const SURVEYS_FROM_SUCCESS_MODEL = createSelector(
   SUCCESS_MODEL,
-  (model) => model?.questionnaires,
+  (model) => model?.surveys,
 );
 
-export const QUESTIONNAIRES_NOT_IN_MODEL = createSelector(
-  QUESTIONNAIRES_FROM_SUCCESS_MODEL,
-  QUESTIONNAIRES,
-  (qsInModel, qs) =>
-    qs?.filter(
-      (q) => !qsInModel.find((qfromModel) => (qfromModel.id = q.id)),
+export const SURVEYS_NOT_IN_MODEL = createSelector(
+  SURVEYS_FROM_SUCCESS_MODEL,
+  SURVEYS,
+  (surveysInModels, surveys) =>
+    surveys?.filter(
+      (survey) =>
+        !surveysInModels.find(
+          (surveyInModel) => surveyInModel.id === survey.id,
+        ),
     ),
 );
 
@@ -311,6 +316,11 @@ export const WORKSPACE_CATALOG = createSelector(
   APPLICATION_WORKSPACE,
   (workspace) => workspace?.catalog,
 );
+
+export const QUESTIONNAIRE = (props: { qid: number }) =>
+  createSelector(QUESTIONNAIRES, (qs: Questionnaire[]) =>
+    qs ? qs.find((q) => q.id === props.qid) : undefined,
+  );
 
 export const WORKSPACE_CATALOG_XML = createSelector(
   WORKSPACE_CATALOG,

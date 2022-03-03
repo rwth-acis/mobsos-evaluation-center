@@ -369,7 +369,8 @@
         <h4>
           {{ (measure$ | async)?.name }}
         </h4>
-        <app-visualization [measure$]="measure$"> </app-visualization>
+        <app-visualization [measure$]="measure$" class="h-full">
+        </app-visualization>
 
         <mat-dialog-actions class="navig">
           <button mat-stroked-button matStepperPrevious type="button">

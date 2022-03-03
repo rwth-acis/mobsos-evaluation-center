@@ -8,11 +8,10 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { SuccessModel } from 'src/app/models/success.model';
 import {
+  addModelToWorkSpace,
   enableEdit,
-  setService,
   setServiceName,
   storeCatalog,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 
 @Component({
@@ -21,11 +20,12 @@ import {
   styleUrls: ['./import-dialog.component.scss'],
 })
 export class ImportDialogComponent implements OnInit {
+  static xml: string;
   @HostListener('window:drop', ['$event.target'])
   @ViewChild('fileInput')
   fileInput;
   fileName: string;
-  static xml: string;
+
   constructor(
     private store: Store,
     private dialogRef: MatDialogRef<ImportDialogComponent>,
@@ -41,12 +41,12 @@ export class ImportDialogComponent implements OnInit {
       return alert('You can only upload xml files');
     }
     if (this.fileName) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
       reader.onload = function (evt) {
         ImportDialogComponent.xml = evt.target.result as string;
       };
-      reader.onerror = function (evt) {};
+      reader.onerror = function () {};
     }
   }
 
@@ -56,31 +56,47 @@ export class ImportDialogComponent implements OnInit {
       ImportDialogComponent.xml,
       'text/xml',
     );
-    const isSuccessModel = ImportDialogComponent.xml
-      .slice(0, 10)
-      .includes('Success');
-    const isMeasureCatalog = ImportDialogComponent.xml
-      .slice(0, 10)
-      .includes('Catalog');
+    const rootNodeName = XMLElement.firstChild.nodeName;
+    const isSuccessModel = rootNodeName === 'SuccessModel';
+    const isMeasureCatalog = rootNodeName === 'MeasureCatalog';
+    if (!isSuccessModel && !isMeasureCatalog)
+      return alert(
+        'The filetype is not supported. Please only submit valid success model or catalog files',
+      );
 
     if (isSuccessModel) {
-      const model = SuccessModel.fromXml(XMLElement.documentElement);
-      this.store.dispatch(
-        setServiceName({ serviceName: model.service }),
-      );
-      this.store.dispatch(
-        storeSuccessModel({ xml: ImportDialogComponent.xml }),
-      );
-      this.store.dispatch(enableEdit());
-      this.dialogRef.close();
+      try {
+        const model = SuccessModel.fromXml(
+          XMLElement.documentElement,
+        );
+        this.store.dispatch(enableEdit());
+        this.store.dispatch(
+          setServiceName({ serviceName: model.service }),
+        );
+        setTimeout(() => {
+          this.store.dispatch(
+            addModelToWorkSpace({ xml: ImportDialogComponent.xml }),
+          );
+          alert(
+            'Success Model successfully imported. You still need to save the model for the chages to take effect.',
+          );
+          return this.dialogRef.close();
+        }, 1000);
+      } catch (e) {
+        return alert('The success model file is broken.');
+      }
     } else if (isMeasureCatalog) {
-      this.store.dispatch(
-        storeCatalog({ xml: ImportDialogComponent.xml }),
-      );
-      this.dialogRef.close();
+      try {
+        this.store.dispatch(
+          storeCatalog({ xml: ImportDialogComponent.xml }),
+        );
+        alert(
+          'Measure catalog successfully imported. You still need to save the model for the chages to take effect.',
+        );
+        return this.dialogRef.close();
+      } catch (e) {
+        return alert('The measure catalog file is broken.');
+      }
     }
-    return alert(
-      'The filetype is not supported. Please only submit valid success model or catalog files',
-    );
   }
 }
