@@ -1,6 +1,6 @@
 <mat-card>
-  <mat-card-header class="flex">
-    <mat-icon mat-card-avatar>help_outline</mat-icon>
+  <mat-card-header class="flex items-center">
+    <mat-icon mat-card-avatar>question_answer</mat-icon>
     <mat-card-title>{{
       'success-modeling.questionnaires.title' | translate
     }}</mat-card-title>
@@ -37,40 +37,47 @@
         'success-modeling.questionnaires.activate-edit' | translate
       }}</ng-container>
     </p>
-    <table>
-      <tr *ngFor="let survey of model.surveys; let i = index">
-        <div class="questionnaire-row">
-          <td *ngIf="canEdit$ | async">
-            <button
-              mat-icon-button
-              matTooltipShowDelay="0"
-              matTooltip="{{
-                'success-modeling.questionnaires.remove-questionnaire-tooltip'
-                  | translate
-              }}"
-              (click)="openRemoveQuestionnaireDialog(i)"
-            >
-              <mat-icon color="warn">remove_circle_outline</mat-icon>
-            </button>
-          </td>
-          <th>{{ survey.name }}</th>
-          <td>
-            <button mat-icon-button (click)="openInfoDialog(survey)">
-              <mat-icon id="info-icon"> info_outline </mat-icon>
-            </button>
-          </td>
-          <td>
-            <a
-              mat-icon-button
-              [href]="mobsosSurveysUrl + '/surveys/' + survey.id"
-              color="primary"
-              target="_blank"
-            >
-              <mat-icon>open_in_browser</mat-icon>
-            </a>
-          </td>
-        </div>
-      </tr>
-    </table>
+
+    <div
+      *ngFor="let survey of model.surveys; let i = index"
+      class="questionnaire-row"
+    >
+      <button
+        *ngIf="canEdit$ | async"
+        mat-icon-button
+        matTooltip="{{
+          'success-modeling.questionnaires.remove-questionnaire-tooltip'
+            | translate
+        }}"
+        (click)="openRemoveQuestionnaireDialog(i)"
+      >
+        <mat-icon color="warn">remove_circle_outline</mat-icon>
+      </button>
+
+      <span class="font-bold">{{ survey.name }}</span>
+
+      <button mat-icon-button (click)="openInfoDialog(survey)">
+        <mat-icon id="info-icon"> info_outline </mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        aria-label="Workspaces"
+        (click)="shareSurveyLink(survey.id)"
+        matTooltip="{{
+          'success-modeling.questionnaires.share-survey' | translate
+        }}"
+      >
+        <mat-icon color="primary"> share </mat-icon>
+      </button>
+      <a
+        mat-icon-button
+        [href]="mobsosSurveysUrl + '/surveys/' + survey.id"
+        color="primary"
+        target="_blank"
+      >
+        <mat-icon>open_in_browser</mat-icon>
+      </a>
+    </div>
   </mat-card-content>
 </mat-card>

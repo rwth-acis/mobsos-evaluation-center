@@ -31,7 +31,10 @@ import {
 import { Measure } from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
-import { Las2peerService } from 'src/app/services/las2peer.service';
+import {
+  joinAbsoluteUrlPath,
+  Las2peerService,
+} from 'src/app/services/las2peer.service';
 import { firstValueFrom, Observable } from 'rxjs';
 import {
   addSurveyToModel,
@@ -46,6 +49,8 @@ import { filter, take } from 'rxjs/operators';
 import { Survey } from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
+import { TranslateService } from '@ngx-translate/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-questionnaires',
@@ -70,6 +75,8 @@ export class QuestionnairesComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private las2peer: Las2peerService,
+    private translate: TranslateService,
+    private _snackBar: MatSnackBar,
 
     private ngrxStore: Store,
   ) {}
@@ -330,6 +337,17 @@ export class QuestionnairesComponent implements OnInit {
         }),
       );
     }
+  }
+
+  shareSurveyLink(surveyId: number) {
+    const base = environment.mobsosSurveysUrl;
+    const link = joinAbsoluteUrlPath(base, 'surveys', surveyId);
+
+    void navigator.clipboard.writeText(link);
+    const message = this.translate.instant(
+      'copied-to-clipboard',
+    ) as string;
+    this._snackBar.open(message, undefined, { duration: 3000 });
   }
 
   async ngOnInit(): Promise<void> {
