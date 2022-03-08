@@ -10,9 +10,9 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../../app.module';
+
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SuccessMeasureComponent } from '../../success-measure/success-measure.component';
+
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatDialogModule,
@@ -22,6 +22,8 @@ import {
 import { MatCardModule } from '@angular/material/card';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+import { SuccessMeasureComponent } from '../success-measure/success-measure.component';
+import { createTranslateLoader } from 'src/app/app.module';
 
 describe('PickMeasureDialogComponent', () => {
   let component: PickMeasureDialogComponent;

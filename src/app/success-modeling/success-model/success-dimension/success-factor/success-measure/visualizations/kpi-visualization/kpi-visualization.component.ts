@@ -23,14 +23,11 @@ import {
   filter,
   first,
   map,
-  mergeMap,
   share,
   startWith,
   switchMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
 import { refreshVisualization } from 'src/app/services/store.actions';
 
 @Component({
@@ -134,8 +131,8 @@ export class KpiVisualizationComponent
       withLatestFrom(this.measure$),
       filter((data) => !!data),
       map(([data, measure]) => {
-        const abstractTerm = [];
-        const term = [];
+        const abstractTerm: string[] = [];
+        const term: string[] = [];
 
         const values: number[] = data.map((array) => {
           const lastEntry = array[array.length - 1][0];
@@ -165,7 +162,7 @@ export class KpiVisualizationComponent
           // even index means, that this must be an operand since we only support binary operators
           if (operationElement.index % 2 === 0) {
             const value = values[operationElement.index / 2];
-            term.push(value);
+            term.push(value.toString());
           } else {
             term.push(operationElement.name);
           }
@@ -232,7 +229,7 @@ function getDataFromStore(
       store
         .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
         .pipe(
-          filter((data) => !!data),
+          filter((d) => !!d),
           distinctUntilKeyChanged('fetchDate'),
         ),
   );

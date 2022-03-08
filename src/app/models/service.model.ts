@@ -1,15 +1,19 @@
+/**
+ * Information about a service in the las2peer network
+ */
 export interface ServiceInformation {
   name: string;
   alias: string;
   mobsosIDs: MobSOSIDs; // MobSOS IDs and their last registrationTime
-  // key is custom message type (such as SERVICE_CUSTOM_MESSAGE_42)
-  serviceMessageDescriptions: ServiceMessageDescriptions;
+  serviceMessageDescriptions: ServiceMessageDescriptions; // message descriptions for the service
 }
 
 export interface MobSOSIDs {
   [key: string]: number;
 }
-
+/**
+ * A collection of services available in the las2peer network. The key is the name of the service
+ */
 export interface ServiceCollection {
   [key: string]: ServiceInformation;
 }

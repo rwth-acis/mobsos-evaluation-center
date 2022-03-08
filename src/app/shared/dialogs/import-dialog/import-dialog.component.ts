@@ -10,10 +10,8 @@ import { SuccessModel } from 'src/app/models/success.model';
 import {
   addModelToWorkSpace,
   enableEdit,
-  setService,
   setServiceName,
   storeCatalog,
-  storeSuccessModel,
 } from 'src/app/services/store.actions';
 
 @Component({
@@ -22,11 +20,12 @@ import {
   styleUrls: ['./import-dialog.component.scss'],
 })
 export class ImportDialogComponent implements OnInit {
+  static xml: string;
   @HostListener('window:drop', ['$event.target'])
   @ViewChild('fileInput')
   fileInput;
   fileName: string;
-  static xml: string;
+
   constructor(
     private store: Store,
     private dialogRef: MatDialogRef<ImportDialogComponent>,
@@ -42,12 +41,12 @@ export class ImportDialogComponent implements OnInit {
       return alert('You can only upload xml files');
     }
     if (this.fileName) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
       reader.onload = function (evt) {
         ImportDialogComponent.xml = evt.target.result as string;
       };
-      reader.onerror = function (evt) {};
+      reader.onerror = function () {};
     }
   }
 

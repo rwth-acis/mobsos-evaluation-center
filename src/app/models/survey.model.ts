@@ -31,7 +31,7 @@ export interface SurveyForm {
 }
 
 export class Survey implements Survey {
-  static fromPlainObject(s: Survey): any {
+  static fromPlainObject(s: Survey): Survey {
     return new Survey({
       name: s.name,
       id: s.id,

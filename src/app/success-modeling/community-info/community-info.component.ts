@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { firstValueFrom, map } from 'rxjs';
+import { map } from 'rxjs';
 import { fetchGroupMembers } from 'src/app/services/store.actions';
 import {
   SELECTED_GROUP,

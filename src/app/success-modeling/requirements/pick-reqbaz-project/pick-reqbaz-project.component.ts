@@ -2,17 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { startWith, throttleTime } from 'rxjs/operators';
+import { Category, ReqbazProject } from 'src/app/models/reqbaz.model';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-
-interface Project {
-  name: string;
-  id: number;
-}
-
-interface Category {
-  name: string;
-  id: number;
-}
 
 @Component({
   selector: 'app-pick-reqbaz-project',
@@ -22,10 +13,12 @@ interface Category {
 export class PickReqbazProjectComponent implements OnInit {
   selectedProjectControl = new FormControl();
   selectedCategoryControl = new FormControl();
-  selectedProject: Project;
+  selectedProject: ReqbazProject;
   selectedCategory: Category;
   private availableCategories$ = new BehaviorSubject<Category[]>([]);
-  private availableProjects$ = new BehaviorSubject<Project[]>([]);
+  private availableProjects$ = new BehaviorSubject<ReqbazProject[]>(
+    [],
+  );
   // eslint-disable-next-line @typescript-eslint/member-ordering
   availableProjects = this.availableProjects$.asObservable();
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -37,19 +30,19 @@ export class PickReqbazProjectComponent implements OnInit {
   ngOnInit(): void {
     let sub = this.selectedProjectControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
-      .subscribe((value) => {
+      .subscribe((value: string) => {
         void this._filterProject(value);
       });
     this.subscriptions$.push(sub);
     sub = this.selectedCategoryControl.valueChanges
       .pipe(startWith(''), throttleTime(100))
-      .subscribe((value) => {
+      .subscribe((value: string) => {
         void this._filterCategory(value);
       });
     this.subscriptions$.push(sub);
   }
 
-  projectDisplay(project?: Project): string | undefined {
+  projectDisplay(project?: ReqbazProject): string | undefined {
     return project ? project.name : undefined;
   }
 
@@ -60,7 +53,8 @@ export class PickReqbazProjectComponent implements OnInit {
   async _filterProject(value: string): Promise<void> {
     const projects = await this.las2peer.searchProjectOnReqBaz(value);
 
-    if (projects) this.availableProjects$.next(projects as Project[]);
+    if (projects)
+      this.availableProjects$.next(projects as ReqbazProject[]);
   }
 
   async _filterCategory(value: string): Promise<void> {
@@ -74,6 +68,6 @@ export class PickReqbazProjectComponent implements OnInit {
     );
 
     if (categories)
-      this.availableCategories$.next(categories as any[]);
+      this.availableCategories$.next(categories as Category[]);
   }
 }

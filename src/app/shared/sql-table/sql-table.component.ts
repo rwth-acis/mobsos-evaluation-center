@@ -42,7 +42,7 @@ export class SqlTableComponent
   displayedColumns$: Observable<unknown>;
   constructor(private ngrxStore: Store) {}
 
-  static htmlDecode(input) {
+  static htmlDecode(input: string) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent;
   }

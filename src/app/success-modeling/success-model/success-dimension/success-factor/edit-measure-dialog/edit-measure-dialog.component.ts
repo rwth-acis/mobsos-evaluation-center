@@ -211,9 +211,11 @@ export class EditMeasureDialogComponent implements OnInit {
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
       startWith(this.data.measure),
-      distinctUntilChanged((prev, curr) => {
-        return queriesChanged(prev, curr);
-      }),
+      distinctUntilChanged(
+        (prev: { queries: Query[] }, curr: { queries: Query[] }) => {
+          return queriesChanged(prev, curr);
+        },
+      ),
       map((value) =>
         EditMeasureDialogComponent.getMeasureFromForm(
           value ? value : this.data.measure,

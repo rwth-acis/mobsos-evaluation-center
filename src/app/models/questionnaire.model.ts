@@ -52,4 +52,9 @@ export interface Question {
   dimensionRecommendation: string;
   factorRecommendation: string;
   instructions: string;
+  labels?: QuestionLabels;
+}
+
+interface QuestionLabels {
+  [key: string]: string;
 }

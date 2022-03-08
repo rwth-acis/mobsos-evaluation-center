@@ -1,11 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { userInfo } from 'os';
 import { firstValueFrom, take } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { Survey } from 'src/app/models/survey.model';
@@ -13,14 +8,13 @@ import {
   joinAbsoluteUrlPath,
   Las2peerService,
 } from 'src/app/services/las2peer.service';
-import { addSurveyToModel } from 'src/app/services/store.actions';
 import {
-  QUESTIONNAIRES_NOT_IN_MODEL,
+  SURVEYS_NOT_IN_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
   SURVEYS,
   USER,
-  _SELECTED_SERVICE_NAME,
+  QUESTIONNAIRES,
 } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/pick-questionnaire-dialog.component';
@@ -32,10 +26,10 @@ import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/p
 })
 export class PickSurveyDialogComponent implements OnInit {
   selectedSurvey: Survey;
-  addMeasures: boolean = true;
-  assignMeasures: boolean = true;
+  addMeasures = true;
+  assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
-  surveys$ = this.ngrxStore.select(SURVEYS);
+  surveys$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
 
   constructor(
     private dialogRef: MatDialogRef<PickSurveyDialogComponent>,
@@ -62,9 +56,7 @@ export class PickSurveyDialogComponent implements OnInit {
   async openAddSurveyDialog() {
     const availableQuestionnaires: Questionnaire[] =
       await firstValueFrom(
-        this.ngrxStore
-          .select(QUESTIONNAIRES_NOT_IN_MODEL)
-          .pipe(take(1)),
+        this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
       );
     const dialogRef = this.dialog.open(
       PickQuestionnaireDialogComponent,
@@ -105,21 +97,18 @@ export class PickSurveyDialogComponent implements OnInit {
     if (serviceName.includes('@')) {
       serviceName = serviceName.split('@')[0];
     }
-    const surveyName =
-      service.alias +
-      ': ' +
-      questionnaire.name +
-      '(' +
-      PickSurveyDialogComponent.nowAsIsoDate() +
-      ')';
+    const surveyName = `${service.alias}: ${
+      questionnaire.name
+    } (${nowAsIsoDate()}) `;
+
     try {
       const response = await this.l2p.createSurvey(
         surveyName,
         questionnaire.description,
         group.name,
         questionnaire.logo,
-        PickSurveyDialogComponent.nowAsIsoDate(),
-        PickSurveyDialogComponent.in100YearsAsIsoDate(),
+        nowAsIsoDate(),
+        in100YearsAsIsoDate(),
         serviceName,
         service.alias,
         questionnaire.lang,
@@ -142,8 +131,8 @@ export class PickSurveyDialogComponent implements OnInit {
         qid: questionnaire.id,
         logo: questionnaire.logo,
         lang: questionnaire.lang,
-        start: PickSurveyDialogComponent.nowAsIsoDate(),
-        end: PickSurveyDialogComponent.in100YearsAsIsoDate(),
+        start: nowAsIsoDate(),
+        end: in100YearsAsIsoDate(),
         organization: group.name,
         resource: serviceName,
         owner: user.profile.preferred_username,
@@ -158,16 +147,16 @@ export class PickSurveyDialogComponent implements OnInit {
       console.error(error);
     }
   }
+}
 
-  private static nowAsIsoDate(): string {
-    return new Date().toISOString();
-  }
+function nowAsIsoDate(): string {
+  return new Date().toISOString();
+}
 
-  private static in100YearsAsIsoDate(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const day = now.getDate();
-    return new Date(year + 100, month, day).toISOString();
-  }
+function in100YearsAsIsoDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const day = now.getDate();
+  return new Date(year + 100, month, day).toISOString();
 }

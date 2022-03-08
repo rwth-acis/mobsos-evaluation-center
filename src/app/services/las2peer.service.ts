@@ -925,7 +925,7 @@ export class Las2peerService {
     }
 
     const requestBody = {
-      cache: environment.production || cache,
+      cache,
       dbkey: 'las2peermon',
       height: '200px',
       width: '300px',
@@ -933,7 +933,7 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
-      save: environment.production,
+      save: false,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
     let authorHeader;
@@ -985,6 +985,7 @@ export class Las2peerService {
 
   /**
    * Authenticates the user on the requirements bazaar (response is 404 but user seems to be authenticated)
+   *
    * @returns true if user is authenticated
    */
   authenticateOnReqBaz() {

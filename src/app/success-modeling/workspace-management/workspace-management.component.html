@@ -20,7 +20,7 @@
 
   <!-- workspace management -->
   <div
-    class="grid grid-cols-2 sm:grid-cols-3 items-center justify-between"
+    class="flex flex-wrap items-center justify-between"
     *ngIf="showWorkSpaceManagementControls$ | async"
   >
     <mat-slide-toggle
@@ -94,7 +94,7 @@
       </button>
     </div>
 
-    <div class="flex mr-5">
+    <div class="flex ml-auto">
       <mat-form-field class="flex-auto">
         <mat-label>Export</mat-label>
         <mat-select [formControl]="selections" multiple>
