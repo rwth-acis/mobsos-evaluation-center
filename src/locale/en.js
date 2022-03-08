@@ -190,6 +190,7 @@ export const translations = {
       search: 'Search',
     },
     questionnaires: {
+      'share-survey': 'Share Survey',
       'add-questionnaire-tooltip':
         'Add a questionnaire. The questionnaire can be filled in after saving.',
       'delete-questionnaire-dialog': {
@@ -219,8 +220,8 @@ export const translations = {
       },
       'remove-questionnaire-tooltip': 'Remove questionnaire',
       subtitle:
-        'Get user feedback with questionnaires. The generated data can be used in the success model.',
-      title: 'Questionnaires',
+        'Get user feedback with surveys. The generated data can be used in the success model.',
+      title: 'Surveys',
     },
     reqbaz: {
       tooltip: 'Edit requirements from the Requirements Bazaar',
