@@ -80,9 +80,7 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class AppComponent implements OnInit, OnDestroy {
   static userManager = new UserManager({});
 
   @ViewChild(MatSidenav)
@@ -145,7 +143,7 @@ export class AppComponent
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     void firstValueFrom(
       this.l2p.authenticateOnReqBaz().pipe(take(1)),
     );
@@ -170,9 +168,7 @@ export class AppComponent
       this.changeDetectorRef.detectChanges();
     });
     this.subscriptions$.push(sub);
-  }
 
-  async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available / fully functional yet',
@@ -190,8 +186,8 @@ export class AppComponent
     const noob = localStorage.getItem('notNewbie');
     this.noobInfo = noob == null;
 
-    const [user, groupId, serviceName] = await this.user$
-      .pipe(
+    const [user, groupId, serviceName] = await firstValueFrom(
+      this.user$.pipe(
         filter((value) => !!value),
         distinctUntilKeyChanged('signedIn'),
         filter((u) => !!u?.signedIn),
@@ -200,14 +196,16 @@ export class AppComponent
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ),
         take(1),
-      )
-      .toPromise();
+      ),
+    );
+
     // only gets called ONCE if user is signed in
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
     this.ngrxStore.dispatch(fetchSurveys());
     this.ngrxStore.dispatch(fetchQuestionnaires());
+
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
@@ -217,6 +215,7 @@ export class AppComponent
         owner: user.profile.preferred_username,
       }),
     );
+
     if (!serviceName) return;
     this.ngrxStore.dispatch(joinWorkSpace({ groupId, serviceName }));
     this.ngrxStore.dispatch(
@@ -227,17 +226,16 @@ export class AppComponent
         serviceName,
       }),
     );
-    setTimeout(() => {
-      void firstValueFrom(this.l2p.checkAuthorization()).then(
-        (authorized) => {
-          if (!authorized) {
-            alert(
-              'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-            );
-            this.setUser(null);
-          }
-        },
+    setTimeout(async () => {
+      const authorized = await firstValueFrom(
+        this.l2p.checkAuthorization(),
       );
+      if (!authorized) {
+        alert(
+          'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
+        );
+        this.setUser(null);
+      }
     }, 3000);
   }
 
