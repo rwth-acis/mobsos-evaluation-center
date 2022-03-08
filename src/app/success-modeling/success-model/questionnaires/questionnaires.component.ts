@@ -368,7 +368,7 @@ export class QuestionnairesComponent implements OnInit {
       (q) => q.id === survey.qid,
     );
     this.dialog.open(QuestionnaireInfoDialogComponent, {
-      data: desiredQuestionnaire,
+      data: { ...desiredQuestionnaire, surveyId: survey.id },
     });
   }
 }
