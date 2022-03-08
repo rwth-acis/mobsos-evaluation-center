@@ -1,3 +1,9 @@
 <h2>{{ data.name }}</h2>
-
-<p>{{ data.description }}</p>
+<h4>Description</h4>
+<p class="mb-6">{{ data.description }}</p>
+<div class="text-xs grid grid-cols-2 gap-3">
+  <span>Survey Id: </span
+  ><span class="font-bold justify-self-end">{{ data.surveyId }}</span>
+  <span>Questionnaire Id: </span
+  ><span class="font-bold justify-self-end">{{ data.id }}</span>
+</div>
