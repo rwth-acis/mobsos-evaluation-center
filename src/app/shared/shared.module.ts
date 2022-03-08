@@ -15,7 +15,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatRippleModule } from '@angular/material/core';
+import {
+  MatNativeDateModule,
+  MatRippleModule,
+} from '@angular/material/core';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
@@ -33,7 +36,7 @@ import { UnavailableServicesDialogComponent } from './dialogs/unavailable-servic
 import { MatListModule } from '@angular/material/list';
 import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.component';
 import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -62,6 +65,8 @@ import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-d
     MatSelectModule,
     MatTabsModule,
     TranslateModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatButtonModule,
     MatMenuModule,
     MatCardModule,

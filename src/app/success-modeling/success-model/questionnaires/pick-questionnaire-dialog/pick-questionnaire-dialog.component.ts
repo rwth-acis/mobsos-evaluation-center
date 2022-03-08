@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 
 import { Store } from '@ngrx/store';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
@@ -21,6 +22,10 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   questionnaires$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
+  range = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
 
   constructor(private ngrxStore: Store) {}
 

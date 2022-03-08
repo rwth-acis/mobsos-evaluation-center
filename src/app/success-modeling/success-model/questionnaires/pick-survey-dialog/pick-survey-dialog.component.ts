@@ -18,6 +18,13 @@ import {
 } from 'src/app/services/store.selectors';
 import { environment } from 'src/environments/environment';
 import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/pick-questionnaire-dialog.component';
+interface PickQuestionnaireResult {
+  selectedQuestionnaire: Questionnaire;
+  addMeasures: boolean;
+  assignMeasures: boolean;
+  start: Date;
+  end: Date;
+}
 
 @Component({
   selector: 'app-pick-survey-dialog',
@@ -66,11 +73,22 @@ export class PickSurveyDialogComponent implements OnInit {
         data: availableQuestionnaires,
       },
     );
-    const { selectedQuestionnaire, addMeasures, assignMeasures } =
-      await firstValueFrom(dialogRef.afterClosed());
+    const {
+      selectedQuestionnaire,
+      addMeasures,
+      assignMeasures,
+      start,
+      end,
+    }: PickQuestionnaireResult = await firstValueFrom(
+      dialogRef.afterClosed(),
+    );
+    const surveyStart = start ? start.toISOString() : nowAsIsoDate();
+    const surveyEnd = end ? end.toISOString() : in100YearsAsIsoDate();
     if (selectedQuestionnaire) {
       const survey = await this.createNewSurvey(
         selectedQuestionnaire as Questionnaire,
+        surveyStart,
+        surveyEnd,
       );
 
       this.dialogRef.close({
@@ -83,6 +101,8 @@ export class PickSurveyDialogComponent implements OnInit {
 
   private async createNewSurvey(
     questionnaire: Questionnaire,
+    start: string,
+    end: string,
   ): Promise<Survey> {
     const service = await firstValueFrom(
       this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
@@ -97,9 +117,7 @@ export class PickSurveyDialogComponent implements OnInit {
     if (serviceName.includes('@')) {
       serviceName = serviceName.split('@')[0];
     }
-    const surveyName = `${service.alias}: ${
-      questionnaire.name
-    } (${nowAsIsoDate()}) `;
+    const surveyName = `${service.alias}: ${questionnaire.name} (${start}) `;
 
     try {
       const response = await this.l2p.createSurvey(
@@ -107,8 +125,8 @@ export class PickSurveyDialogComponent implements OnInit {
         questionnaire.description,
         group.name,
         questionnaire.logo,
-        nowAsIsoDate(),
-        in100YearsAsIsoDate(),
+        start,
+        end,
         serviceName,
         service.alias,
         questionnaire.lang,
