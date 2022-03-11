@@ -17,7 +17,7 @@ import { distinctUntilChanged } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { SuccessFactor } from 'src/app/models/success.model';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { MeasureMap } from 'src/app/models/measure.catalog';
+
 import {
   MEASURES,
   SELECTED_SERVICE,
@@ -28,7 +28,7 @@ import {
   removeMeasureFromModel,
 } from 'src/app/services/store.actions';
 import { EditFactorDialogComponent } from '../edit-factor-dialog/edit-factor-dialog.component';
-import { Measure } from 'src/app/models/measure.model';
+import { Measure, MeasureMap } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-success-factor',

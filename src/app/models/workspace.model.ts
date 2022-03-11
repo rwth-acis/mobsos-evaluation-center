@@ -1,4 +1,4 @@
-import { MeasureCatalog } from './measure.catalog';
+import { MeasureCatalog } from './measure.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
 import { SuccessModel } from './success.model';

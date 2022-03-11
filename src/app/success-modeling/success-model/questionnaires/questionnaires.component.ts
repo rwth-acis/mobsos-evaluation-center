@@ -16,10 +16,7 @@ import {
   MEASURE_CATALOG,
 } from 'src/app/services/store.selectors';
 import { ServiceInformation } from 'src/app/models/service.model';
-import {
-  MeasureCatalog,
-  MeasureMap,
-} from 'src/app/models/measure.catalog';
+
 import {
   SuccessFactor,
   SuccessModel,
@@ -28,7 +25,11 @@ import {
   Question,
   Questionnaire,
 } from 'src/app/models/questionnaire.model';
-import { Measure } from 'src/app/models/measure.model';
+import {
+  Measure,
+  MeasureCatalog,
+  MeasureMap,
+} from 'src/app/models/measure.model';
 import { Query } from 'src/app/models/query.model';
 import { ChartVisualization } from 'src/app/models/visualization.model';
 import {
@@ -154,8 +155,8 @@ export class QuestionnairesComponent implements OnInit {
       }" GROUP BY Answer ORDER BY number DESC`;
     } else {
       // eslint-disable-next-line @typescript-eslint/dot-notation
-      return `SELECT if(qval, '${question.labels['maxLabel']}',  '${
-        question.labels['minLabel']
+      return `SELECT if(qval, '${question.labels.maxLabel}',  '${
+        question.labels.minLabel
       }') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
         SqlString.escape(surveyId.toString()) as string
       } AND qkey = "${

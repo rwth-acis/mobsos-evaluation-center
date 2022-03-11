@@ -16,7 +16,6 @@ import {
 } from 'lodash-es';
 import * as Y from 'yjs';
 
-import { MeasureCatalog } from '../models/measure.catalog';
 import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
@@ -31,6 +30,7 @@ import {
   timeout,
 } from 'rxjs/operators';
 import { VisualizationCollection } from '../models/visualization.model';
+import { MeasureCatalog } from '../models/measure.model';
 
 const ONE_MINUTE_IN_MS = 60000;
 @Injectable({
@@ -218,7 +218,7 @@ export class WorkspaceService {
   removeWorkspace(username: string, serviceName: string): void {
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
-    );
+    ) as CommunityWorkspace;
     if (!communityWorkspace) return;
     if (!Object.keys(communityWorkspace).includes(username)) {
       return;

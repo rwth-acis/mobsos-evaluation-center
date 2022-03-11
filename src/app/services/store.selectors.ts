@@ -5,10 +5,8 @@ import {
   GroupCollection,
   GroupInformation,
 } from '../models/community.model';
-import {
-  MeasureCatalog,
-  MeasureMap,
-} from '../models/measure.catalog';
+import { MeasureCatalog, MeasureMap } from '../models/measure.model';
+
 import { Questionnaire } from '../models/questionnaire.model';
 import { ServiceInformation } from '../models/service.model';
 import { StoreState } from '../models/state.model';

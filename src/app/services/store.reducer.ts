@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Action, createReducer, on } from '@ngrx/store';
-import { MeasureCatalog } from '../models/measure.catalog';
-import { Measure } from '../models/measure.model';
+
+import { Measure, MeasureCatalog } from '../models/measure.model';
 import { AppState, INITIAL_APP_STATE } from '../models/state.model';
 import { SuccessFactor, SuccessModel } from '../models/success.model';
 import { VisualizationCollection } from '../models/visualization.model';

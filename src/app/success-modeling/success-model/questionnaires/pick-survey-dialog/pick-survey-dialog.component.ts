@@ -12,7 +12,6 @@ import {
   SURVEYS_NOT_IN_MODEL,
   SELECTED_GROUP,
   SELECTED_SERVICE,
-  SURVEYS,
   USER,
   QUESTIONNAIRES,
 } from 'src/app/services/store.selectors';
