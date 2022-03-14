@@ -1,0 +1,1 @@
+This folder contains all the components used by Angular to display this app

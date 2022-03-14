@@ -1,10 +1,28 @@
-import { Query } from './query.model';
 import { Visualization } from './visualization.model';
 
-export class Measure {
+/**
+ * Catalog of measures
+ */
+export interface MeasureCatalog {
+  measures: MeasureMap; // Measures of the catalog
+}
+/**
+ * Map of measures
+ */
+export interface MeasureMap {
+  [key: string]: Measure; // measures are identified by their name
+}
+/**
+ * Success Measure
+ */
+export interface Measure {
+  name: string;
+}
+
+export class Measure implements Measure {
   constructor(
     public name: string,
-    public queries: Query[],
+    public queries: SQLQuery[],
     public visualization: Visualization,
     public tags: string[],
     public description?: string,
@@ -20,9 +38,9 @@ export class Measure {
         .textContent.trim();
     }
 
-    const queries: Query[] = [];
+    const queries: SQLQuery[] = [];
     for (const queryNode of queryNodes) {
-      queries.push(Query.fromXml(queryNode));
+      queries.push(SQLQuery.fromXml(queryNode));
     }
     const visualizationNode = Array.from(
       xml.getElementsByTagName('visualization'),
@@ -48,11 +66,11 @@ export class Measure {
    * @param obj JSON representation of the Measure
    * @returns JavaScript object representation
    */
-  public static fromPlainObject(obj: Measure): Measure {
+  public static fromJSON(obj: Measure): Measure {
     if (!obj) return;
-    const queries: Query[] = [];
+    const queries: SQLQuery[] = [];
     for (const objQuery of obj.queries) {
-      queries.push(Query.fromPlainObject(objQuery));
+      queries.push(SQLQuery.fromJSON(objQuery));
     }
     const visualization = Visualization.fromPlainObject(
       obj.visualization,
@@ -92,13 +110,15 @@ export class Measure {
   }
 }
 
-export interface MeasureMap {
-  [key: string]: Measure;
-}
-
-export class MeasureCatalog {
+export class MeasureCatalog implements MeasureCatalog {
   constructor(public measures: MeasureMap) {}
 
+  /**
+   * Parses a XML representation of th measure catalog into a JavaScript object
+   *
+   * @param xml xml representation of the measure catalog
+   * @returns Measure catalog object
+   */
   static fromXml(xml: Element): MeasureCatalog {
     const measureNodes = Array.from(
       xml.getElementsByTagName('measure'),
@@ -111,12 +131,18 @@ export class MeasureCatalog {
     return new MeasureCatalog(measureMap);
   }
 
-  public static fromPlainObject(obj: MeasureCatalog): MeasureCatalog {
+  /**
+   * Transforms an JSON representation of the measure catalog into JavaScript object.
+   *
+   * @param obj  JSON representation of the MeasureCatalog
+   * @returns  JavaScript object representation of the MeasureCatalog
+   */
+  public static fromJSON(obj: MeasureCatalog): MeasureCatalog {
     try {
       if (!obj?.measures) return;
       const measureMap: MeasureMap = {};
       for (const measureName of Object.keys(obj.measures)) {
-        measureMap[measureName] = Measure.fromPlainObject(
+        measureMap[measureName] = Measure.fromJSON(
           obj.measures[measureName],
         );
       }
@@ -127,16 +153,75 @@ export class MeasureCatalog {
     }
   }
 
+  /**
+   * Transforms the javascript object into xml representation
+   *
+   * @returns XML representation of the measure catalog
+   */
   toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
     const catalog = doc.createElement('Catalog');
     for (const measure of Object.values(this.measures)) {
       if (typeof measure.toXml === 'undefined') {
-        catalog.appendChild(Measure.fromPlainObject(measure).toXml());
+        catalog.appendChild(Measure.fromJSON(measure).toXml());
       } else {
         catalog.appendChild(measure.toXml());
       }
     }
     return catalog;
+  }
+}
+/**
+ * Query for a measure (onls SQL query used at the moment)
+ */
+export interface Query {
+  name: string; // Name of the query
+}
+
+export class Query implements Query {
+  constructor(public name: string) {}
+
+  static fromXml(xml: Element): Query {
+    const queryName = xml.getAttribute('name');
+    return new Query(queryName);
+  }
+
+  public static fromPlainObject(obj: { name: string }): Query {
+    return new Query(obj.name);
+  }
+
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const query = doc.createElement('query');
+    query.setAttribute('name', this.name);
+    return query;
+  }
+}
+
+export class SQLQuery extends Query {
+  constructor(public name: string, public sql: string) {
+    super(name);
+    this.sql = sql;
+  }
+
+  static fromXml(xml: Element): SQLQuery {
+    const queryName = xml.getAttribute('name');
+    const sql = xml.innerHTML;
+    return new SQLQuery(queryName, sql);
+  }
+
+  public static fromJSON(obj: {
+    name: string;
+    sql: string;
+  }): SQLQuery {
+    return new SQLQuery(obj.name, obj.sql);
+  }
+
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const query = doc.createElement('query');
+    query.setAttribute('name', this.name);
+    query.innerHTML = this.sql;
+    return query;
   }
 }

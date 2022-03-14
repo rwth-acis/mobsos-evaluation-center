@@ -12,7 +12,7 @@ import {
   enableEdit,
   setServiceName,
   storeCatalog,
-} from 'src/app/services/store.actions';
+} from 'src/app/services/store/store.actions';
 
 @Component({
   selector: 'app-import-dialog',

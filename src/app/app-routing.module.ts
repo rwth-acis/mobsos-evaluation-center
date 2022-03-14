@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
-import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
-import { OidcSilentComponent } from './oidc/oidc-silent/oidc-silent.component';
-import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
-import { PreloadingStrategyService } from './preloading-strategy.service';
+import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
+import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signout.component';
+import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
+import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-space.component';
+import { CustomPreloadingStrategy } from './preloading-strategy';
 
 const routes: Routes = [
   { path: '', redirectTo: '/success-modeling', pathMatch: 'full' },
@@ -26,15 +26,15 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('./success-modeling/success-modeling.module').then(
-            (m) => m.SuccessModelingModule,
-          ),
+          import(
+            './components/success-modeling/success-modeling.module'
+          ).then((m) => m.SuccessModelingModule),
         data: { preload: true },
       },
       {
         path: 'raw-edit',
         loadChildren: () =>
-          import('./raw-edit/raw-edit.module').then(
+          import('./components/raw-edit/raw-edit.module').then(
             (m) => m.RawEditModule,
           ),
       },
@@ -50,16 +50,16 @@ const routes: Routes = [
   {
     path: 'query-visualization',
     loadChildren: () =>
-      import('./query-visualization/query-visualization.module').then(
-        (m) => m.QueryVisualizationModule,
-      ),
+      import(
+        './components/query-visualization/query-visualization.module'
+      ).then((m) => m.QueryVisualizationModule),
   },
 ];
 
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      preloadingStrategy: PreloadingStrategyService,
+      preloadingStrategy: CustomPreloadingStrategy,
     }),
   ],
   exports: [RouterModule],

@@ -5,7 +5,7 @@ import {
   UserRole,
   Visitor,
 } from '../models/workspace.model';
-import { setCommunityWorkspace } from './store.actions';
+import { setCommunityWorkspace } from './store/store.actions';
 import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import {
@@ -20,7 +20,7 @@ import { SuccessModel } from '../models/success.model';
 import { ServiceInformation } from '../models/service.model';
 import { WebsocketProvider } from 'y-websocket';
 import { environment } from 'src/environments/environment';
-import { _COMMUNITY_WORKSPACE } from './store.selectors';
+import { _COMMUNITY_WORKSPACE } from './store/store.selectors';
 import {
   catchError,
   distinctUntilChanged,
@@ -369,10 +369,7 @@ export class WorkspaceService {
     }
     // logged in users are added if they are not a visitor yet
     else if (owner !== username && !containedInVisitors) {
-      visitors.push({
-        username,
-        role: UserRole.SPECTATOR,
-      });
+      visitors.push(new Visitor(username, role));
     }
     visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
     currentApplicationWorkspace.visitors = visitors;
@@ -428,7 +425,7 @@ export class WorkspaceService {
     appWorkspace.visitors = visitors;
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
-    );
+    ) as CommunityWorkspace;
     communityWorkspace[owner][currentServiceName] = appWorkspace;
     this.communityWorkspace$.next(communityWorkspace);
   }
@@ -450,7 +447,10 @@ export class WorkspaceService {
           console.log('Pushing local changes to remote y-js map...');
         }
         this.sharedDocument.transact(() => {
-          this._syncObjectToMap(cloneDeep(obj), map);
+          this._syncObjectToMap(
+            cloneDeep(obj) as CommunityWorkspace,
+            map,
+          );
         });
       });
 

@@ -1,4 +1,3 @@
-import { merge } from 'lodash-es';
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
 import { Survey } from './survey.model';
@@ -12,16 +11,35 @@ export interface DimensionMap {
   'Community Impact': SuccessFactor[];
 }
 
-const initialDimensionMap: DimensionMap = {
-  'System Quality': [],
-  'Information Quality': [],
-  Use: [],
-  'User Satisfaction': [],
-  'Individual Impact': [],
-  'Community Impact': [],
-};
+class InitialDimensionMap implements DimensionMap {
+  'System Quality': SuccessFactor[];
+  'Information Quality': SuccessFactor[];
+  Use: SuccessFactor[];
+  'User Satisfaction': SuccessFactor[];
+  'Individual Impact': SuccessFactor[];
+  'Community Impact': SuccessFactor[];
+  constructor() {
+    this['System Quality'] = [];
+    this['Information Quality'] = [];
+    this.Use = [];
+    this['User Satisfaction'] = [];
+    this['Individual Impact'] = [];
+    this['Community Impact'] = [];
+  }
+}
 
-export class SuccessModel {
+export interface SuccessModel {
+  name: string; // Name of the success model (usually the service alias)
+  service: string; // Name of the service	which the model is made for
+  dimensions: DimensionMap; // The dimensions of the success model
+}
+
+export interface SuccessFactor {
+  name: string; // Name of the success factor
+  measures: string[]; // Names of the measures of the success factor.
+}
+
+export class SuccessModel implements SuccessModel {
   constructor(
     public name: string,
     public service: string,
@@ -34,32 +52,40 @@ export class SuccessModel {
    * Initializes a new instance of a success model which is empty.
    *
    * @param service service for which an empty success model should be created
-   * @returns an empty model (success model with each dimension being []) or undefined if no service is specified
+   * @returns an empty model (success model with each dimension being [])
+   * @throws Error if the service is undefined
    */
   public static emptySuccessModel(service: ServiceInformation) {
-    if (!service) return undefined;
-
-    return new SuccessModel(
-      service.alias,
-      service.name,
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null,
-    );
+    try {
+      if (!service) throw new Error("Service can't be undefined");
+      return new SuccessModel(
+        service.alias,
+        service.name,
+        new InitialDimensionMap(),
+        [],
+        null,
+      );
+    } catch (error) {
+      throw new Error(
+        'Cannot create emptySuccessModel. Reason: ' +
+          (error.message as string),
+      );
+    }
   }
 
-  public static fromPlainObject(obj: SuccessModel): SuccessModel {
+  /**
+   * Creates a Success model from a plain json object
+   *
+   * @param obj plain json object representation of a success model
+   * @returns a SuccessModel object with the same properties as the plain json object
+   */
+  public static fromPlainObject(
+    obj: PlainSuccessModel,
+  ): SuccessModel {
     if (!obj?.dimensions) {
       return undefined;
     }
-    const dimensions: DimensionMap = merge({}, initialDimensionMap);
+    const dimensions: DimensionMap = new InitialDimensionMap();
     for (const objDimensionName of Object.keys(obj.dimensions)) {
       dimensions[objDimensionName] = [];
       for (const objFactor of obj.dimensions[objDimensionName]) {
@@ -96,7 +122,7 @@ export class SuccessModel {
       const dimensionNodes = Array.from(
         xml.getElementsByTagName('dimension'),
       );
-      const dimensions: DimensionMap = merge({}, initialDimensionMap);
+      const dimensions: DimensionMap = new InitialDimensionMap();
       for (const dimensionNode of dimensionNodes) {
         const dimensionName = dimensionNode.getAttribute('name');
         const availableDimensions = Object.keys(dimensions);
@@ -173,7 +199,7 @@ export class SuccessModel {
   }
 }
 
-export class SuccessFactor {
+export class SuccessFactor implements SuccessFactor {
   constructor(public name: string, public measures: string[]) {}
 
   static fromXml(xml: Element) {
@@ -192,7 +218,9 @@ export class SuccessFactor {
     }
   }
 
-  public static fromPlainObject(obj: SuccessFactor): SuccessFactor {
+  public static fromPlainObject(
+    obj: PlainSuccessFactor,
+  ): SuccessFactor {
     return new SuccessFactor(obj.name, obj.measures);
   }
 
@@ -207,4 +235,17 @@ export class SuccessFactor {
     }
     return factor;
   }
+}
+
+interface PlainSuccessModel {
+  name: string;
+  service: string;
+  dimensions: DimensionMap;
+  surveys: Survey[];
+  reqBazProject: ReqbazProject;
+}
+
+interface PlainSuccessFactor {
+  name: string;
+  measures: string[];
 }

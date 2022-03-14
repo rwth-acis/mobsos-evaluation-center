@@ -14,10 +14,13 @@ import {
   filter,
   shareReplay,
   tap,
-  timeoutWith,
+  timeout,
 } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { decrementLoading, incrementLoading } from './store.actions';
+import {
+  decrementLoading,
+  incrementLoading,
+} from './store/store.actions';
 const ONE_MINUTE_IN_MS = 60000;
 interface RequestCache {
   [key: string]: Observable<HttpEvent<any>>;
@@ -50,7 +53,7 @@ export class Interceptor implements HttpInterceptor {
             res instanceof HttpErrorResponse ||
             res instanceof HttpResponse,
         ),
-        timeoutWith(ONE_MINUTE_IN_MS, throwError('Timeout')),
+        timeout(ONE_MINUTE_IN_MS),
         tap((res) => {
           if (res instanceof HttpResponse) {
             this.handleResponse(res, req);

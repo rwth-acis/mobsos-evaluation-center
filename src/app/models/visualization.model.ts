@@ -2,17 +2,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 export interface VisualizationCollection {
-  [query: string]: VisualizationData;
+  [query: string]: VisualizationData; // Map of query names to visualization data
 }
 export interface VisualizationData {
-  fetchDate: string;
-  data: any[][];
-  error?: HttpErrorResponse;
-  loading?: boolean;
+  fetchDate: string; // Date when the data was fetched
+  data: any[][]; // Data for the visualization
+  error?: HttpErrorResponse; // Error if any
+  loading?: boolean; // Is the data currently being fetched from the server?
 }
 
 export class Visualization {
-  type: string;
+  type: SupportedVisualizationTypes;
 
   static fromXml(xml: Element): Visualization {
     if (!xml) return;
@@ -49,7 +49,8 @@ export class Visualization {
         );
       default:
         throw Error(
-          'Unknown visualization type: ' + visualizationType,
+          'Unsupported visualization type: ' +
+            (visualizationType as string),
         );
     }
   }
@@ -69,7 +70,7 @@ export class Visualization {
 }
 
 export class ValueVisualization extends Visualization {
-  type = 'Value';
+  type = 'Value' as SupportedVisualizationTypes;
 
   constructor(public unit?: string) {
     super();
@@ -96,7 +97,7 @@ export class ValueVisualization extends Visualization {
 }
 
 export class ChartVisualization extends Visualization {
-  type = 'Chart';
+  type = 'Chart' as SupportedVisualizationTypes;
 
   constructor(
     public chartType?: string,
@@ -163,7 +164,7 @@ export class ChartVisualization extends Visualization {
 }
 
 export class KpiVisualization extends Visualization {
-  type = 'KPI';
+  type = 'KPI' as SupportedVisualizationTypes;
 
   operators = {
     '/': KpiVisualization.divide,
@@ -318,3 +319,5 @@ export enum VisualizationType {
   KPI = 'KPI',
   CHART = 'Chart',
 }
+
+type SupportedVisualizationTypes = 'Value' | 'KPI' | 'Chart';

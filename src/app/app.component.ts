@@ -30,7 +30,7 @@ import {
   setGroup,
   storeUser,
   toggleExpertMode,
-} from './services/store.actions';
+} from './services/store/store.actions';
 import {
   EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
@@ -39,7 +39,7 @@ import {
   USER_GROUPS,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
-} from './services/store.selectors';
+} from './services/store/store.selectors';
 import {
   distinctUntilKeyChanged,
   filter,
@@ -62,6 +62,7 @@ import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
 import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
+import { _timeout } from './shared/custom-utils';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -163,7 +164,7 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
-    const sub = this.loading$.subscribe((loading) => {
+    let sub = this.loading$.subscribe((loading) => {
       this.isLoading = loading;
       this.changeDetectorRef.detectChanges();
     });
@@ -176,7 +177,7 @@ export class AppComponent implements OnInit, OnDestroy {
         { duration: 10000 },
       );
       // Logging the state in dev mode
-      const sub = this.ngrxStore
+      sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
         .subscribe((state) => {
           console.log(state);
@@ -226,17 +227,17 @@ export class AppComponent implements OnInit, OnDestroy {
         serviceName,
       }),
     );
-    setTimeout(async () => {
-      const authorized = await firstValueFrom(
-        this.l2p.checkAuthorization(),
+    await timeout(3000);
+
+    const authorized = await firstValueFrom(
+      this.l2p.checkAuthorization(),
+    );
+    if (!authorized) {
+      alert(
+        'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
       );
-      if (!authorized) {
-        alert(
-          'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-        );
-        this.setUser(null);
-      }
-    }, 3000);
+      this.setUser(null);
+    }
   }
 
   ngOnDestroy(): void {

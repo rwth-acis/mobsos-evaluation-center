@@ -1,15 +1,13 @@
-// interface for questionnaire which describes the questionnaires received from the surveys backend
 export interface Questionnaire {
-  id: number;
-  description?: string;
-  lang?: string;
-  logo?: string;
-  name: string;
-  organization?: string;
-  owner?: string;
-  url?: string;
-  formXML?: string;
-  surveyId: number;
+  id: number; // ID of the questionnaire
+  description: string; // Description of the questionnaire
+  lang: string; // Language of the questionnaire
+  logo: string; // Logo of the questionnaire
+  name: string; // Name of the questionnaire
+  organization: string; // Organization to which the questionnaire belongs
+  owner: string; // Owner of the questionnaire
+  url: string; // URL at which the questionnaire can be found
+  formXML: string; // XML form of the questionnaire
 }
 // internal questionnaire class
 export class Questionnaire implements Questionnaire {
@@ -17,7 +15,7 @@ export class Questionnaire implements Questionnaire {
     public name: string,
     public id: number,
     public surveyId: number,
-    public description?: string,
+    public description: string = '',
   ) {}
 
   static fromXml(xml: Element): Questionnaire {
@@ -27,7 +25,7 @@ export class Questionnaire implements Questionnaire {
     return new Questionnaire(name, id, surveyId);
   }
 
-  public static fromPlainObject(obj: Questionnaire): Questionnaire {
+  public static fromJSONObject(obj: Questionnaire): Questionnaire {
     return new Questionnaire(
       obj.name,
       obj.id,
@@ -45,14 +43,16 @@ export class Questionnaire implements Questionnaire {
     return questionnaire;
   }
 }
-
+/**
+ * A single question from a questionnaire
+ */
 export interface Question {
-  code: string;
-  type: 'ordinal' | 'dichotomous';
-  dimensionRecommendation: string;
-  factorRecommendation: string;
-  instructions: string;
-  labels?: QuestionLabels;
+  code: string; // Code of the question
+  type: 'ordinal' | 'dichotomous'; // Type of the question
+  dimensionRecommendation: string; // Dimension recommendation of the question in the success model
+  factorRecommendation: string; // Factor recommendation of the question in the success model
+  instructions: string; // Instructions for the question (the actual question)
+  labels?: QuestionLabels; // Labels for the question
 }
 
 interface QuestionLabels {
