@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { storeUser } from 'src/app/services/store/store.actions';
 import { User } from 'src/app/models/user.model';
+import { userManagerSettings } from '../oidc-signin/user.manager.settings';
 
 @Component({
   selector: 'app-oidc-signout',
@@ -12,7 +13,7 @@ import { User } from 'src/app/models/user.model';
 })
 export class OidcSignoutComponent implements OnInit {
   constructor(private ngrxStore: Store, private router: Router) {
-    void new UserManager({})
+    void new UserManager(userManagerSettings)
       .signoutRedirectCallback()
       .then((user) => {
         this.ngrxStore.dispatch(
