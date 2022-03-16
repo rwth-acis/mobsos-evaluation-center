@@ -76,27 +76,20 @@
 </ng-container>
 
 <ng-template #noServiceSelect>
-  <mat-card>{{
-    'success-modeling.message-no-application-selected' | translate
-  }}</mat-card>
+  <mat-card>
+    <div class="flex padding-1 items-center">
+      <mat-icon class="mr-2" color="warn">error</mat-icon>
+      <span class="flex-grow">
+        {{
+          'success-modeling.message-no-application-selected'
+            | translate
+        }}
+      </span>
+    </div>
+  </mat-card>
 </ng-template>
 
 <ng-template #notInitialized>
   <!-- success model still loading -->
   <mat-spinner style="margin: auto"> </mat-spinner>
-</ng-template>
-
-<ng-template #notPartOfCommunity>
-  <mat-card>
-    {{
-      'not-part-of-selected-community'
-        | translate: { community: (selectedGroup$ | async).name }
-    }}
-  </mat-card>
-</ng-template>
-
-<ng-template #notAuthorized>
-  <mat-card>
-    {{ 'not-logged-in' | translate }}
-  </mat-card>
 </ng-template>

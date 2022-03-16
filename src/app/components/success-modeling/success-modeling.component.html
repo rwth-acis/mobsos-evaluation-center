@@ -46,12 +46,22 @@
 
 <ng-template #notAuthorized>
   <mat-card>
-    {{ 'not-logged-in' | translate }}
+    <div class="flex padding-1 items-center">
+      <mat-icon class="mr-2" color="warn">error</mat-icon>
+      <span class="flex-grow">
+        {{ 'not-logged-in' | translate }}
+      </span>
+    </div>
   </mat-card>
 </ng-template>
 
 <ng-template #noGroupSelected>
   <mat-card>
-    {{ 'success-modeling.no-group-selected' | translate }}
+    <div class="flex padding-1 items-center">
+      <mat-icon class="mr-2" color="warn">error</mat-icon>
+      <span class="flex-grow">
+        {{ 'success-modeling.no-group-selected' | translate }}
+      </span>
+    </div>
   </mat-card>
 </ng-template>
