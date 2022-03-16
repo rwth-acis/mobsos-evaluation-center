@@ -37,6 +37,7 @@ import { MatListModule } from '@angular/material/list';
 import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.component';
 import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { ErrorBannerComponent } from './error-banner/error-banner.component';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -46,6 +47,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     UnavailableServicesDialogComponent,
     ImportDialogComponent,
     QuestionnaireInfoDialogComponent,
+    ErrorBannerComponent,
   ],
   imports: [
     CommonModule,
@@ -93,6 +95,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatSnackBarModule,
     FormsModule,
     SqlTableComponent,
+    ErrorBannerComponent,
   ],
 })
 export class SharedModule {}

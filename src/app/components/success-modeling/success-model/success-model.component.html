@@ -77,15 +77,12 @@
 
 <ng-template #noServiceSelect>
   <mat-card>
-    <div class="flex padding-1 items-center">
-      <mat-icon class="mr-2" color="warn">error</mat-icon>
-      <span class="flex-grow">
-        {{
-          'success-modeling.message-no-application-selected'
-            | translate
-        }}
-      </span>
-    </div>
+    <app-error-banner
+      [message]="
+        'success-modeling.message-no-application-selected' | translate
+      "
+    >
+    </app-error-banner>
   </mat-card>
 </ng-template>
 
