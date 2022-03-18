@@ -196,7 +196,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 
   addGroup(groupName: string): Observable<any> {
@@ -243,7 +243,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 
   checkAuthorization() {
