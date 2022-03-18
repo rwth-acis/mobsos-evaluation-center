@@ -33,6 +33,9 @@ import { VisualizationCollection } from '../models/visualization.model';
 import { MeasureCatalog } from '../models/measure.model';
 
 const ONE_MINUTE_IN_MS = 60000;
+/**
+ * Service for managing the workspace of the application. The workspace is synced using yjs
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -271,6 +274,15 @@ export class WorkspaceService {
     return userWorkspace;
   }
 
+  /**
+   * Chagnes the role of a visitor in the workspace.
+   *
+   * @param visitorName Name that identifies the visitor
+   * @param owner The owner of the workspace
+   * @param selectedServiceName  The name of the service
+   * @param role The new role of the visitor
+   * @returns  The updated workspace
+   */
   changeVisitorRole(
     visitorName: string,
     owner: string,
@@ -288,91 +300,85 @@ export class WorkspaceService {
     const applicationWorkspace = ownerWorkspace[selectedServiceName];
     if (!applicationWorkspace) {
       console.error('app workspace not found for current user');
+      return;
     }
-    const visitors = applicationWorkspace.visitors.map((visitor) =>
-      visitor.username === visitorName
-        ? {
-            ...visitor,
-            role:
-              role === 'editor'
-                ? UserRole.EDITOR
-                : UserRole.SPECTATOR,
-          }
-        : visitor,
+    const newRole = role as UserRole;
+    applicationWorkspace.visitors = applicationWorkspace.visitors.map(
+      (visitor) =>
+        visitor.username === visitorName
+          ? {
+              ...visitor,
+              role: newRole,
+            }
+          : visitor,
     );
-    applicationWorkspace.visitors = visitors;
     this.communityWorkspace$.next(communityWorkspace);
     return applicationWorkspace;
   }
 
+  /**
+   * Join the workspace of a user
+   *
+   * @param newWorkspaceOwner  The owner of the workspace  to be joined
+   * @param serviceName The application workspace is identified by the service name
+   * @param username The usernames of the user that wants to join the workspace
+   * @param currentWorkspaceOwner  The owner of the workspace that the user is currently in. If specified, the user will be removed from that workspace
+   * @param model If specified, the model will be copied to the new workspace
+   * @param catalog The catalog to be used in the new workspace
+   * @param role The role to be set for the user in the new workspace
+   * @param vdata  The visualization data to be used in the new workspace
+   */
   joinWorkspace(
-    owner: string,
-    currentServiceName: string,
+    newWorkspaceOwner: string,
+    serviceName: string,
     username: string,
-    oldWorkspaceOwner?: string,
+    currentWorkspaceOwner?: string,
     model?: SuccessModel,
     catalog?: MeasureCatalog,
     role?: UserRole,
     vdata?: VisualizationCollection,
-    copyModel?: boolean,
   ): void {
-    if (!owner) {
+    if (!newWorkspaceOwner) {
       throw new Error('owner cannot be null');
     }
-    this.leaveWorkspace(
-      oldWorkspaceOwner,
-      currentServiceName,
-      username,
-    );
+    this.leaveWorkspace(currentWorkspaceOwner, serviceName, username);
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
     );
-    if (!communityWorkspace[owner]) {
+    if (!communityWorkspace[newWorkspaceOwner]) {
       throw new Error(
         'Cannot join workspace as it is not know in communityWorkspace',
       );
     }
-    let currentApplicationWorkspace = communityWorkspace[owner][
-      currentServiceName
-    ] as ApplicationWorkspace;
+    let currentApplicationWorkspace = communityWorkspace[
+      newWorkspaceOwner
+    ][serviceName] as ApplicationWorkspace;
     if (!currentApplicationWorkspace) {
       throw new Error(
         'this user has no application workspace for the current service',
       );
     }
+
     if (vdata) {
-      currentApplicationWorkspace =
-        this.updateWorkSpaceVisualizationData(
-          vdata,
-          currentApplicationWorkspace,
-        );
+      currentApplicationWorkspace = updateWorkSpaceVisualizationData(
+        vdata,
+        currentApplicationWorkspace,
+      );
     }
 
-    if (copyModel && username === owner) {
-      currentApplicationWorkspace.catalog = catalog;
-      currentApplicationWorkspace.model = model;
+    if (username === newWorkspaceOwner) {
+      if (model) currentApplicationWorkspace.model = model;
+      if (catalog) currentApplicationWorkspace.catalog = catalog;
     }
 
-    const visitors = currentApplicationWorkspace.visitors;
-    const containedInVisitors = visitors.find(
-      (visitor) => visitor.username === username,
-    );
-    const guestVisitors = visitors.filter((visitor) =>
-      visitor.username.includes('(guest'),
-    );
-
-    if (role === UserRole.LURKER && !username.includes('(guest')) {
-      const n = guestVisitors.length + 1;
-      username = username + ' (guest ' + n.toString() + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
-      localStorage.setItem('visitor-username', username); // in the future anonymous user gets reassigned the same name
-      visitors.push(new Visitor(username, role));
+    if (newWorkspaceOwner !== username) {
+      // add the user as visitor to the workspace if it is not the owner
+      currentApplicationWorkspace.visitors = addUserToVisitors(
+        currentApplicationWorkspace.visitors,
+        username,
+        role,
+      );
     }
-    // logged in users are added if they are not a visitor yet
-    else if (owner !== username && !containedInVisitors) {
-      visitors.push(new Visitor(username, role));
-    }
-    visitors.sort((a, b) => (a.username > b.username ? 1 : -1));
-    currentApplicationWorkspace.visitors = visitors;
 
     this.communityWorkspace$.next(
       communityWorkspace as CommunityWorkspace,
@@ -381,32 +387,14 @@ export class WorkspaceService {
       this.syncObject(this.currentGroupId);
     });
   }
-  updateWorkSpaceVisualizationData(
-    vdata: VisualizationCollection,
-    currentApplicationWorkspace: ApplicationWorkspace,
-  ): ApplicationWorkspace {
-    for (const [query, value] of Object.entries(vdata)) {
-      if (value.data && value?.fetchDate) {
-        let workspaceData =
-          currentApplicationWorkspace.visualizationData[query];
-        if (
-          !workspaceData?.fetchDate ||
-          !(
-            Date.parse(workspaceData.fetchDate) >
-            Date.parse(value?.fetchDate)
-          )
-        ) {
-          // we have more recent data so we add our data
-          workspaceData = {
-            ...workspaceData,
-            data: value.data,
-          };
-        }
-      }
-    }
-    return currentApplicationWorkspace;
-  }
 
+  /**
+   * Function to leave the workspace of a user
+   *
+   * @param owner  The owner of the workspace
+   * @param currentServiceName  The name of the service
+   * @param username  The username of the user
+   */
   private leaveWorkspace(
     owner: string,
     currentServiceName: string,
@@ -415,14 +403,13 @@ export class WorkspaceService {
     if (!owner || !currentServiceName) return;
     const appWorkspace = cloneDeep(
       this.getWorkspaceByUserAndService(owner, currentServiceName),
-    );
+    ) as ApplicationWorkspace;
     if (!appWorkspace) {
       return;
     }
-    const visitors = appWorkspace.visitors?.filter(
+    appWorkspace.visitors = appWorkspace.visitors?.filter(
       (visitor) => visitor.username !== username,
     );
-    appWorkspace.visitors = visitors;
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
     ) as CommunityWorkspace;
@@ -430,8 +417,12 @@ export class WorkspaceService {
     this.communityWorkspace$.next(communityWorkspace);
   }
 
+  /**
+   * Function which syncs a JSON object with yjs
+   *
+   * @param name name of the group used as room identifier
+   */
   private syncObject(name: string) {
-    // const type = this.sharedDocument.get(name);
     const map = this.sharedDocument.getMap(name);
     this.communityWorkspace$
       .pipe(
@@ -451,13 +442,18 @@ export class WorkspaceService {
             cloneDeep(obj) as CommunityWorkspace,
             map,
           );
-        });
+        }, this.sharedDocument.clientID);
       });
-
-    // this.sharedDocument.on('update', () => this.observeFn(map));
-    map.observeDeep(() => this.observeFn(map));
+    const sharedDoc = this.sharedDocument;
+    map.observeDeep((event, transaction) => {
+      console.log(event, transaction);
+      if (!sharedDoc || transaction.origin !== sharedDoc.clientID) {
+        // if the map changes because of another client, the subject will be updated
+        this.applyRemoteChanges(map);
+      }
+    });
     this.removeListenersCallbacks[name] = () => {
-      map.unobserve(() => this.observeFn(map));
+      map.unobserve(() => this.applyRemoteChanges(map));
     };
   }
 
@@ -476,20 +472,27 @@ export class WorkspaceService {
     }
   }
 
-  private observeFn(map) {
+  private applyRemoteChanges(map) {
     if (isDevMode()) {
       console.log('Applying remote changes to local object...');
     }
-    const cloneObj = cloneDeep(map.toJSON());
+    const cloneObj = cloneDeep(map.toJSON()) as CommunityWorkspace;
     if (!isEqual(cloneObj, this.communityWorkspace$.getValue())) {
       this.communityWorkspace$.next(cloneObj);
     }
-    this.syncDone$.next(true);
+    if (!this.syncDone$.getValue()) {
+      this.syncDone$.next(true);
+    }
   }
 
+  /**
+   * Stops synchronizing the workspace for the current community
+   *
+   * @param name name of the group used as room identifier
+   */
   private stopSync(name: string) {
     if (this.removeListenersCallbacks[name]) {
-      this.removeListenersCallbacks[name]();
+      this.removeListenersCallbacks[name](); // calls unobserve
       delete this.removeListenersCallbacks[name];
     }
   }
@@ -521,7 +524,7 @@ export class WorkspaceService {
     map: Y.Map<any>,
   ) {
     try {
-      const mapAsObj = map.toJSON();
+      const mapAsObj = map.toJSON() as CommunityWorkspace;
       if (isEqual(obj, mapAsObj)) {
         return true;
       }
@@ -565,6 +568,13 @@ export class WorkspaceService {
     }
   }
 
+  /**
+   * Function to get the workspace of a user and a service
+   *
+   * @param user  username of the user
+   * @param service  name of the service
+   * @returns   the workspace of the user and the service
+   */
   private getWorkspaceByUserAndService(
     user: string,
     service: string,
@@ -579,4 +589,65 @@ export class WorkspaceService {
     }
     return userWorkspace[service];
   }
+}
+
+/**
+ * Function which adds a user to the visitors of the workspace
+ *
+ * @param visitors the current visitors of the workspace
+ * @param username  the username of the user to add
+ * @param role  the role of the user to add
+ * @returns  the updated visitors of the workspace
+ */
+function addUserToVisitors(
+  visitors: Visitor[],
+  username: string,
+  role: UserRole,
+): Visitor[] {
+  const userNameAlreadyExistsInWorkspace = visitors.some(
+    (visitor) => visitor.username === username,
+  );
+  if (role === UserRole.LURKER && !username.includes('(guest')) {
+    // hacky way to not add lurkers that joined once again.
+    const lurkers = visitors.filter((visitor) =>
+      visitor.username.includes('(guest'),
+    );
+    const n = lurkers.length + 1;
+    username = username + ' (guest ' + n.toString() + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
+    localStorage.setItem('visitor-username', username); // on future rejoins anonymous user gets reassigned the same name
+    visitors.push(new Visitor(username, role));
+  }
+  // logged in users are added if they are not a visitor yet
+  else if (!userNameAlreadyExistsInWorkspace) {
+    visitors.push(new Visitor(username, role));
+  }
+  return visitors.sort();
+}
+
+/**
+ * Updates the visualization data of the workspace by only replacing the data if it is more recent than the current data
+ *
+ * @param vdata  our local visualization data
+ * @param currentApplicationWorkspace  the current application workspace
+ * @returns  the updated visualization data
+ */
+function updateWorkSpaceVisualizationData(
+  vdata: VisualizationCollection,
+  currentApplicationWorkspace: ApplicationWorkspace,
+): ApplicationWorkspace {
+  for (const [query, value] of Object.entries(vdata)) {
+    if (value.data && value?.fetchDate) {
+      let workspaceData =
+        currentApplicationWorkspace.visualizationData[query];
+      if (
+        !workspaceData?.fetchDate ||
+        Date.parse(workspaceData.fetchDate) <
+          Date.parse(value?.fetchDate)
+      ) {
+        // we have more recent data so we add our data
+        workspaceData = value;
+      }
+    }
+  }
+  return currentApplicationWorkspace;
 }

@@ -681,11 +681,10 @@ export class StateEffects {
                       action.serviceName,
                       username,
                       null,
-                      model,
+                      action.copyModel ? model : null,
                       catalog,
                       action.role,
                       vdata,
-                      action.copyModel,
                     );
                   } catch (error) {
                     // exception occurs when the workspace cannot be joined
@@ -696,9 +695,8 @@ export class StateEffects {
                         username,
                         service,
                         catalog,
-                        model,
+                        action.copyModel ? model : null,
                         vdata,
-                        action.copyModel,
                       );
                     } else {
                       // probably some property is undefined
