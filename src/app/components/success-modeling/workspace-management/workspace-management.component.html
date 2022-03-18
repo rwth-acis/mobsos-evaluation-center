@@ -1,22 +1,26 @@
 <mat-card>
   <!-- service selection -->
-
-  <mat-form-field id="community-service-select">
-    <mat-label>{{
-      'success-modeling.select-application' | translate
-    }}</mat-label>
-    <mat-select
-      [(ngModel)]="selectedService"
-      (selectionChange)="onServiceSelected($event.value)"
+  <ng-container *ngIf="services$ | async as services">
+    <mat-form-field
+      id="community-service-select"
+      *ngIf="services.length > 0; else noServices"
     >
-      <mat-option
-        *ngFor="let service of services$ | async"
-        [value]="service"
+      <mat-label>{{
+        'success-modeling.select-application' | translate
+      }}</mat-label>
+      <mat-select
+        [(ngModel)]="selectedService"
+        (selectionChange)="onServiceSelected($event.value)"
       >
-        {{ service.alias ? service.alias : service.name }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+        <mat-option
+          *ngFor="let service of services"
+          [value]="service"
+        >
+          {{ service.alias ? service.alias : service.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </ng-container>
 
   <!-- workspace management -->
   <div
@@ -288,4 +292,10 @@
       'success-modeling.info.workspace-ask-owner-to-save' | translate
     }}
   </ng-contiainer>
+</ng-template>
+
+<ng-template #noServices>
+  <app-error-banner
+    [message]="'No applications found in the las2peer network'"
+  ></app-error-banner>
 </ng-template>
