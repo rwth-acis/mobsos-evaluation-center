@@ -560,7 +560,7 @@ function mergeGroupData(
   groupsFromContactService,
   groupsFromMobSOS?,
 ) {
-  groups = cloneDeep(groups) || {};
+  groups = {};
 
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
