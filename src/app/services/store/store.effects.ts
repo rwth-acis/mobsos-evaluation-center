@@ -82,6 +82,7 @@ export class StateEffects {
       mergeMap(() =>
         forkJoin([
           this.l2p.fetchServicesFromDiscoveryAndObserve().pipe(
+            timeout(50000),
             catchError((err) => {
               console.warn(
                 'Could not fetch services from service discovery:',
@@ -91,6 +92,7 @@ export class StateEffects {
             }),
           ),
           this.l2p.fetchServicesFromMobSOSAndObserve().pipe(
+            timeout(50000),
             catchError((err) => {
               console.warn(
                 'Could not fetch services from service MobSOS:',
@@ -101,12 +103,14 @@ export class StateEffects {
             }),
           ),
         ]).pipe(
-          map(([servicesFromL2P, servicesFromMobSOS]) =>
-            Action.storeServices({
+          map(([responseFromL2P, responseFromMobSOS]) => {
+            const servicesFromL2P = responseFromL2P?.body;
+            const servicesFromMobSOS = responseFromMobSOS?.body;
+            return Action.storeServices({
               servicesFromL2P,
               servicesFromMobSOS,
-            }),
-          ),
+            });
+          }),
         ),
       ),
       catchError((err) => {

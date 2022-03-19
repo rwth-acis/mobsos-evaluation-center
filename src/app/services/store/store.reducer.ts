@@ -451,6 +451,7 @@ function mergeServiceData(
   servicesFromMobSOS,
 ): ServiceCollection {
   serviceCollection = cloneDeep(serviceCollection);
+  if (!serviceCollection) serviceCollection = {};
   if (servicesFromL2P && Array.isArray(servicesFromL2P)) {
     for (const service of servicesFromL2P) {
       if (service) {
@@ -484,7 +485,8 @@ function mergeServiceData(
         };
       }
     }
-    console.warn('serviceCollection not an array, ', servicesFromL2P);
+  } else {
+    console.warn('servicesFromL2P not an array, ', servicesFromL2P);
   }
   const firstService = Object.values(serviceCollection)[0];
   if (firstService && Array.isArray(firstService.mobsosIDs)) {
@@ -560,7 +562,7 @@ function mergeGroupData(
   groupsFromContactService,
   groupsFromMobSOS?,
 ) {
-  groups = cloneDeep(groups) || {};
+  groups = {};
 
   // mark all these groups as groups the current user is a member of
   if (groupsFromContactService) {
