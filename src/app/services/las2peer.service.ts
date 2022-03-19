@@ -37,7 +37,9 @@ class NgHttpOptions implements HttpOptions {
   ) {}
 }
 const ONE_SECOND_IN_MS = 1000;
-
+/**
+ * Service for communication with the LAS2peer platform.
+ */
 @Injectable({
   providedIn: 'root',
 })
