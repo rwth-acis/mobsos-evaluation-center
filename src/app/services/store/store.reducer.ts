@@ -450,8 +450,9 @@ function mergeServiceData(
   servicesFromL2P,
   servicesFromMobSOS,
 ): ServiceCollection {
-  serviceCollection = cloneDeep(serviceCollection);
-  if (!serviceCollection) serviceCollection = {};
+  if (!servicesFromMobSOS && !servicesFromL2P)
+    return serviceCollection;
+  serviceCollection = {};
   if (servicesFromL2P && Array.isArray(servicesFromL2P)) {
     for (const service of servicesFromL2P) {
       if (service) {
