@@ -6,10 +6,7 @@
     [opened]="!mobileQuery.matches"
   >
     <ng-container
-      *ngIf="
-        successModelingAvailable && contactServiceAvailable;
-        else serviceUnavailable
-      "
+      *ngIf="successModelingAvailable && contactServiceAvailable"
     >
       <ng-container *ngIf="(user$ | async)?.signedIn">
         <ng-container
