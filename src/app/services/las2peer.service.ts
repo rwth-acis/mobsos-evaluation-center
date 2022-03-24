@@ -238,7 +238,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_SERVICE_PATH,
       this.SUCCESS_MODELING_SERVICE_DISCOVERY_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, {}, true);
   }
 
   checkAuthorization() {
