@@ -20,7 +20,6 @@ import {
   ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../models/service.model';
-import { Questionnaire } from '../models/questionnaire.model';
 import { Survey } from '../models/survey.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;

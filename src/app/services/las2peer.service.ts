@@ -116,7 +116,7 @@ export class Las2peerService {
     this.userCredentials = null;
   }
 
-  async makeRequest<T>(
+  async makeRequest(
     url: string,
     options: HttpOptions = {},
     anonymous = false,

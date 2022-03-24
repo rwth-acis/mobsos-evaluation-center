@@ -380,64 +380,6 @@ export const SELECTED_SERVICE = createSelector(
   (service, workspace) => (service ? service : workspace?.service),
 );
 
-function parseXml(xml: string) {
-  const parser = new DOMParser();
-  return parser.parseFromString(xml, 'text/xml');
-}
-
-function parseCatalog(xml: string): MeasureCatalog {
-  const doc = parseXml(xml);
-  try {
-    return MeasureCatalog.fromXml(doc.documentElement);
-  } catch (e) {
-    this.logger.warn(e);
-  }
-}
-
-function parseModel(xml: string): SuccessModel {
-  const doc = parseXml(xml);
-  try {
-    return SuccessModel.fromXml(doc.documentElement);
-  } catch (e) {
-    this.logger.warn(e);
-  }
-}
-/**
- * filter groups that the user is a part of
- *
- * @param groups groups as a collection
- */
-function _userGroups(groups: GroupCollection): GroupInformation[] {
-  if (!groups) {
-    return undefined;
-  }
-  const userGroups = [];
-  if (!groups) {
-    return [];
-  }
-  for (const groupId of Object.keys(groups)) {
-    if (groups[groupId].member) {
-      userGroups.push(groups[groupId]);
-    }
-  }
-  return userGroups as GroupInformation[];
-}
-
-function _foreignGroups(groups: GroupCollection): GroupInformation[] {
-  if (!groups) {
-    return undefined;
-  }
-  const userGroups = [];
-  if (!groups) {
-    return [];
-  }
-  for (const groupId of Object.keys(groups)) {
-    if (!groups[groupId].member) {
-      userGroups.push(groups[groupId]);
-    }
-  }
-  return userGroups as GroupInformation[];
-}
 function sortGroupsByName(
   a: GroupInformation,
   b: GroupInformation,
