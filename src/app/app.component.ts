@@ -62,7 +62,6 @@ import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
 import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
-import { _timeout } from './shared/custom-utils';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"

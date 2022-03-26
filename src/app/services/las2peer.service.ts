@@ -314,7 +314,7 @@ export class Las2peerService {
       service,
     );
     return new Promise((resolve, reject) => {
-      this.makeRequest<{ xml: string }>(url)
+      this.makeRequest(url)
         .then((response) => resolve(response.xml))
         .catch((response) => {
           reject(response);
@@ -436,10 +436,9 @@ export class Las2peerService {
       this.SURVEYS_QUESTIONNAIRES_PATH,
       '?full=1',
     );
-    return this.makeRequest<{ questionnaires: Questionnaire[] }>(
-      url,
-      { headers: { access_token: null, Authorization: null } },
-    )
+    return this.makeRequest(url, {
+      headers: { access_token: null, Authorization: null },
+    })
       .then((response) =>
         this.fetchQuestionnaireForms(
           response.questionnaires as Questionnaire[],
@@ -504,12 +503,9 @@ export class Las2peerService {
         questionnaire.id,
         this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
       );
-      questionnaire.formXML = await this.makeRequest<string>(
-        formUrl,
-        {
-          responseType: 'text',
-        },
-      );
+      questionnaire.formXML = await this.makeRequest(formUrl, {
+        responseType: 'text',
+      });
     }
     return questionnaires;
   }
@@ -743,7 +739,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    return this.makeRequest<{ xml: string }>(url)
+    return this.makeRequest(url)
       .then((response) => response?.xml)
       .catch((response) => {
         throw response;
@@ -811,7 +807,7 @@ export class Las2peerService {
       this.SUCCESS_MODELING_MEASURE_PATH,
       groupID,
     );
-    return this.makeRequest<{ xml: string }>(url, {
+    return this.makeRequest(url, {
       method,
       body: JSON.stringify({ xml }),
     })
