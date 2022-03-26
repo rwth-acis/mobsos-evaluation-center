@@ -189,9 +189,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const [user, groupId, serviceName] = await firstValueFrom(
       this.user$.pipe(
-        filter((value) => !!value),
-        distinctUntilKeyChanged('signedIn'),
         filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
@@ -323,7 +322,10 @@ export class AppComponent implements OnInit, OnDestroy {
     void silentLoginFunc();
 
     const sub = user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
+      .pipe(
+        filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
+      )
       .subscribe((user) => {
         // callback only called when signedIn state changes
         clearInterval(this.silentSigninIntervalHandle); // clear old interval
