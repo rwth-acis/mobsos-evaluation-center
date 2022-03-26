@@ -4,13 +4,11 @@ import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { OidcSigninComponent } from './oidc/oidc-signin/oidc-signin.component';
-import { OidcSignoutComponent } from './oidc/oidc-signout/oidc-signout.component';
-import { OidcSilentComponent } from './oidc/oidc-silent/oidc-silent.component';
+import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
+import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signout.component';
+import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
 import { Observable, of } from 'rxjs';
 import {
   TranslateLoader,
@@ -37,16 +35,16 @@ import {
 } from '@angular/common/http';
 import { GoogleChartsModule } from 'angular-google-charts';
 
-import { Reducer } from 'src/app/services/store.reducer';
+import { Reducer } from 'src/app/services/store/store.reducer';
 import { EffectsModule } from '@ngrx/effects';
-import { StateEffects } from './services/store.effects';
+import { StateEffects } from './services/store/store.effects';
 import { Interceptor } from './services/interceptor.service';
 import { localStorageSync } from 'ngrx-store-localstorage';
 
+import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-space.component';
+import { RawEditModule } from './components/raw-edit/raw-edit.module';
+import { SuccessModelingModule } from './components/success-modeling/success-modeling.module';
 import { SharedModule } from './shared/shared.module';
-import { RawEditModule } from './raw-edit/raw-edit.module';
-import { SuccessModelingModule } from './success-modeling/success-modeling.module';
-import { JoinWorkSpaceComponent } from './join-work-space/join-work-space.component';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -116,7 +114,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
-    MatListModule,
     MatProgressBarModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,

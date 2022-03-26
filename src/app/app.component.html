@@ -6,10 +6,7 @@
     [opened]="!mobileQuery.matches"
   >
     <ng-container
-      *ngIf="
-        successModelingAvailable && contactServiceAvailable;
-        else serviceUnavailable
-      "
+      *ngIf="successModelingAvailable && contactServiceAvailable"
     >
       <ng-container *ngIf="(user$ | async)?.signedIn">
         <ng-container
@@ -200,7 +197,11 @@
 </ng-template>
 
 <ng-template #serviceUnavailable>
-  <div class="padding-1">
-    Core Services are not available. Please contact the administrator
+  <div class="flex padding-1 items-center">
+    <mat-icon class="mr-2" color="warn">error</mat-icon>
+    <span class="flex-grow">
+      Core Services are <strong> not</strong> available. Please
+      contact the administrator
+    </span>
   </div>
 </ng-template>

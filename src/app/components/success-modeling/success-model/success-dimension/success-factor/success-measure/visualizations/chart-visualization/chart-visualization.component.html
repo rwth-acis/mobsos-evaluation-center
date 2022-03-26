@@ -1,0 +1,105 @@
+<div class="flex flex-col h-full">
+  <div class="grow h-full" *ngIf="dataIsReady$ | async; else loading">
+    <ng-container *ngIf="chartData?.data?.length > 0; else noData">
+      <google-chart
+        [title]="chartData.title"
+        [type]="chartData.chartType"
+        [data]="chartData.data"
+        [options]="chartData.options"
+        [formatters]="formatters"
+        [columns]="chartData.columnNames"
+        dynamicResize
+        style="width: 100%"
+        (ready)="chartInitialized = true"
+      ></google-chart
+    ></ng-container>
+  </div>
+  <div class="flex mt-auto">
+    <button
+      *ngIf="chartInitialized"
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+      type="button"
+    >
+      <mat-icon> info_outline </mat-icon>
+    </button>
+
+    <button
+      *ngIf="chartData?.data?.length > 0"
+      mat-icon-button
+      (click)="expandChart()"
+      type="button"
+    >
+      <mat-icon> open_in_full </mat-icon>
+    </button>
+
+    <ng-container *ngIf="expertMode$ | async">
+      <button
+        *ngIf="data$ | async as data"
+        mat-icon-button
+        matTooltip="{{
+          'success-modeling.visualization.raw' | translate
+        }}"
+        (click)="openRawDataDialog(data.data)"
+      >
+        <mat-icon>poll</mat-icon>
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="!(restricted$ | async)">
+      <button
+        *ngIf="query$ | async as query"
+        mat-icon-button
+        matTooltipShowDelay="0"
+        matTooltip="{{
+          'success-modeling.visualization.refresh-data' | translate
+        }}"
+        (click)="onRefreshClicked(query)"
+      >
+        <mat-icon color="primary">sync</mat-icon>
+      </button></ng-container
+    >
+  </div>
+</div>
+
+<mat-menu #menu="matMenu" yPosition="above">
+  <app-visualization-info
+    *ngIf="data$ | async as data"
+    [fetchDate]="data.fetchDate"
+    [fetchError]="data.error?.error"
+    [description]="(measure$ | async)?.description"
+  ></app-visualization-info>
+</mat-menu>
+
+<ng-template #noData>
+  <ng-container
+    *ngIf="error$ | async as error; else noDataAndNoError"
+  >
+    <ng-container
+      *ngTemplateOutlet="Error; context: { error: error }"
+    ></ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #noDataAndNoError
+  ><ng-container *ngIf="dataIsReady$ | async; else loading">
+    No data available yet
+  </ng-container>
+</ng-template>
+
+<ng-template #Error let-errorInput="error">
+  <div
+    (click)="openErrorDialog(errorInput)"
+    class="visualization-error grid place-content-center h-full w-full"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <span class="loading-placeholder">
+    <mat-spinner></mat-spinner>
+  </span>
+</ng-template>

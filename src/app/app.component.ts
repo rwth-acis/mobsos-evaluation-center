@@ -30,7 +30,7 @@ import {
   setGroup,
   storeUser,
   toggleExpertMode,
-} from './services/store.actions';
+} from './services/store/store.actions';
 import {
   EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
@@ -39,7 +39,7 @@ import {
   USER_GROUPS,
   _SELECTED_GROUP_ID,
   _SELECTED_SERVICE_NAME,
-} from './services/store.selectors';
+} from './services/store/store.selectors';
 import {
   distinctUntilKeyChanged,
   filter,
@@ -62,6 +62,7 @@ import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
 import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
+import { _timeout } from './shared/custom-utils';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -80,9 +81,7 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class AppComponent implements OnInit, OnDestroy {
   static userManager = new UserManager({});
 
   @ViewChild(MatSidenav)
@@ -145,7 +144,7 @@ export class AppComponent
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     void firstValueFrom(
       this.l2p.authenticateOnReqBaz().pipe(take(1)),
     );
@@ -165,14 +164,12 @@ export class AppComponent
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
-    const sub = this.loading$.subscribe((loading) => {
+    let sub = this.loading$.subscribe((loading) => {
       this.isLoading = loading;
       this.changeDetectorRef.detectChanges();
     });
     this.subscriptions$.push(sub);
-  }
 
-  async ngAfterViewInit(): Promise<void> {
     if (!environment.production) {
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available / fully functional yet',
@@ -180,7 +177,7 @@ export class AppComponent
         { duration: 10000 },
       );
       // Logging the state in dev mode
-      const sub = this.ngrxStore
+      sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
         .subscribe((state) => {
           console.log(state);
@@ -190,24 +187,25 @@ export class AppComponent
     const noob = localStorage.getItem('notNewbie');
     this.noobInfo = noob == null;
 
-    const [user, groupId, serviceName] = await this.user$
-      .pipe(
-        filter((value) => !!value),
-        distinctUntilKeyChanged('signedIn'),
+    const [user, groupId, serviceName] = await firstValueFrom(
+      this.user$.pipe(
         filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
         withLatestFrom(
           this.ngrxStore.select(_SELECTED_GROUP_ID),
           this.ngrxStore.select(_SELECTED_SERVICE_NAME),
         ),
         take(1),
-      )
-      .toPromise();
+      ),
+    );
+
     // only gets called ONCE if user is signed in
     // initial fetching
     this.ngrxStore.dispatch(fetchGroups());
     this.ngrxStore.dispatch(fetchServices());
     this.ngrxStore.dispatch(fetchSurveys());
     this.ngrxStore.dispatch(fetchQuestionnaires());
+
     if (!groupId) return;
     this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
     this.workspaceService.syncWithCommunnityWorkspace(groupId);
@@ -217,6 +215,7 @@ export class AppComponent
         owner: user.profile.preferred_username,
       }),
     );
+
     if (!serviceName) return;
     this.ngrxStore.dispatch(joinWorkSpace({ groupId, serviceName }));
     this.ngrxStore.dispatch(
@@ -227,18 +226,17 @@ export class AppComponent
         serviceName,
       }),
     );
-    setTimeout(() => {
-      void firstValueFrom(this.l2p.checkAuthorization()).then(
-        (authorized) => {
-          if (!authorized) {
-            alert(
-              'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-            );
-            this.setUser(null);
-          }
-        },
+    await timeout(3000);
+
+    const authorized = await firstValueFrom(
+      this.l2p.checkAuthorization(),
+    );
+    if (!authorized) {
+      alert(
+        'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
       );
-    }, 3000);
+      this.setUser(null);
+    }
   }
 
   ngOnDestroy(): void {
@@ -324,7 +322,10 @@ export class AppComponent
     void silentLoginFunc();
 
     const sub = user$
-      .pipe(distinctUntilKeyChanged('signedIn'))
+      .pipe(
+        filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
+      )
       .subscribe((user) => {
         // callback only called when signedIn state changes
         clearInterval(this.silentSigninIntervalHandle); // clear old interval

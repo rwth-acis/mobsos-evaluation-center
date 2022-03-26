@@ -37,7 +37,9 @@ class NgHttpOptions implements HttpOptions {
   ) {}
 }
 const ONE_SECOND_IN_MS = 1000;
-
+/**
+ * Service for communication with the LAS2peer platform.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -139,7 +141,7 @@ export class Las2peerService {
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
-          oidc_provider: 'https://api.learning-layers.eu/o/oauth2',
+          oidc_provider: environment.openIdAuthorityUrl,
         },
       },
       options,
@@ -151,6 +153,11 @@ export class Las2peerService {
       try {
         const cred = localStorage.getItem('profile');
         const token = localStorage.getItem('access_token');
+        if (cred === 'undefined') {
+          throw new Error(
+            'credentials are undefined in localStorage',
+          );
+        }
         this.userCredentials = JSON.parse(cred);
         const username = this.userCredentials?.preferred_username;
         const sub = this.userCredentials?.sub;
@@ -191,7 +198,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 
   addGroup(groupName: string): Observable<any> {

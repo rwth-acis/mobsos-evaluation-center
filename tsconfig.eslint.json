@@ -1,10 +1,9 @@
 {
-    "compilerOptions": {
-        "strict": true
-    },
-    "include": [
-        "**/src/**/*.ts",
-        "**/test/**/*.ts",
-        // etc
-    ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true
+  },
+  "include": [
+    "**/src/**/*.ts"
+  ]
 }

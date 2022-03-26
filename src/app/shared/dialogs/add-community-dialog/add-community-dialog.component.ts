@@ -21,16 +21,16 @@ import {
   Subscription,
 } from 'rxjs';
 import { catchError, map, take, timeout } from 'rxjs/operators';
-import { GroupInformation } from '../../../models/community.model';
+import { GroupInformation } from 'src/app/models/community.model';
 import {
   addGroup,
   storeGroup,
-} from '../../../services/store.actions';
-import { StateEffects } from '../../../services/store.effects';
+} from 'src/app/services/store/store.actions';
+import { StateEffects } from 'src/app/services/store/store.effects';
 import {
-  GROUPS,
   USER_GROUPS,
-} from '../../../services/store.selectors';
+  GROUPS,
+} from 'src/app/services/store/store.selectors';
 
 @Component({
   selector: 'app-add-community-dialog',
