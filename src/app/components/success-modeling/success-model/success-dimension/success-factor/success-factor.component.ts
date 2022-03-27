@@ -12,7 +12,7 @@ import { PickMeasureDialogComponent } from './pick-measure-dialog/pick-measure-d
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { SuccessFactor } from 'src/app/models/success.model';
@@ -96,10 +96,11 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         dimensionName: this.dimensionName,
       },
     });
-    const { name } = await dialogRef.afterClosed().toPromise();
+    const result = await firstValueFrom(dialogRef.afterClosed());
     this.changeDetectorRef.reattach();
-    if (name) {
-      this.factor.measures.push(name as string);
+    if (result?.name) {
+      const name = result.name as string;
+      this.factor.measures.push(name);
       this.ngrxStore.dispatch(
         editFactorInDimension({
           factor: this.factor,
