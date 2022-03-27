@@ -143,7 +143,9 @@ export class WorkspaceManagementComponent
 
     sub = this.ngrxStore
       .select(_SELECTED_GROUP_ID)
+      .pipe(distinctUntilChanged())
       .subscribe((groupId) => {
+        this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.selectedGroupId = groupId;
       });
     this.subscriptions$.push(sub);

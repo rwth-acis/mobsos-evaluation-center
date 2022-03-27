@@ -5,111 +5,107 @@
     [fixedInViewport]="mobileQuery.matches"
     [opened]="!mobileQuery.matches"
   >
-    <ng-container
-      *ngIf="successModelingAvailable && contactServiceAvailable"
-    >
-      <ng-container *ngIf="(user$ | async)?.signedIn">
-        <ng-container
-          *ngIf="userGroups$ | async as groups; else groupsAreLoading"
+    <ng-container *ngIf="(user$ | async)?.signedIn">
+      <ng-container
+        *ngIf="userGroups$ | async as groups; else groupsAreLoading"
+      >
+        <p *ngIf="groups.length === 0" id="noGroups">
+          You are not part of any community yet. <br />
+          Add a community too get started.
+        </p>
+        <!-- group selection -->
+        <mat-form-field
+          id="community-selection"
+          *ngIf="groups.length > 0"
         >
-          <p *ngIf="groups.length === 0" id="noGroups">
-            You are not part of any community yet. <br />
-            Add a community too get started.
-          </p>
-          <!-- group selection -->
-          <mat-form-field
-            id="community-selection"
-            *ngIf="groups.length > 0"
+          <mat-label>Community</mat-label>
+          <mat-select
+            [(ngModel)]="selectedGroupId"
+            (selectionChange)="onGroupSelected($event.value)"
           >
-            <mat-label>Community</mat-label>
-            <mat-select
-              [(ngModel)]="selectedGroupId"
-              (selectionChange)="onGroupSelected($event.value)"
+            <mat-option
+              class="mat-body-strong"
+              *ngFor="let group of groups"
+              [value]="group.id"
             >
-              <mat-option
-                class="mat-body-strong"
-                *ngFor="let group of groups"
-                [value]="group.id"
-              >
-                {{ group.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </ng-container>
-        <mat-nav-list>
-          <a mat-list-item (click)="openAddCommunityDialog()">
-            <mat-icon matListIcon> group_add </mat-icon>
-            {{ 'shared.pages.add-community' | translate }}
-          </a>
-          <mat-divider></mat-divider>
-          <a
-            mat-list-item
-            routerLink="/"
-            routerLinkActive="active"
-            (click)="menuItemClicked()"
-          >
-            <mat-icon matListIcon>trending_up</mat-icon>
-            {{ 'shared.pages.success-modeling' | translate }}
-          </a>
-          <a
-            *ngIf="expertMode$ | async"
-            mat-list-item
-            routerLink="/success-modeling/raw-edit"
-            routerLinkActive="active"
-            (click)="menuItemClicked()"
-          >
-            <mat-icon matListIcon>code</mat-icon>
-            {{ 'shared.pages.raw-edit' | translate }}
-          </a>
-          <a
-            *ngIf="
-              environment.production === false && expertMode$ | async
-            "
-            mat-list-item
-            routerLink="/query-visualization"
-            routerLinkActive="active"
-            (click)="menuItemClicked()"
-          >
-            <mat-icon matListIcon>show_chart</mat-icon>
-            {{ 'shared.pages.query' | translate }}
-          </a>
-          <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
-            <mat-icon matListIcon>open_in_browser</mat-icon>
-            {{ 'shared.pages.manage-questionnaires' | translate }}
-          </a>
-          <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
-            <mat-icon matListIcon>open_in_browser</mat-icon>
-            {{ 'shared.pages.manage-requirements' | translate }}
-          </a>
-        </mat-nav-list>
+              {{ group.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </ng-container>
-      <footer>
-        <mat-slide-toggle
-          *ngIf="(user$ | async)?.signedIn"
-          labelPosition="before"
-          [checked]="expertMode$ | async"
-          (change)="toggleExpertMode()"
+      <mat-nav-list>
+        <a mat-list-item (click)="openAddCommunityDialog()">
+          <mat-icon matListIcon> group_add </mat-icon>
+          {{ 'shared.pages.add-community' | translate }}
+        </a>
+        <mat-divider></mat-divider>
+        <a
+          mat-list-item
+          routerLink="/"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
         >
-          {{ 'app.expert-mode.switch-label' | translate }}
-        </mat-slide-toggle>
-        <mat-action-list>
-          <button
-            mat-list-item
-            (click)="useLanguage('en')"
-            [disabled]="languageService.getCurrentLanguage() == 'en'"
-          >
-            English
-          </button>
-          <button
-            mat-list-item
-            (click)="useLanguage('de')"
-            [disabled]="languageService.getCurrentLanguage() == 'de'"
-          >
-            Deutsch
-          </button>
-        </mat-action-list>
-      </footer>
+          <mat-icon matListIcon>trending_up</mat-icon>
+          {{ 'shared.pages.success-modeling' | translate }}
+        </a>
+        <a
+          *ngIf="expertMode$ | async"
+          mat-list-item
+          routerLink="/success-modeling/raw-edit"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
+        >
+          <mat-icon matListIcon>code</mat-icon>
+          {{ 'shared.pages.raw-edit' | translate }}
+        </a>
+        <a
+          *ngIf="
+            environment.production === false && expertMode$ | async
+          "
+          mat-list-item
+          routerLink="/query-visualization"
+          routerLinkActive="active"
+          (click)="menuItemClicked()"
+        >
+          <mat-icon matListIcon>show_chart</mat-icon>
+          {{ 'shared.pages.query' | translate }}
+        </a>
+        <a mat-list-item [href]="mobsosSurveysUrl" target="_blank">
+          <mat-icon matListIcon>open_in_browser</mat-icon>
+          {{ 'shared.pages.manage-questionnaires' | translate }}
+        </a>
+        <a mat-list-item [href]="reqBazFrontendUrl" target="_blank">
+          <mat-icon matListIcon>open_in_browser</mat-icon>
+          {{ 'shared.pages.manage-requirements' | translate }}
+        </a>
+      </mat-nav-list>
     </ng-container>
+    <footer>
+      <mat-slide-toggle
+        *ngIf="(user$ | async)?.signedIn"
+        labelPosition="before"
+        [checked]="expertMode$ | async"
+        (change)="toggleExpertMode()"
+      >
+        {{ 'app.expert-mode.switch-label' | translate }}
+      </mat-slide-toggle>
+      <mat-action-list>
+        <button
+          mat-list-item
+          (click)="useLanguage('en')"
+          [disabled]="languageService.getCurrentLanguage() == 'en'"
+        >
+          English
+        </button>
+        <button
+          mat-list-item
+          (click)="useLanguage('de')"
+          [disabled]="languageService.getCurrentLanguage() == 'de'"
+        >
+          Deutsch
+        </button>
+      </mat-action-list>
+    </footer>
   </mat-sidenav>
   <mat-sidenav-content>
     <las2peer-frontend-statusbar
@@ -164,12 +160,7 @@
           <mat-icon>close</mat-icon>
         </button>
       </mat-card>
-      <router-outlet
-        *ngIf="
-          contactServiceAvailable && successModelingAvailable;
-          else serviceUnavailable
-        "
-      ></router-outlet>
+      <router-outlet></router-outlet>
     </main>
     <footer id="footer">
       <a
@@ -194,14 +185,4 @@
     [diameter]="30"
   >
   </mat-spinner>
-</ng-template>
-
-<ng-template #serviceUnavailable>
-  <div class="flex padding-1 items-center">
-    <mat-icon class="mr-2" color="warn">error</mat-icon>
-    <span class="flex-grow">
-      Core Services are <strong> not</strong> available. Please
-      contact the administrator
-    </span>
-  </div>
 </ng-template>
