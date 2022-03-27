@@ -446,7 +446,6 @@ export class WorkspaceService {
       });
     const sharedDoc = this.sharedDocument;
     map.observeDeep((event, transaction) => {
-      console.log(event, transaction);
       if (!sharedDoc || transaction.origin !== sharedDoc.clientID) {
         // if the map changes because of another client, the subject will be updated
         this.applyRemoteChanges(map);
