@@ -9,6 +9,7 @@ import {
   map,
   switchMap,
   take,
+  tap,
   timeout,
 } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
@@ -100,7 +101,18 @@ export class Las2peerService {
     },
   };
 
+  private successModelingAvailable = true;
+  private contactserviceAvailable = true;
+
   constructor(private http: HttpClient) {}
+
+  get successModelingIsAvailable(): boolean {
+    return this.successModelingAvailable;
+  }
+
+  get contactserviceIsAvailable(): boolean {
+    return this.contactserviceAvailable;
+  }
 
   setCredentials(
     username: string,
@@ -135,6 +147,13 @@ export class Las2peerService {
     options: HttpOptions = {},
     anonymous: boolean = false,
   ): Observable<T | Request | any> {
+    if (
+      !this.successModelingAvailable ||
+      !this.contactserviceAvailable
+    ) {
+      console.warn("Core services unavailable, can't make request");
+      return of({ reason: 'Core services unavailable', status: 503 });
+    }
     options = merge(
       {
         method: 'GET',
@@ -406,6 +425,20 @@ export class Las2peerService {
             };
           }), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
+      tap((services) => {
+        services.forEach((service) => {
+          if (
+            service.name === this.coreServices.contactservice.name
+          ) {
+            this.contactserviceAvailable = false;
+          } else if (
+            service.name ===
+            this.coreServices['mobsos-success-modeling'].name
+          ) {
+            this.successModelingAvailable = false;
+          }
+        });
+      }),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
   }

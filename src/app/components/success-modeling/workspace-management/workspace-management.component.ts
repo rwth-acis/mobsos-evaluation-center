@@ -335,7 +335,7 @@ export class WorkspaceManagementComponent
       subscription.unsubscribe();
     });
     this.workspaceService.removeWorkspace(
-      this.user?.profile.preferred_username,
+      this.user?.profile?.preferred_username,
       this.selectedService?.name,
     );
   }

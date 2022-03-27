@@ -1,0 +1,12 @@
+Welcome to the Mobsos Evaluation Center More info to come soon.
+<br />
+
+<ng-container *ngIf="authenticated$ | async; else Login">
+  Go to
+  <a routerLink="/success-modeling">success modeling</a>
+</ng-container>
+
+<ng-template #Login>
+  You are not logged in. Click on the top right Login button and sign
+  in
+</ng-template>

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
 import { createSelector } from '@ngrx/store';
+import { User } from 'src/app/models/user.model';
 import { GroupInformation } from '../../models/community.model';
 import {
   MeasureCatalog,
@@ -48,6 +49,11 @@ export const EXPERT_MODE = (state: StoreState) =>
   state.Reducer?.expertMode;
 
 export const USER = (state: StoreState) => state.Reducer?.user;
+
+export const AUTHENTICATED = createSelector(
+  USER,
+  (user) => user?.signedIn,
+);
 
 // SERVICES
 export const _SELECTED_SERVICE_NAME = (state: StoreState) =>

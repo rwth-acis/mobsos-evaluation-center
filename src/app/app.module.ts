@@ -45,6 +45,7 @@ import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-s
 import { RawEditModule } from './components/raw-edit/raw-edit.module';
 import { SuccessModelingModule } from './components/success-modeling/success-modeling.module';
 import { SharedModule } from './shared/shared.module';
+import { WelcomeModule } from './components/welcome/welcome.module';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -99,6 +100,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     AppRoutingModule,
     HttpClientModule,
     RawEditModule,
+    WelcomeModule,
     SuccessModelingModule,
     SharedModule,
     GoogleChartsModule.forRoot(),

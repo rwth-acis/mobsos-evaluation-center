@@ -124,7 +124,7 @@
       [attr.useRedirect]="true"
       autoAppendWidget="true"
       (signed-in)="setUser($event.detail)"
-      (signed-out)="setUser(null)"
+      (signed-out)="logout()"
     >
       <button
         mat-icon-button

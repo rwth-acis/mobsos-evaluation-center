@@ -62,6 +62,7 @@ import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
 import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
+import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -126,6 +127,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
     private l2p: Las2peerService,
     private workspaceService: WorkspaceService,
+    private router: Router,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -305,6 +307,10 @@ export class AppComponent implements OnInit, OnDestroy {
         (service) => service.name === 'Contact Service',
       );
     }
+  }
+  logout() {
+    this.setUser(null);
+    void this.router.navigate(['/welcome']);
   }
 
   silentSignin(

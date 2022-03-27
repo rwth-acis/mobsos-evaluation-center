@@ -5,23 +5,20 @@ import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signou
 import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
 import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-space.component';
 import { CustomPreloadingStrategy } from './preloading-strategy';
+import { AuthService as AuthGuard } from './services/auth.service';
 
 const routes: Routes = [
   { path: '', redirectTo: '/success-modeling', pathMatch: 'full' },
   {
-    path: 'success-modeling/oidc-silent',
-    redirectTo: 'oidc-silent', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
-  },
-  {
-    path: 'success-modeling/oidc-signin',
-    redirectTo: 'oidc-signin', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
-  },
-  {
-    path: 'success-modeling/oidc-signout',
-    redirectTo: 'oidc-signout', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+    path: 'welcome',
+    loadChildren: () =>
+      import('./components/welcome/welcome.module').then(
+        (m) => m.WelcomeModule,
+      ),
   },
   {
     path: 'success-modeling',
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',
@@ -44,11 +41,24 @@ const routes: Routes = [
   { path: 'oidc-signout', component: OidcSignoutComponent },
   { path: 'oidc-silent', component: OidcSilentComponent },
   {
+    path: 'success-modeling/oidc-silent',
+    redirectTo: 'oidc-silent', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+  },
+  {
+    path: 'success-modeling/oidc-signin',
+    redirectTo: 'oidc-signin', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+  },
+  {
+    path: 'success-modeling/oidc-signout',
+    redirectTo: 'oidc-signout', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
+  },
+  {
     path: 'join/:groupId/:serviceName/:username',
     component: JoinWorkSpaceComponent,
   },
   {
     path: 'query-visualization',
+    canActivate: [AuthGuard],
     loadChildren: () =>
       import(
         './components/query-visualization/query-visualization.module'
