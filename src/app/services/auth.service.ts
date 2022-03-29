@@ -9,11 +9,7 @@ import { AUTHENTICATED } from './store/store.selectors';
   providedIn: 'root',
 })
 export class AuthService implements CanActivate {
-  constructor(
-    private las2peer: Las2peerService,
-    private router: Router,
-    private store: Store,
-  ) {}
+  constructor(private router: Router, private store: Store) {}
   async canActivate() {
     const auth = await firstValueFrom(
       this.store.select(AUTHENTICATED).pipe(take(1)),
