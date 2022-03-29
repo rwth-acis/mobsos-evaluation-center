@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
   OnDestroy,
@@ -17,16 +16,6 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
-  disableEdit,
-  fetchGroups,
-  fetchMeasureCatalog,
-  fetchMessageDescriptions,
-  fetchQuestionnaires,
-  fetchServices,
-  fetchSuccessModel,
-  fetchSurveys,
-  joinWorkSpace,
-  setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -46,10 +35,9 @@ import {
   map,
   take,
   timeout,
-  withLatestFrom,
 } from 'rxjs/operators';
 
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -61,7 +49,6 @@ import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dial
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
-import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
 import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
