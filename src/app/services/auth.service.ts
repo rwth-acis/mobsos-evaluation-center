@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { firstValueFrom, take } from 'rxjs';
-import { Las2peerService } from './las2peer.service';
 import { AUTHENTICATED } from './store/store.selectors';
 
 @Injectable({
