@@ -560,7 +560,7 @@ export class Las2peerService {
    * @returns an observable of the forms
    */
   fetchQuestionnaireFormsAndObserve(questionnaires: Questionnaire[]) {
-    const questionaireFormRequests = questionnaires.map(
+    const questionaireFormRequests = questionnaires?.map(
       (questionnaire) => {
         const formUrl = joinAbsoluteUrlPath(
           environment.mobsosSurveysUrl,
