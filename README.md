@@ -4,10 +4,10 @@
 <h1 align="center">Mobsos Evaluation Center</h1>
 <p align="center">
   <a href="https://travis-ci.org/rwth-acis/mobsos-evaluation-center" alt="Travis Build Status">
-        <img src="https://travis-ci.org/rwth-acis/mobsos-evaluation-center.svg?branch=master" /></a>
+        <img src="https://github.com/rwth-acis/mobsos-evaluation-center/actions/workflows/docker-CI.yml/badge.svg" /></a>
 </p>
 
-[!Workflow](https://github.com/rwth-acis/mobsos-evaluation-center/actions/workflows/docker-CI.yml/badge.svg)
+
 
 This is a Web frontend for [MobSOS](https://github.com/rwth-acis/mobsos), a framework for community information systems (CIS) success awareness.
 
