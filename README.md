@@ -7,6 +7,8 @@
         <img src="https://travis-ci.org/rwth-acis/mobsos-evaluation-center.svg?branch=master" /></a>
 </p>
 
+[!Workflow](https://github.com/rwth-acis/mobsos-evaluation-center/actions/workflows/docker-CI.yml/badge.svg)
+
 This is a Web frontend for [MobSOS](https://github.com/rwth-acis/mobsos), a framework for community information systems (CIS) success awareness.
 
 Its features include:
