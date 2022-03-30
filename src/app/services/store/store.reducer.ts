@@ -486,8 +486,6 @@ function mergeServiceData(
         };
       }
     }
-  } else {
-    console.warn('servicesFromL2P not an array, ', servicesFromL2P);
   }
   const firstService = Object.values(serviceCollection)[0];
   if (firstService && Array.isArray(firstService.mobsosIDs)) {
