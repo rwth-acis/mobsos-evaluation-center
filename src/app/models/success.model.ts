@@ -57,7 +57,10 @@ export class SuccessModel implements SuccessModel {
    */
   public static emptySuccessModel(service: ServiceInformation) {
     try {
-      if (!service) throw new Error("Service can't be undefined");
+      if (!service) {
+        console.warn("Service can't be undefined");
+        return;
+      }
       return new SuccessModel(
         service.alias,
         service.name,

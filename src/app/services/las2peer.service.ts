@@ -9,6 +9,7 @@ import {
   map,
   switchMap,
   take,
+  tap,
   timeout,
 } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
@@ -100,7 +101,18 @@ export class Las2peerService {
     },
   };
 
+  private successModelingAvailable = true;
+  private contactserviceAvailable = true;
+
   constructor(private http: HttpClient) {}
+
+  get successModelingIsAvailable(): boolean {
+    return this.successModelingAvailable;
+  }
+
+  get contactserviceIsAvailable(): boolean {
+    return this.contactserviceAvailable;
+  }
 
   setCredentials(
     username: string,
@@ -135,6 +147,13 @@ export class Las2peerService {
     options: HttpOptions = {},
     anonymous: boolean = false,
   ): Observable<T | Request | any> {
+    if (
+      !this.successModelingAvailable ||
+      !this.contactserviceAvailable
+    ) {
+      console.warn("Core services unavailable, can't make request");
+      return of({ reason: 'Core services unavailable', status: 503 });
+    }
     options = merge(
       {
         method: 'GET',
@@ -387,29 +406,53 @@ export class Las2peerService {
                 name: requests[index].name,
                 reason: 'An unknown error occurred',
               };
-            } else if (response.status === 404) {
-              return {
-                name: requests[index].name,
-                reason: 'Service not found in the network',
-              };
-            } else if (response.status === 401) {
-              return {
-                name: requests[index].name,
-                reason:
-                  'You are not authorized to access this service. You might need to login again.',
-              };
-            } else if (
-              response.status >= 200 &&
-              response.status < 300
-            ) {
-              return undefined;
+            } else {
+              switch (response.status) {
+                case 200:
+                  return undefined;
+                case 404:
+                  return {
+                    name: requests[index].name,
+                    reason: 'Service not found in the network',
+                  };
+                case 401:
+                  return {
+                    name: requests[index].name,
+                    reason:
+                      'You are not authorized to access this service. You might need to login again.',
+                  };
+                case 500:
+                  return {
+                    name: requests[index].name,
+                    reason: `Server error: ${
+                      response.error as string
+                    }`,
+                  };
+                default:
+                  return {
+                    name: requests[index].name,
+                    reason: 'An unknown error occurred',
+                  };
+              }
             }
-            return {
-              name: requests[index].name,
-              reason: 'An unknown error occurred',
-            };
           }), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
+      tap((services) => {
+        services
+          .filter((service) => !!service)
+          .forEach((service) => {
+            if (
+              service.name === this.coreServices.contactservice.name
+            ) {
+              this.contactserviceAvailable = false;
+            } else if (
+              service.name ===
+              this.coreServices['mobsos-success-modeling'].name
+            ) {
+              this.successModelingAvailable = false;
+            }
+          });
+      }),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
   }
@@ -521,7 +564,10 @@ export class Las2peerService {
    * @returns an observable of the forms
    */
   fetchQuestionnaireFormsAndObserve(questionnaires: Questionnaire[]) {
-    const questionaireFormRequests = questionnaires.map(
+    if (!questionnaires) {
+      return of([]);
+    }
+    const questionaireFormRequests = questionnaires?.map(
       (questionnaire) => {
         const formUrl = joinAbsoluteUrlPath(
           environment.mobsosSurveysUrl,

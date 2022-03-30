@@ -47,7 +47,6 @@ import { PickSurveyDialogComponent } from './success-model/questionnaires/pick-s
     EditFactorDialogComponent,
     EditMeasureDialogComponent,
     PickMeasureDialogComponent,
-    EditMeasureDialogComponent,
     QuestionnairesComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,

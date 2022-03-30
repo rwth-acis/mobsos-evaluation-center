@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
   OnDestroy,
@@ -17,16 +16,6 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
-  disableEdit,
-  fetchGroups,
-  fetchMeasureCatalog,
-  fetchMessageDescriptions,
-  fetchQuestionnaires,
-  fetchServices,
-  fetchSuccessModel,
-  fetchSurveys,
-  joinWorkSpace,
-  setCommunityWorkspaceOwner,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -46,10 +35,9 @@ import {
   map,
   take,
   timeout,
-  withLatestFrom,
 } from 'rxjs/operators';
 
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -61,8 +49,7 @@ import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dial
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
 import { Las2peerService } from './services/las2peer.service';
-import { UnavailableServicesDialogComponent } from './shared/dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
-import { _timeout } from './shared/custom-utils';
+import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -95,8 +82,6 @@ export class AppComponent implements OnInit, OnDestroy {
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
-  successModelingAvailable = true;
-  contactServiceAvailable = true;
   // Observables
   loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
@@ -127,6 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
     private l2p: Las2peerService,
     private workspaceService: WorkspaceService,
+    private router: Router,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -144,12 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  async ngOnInit(): Promise<void> {
-    void firstValueFrom(
-      this.l2p.authenticateOnReqBaz().pipe(take(1)),
-    );
-    this.ngrxStore.dispatch(disableEdit());
-    void this.checkCoreServices();
+  ngOnInit(): void {
     void this.ngrxStore
       .select(_SELECTED_GROUP_ID)
       .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
@@ -186,57 +167,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     const noob = localStorage.getItem('notNewbie');
     this.noobInfo = noob == null;
-
-    const [user, groupId, serviceName] = await firstValueFrom(
-      this.user$.pipe(
-        filter((u) => !!u?.signedIn),
-        distinctUntilKeyChanged('signedIn'),
-        withLatestFrom(
-          this.ngrxStore.select(_SELECTED_GROUP_ID),
-          this.ngrxStore.select(_SELECTED_SERVICE_NAME),
-        ),
-        take(1),
-      ),
-    );
-
-    // only gets called ONCE if user is signed in
-    // initial fetching
-    this.ngrxStore.dispatch(fetchGroups());
-    this.ngrxStore.dispatch(fetchServices());
-    this.ngrxStore.dispatch(fetchSurveys());
-    this.ngrxStore.dispatch(fetchQuestionnaires());
-
-    if (!groupId) return;
-    this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
-    this.workspaceService.syncWithCommunnityWorkspace(groupId);
-
-    this.ngrxStore.dispatch(
-      setCommunityWorkspaceOwner({
-        owner: user.profile.preferred_username,
-      }),
-    );
-
-    if (!serviceName) return;
-    this.ngrxStore.dispatch(joinWorkSpace({ groupId, serviceName }));
-    this.ngrxStore.dispatch(
-      fetchSuccessModel({ groupId, serviceName }),
-    );
-    this.ngrxStore.dispatch(
-      fetchMessageDescriptions({
-        serviceName,
-      }),
-    );
-    await timeout(3000);
-
-    const authorized = await firstValueFrom(
-      this.l2p.checkAuthorization(),
-    );
-    if (!authorized) {
-      alert(
-        'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-      );
-      this.setUser(null);
-    }
   }
 
   ngOnDestroy(): void {
@@ -280,32 +210,16 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  dismissNoobInfo() {
-    localStorage.setItem('notNewbie', 'true');
+  dismissNoobInfo(remember = false) {
     this.noobInfo = false;
+    if (remember) {
+      localStorage.setItem('notNewbie', 'true');
+    }
   }
 
-  async checkCoreServices(): Promise<void> {
-    const unavailableServices = await this.l2p
-      .checkServiceAvailability()
-      .toPromise();
-    if (unavailableServices.length > 0) {
-      console.warn(
-        'Some services are unavailable: ',
-        unavailableServices,
-      );
-      this.dialog.open(UnavailableServicesDialogComponent, {
-        data: {
-          services: unavailableServices,
-        },
-      });
-      this.successModelingAvailable = !unavailableServices.find(
-        (service) => service.name === 'MobSOS Success Modeling',
-      );
-      this.contactServiceAvailable = !unavailableServices.find(
-        (service) => service.name === 'Contact Service',
-      );
-    }
+  logout() {
+    this.setUser(null);
+    void this.router.navigate(['/welcome']);
   }
 
   silentSignin(
