@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start-yjs": "node ./node_modules/y-websocket/bin/server.js PORT=1234",
+    "start-yjs": "node ./node_modules/y-websocket/bin/server.js",
     "build": "ng build --configuration production",
     "build:prod": "ng build --configuration production",
     "build:prod-sbf-dev": "ng build --source-map --configuration production --base-href /monitor/ ",
