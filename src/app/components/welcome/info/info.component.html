@@ -1,0 +1,71 @@
+<div class="max-w-6xl mx-auto mt-6 px-8 text-lg">
+  <h1>Welcome to the MobSOS Evaluation Center</h1>
+  <p>
+    MobSOS Evaluation Center is a web application that allows you to
+    evaluate your organization's services' success by analyzing their
+    performance over time.
+  </p>
+
+  <div class="text-center">
+    <h2>Features</h2>
+    <div class="grid gap-8 md:grid-cols-3">
+      <div class="card">
+        <img
+          src="assets/icons/query_stats.svg"
+          alt=""
+          class="w-36 mx-auto"
+        />
+        <h3>Analyze</h3>
+        Get insights into how your services are used by the community.
+      </div>
+      <div class="card">
+        <img
+          src="assets/icons/debug.svg"
+          alt=""
+          class="w-36 mx-auto"
+        />
+        <h3>Debug</h3>
+        Analyze log messages to find bugs in your services.
+      </div>
+
+      <div class="card">
+        <img
+          src="assets/icons/trending_up.svg"
+          alt=""
+          class="w-36 mx-auto"
+        />
+        <h3>Awareness</h3>
+        Increase success awareness in the community by providing
+        success models which are easy to understand.
+      </div>
+    </div>
+  </div>
+
+  <br />
+
+  <p *ngIf="authenticated$ | async; else Login">
+    Create your first community and go to
+    <a routerLink="/success-modeling">success modeling</a> to create
+    your first success model.
+    <br />
+    Watch our
+    <a
+      href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
+      target="_blank"
+      rel="noopener noreferrer"
+      >Youtube tutorial</a
+    >, or read
+    <a
+      href="https://github.com/rwth-acis/mobsos-success-modeling/wiki/Manual#1-get-started"
+      target="_blank"
+      rel="noopener noreferrer"
+      >wiki</a
+    >
+    for more information.
+  </p>
+</div>
+
+<ng-template #Login>
+  You are not logged in. Click on the top right Login button and sign
+  in or register yourself.
+</ng-template>

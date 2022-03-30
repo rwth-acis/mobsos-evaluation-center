@@ -23,9 +23,9 @@ export const environment: Environment = {
   openIdClientId: 'localtestclient',
   openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl:
-    'https://git.tech4comp.dbis.rwth-aachen.de',
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
-    'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   visualizationRefreshInterval: 5,
   useLas2peerServiceDiscovery: false,
   yJsWebsocketUrl: 'ws://localhost:1234',

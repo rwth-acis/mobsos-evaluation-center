@@ -9,6 +9,7 @@ import {
   map,
   switchMap,
   take,
+  tap,
   timeout,
 } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
@@ -37,7 +38,9 @@ class NgHttpOptions implements HttpOptions {
   ) {}
 }
 const ONE_SECOND_IN_MS = 1000;
-
+/**
+ * Service for communication with the LAS2peer platform.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -98,7 +101,18 @@ export class Las2peerService {
     },
   };
 
+  private successModelingAvailable = true;
+  private contactserviceAvailable = true;
+
   constructor(private http: HttpClient) {}
+
+  get successModelingIsAvailable(): boolean {
+    return this.successModelingAvailable;
+  }
+
+  get contactserviceIsAvailable(): boolean {
+    return this.contactserviceAvailable;
+  }
 
   setCredentials(
     username: string,
@@ -133,13 +147,20 @@ export class Las2peerService {
     options: HttpOptions = {},
     anonymous: boolean = false,
   ): Observable<T | Request | any> {
+    if (
+      !this.successModelingAvailable ||
+      !this.contactserviceAvailable
+    ) {
+      console.warn("Core services unavailable, can't make request");
+      return of({ reason: 'Core services unavailable', status: 503 });
+    }
     options = merge(
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'accept-language': 'en-US',
-          oidc_provider: 'https://api.learning-layers.eu/o/oauth2',
+          oidc_provider: environment.openIdAuthorityUrl,
         },
       },
       options,
@@ -151,6 +172,11 @@ export class Las2peerService {
       try {
         const cred = localStorage.getItem('profile');
         const token = localStorage.getItem('access_token');
+        if (cred === 'undefined') {
+          throw new Error(
+            'credentials are undefined in localStorage',
+          );
+        }
         this.userCredentials = JSON.parse(cred);
         const username = this.userCredentials?.preferred_username;
         const sub = this.userCredentials?.sub;
@@ -191,7 +217,7 @@ export class Las2peerService {
       environment.las2peerWebConnectorUrl,
       this.SERVICES_PATH,
     );
-    return this.makeRequestAndObserve(url);
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 
   addGroup(groupName: string): Observable<any> {
@@ -399,6 +425,20 @@ export class Las2peerService {
             };
           }), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
+      tap((services) => {
+        services.forEach((service) => {
+          if (
+            service.name === this.coreServices.contactservice.name
+          ) {
+            this.contactserviceAvailable = false;
+          } else if (
+            service.name ===
+            this.coreServices['mobsos-success-modeling'].name
+          ) {
+            this.successModelingAvailable = false;
+          }
+        });
+      }),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
   }

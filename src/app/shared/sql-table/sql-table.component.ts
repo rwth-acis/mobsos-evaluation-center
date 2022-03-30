@@ -13,8 +13,8 @@ import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import { ServiceInformation } from 'src/app/models/service.model';
-import { fetchVisualizationData } from 'src/app/services/store.actions';
-import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store.selectors';
+import { fetchVisualizationData } from 'src/app/services/store/store.actions';
+import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store/store.selectors';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -174,17 +174,15 @@ export class SqlTableComponent
     const matches = query.match(serviceRegex);
     const params: string[] = [];
     if (matches) {
-      for (const match of matches) {
-        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
-        const maxIndex = Object.values(this.service.mobsosIDs).reduce(
-          (max, time, index) => {
-            return time > max ? index : max;
-          },
-          0,
-        );
+      // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+      const maxIndex = Object.values(this.service.mobsosIDs).reduce(
+        (max, time, index) => {
+          return time > max ? index : max;
+        },
+        0,
+      );
 
-        params.push(Object.keys(this.service.mobsosIDs)[maxIndex]);
-      }
+      params.push(Object.keys(this.service.mobsosIDs)[maxIndex]);
     }
     return params;
   }

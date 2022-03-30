@@ -1,0 +1,1 @@
+This module provides shared components and modules to other modules

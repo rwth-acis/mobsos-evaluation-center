@@ -1,5 +1,5 @@
 import { GroupCollection } from './community.model';
-import { MeasureCatalog } from './measure.catalog';
+import { MeasureCatalog } from './measure.model';
 import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';

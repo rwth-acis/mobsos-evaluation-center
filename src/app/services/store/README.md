@@ -1,0 +1,1 @@
+This folder contains the state management services for the app. [NgrX Store](https://ngrx.io/docs) is used for state handling

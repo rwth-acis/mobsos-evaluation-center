@@ -193,6 +193,7 @@ export const translations = {
       search: 'Suchen',
     },
     questionnaires: {
+      'share-survey': 'Umfrage teilen',
       'add-questionnaire-tooltip':
         'Füge einen Fragebogen hinzu. Der Fragebogen kann nach dem Speichern ausgefüllt werden.',
       'delete-questionnaire-dialog': {
@@ -223,8 +224,8 @@ export const translations = {
       },
       'remove-questionnaire-tooltip': 'Fragebogen entfernen',
       subtitle:
-        'Erhalte Benutzerfeedback durch Fragebögen. Die generierten Daten können im Erfolgsmodell verwendet werden.',
-      title: 'Fragebögen',
+        'Erhalte Benutzerfeedback durch Umfragen. Die generierten Daten können im Erfolgsmodell verwendet werden.',
+      title: 'Umfragen',
     },
     reqbaz: {
       tooltip: 'Bearbeite Anforderungen aus dem Requirements Bazaar',
