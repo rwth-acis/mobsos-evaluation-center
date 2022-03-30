@@ -159,14 +159,23 @@
           >this video</a
         >
         to learn how to use the MobSOS EC.
+        <div class="align-left">
+          <button
+            type="button"
+            class="mr-3"
+            mat-stroked-button
+            (click)="dismissNoobInfo()"
+          >
+            Close
+          </button>
+        </div>
         <button
           type="button"
-          class="align-left"
-          mat-icon-button
+          mat-stroked-button
           color="warn"
-          (click)="dismissNoobInfo()"
+          (click)="dismissNoobInfo(true)"
         >
-          <mat-icon>close</mat-icon>
+          Don't show again
         </button>
       </mat-card>
       <router-outlet></router-outlet>

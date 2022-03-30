@@ -210,9 +210,11 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  dismissNoobInfo() {
-    localStorage.setItem('notNewbie', 'true');
+  dismissNoobInfo(remember = false) {
     this.noobInfo = false;
+    if (remember) {
+      localStorage.setItem('notNewbie', 'true');
+    }
   }
 
   logout() {
