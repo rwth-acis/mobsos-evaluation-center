@@ -560,6 +560,9 @@ export class Las2peerService {
    * @returns an observable of the forms
    */
   fetchQuestionnaireFormsAndObserve(questionnaires: Questionnaire[]) {
+    if (!questionnaires) {
+      return of([]);
+    }
     const questionaireFormRequests = questionnaires?.map(
       (questionnaire) => {
         const formUrl = joinAbsoluteUrlPath(
