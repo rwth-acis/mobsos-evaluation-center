@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">Mobsos Evaluation Center</h1>
 <p align="center">
-  <a href="https://travis-ci.org/rwth-acis/mobsos-evaluation-center" alt="Travis Build Status">
+  <a href="https://github.com/rwth-acis/mobsos-evaluation-center/actions" alt="Build Status">
         <img src="https://github.com/rwth-acis/mobsos-evaluation-center/actions/workflows/docker-CI.yml/badge.svg" /></a>
 </p>
 
