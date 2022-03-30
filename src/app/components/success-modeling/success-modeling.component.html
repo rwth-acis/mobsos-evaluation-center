@@ -74,11 +74,13 @@
 </ng-template>
 
 <ng-template #serviceUnavailable>
-  <div class="flex padding-1 items-center">
-    <mat-icon class="mr-2" color="warn">error</mat-icon>
-    <span class="flex-grow">
-      Core Services are <strong> not</strong> available. Please
-      contact the administrator
-    </span>
-  </div>
+  <mat-card>
+    <div class="flex padding-1 items-center">
+      <mat-icon class="mr-2" color="warn">error</mat-icon>
+      <span class="flex-grow">
+        Core Services are <strong> not</strong> available. Please
+        contact the administrator
+      </span>
+    </div>
+  </mat-card>
 </ng-template>

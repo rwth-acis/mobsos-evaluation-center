@@ -66,6 +66,12 @@
 </div>
 
 <ng-template #Login>
-  You are not logged in. Click on the top right Login button and sign
-  in or register yourself.
+  <mat-card>
+    <app-error-banner
+      [message]="
+        'You are not logged in. Click on the top right Login button and sign in or register yourself.'
+      "
+    >
+    </app-error-banner
+  ></mat-card>
 </ng-template>
