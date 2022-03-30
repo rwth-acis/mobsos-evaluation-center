@@ -59,7 +59,7 @@ export class SuccessModelingComponent implements OnInit {
       this.l2p.authenticateOnReqBaz().pipe(take(1)),
     );
     this.ngrxStore.dispatch(disableEdit());
-    void this.checkCoreServices();
+    await this.checkCoreServices();
 
     const [user, groupId, serviceName] = await firstValueFrom(
       this.user$.pipe(
@@ -113,9 +113,9 @@ export class SuccessModelingComponent implements OnInit {
   }
 
   async checkCoreServices(): Promise<void> {
-    const unavailableServices = await this.l2p
-      .checkServiceAvailability()
-      .toPromise();
+    const unavailableServices = await firstValueFrom(
+      this.l2p.checkServiceAvailability(),
+    );
     if (unavailableServices.length > 0) {
       console.warn(
         'Some services are unavailable: ',

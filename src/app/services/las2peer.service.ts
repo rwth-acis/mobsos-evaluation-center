@@ -402,42 +402,52 @@ export class Las2peerService {
                 name: requests[index].name,
                 reason: 'An unknown error occurred',
               };
-            } else if (response.status === 404) {
-              return {
-                name: requests[index].name,
-                reason: 'Service not found in the network',
-              };
-            } else if (response.status === 401) {
-              return {
-                name: requests[index].name,
-                reason:
-                  'You are not authorized to access this service. You might need to login again.',
-              };
-            } else if (
-              response.status >= 200 &&
-              response.status < 300
-            ) {
-              return undefined;
+            } else {
+              switch (response.status) {
+                case 200:
+                  return undefined;
+                case 404:
+                  return {
+                    name: requests[index].name,
+                    reason: 'Service not found in the network',
+                  };
+                case 401:
+                  return {
+                    name: requests[index].name,
+                    reason:
+                      'You are not authorized to access this service. You might need to login again.',
+                  };
+                case 500:
+                  return {
+                    name: requests[index].name,
+                    reason: `Server error: ${
+                      response.error as string
+                    }`,
+                  };
+                default:
+                  return {
+                    name: requests[index].name,
+                    reason: 'An unknown error occurred',
+                  };
+              }
             }
-            return {
-              name: requests[index].name,
-              reason: 'An unknown error occurred',
-            };
           }), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
       tap((services) => {
-        services.forEach((service) => {
-          if (
-            service.name === this.coreServices.contactservice.name
-          ) {
-            this.contactserviceAvailable = false;
-          } else if (
-            service.name ===
-            this.coreServices['mobsos-success-modeling'].name
-          ) {
-            this.successModelingAvailable = false;
-          }
-        });
+        services
+          .filter((service) => !!service)
+          .forEach((service) => {
+            if (
+              service.name === this.coreServices.contactservice.name
+            ) {
+              this.contactserviceAvailable = false;
+            } else if (
+              service.name ===
+              this.coreServices['mobsos-success-modeling'].name
+            ) {
+              this.successModelingAvailable = false;
+            }
+          });
       }),
       map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
     );
