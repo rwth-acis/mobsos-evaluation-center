@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -21,6 +22,7 @@ import {
   toggleExpertMode,
 } from './services/store/store.actions';
 import {
+  AUTHENTICATED,
   EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
@@ -30,6 +32,7 @@ import {
   _SELECTED_SERVICE_NAME,
 } from './services/store/store.selectors';
 import {
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
@@ -73,6 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
+  @ViewChild('statusbar') l2pStatusbar: ElementRef;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
 
@@ -167,6 +171,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     const noob = localStorage.getItem('notNewbie');
     this.noobInfo = noob == null;
+
+    sub = this.ngrxStore
+      .select(AUTHENTICATED)
+      .pipe(distinctUntilChanged())
+      .subscribe((auth) => {
+        if (!auth) this.l2pStatusbar.nativeElement.handleLogout();
+      });
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {
@@ -187,7 +199,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setUser(user: User): void {
-    this.ngrxStore.dispatch(storeUser({ user }));
+    if (user?.profile?.preferred_username) {
+      this.ngrxStore.dispatch(storeUser({ user }));
+    }
+
     clearInterval(this.silentSigninIntervalHandle);
   }
 

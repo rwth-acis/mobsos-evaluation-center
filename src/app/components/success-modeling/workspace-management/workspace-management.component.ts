@@ -168,13 +168,15 @@ export class WorkspaceManagementComponent
   async onServiceSelected(
     service: ServiceInformation,
   ): Promise<void> {
-    const editMode = await this.editMode$.pipe(take(1)).toPromise();
+    const editMode = await firstValueFrom(
+      this.editMode$.pipe(take(1)),
+    );
 
     const confirmation =
       editMode && (await this.openClearWorkspaceDialog()); // only open the dialog if we are in the edit mode
     if (!editMode || confirmation) {
       this.workspaceService.removeWorkspace(
-        this.user?.profile.preferred_username,
+        this.user?.profile?.preferred_username,
         this.selectedService?.name,
       );
       this.ngrxStore.dispatch(disableEdit());
