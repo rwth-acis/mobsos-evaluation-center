@@ -50,6 +50,7 @@ import {
   SELECTED_GROUP,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class StateEffects {
@@ -63,9 +64,30 @@ export class StateEffects {
   failureResponse$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.failureResponse),
-      tap((action) => {
-        if (action.reason) {
-          console.warn('A Failure occured: ', action.reason);
+      withLatestFrom(this.ngrxStore.select(USER)),
+      tap(([action, user]) => {
+        if (action?.reason) {
+          if (action.reason instanceof HttpErrorResponse) {
+            const reason = action.reason;
+            console.warn('HTTP Error: ', reason);
+            if (
+              reason.status === 401 &&
+              reason.error === 'agent not found' &&
+              user.signedIn
+            ) {
+              alert(
+                'You could not be authenticated, reason: ' +
+                  reason.error +
+                  '. Please contact the administrator',
+              );
+              this.ngrxStore.dispatch(
+                Action.storeUser({ user: null }),
+              );
+              void this.router.navigate(['/welcome']);
+            }
+          } else {
+            console.warn('A Failure occured: ', action.reason);
+          }
         }
       }),
       mergeMap(() => of(Action.noop())),
@@ -756,6 +778,7 @@ export class StateEffects {
     private l2p: Las2peerService,
     private ngrxStore: Store,
     private workspaceService: WorkspaceService,
+    private router: Router,
   ) {}
 }
 
