@@ -1,4 +1,4 @@
-<ng-container *ngIf="dataSource$ | async as dataSource">
+<ng-container *ngIf="dataSource$ | async as dataSource; else noData">
   <table
     mat-table
     [dataSource]="dataSource"
@@ -25,3 +25,23 @@
   >
   </mat-paginator>
 </ng-container>
+
+<ng-template #noData>
+  <ng-container
+    *ngIf="error$ | async as error; else noDataAndNoError"
+  >
+    <ng-container
+      *ngTemplateOutlet="Error; context: { error: error }"
+    ></ng-container>
+  </ng-container>
+</ng-template>
+<ng-template #Error let-errorInput="error">
+  <div
+    (click)="openErrorDialog(errorInput)"
+    class="visualization-error grid place-content-center h-full w-full"
+  >
+    <button mat-button>
+      <mat-icon>warning</mat-icon>
+    </button>
+  </div>
+</ng-template>

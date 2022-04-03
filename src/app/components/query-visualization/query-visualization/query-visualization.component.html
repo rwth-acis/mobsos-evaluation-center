@@ -1,16 +1,56 @@
-<mat-card>
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <mat-form-field appearance="standard">
-      <mat-label></mat-label>
-      <textarea
-        matInput
-        [formControl]="form.controls['query']"
-      ></textarea>
+<div class="max-w-7xl mx-auto">
+  <mat-card class="my-5">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="standard">
+        <mat-label></mat-label>
+        <textarea
+          matInput
+          [formControl]="form.controls.query"
+          placeholder="SELECT..."
+        ></textarea>
 
-      <mat-hint>SQL</mat-hint>
-    </mat-form-field>
-  </form>
+        <mat-hint>SQL</mat-hint>
+      </mat-form-field>
+      <br />
+      <mat-form-field>
+        <mat-label>Visualization Type</mat-label>
+        <mat-select [formControl]="form.controls.visualization">
+          <mat-option
+            *ngFor="let type of visualizationChoices"
+            [value]="type.value"
+            >{{ type.label | translate }}</mat-option
+          >
+        </mat-select>
+      </mat-form-field>
+      <br />
+
+      <mat-form-field
+        *ngIf="(selectedVisualizationType$ | async) === 'Chart'"
+      >
+        <mat-label>Chart Type</mat-label>
+        <mat-select [formControl]="form.controls.chartType">
+          <mat-option
+            *ngFor="let type of chartTypeChoices | keyvalue"
+            [value]="type.key"
+            >{{ type.value | translate }}</mat-option
+          >
+        </mat-select>
+      </mat-form-field>
+
+      <br />
+
+      <button mat-flat-button type="submit" color="primary">
+        Submit
+      </button>
+    </form>
+  </mat-card>
   <br />
-</mat-card>
-<br />
-<app-sql-table [query$]="queryInput$"></app-sql-table>
+  <ng-container [ngSwitch]="selectedVisualizationType$ | async">
+    <div *ngSwitchCase="'Table'">
+      <app-sql-table [query$]="queryInput$"></app-sql-table>
+    </div>
+    <div *ngSwitchDefault>
+      <app-visualization [measure$]="measure$"> </app-visualization>
+    </div>
+  </ng-container>
+</div>

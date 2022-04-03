@@ -38,6 +38,8 @@ import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.com
 import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ErrorBannerComponent } from './error-banner/error-banner.component';
+import { VisualizationsModule } from './visualizations/visualizations.module';
+import { GoogleChartsModule } from 'angular-google-charts';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -62,6 +64,7 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
     MatInputModule,
     MatIconModule,
     MatTableModule,
+    VisualizationsModule,
   ],
   exports: [
     MatSelectModule,
@@ -96,6 +99,7 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
     FormsModule,
     SqlTableComponent,
     ErrorBannerComponent,
+    VisualizationsModule,
   ],
 })
 export class SharedModule {}
