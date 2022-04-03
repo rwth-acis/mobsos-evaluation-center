@@ -483,8 +483,17 @@ export class StateEffects {
                 (
                   res: HttpResponse<any> | HttpErrorResponse | string,
                 ) => {
-                  if (res instanceof HttpResponse && res.status < 400)
+                  if (
+                    res instanceof HttpResponse ||
+                    res instanceof HttpErrorResponse
+                  ) {
                     delete StateEffects.visualizationCalls[query];
+                  }
+                  if (res instanceof HttpErrorResponse) {
+                    this.ngrxStore.dispatch(
+                      Action.failureResponse({ reason: res }),
+                    );
+                  }
                 },
               ),
               map((response) => {
