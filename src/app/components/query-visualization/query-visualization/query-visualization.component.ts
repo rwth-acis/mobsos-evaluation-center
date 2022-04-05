@@ -48,7 +48,7 @@ export class QueryVisualizationComponent implements OnInit {
   form = this.fb.group(
     {
       query: [QueryVisualizationComponent.initialValue],
-      visualization: [this.visualizationChoices[2].value],
+      visualization: [this.visualizationChoices[0].value],
       chartType: ['BarChart'],
     },
     { updateOn: 'blur' },
