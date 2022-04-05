@@ -46,11 +46,11 @@
   </mat-card>
   <br />
   <ng-container [ngSwitch]="selectedVisualizationType$ | async">
-    <div *ngSwitchCase="'Table'">
+    <div class="w-fit mx-auto" *ngSwitchCase="'Table'">
       <app-sql-table [query$]="queryInput$"></app-sql-table>
     </div>
-    <div *ngSwitchDefault>
+    <mat-card class="w-1/2 mx-auto" *ngSwitchDefault>
       <app-visualization [measure$]="measure$"> </app-visualization>
-    </div>
+    </mat-card>
   </ng-container>
 </div>
