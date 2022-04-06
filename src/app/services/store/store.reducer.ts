@@ -558,7 +558,9 @@ function mergeServiceData(
  */
 function mergeGroupData(
   groups,
-  groupsFromContactService,
+  groupsFromContactService: {
+    [key: string]: { name: string; member: boolean };
+  },
   groupsFromMobSOS?,
 ) {
   groups = {};

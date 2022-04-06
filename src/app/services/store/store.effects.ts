@@ -59,7 +59,7 @@ export class StateEffects {
   static visualizationCalls = {};
 
   /**
-   * This effect just logs errors emitted by the other effects
+   * This effect just logs errors emitted by the other effects and redirects the user back to the welcome page if unauthorized.
    */
   failureResponse$ = createEffect(() =>
     this.actions$.pipe(
