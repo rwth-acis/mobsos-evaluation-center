@@ -41,6 +41,7 @@ import {
   SELECTED_SERVICE,
   SELECTED_WORKSPACE_OWNER,
   SUCCESS_MODEL,
+  SUCCESS_MODEL_IS_EMPTY,
   SUCCESS_MODEL_XML,
   USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
@@ -50,9 +51,8 @@ import {
   _SELECTED_SERVICE_NAME,
   _SERVICES,
 } from 'src/app/services/store/store.selectors';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
 import { ServiceInformation } from 'src/app/models/service.model';
 import { joinAbsoluteUrlPath } from 'src/app/services/las2peer.service';
 import {
@@ -204,16 +204,24 @@ export class WorkspaceManagementComponent
         this.editControls.writeValue(true);
       }
     } else if (user?.profile.preferred_username && serviceName) {
-      this.ngrxStore.dispatch(enableEdit());
-      const confirmation = await firstValueFrom(
-        this.dialog
-          .open(ConfirmationDialogComponent, {
-            minWidth: 300,
-            width: '80%',
-            data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
-          })
-          .afterClosed(),
+      const successModelEmpty = await firstValueFrom(
+        this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY).pipe(take(1)),
       );
+      let confirmation = true;
+      if (!successModelEmpty) {
+        confirmation = await firstValueFrom(
+          this.dialog
+            .open(ConfirmationDialogComponent, {
+              minWidth: 300,
+              width: '80%',
+              data: 'Do you want to import the current success model into your workspace? This will overwrite the current workspace',
+            })
+            .afterClosed(),
+        );
+      }
+
+      this.ngrxStore.dispatch(enableEdit());
+
       this.ngrxStore.dispatch(
         joinWorkSpace({
           groupId,
