@@ -58,7 +58,7 @@ export class ImportDialogComponent implements OnInit {
     );
     const rootNodeName = XMLElement.firstChild.nodeName;
     const isSuccessModel = rootNodeName === 'SuccessModel';
-    const isMeasureCatalog = rootNodeName === 'MeasureCatalog';
+    const isMeasureCatalog = rootNodeName === 'Catalog';
     if (!isSuccessModel && !isMeasureCatalog)
       return alert(
         'The filetype is not supported. Please only submit valid success model or catalog files',
