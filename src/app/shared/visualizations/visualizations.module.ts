@@ -14,6 +14,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { MatIconModule } from '@angular/material/icon';
     TranslateModule,
     MatPaginatorModule,
     MatButtonModule,
+    MatTableModule,
     MatIconModule,
   ],
   exports: [VisualizationComponent],
