@@ -142,7 +142,6 @@ export class AppComponent implements OnInit, OnDestroy {
     let sub = this.ngrxStore
       .select(_SELECTED_GROUP_ID)
       .subscribe((id) => {
-        if (!id) return;
         this.selectedGroupId = id;
         this.group.setValue(id);
       });

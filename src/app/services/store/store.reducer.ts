@@ -56,13 +56,10 @@ const _Reducer = createReducer(
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    selectedGroupId:
-      groupsFromContactService &&
-      Object.keys(groupsFromContactService).includes(
-        state.selectedGroupId,
-      )
-        ? state.selectedGroupId
-        : initialState.selectedGroupId,
+    selectedGroupId: updateSelectedGroup(
+      groupsFromContactService,
+      state.selectedGroupId,
+    ),
     groups: mergeGroupData(
       state.groups || null,
       groupsFromContactService,
@@ -1180,4 +1177,23 @@ function removeSurveyMeasures(
     }
   }
   return copy;
+}
+function updateSelectedGroup(
+  groupsFromContactService: {
+    [key: string]: { name: string; member: boolean };
+  },
+  selectedGroupId: string,
+): string {
+  if (
+    !groupsFromContactService ||
+    Object.keys(groupsFromContactService).length === 0
+  )
+    return selectedGroupId;
+  if (!selectedGroupId)
+    return Object.keys(groupsFromContactService)[0];
+  if (!(selectedGroupId in groupsFromContactService))
+    return initialState.selectedGroupId;
+  const group = groupsFromContactService[selectedGroupId];
+  if (!group.member) return initialState.selectedGroupId;
+  return selectedGroupId;
 }
