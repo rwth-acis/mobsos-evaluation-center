@@ -678,6 +678,29 @@ export class StateEffects {
     ),
   );
 
+  addModelToWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      tap(() => Action.joinWorkSpace({})),
+      ofType(Action.addModelToWorkSpace),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ xml }, id]) => {
+        return this.workspaceService
+          .syncWithCommunnityWorkspace(id)
+          .pipe(
+            map((done) => {
+              if (done) {
+                return Action.storeModelInWorkspace({ xml });
+              } else {
+                return Action.failureResponse({
+                  reason: new Error('Cannot Sync with YJS'),
+                });
+              }
+            }),
+          );
+      }),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),

@@ -11,7 +11,11 @@ import {
   SuccessModel,
 } from '../../models/success.model';
 import { VisualizationCollection } from '../../models/visualization.model';
-import { CommunityWorkspace } from '../../models/workspace.model';
+import {
+  ApplicationWorkspace,
+  CommunityWorkspace,
+  EmptyApplicationWorkspace,
+} from '../../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -345,7 +349,7 @@ const _Reducer = createReducer(
       name,
     ),
   })),
-  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+  on(Actions.storeModelInWorkspace, (state, { xml }) => ({
     ...state,
     communityWorkspace: addModelToCurrentWorkSpace(state, xml),
   })),
@@ -1021,15 +1025,21 @@ function addModelToCurrentWorkSpace(
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
+  const selectedService = state.services[serviceName];
   const copy = cloneDeep(
     state.communityWorkspace,
   ) as CommunityWorkspace;
-  const appWorkspace = getWorkspaceByUserAndService(
+  let appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
     serviceName,
   );
-  if (!appWorkspace) return state.communityWorkspace;
+  if (!appWorkspace) {
+    appWorkspace = new EmptyApplicationWorkspace(
+      owner,
+      selectedService,
+    );
+  }
   const doc = parseXml(xml);
   const model = SuccessModel.fromXml(doc.documentElement);
   appWorkspace.model = model;

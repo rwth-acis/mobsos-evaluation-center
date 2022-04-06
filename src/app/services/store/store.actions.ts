@@ -61,6 +61,7 @@ export enum StoreActions {
   STORE_MEASURE_CATALOG = 'Store the measure catalog as xml string',
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
+  STORE_MODEL_IN_WORKSPACE = 'Store the model in the current workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
   REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
@@ -419,6 +420,11 @@ export const addModelToWorkSpace = createAction(
 );
 export const addCatalogToWorkspace = createAction(
   StateActions.ADD_CATALOG_TO_WORKSPACE,
+  props<{ xml: string }>(),
+);
+
+export const storeModelInWorkspace = createAction(
+  StoreActions.STORE_MODEL_IN_WORKSPACE,
   props<{ xml: string }>(),
 );
 
