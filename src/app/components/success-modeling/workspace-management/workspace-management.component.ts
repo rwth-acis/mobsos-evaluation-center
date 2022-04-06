@@ -341,6 +341,7 @@ export class WorkspaceManagementComponent
   }
 
   onImportClicked() {
+    this.ngrxStore.dispatch(enableEdit());
     this.dialog.open(ImportDialogComponent);
   }
 
