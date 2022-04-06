@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 
 import {
   catchError,
+  distinctUntilKeyChanged,
   filter,
   map,
   take,
@@ -134,7 +135,10 @@ export class SuccessModelComponent implements OnInit {
 
   ngOnInit(): void {
     let sub = this.selectedService$
-      .pipe(filter((service) => service !== undefined))
+      .pipe(
+        filter((service) => service !== undefined),
+        distinctUntilKeyChanged('name'),
+      )
       .subscribe((service) => {
         this.selectedServiceName = service.alias
           ? service.alias
