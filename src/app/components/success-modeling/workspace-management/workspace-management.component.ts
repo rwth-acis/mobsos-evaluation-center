@@ -50,7 +50,7 @@ import {
   _SELECTED_SERVICE_NAME,
   _SERVICES,
 } from 'src/app/services/store/store.selectors';
-import { FormControl } from '@angular/forms';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -124,6 +124,7 @@ export class WorkspaceManagementComponent
   editMode: boolean;
   selections = new FormControl();
   options = ['Success Model', 'Measure Catalog'];
+  service = new FormControl();
 
   constructor(
     private _snackBar: MatSnackBar,
@@ -138,6 +139,7 @@ export class WorkspaceManagementComponent
       .pipe(filter((service) => !!service))
       .subscribe((service) => {
         this.selectedService = service;
+        this.service.setValue(service);
       });
     this.subscriptions$.push(sub);
 

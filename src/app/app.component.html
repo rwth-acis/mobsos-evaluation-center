@@ -20,7 +20,7 @@
         >
           <mat-label>Community</mat-label>
           <mat-select
-            [(ngModel)]="selectedGroupId"
+            [formControl]="group"
             (selectionChange)="onGroupSelected($event.value)"
           >
             <mat-option
