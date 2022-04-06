@@ -39,7 +39,6 @@ import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-d
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ErrorBannerComponent } from './error-banner/error-banner.component';
 import { VisualizationsModule } from './visualizations/visualizations.module';
-import { GoogleChartsModule } from 'angular-google-charts';
 import { InfoBannerComponent } from './info-banner/info-banner.component';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
