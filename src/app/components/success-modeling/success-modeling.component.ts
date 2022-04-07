@@ -113,8 +113,11 @@ export class SuccessModelingComponent implements OnInit {
   }
 
   async checkCoreServices(): Promise<void> {
-    const unavailableServices = await firstValueFrom(
-      this.l2p.checkServiceAvailability(),
+    await firstValueFrom(this.l2p.checkServiceAvailability());
+    const unavailableServices = this.l2p.unavailableServices.map(
+      (service) => {
+        return { name: service.name, reason: service.reason };
+      },
     );
     if (unavailableServices.length > 0) {
       console.warn(
@@ -126,12 +129,10 @@ export class SuccessModelingComponent implements OnInit {
           services: unavailableServices,
         },
       });
-      this.successModelingAvailable = !unavailableServices.find(
-        (service) => service.name === 'MobSOS Success Modeling',
-      );
-      this.contactServiceAvailable = !unavailableServices.find(
-        (service) => service.name === 'Contact Service',
-      );
+      this.successModelingAvailable =
+        this.l2p.successModelingIsAvailable;
+      this.contactServiceAvailable =
+        this.l2p.contactserviceIsAvailable;
     }
   }
 }

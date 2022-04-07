@@ -1,9 +1,6 @@
 <!-- Only show component if authorized. We are authorized if we are signed in or we have restricted access to the model -->
 <ng-container
-  *ngIf="
-    successModelingAvailable && contactServiceAvailable;
-    else serviceUnavailable
-  "
+  *ngIf="contactServiceAvailable; else contactServiceUnavailable"
 >
   <ng-container
     *ngIf="
@@ -28,9 +25,13 @@
       >
         <!-- success model -->
         <mat-tab label="Success modeling">
-          <!-- workspace management -->
-          <app-workspace-management></app-workspace-management>
-          <app-success-model></app-success-model>
+          <ng-container
+            *ngIf="successModelingAvailable; else noModelingAvailable"
+          >
+            <!-- workspace management -->
+            <app-workspace-management></app-workspace-management>
+            <app-success-model></app-success-model>
+          </ng-container>
         </mat-tab>
 
         <!-- requirements -->
@@ -43,8 +44,13 @@
               >{{
                 'success-modeling.requirements.title' | translate
               }}</span
-            > </ng-template
-          ><app-requirements></app-requirements>
+            ></ng-template
+          >
+          <ng-container
+            *ngIf="successModelingAvailable; else noModelingAvailable"
+          >
+            <app-requirements></app-requirements
+          ></ng-container>
         </mat-tab>
         <mat-tab label="Community">
           <app-community-info></app-community-info>
@@ -73,13 +79,25 @@
   </mat-card>
 </ng-template>
 
-<ng-template #serviceUnavailable>
+<ng-template #contactServiceUnavailable>
   <mat-card>
     <div class="flex padding-1 items-center">
       <mat-icon class="mr-2" color="warn">error</mat-icon>
       <span class="flex-grow">
-        Core Services are <strong> not</strong> available. Please
-        contact the administrator
+        The Contact service is <strong>unavailable</strong>. Please
+        contact the administrator.
+      </span>
+    </div>
+  </mat-card>
+</ng-template>
+
+<ng-template #noModelingAvailable>
+  <mat-card>
+    <div class="flex padding-1 items-center">
+      <mat-icon class="mr-2" color="warn">error</mat-icon>
+      <span class="flex-grow">
+        The Success Modeling service is <strong>unavailable</strong>.
+        Please contact the administrator.
       </span>
     </div>
   </mat-card>
