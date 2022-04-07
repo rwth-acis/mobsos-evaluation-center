@@ -259,7 +259,7 @@ export class Las2peerService {
     groupName: string,
   ): Observable<GroupMember[]> {
     if (!groupName) {
-      console.error("Can't fetch group members without group name");
+      console.error('Cannot fetch group members without group name');
       return of(null);
     }
     const url = joinAbsoluteUrlPath(
@@ -812,7 +812,7 @@ export class Las2peerService {
       groupID,
     );
     return this.makeRequest(url)
-      .then((response) => {
+      .then((response: { xml: string }) => {
         return response?.xml;
       })
       .catch((response) => {
@@ -885,7 +885,7 @@ export class Las2peerService {
       method,
       body: JSON.stringify({ xml }),
     })
-      .then((response) => {
+      .then((response: { xml: string }) => {
         return response?.xml;
       })
       .catch((response) => {
