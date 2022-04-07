@@ -14,7 +14,6 @@ import {
   addUserToGroup,
   failureResponse,
   fetchGroupMembers,
-  HttpActions,
   removeMemberFromGroup,
 } from 'src/app/services/store/store.actions';
 import { StateEffects } from 'src/app/services/store/store.effects';
@@ -33,7 +32,6 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
   communityName$ = this.ngrxStore
     .select(SELECTED_GROUP)
     .pipe(map((community) => community?.name));
-  panelOpenState;
   user: string;
   error: string;
   subscriptions$: Subscription[] = [];

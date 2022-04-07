@@ -251,8 +251,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchGroupMembers),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      filter(([, group]) => !!group),
       switchMap(([{ groupId }, group]) =>
-        this.l2p.fetchGroupMembersAndObserve(group.name).pipe(
+        this.l2p.fetchGroupMembersAndObserve(group?.name).pipe(
           map((groupMembers: GroupMember[]) =>
             Action.storeGroupMembers({
               groupMembers,
