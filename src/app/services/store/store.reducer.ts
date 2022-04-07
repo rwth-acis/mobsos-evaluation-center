@@ -1203,7 +1203,5 @@ function updateSelectedGroup(
     return Object.keys(groupsFromContactService)[0];
   if (!(selectedGroupId in groupsFromContactService))
     return initialState.selectedGroupId;
-  const group = groupsFromContactService[selectedGroupId];
-  if (!group.member) return initialState.selectedGroupId;
   return selectedGroupId;
 }
