@@ -1,8 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { firstValueFrom, map, take } from 'rxjs';
+import {
+  catchError,
+  firstValueFrom,
+  map,
+  of,
+  Subscription,
+  take,
+  timeout,
+} from 'rxjs';
 import { Las2peerService } from 'src/app/services/las2peer.service';
-import { fetchGroupMembers } from 'src/app/services/store/store.actions';
+import {
+  addUserToGroup,
+  failureResponse,
+  fetchGroupMembers,
+  HttpActions,
+  removeMemberFromGroup,
+} from 'src/app/services/store/store.actions';
+import { StateEffects } from 'src/app/services/store/store.effects';
 import {
   SELECTED_GROUP,
   SELECTED_GROUP_MEMBERS,
@@ -13,7 +28,7 @@ import {
   templateUrl: './community-info.component.html',
   styleUrls: ['./community-info.component.scss'],
 })
-export class CommunityInfoComponent implements OnInit {
+export class CommunityInfoComponent implements OnInit, OnDestroy {
   members$ = this.ngrxStore.select(SELECTED_GROUP_MEMBERS);
   communityName$ = this.ngrxStore
     .select(SELECTED_GROUP)
@@ -21,9 +36,11 @@ export class CommunityInfoComponent implements OnInit {
   panelOpenState;
   user: string;
   error: string;
+  subscriptions$: Subscription[] = [];
   constructor(
     private ngrxStore: Store,
     private las2peer: Las2peerService,
+    private actionState: StateEffects,
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +71,37 @@ export class CommunityInfoComponent implements OnInit {
 
   addUserToGroup() {
     if (!this.user) return;
-    // this.ngrxStore.dispatch(addUserToGroup({ user: this.user }));
+    this.ngrxStore.dispatch(addUserToGroup({ username: this.user }));
+    const sub = this.actionState.addUserToGroup$
+      .pipe(
+        timeout(300000),
+        catchError(() => {
+          return of(
+            failureResponse({
+              reason: new Error(
+                'The request took too long and was aborted',
+              ),
+            }),
+          );
+        }),
+      )
+      .subscribe((result) => {
+        if ('group' in result) {
+          this.user = undefined;
+        } else {
+          result.reason.message =
+            result.reason.message || result.reason['error'];
+          this.error = result.reason.message;
+        }
+      });
+    this.subscriptions$.push(sub);
+  }
+
+  removeMember(username: string) {
+    this.ngrxStore.dispatch(removeMemberFromGroup({ username }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions$.forEach((sub) => sub.unsubscribe());
   }
 }

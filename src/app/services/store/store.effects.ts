@@ -660,6 +660,74 @@ export class StateEffects {
     ),
   );
 
+  addUserToGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addUserToGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.addUserToGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: [
+                  ...group.members,
+                  new GroupMember(undefined, username),
+                ],
+              };
+              return Action.storeGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  removeMemberFromGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.removeMemberFromGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.removeUserFromGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: [
+                  ...group.members,
+                  new GroupMember(undefined, username),
+                ],
+              };
+              return Action.storeGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.addReqBazarProject),

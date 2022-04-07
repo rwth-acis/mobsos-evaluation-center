@@ -44,6 +44,8 @@ export enum HttpActions {
   SAVE_CATALOG_SUCCESS = 'successfully saved the catalog on the server',
   REFRESH_VISUALIZATION = 'Refresh the current visualization manually',
   ADD_GROUP = 'adds a new group on the server',
+  ADD_USER_TO_GROUP = 'adds a new user to the current group',
+  REMOVE_MEMBER_FROM_GROUP = 'removes a member from the current group',
   SUCCESS_RESPONSE = 'response was successful',
   FAILURE_RESPONSE = 'response was not successful',
 }
@@ -445,6 +447,16 @@ export const fetchGroupMembers = createAction(
 export const storeGroupMembers = createAction(
   StoreActions.STORE_GROUP_MEMBERS,
   props<{ groupMembers: GroupMember[]; groupId: string }>(),
+);
+
+export const addUserToGroup = createAction(
+  HttpActions.ADD_USER_TO_GROUP,
+  props<{ username: string }>(),
+);
+
+export const removeMemberFromGroup = createAction(
+  HttpActions.REMOVE_MEMBER_FROM_GROUP,
+  props<{ username: string }>(),
 );
 
 export const success = createAction('action was successful');

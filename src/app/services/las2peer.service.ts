@@ -1218,6 +1218,38 @@ export class Las2peerService {
 
     return this.makeRequest(url, { observe: 'response' });
   }
+
+  addUserToGroup(groupName: string, username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+      this.CONTACT_MEMBERS_PATH,
+      username,
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'POST',
+      responseType: 'text',
+    });
+  }
+
+  removeUserFromGroup(groupName: string, username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+      this.CONTACT_MEMBERS_PATH,
+      username,
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'DELETE',
+      responseType: 'text',
+    });
+  }
 }
 
 export function joinAbsoluteUrlPath(

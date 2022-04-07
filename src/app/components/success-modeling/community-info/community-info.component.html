@@ -1,46 +1,56 @@
-<h2>{{ communityName$ | async }} Community Members</h2>
-<mat-list>
-  <mat-list-item *ngFor="let member of members$ | async">
-    <mat-icon matListIcon>account_circle</mat-icon>
-    <h3 matLine>{{ member.name }}</h3>
-  </mat-list-item>
-</mat-list>
-
-<mat-expansion-panel
-  class="w-fit"
-  (opened)="panelOpenState = true"
-  (closed)="panelOpenState = false"
->
-  <mat-expansion-panel-header>
-    <mat-panel-title> Add members </mat-panel-title>
-    <mat-panel-description class="flex justify-end">
-      <mat-icon>person_add</mat-icon>
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <form class="example-form" (submit)="lookupUser(input.value)">
-    <mat-form-field class="example-full-width">
-      <mat-label>Search for a las2peer user</mat-label>
-      <input #input matInput placeholder="Peter" />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit">
-      Search
-    </button>
-  </form>
-  <ng-container *ngIf="user !== undefined; else noUser">
-    <ng-container *ngIf="user !== null; else loading">
-      {{ user
-      }}<button
-        mat-raised-button
-        color="primary"
-        (click)="addUserToGroup()"
+<div class="w-fit">
+  <h2>{{ communityName$ | async }} Community Members</h2>
+  <mat-list class="flex flex-col mb-4">
+    <mat-list-item *ngFor="let member of members$ | async">
+      <mat-icon matListIcon>account_circle</mat-icon>
+      <h3 matLine>{{ member.name }}</h3>
+      <button
+        mat-icon-button
+        (click)="removeMember(member.name)"
+        class="ml-auto"
+        color="warn"
+        aria-label="Example icon button with a home icon"
       >
-        Add <mat-icon>add</mat-icon>
+        <mat-icon>remove_circle</mat-icon>
       </button>
-    </ng-container></ng-container
-  >
-</mat-expansion-panel>
+    </mat-list-item>
+  </mat-list>
 
+  <mat-expansion-panel
+    class="w-fit mb-4"
+    (opened)="panelOpenState = true"
+    (closed)="panelOpenState = false"
+  >
+    <mat-expansion-panel-header>
+      <mat-panel-title> Add members </mat-panel-title>
+      <mat-panel-description class="flex justify-end">
+        <mat-icon>person_add</mat-icon>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <form (submit)="lookupUser(input.value)">
+      <mat-form-field class="mr-5">
+        <mat-label>Search for a las2peer user</mat-label>
+        <input #input matInput placeholder="Peter" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">
+        Search
+      </button>
+    </form>
+    <ng-container *ngIf="user !== undefined; else noUser">
+      <ng-container *ngIf="user !== null; else loading">
+        {{ user
+        }}<button
+          mat-raised-button
+          color="primary"
+          (click)="addUserToGroup()"
+        >
+          Add <mat-icon>add</mat-icon>
+        </button>
+      </ng-container></ng-container
+    >
+  </mat-expansion-panel>
+</div>
 <ng-template #loading>
   <mat-spinner></mat-spinner>
 </ng-template>
