@@ -131,6 +131,7 @@ export const translations = {
       'choice-barchart': 'Bar Chart',
       'choice-chart': 'Chart',
       'choice-kpi': 'KPI',
+      'choice-table': 'Table',
       'choice-linechart': 'Line Chart',
       'choice-piechart': 'Pie Chart',
       'choice-radarchart': 'Radar Chart',

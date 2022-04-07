@@ -15,10 +15,8 @@ export class OidcSignoutComponent implements OnInit {
   constructor(private ngrxStore: Store, private router: Router) {
     void new UserManager(userManagerSettings)
       .signoutRedirectCallback()
-      .then((user) => {
-        this.ngrxStore.dispatch(
-          storeUser({ user: user as unknown as User }),
-        );
+      .then(() => {
+        this.ngrxStore.dispatch(storeUser({ user: null }));
         void this.router.navigate(['/']);
       });
   }

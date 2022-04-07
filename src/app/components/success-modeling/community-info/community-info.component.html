@@ -1,7 +1,68 @@
-<h2>{{ communityName$ | async }} Community Members</h2>
-<mat-list>
-  <mat-list-item *ngFor="let member of members$ | async">
-    <mat-icon matListIcon>account_circle</mat-icon>
-    <h3 matLine>{{ member.name }}</h3>
-  </mat-list-item>
-</mat-list>
+<div
+  class="w-fit mx-auto my-5"
+  *ngIf="members$ | async as members; else loading"
+>
+  <h2>{{ communityName$ | async }} Community Members</h2>
+  <mat-list class="flex flex-col mb-4">
+    <mat-list-item *ngFor="let member of members">
+      <mat-icon matListIcon>account_circle</mat-icon>
+      <h3 matLine>{{ member.name }}</h3>
+      <button
+        mat-icon-button
+        (click)="removeMember(member.name)"
+        class="ml-auto"
+        color="warn"
+        aria-label="Example icon button with a home icon"
+      >
+        <mat-icon>remove_circle</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+
+  <mat-expansion-panel class="w-fit mb-4">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Add members </mat-panel-title>
+      <mat-panel-description class="flex justify-end">
+        <mat-icon>person_add</mat-icon>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <form (submit)="lookupUser(input.value)">
+      <mat-form-field class="mr-5">
+        <mat-label>Search for a las2peer user</mat-label>
+        <input #input matInput placeholder="Peter" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">
+        Search
+      </button>
+    </form>
+    <ng-container *ngIf="user !== undefined; else noUser">
+      <ng-container *ngIf="user !== null; else loading">
+        <mat-divider></mat-divider>
+        <h2>Result</h2>
+        <div class="flex justify-between content-center">
+          <div class="flex items-center">
+            <mat-icon matListIcon>account_circle</mat-icon>
+            <span>{{ user }}</span>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="addUserToGroup()"
+          >
+            Add <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </ng-container></ng-container
+    >
+  </mat-expansion-panel>
+</div>
+<ng-template #loading>
+  <mat-spinner></mat-spinner>
+</ng-template>
+<ng-template #noUser>
+  <app-error-banner
+    *ngIf="addGroupMemberError"
+    [message]="addGroupMemberError"
+  ></app-error-banner>
+</ng-template>

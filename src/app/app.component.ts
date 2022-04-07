@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -16,11 +17,13 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  fetchGroupMembers,
   setGroup,
   storeUser,
   toggleExpertMode,
 } from './services/store/store.actions';
 import {
+  AUTHENTICATED,
   EXPERT_MODE,
   HTTP_CALL_IS_LOADING,
   ROLE_IN_CURRENT_WORKSPACE,
@@ -30,6 +33,7 @@ import {
   _SELECTED_SERVICE_NAME,
 } from './services/store/store.selectors';
 import {
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
@@ -73,6 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
+  @ViewChild('statusbar') l2pStatusbar: ElementRef;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
 
@@ -95,6 +100,7 @@ export class AppComponent implements OnInit, OnDestroy {
     .pipe(filter((user) => !!user));
 
   selectedGroupId: string; // used to show the selected group in the form field
+  group = new FormControl();
 
   noobInfo: boolean;
   version = environment.version;
@@ -110,8 +116,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
-    private l2p: Las2peerService,
-    private workspaceService: WorkspaceService,
     private router: Router,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -128,30 +132,41 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false,
     );
+
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
   }
 
   ngOnInit(): void {
-    void this.ngrxStore
-      .select(_SELECTED_GROUP_ID)
-      .pipe(timeout(3000), take(1)) // need to use take(1) so that the observable completes, see https://stackoverflow.com/questions/43167169/ngrx-store-the-store-does-not-return-the-data-in-async-away-manner
-      .toPromise()
-      .then((id) => {
-        this.selectedGroupId = id;
-      });
-
     this.silentSignin();
-    if (!environment.production) {
-      this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
-    } else {
-      this.title = `MobSOS Evaluation Center v${environment.version}`;
-    }
-    let sub = this.loading$.subscribe((loading) => {
+
+    let sub = this.ngrxStore
+      .select(_SELECTED_GROUP_ID)
+      .subscribe((id) => {
+        this.selectedGroupId = id;
+        this.group.setValue(id);
+        if (id) {
+          this.ngrxStore.dispatch(fetchGroupMembers({ groupId: id }));
+        }
+      });
+    this.subscriptions$.push(sub);
+
+    sub = this.loading$.subscribe((loading) => {
       this.isLoading = loading;
       this.changeDetectorRef.detectChanges();
     });
     this.subscriptions$.push(sub);
 
+    sub = this.ngrxStore
+      .select(AUTHENTICATED)
+      .pipe(distinctUntilChanged())
+      .subscribe((auth) => {
+        if (!auth) this.l2pStatusbar.nativeElement.handleLogout();
+      });
+    this.subscriptions$.push(sub);
+
     if (!environment.production) {
+      this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
       this.snackBar.open(
         'You are currently in the development network. Please note that some features might not be available / fully functional yet',
         'OK',
@@ -164,9 +179,9 @@ export class AppComponent implements OnInit, OnDestroy {
           console.log(state);
         });
       this.subscriptions$.push(sub);
+    } else {
+      this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
-    const noob = localStorage.getItem('notNewbie');
-    this.noobInfo = noob == null;
   }
 
   ngOnDestroy(): void {
@@ -187,7 +202,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setUser(user: User): void {
-    this.ngrxStore.dispatch(storeUser({ user }));
+    if (user?.profile?.preferred_username) {
+      this.ngrxStore.dispatch(storeUser({ user }));
+    }
+
     clearInterval(this.silentSigninIntervalHandle);
   }
 

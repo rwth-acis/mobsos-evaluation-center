@@ -134,6 +134,7 @@ export const translations = {
       'choice-barchart': 'Balkendiagramm',
       'choice-chart': 'Diagramm',
       'choice-kpi': 'KPI',
+      'choice-table': 'Tabelle',
       'choice-linechart': 'Liniendiagramm',
       'choice-piechart': 'Kuchendiagramm',
       'choice-radarchart': 'Netzdiagramm',

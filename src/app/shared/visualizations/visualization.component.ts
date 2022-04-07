@@ -6,7 +6,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import { distinctUntilKeyChanged, filter } from 'rxjs/operators';
+import {
+  distinctUntilKeyChanged,
+  filter,
+  startWith,
+} from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
 import { SELECTED_SERVICE } from 'src/app/services/store/store.selectors';
@@ -24,10 +28,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
     filter((service) => !!service),
     distinctUntilKeyChanged('name'),
+    startWith(undefined),
   );
 
   error$: Observable<HttpErrorResponse>;
-
   service: ServiceInformation;
   visualizationInitialized = false;
 

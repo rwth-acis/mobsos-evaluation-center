@@ -20,7 +20,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure, SQLQuery } from 'src/app/models/measure.model';
+import { Measure } from 'src/app/models/measure.model';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
 import {
   applyCompatibilityFixForVisualizationService,
