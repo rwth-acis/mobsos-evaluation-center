@@ -258,6 +258,10 @@ export class Las2peerService {
   fetchGroupMembersAndObserve(
     groupName: string,
   ): Observable<GroupMember[]> {
+    if (!groupName) {
+      console.error("Can't fetch group members without group name");
+      return of(null);
+    }
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
