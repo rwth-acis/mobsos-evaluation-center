@@ -1,4 +1,7 @@
-<div class="w-fit" *ngIf="members$ | async as members; else loading">
+<div
+  class="w-fit mx-auto my-5"
+  *ngIf="members$ | async as members; else loading"
+>
   <h2>{{ communityName$ | async }} Community Members</h2>
   <mat-list class="flex flex-col mb-4">
     <mat-list-item *ngFor="let member of members">
