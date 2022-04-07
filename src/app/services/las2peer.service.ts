@@ -16,8 +16,8 @@ import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { Questionnaire } from '../models/questionnaire.model';
-import { Requirement } from '../models/reqbaz.model';
 import { GroupMember } from '../models/community.model';
+import { Survey } from '../models/survey.model';
 interface HttpOptions {
   method?: string;
   headers?: {
@@ -83,11 +83,13 @@ export class Las2peerService {
       ),
       name: 'MobSOS Success Modeling',
       available: true,
+      reason: undefined,
     },
     {
       url: environment.mobsosSurveysUrl,
       name: 'MobSOS Surveys',
       available: true,
+      reason: undefined,
     },
     {
       url: joinAbsoluteUrlPath(
@@ -96,6 +98,7 @@ export class Las2peerService {
       ),
       name: 'Contact Service',
       available: true,
+      reason: undefined,
     },
     {
       url: joinAbsoluteUrlPath(
@@ -104,11 +107,9 @@ export class Las2peerService {
       ),
       name: 'MobSOS Query Visualization Service',
       available: true,
+      reason: undefined,
     },
   ];
-
-  private successModelingAvailable = true;
-  private contactserviceAvailable = true;
 
   constructor(private http: HttpClient) {}
 
@@ -463,6 +464,7 @@ export class Las2peerService {
             (s) => s.name === unavailableService.name,
           );
           service.available = false;
+          service.reason = unavailableService.reason;
         });
       }), // sets the available property of the services to false for the services that are not available
     );
@@ -666,8 +668,12 @@ export class Las2peerService {
       environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
-    return this.makeRequestAndObserve(url).pipe(
-      map(({ surveys }) => surveys),
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        return response.body?.surveys as Survey[];
+      }),
     );
   }
   /**
@@ -801,7 +807,9 @@ export class Las2peerService {
       groupID,
     );
     return this.makeRequest(url)
-      .then((response) => response?.xml)
+      .then((response) => {
+        return response?.xml;
+      })
       .catch((response) => {
         throw response;
       });
@@ -872,7 +880,9 @@ export class Las2peerService {
       method,
       body: JSON.stringify({ xml }),
     })
-      .then((response) => response.xml)
+      .then((response) => {
+        return response?.xml;
+      })
       .catch((response) => {
         console.error(response);
         throw response;
@@ -1092,9 +1102,7 @@ export class Las2peerService {
     });
   }
 
-  async fetchRequirementsOnReqBaz(
-    categoryId: number,
-  ): Promise<Requirement[]> {
+  async fetchRequirementsOnReqBaz(categoryId: number) {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
@@ -1108,7 +1116,6 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
-    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
