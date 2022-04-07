@@ -49,6 +49,7 @@ export class Las2peerService {
   CONTACT_SERVICE_PATH = 'contactservice';
   CONTACT_GROUPS_PATH = 'groups';
   CONTACT_MEMBERS_PATH = 'member';
+  LOOKUP_USER_PATH = 'user';
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
@@ -1205,6 +1206,17 @@ export class Las2peerService {
     }
     // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
+  }
+
+  lookupUser(username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.LOOKUP_USER_PATH,
+      username,
+    );
+
+    return this.makeRequest(url, { observe: 'response' });
   }
 }
 

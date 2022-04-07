@@ -5,3 +5,48 @@
     <h3 matLine>{{ member.name }}</h3>
   </mat-list-item>
 </mat-list>
+
+<mat-expansion-panel
+  class="w-fit"
+  (opened)="panelOpenState = true"
+  (closed)="panelOpenState = false"
+>
+  <mat-expansion-panel-header>
+    <mat-panel-title> Add members </mat-panel-title>
+    <mat-panel-description class="flex justify-end">
+      <mat-icon>person_add</mat-icon>
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <form class="example-form" (submit)="lookupUser(input.value)">
+    <mat-form-field class="example-full-width">
+      <mat-label>Search for a las2peer user</mat-label>
+      <input #input matInput placeholder="Peter" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">
+      Search
+    </button>
+  </form>
+  <ng-container *ngIf="user !== undefined; else noUser">
+    <ng-container *ngIf="user !== null; else loading">
+      {{ user
+      }}<button
+        mat-raised-button
+        color="primary"
+        (click)="addUserToGroup()"
+      >
+        Add <mat-icon>add</mat-icon>
+      </button>
+    </ng-container></ng-container
+  >
+</mat-expansion-panel>
+
+<ng-template #loading>
+  <mat-spinner></mat-spinner>
+</ng-template>
+<ng-template #noUser>
+  <app-error-banner
+    *ngIf="error"
+    [message]="error"
+  ></app-error-banner>
+</ng-template>
