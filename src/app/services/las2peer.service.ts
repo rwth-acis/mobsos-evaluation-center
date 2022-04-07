@@ -53,6 +53,7 @@ export class Las2peerService {
   SERVICES_PATH = 'las2peer/services/services';
   CONTACT_GROUPS_PATH = 'groups';
   CONTACT_MEMBERS_PATH = 'member';
+  LOOKUP_USER_PATH = 'user';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
   SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH = 'messageDescriptions';
@@ -257,6 +258,10 @@ export class Las2peerService {
   fetchGroupMembersAndObserve(
     groupName: string,
   ): Observable<GroupMember[]> {
+    if (!groupName) {
+      console.error("Can't fetch group members without group name");
+      return of(null);
+    }
     const url = joinAbsoluteUrlPath(
       environment.las2peerWebConnectorUrl,
       this.CONTACT_SERVICE_PATH,
@@ -1222,6 +1227,49 @@ export class Las2peerService {
     }
     // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
+  }
+
+  lookupUser(username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.LOOKUP_USER_PATH,
+      username,
+    );
+
+    return this.makeRequest(url, { observe: 'response' });
+  }
+
+  addUserToGroup(groupName: string, username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+      this.CONTACT_MEMBERS_PATH,
+      username,
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'POST',
+      responseType: 'text',
+    });
+  }
+
+  removeUserFromGroup(groupName: string, username: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.las2peerWebConnectorUrl,
+      this.CONTACT_SERVICE_PATH,
+      this.CONTACT_GROUPS_PATH,
+      groupName,
+      this.CONTACT_MEMBERS_PATH,
+      username,
+    );
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'DELETE',
+      responseType: 'text',
+    });
   }
 }
 

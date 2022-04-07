@@ -179,7 +179,7 @@ export class StateEffects {
           ),
         ),
       ),
-      catchError(() => of(Action.failure())),
+      catchError(() => of(Action.failure({}))),
       share(),
     ),
   );
@@ -251,8 +251,9 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchGroupMembers),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      filter(([, group]) => !!group),
       switchMap(([{ groupId }, group]) =>
-        this.l2p.fetchGroupMembersAndObserve(group.name).pipe(
+        this.l2p.fetchGroupMembersAndObserve(group?.name).pipe(
           map((groupMembers: GroupMember[]) =>
             Action.storeGroupMembers({
               groupMembers,
@@ -583,7 +584,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -605,7 +606,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -660,6 +661,73 @@ export class StateEffects {
     ),
   );
 
+  addUserToGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addUserToGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.addUserToGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: [
+                  ...group.members,
+                  new GroupMember(undefined, username),
+                ],
+              };
+              return Action.updateGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  removeMemberFromGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.removeMemberFromGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.removeUserFromGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: group.members.filter(
+                  (member) => member.name !== username,
+                ),
+              };
+              return Action.updateGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.addReqBazarProject),
@@ -698,7 +766,9 @@ export class StateEffects {
                 return Action.storeModelInWorkspace({ xml });
               } else {
                 return Action.failureResponse({
-                  reason: new Error('Cannot Sync with YJS'),
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
                 });
               }
             }),
@@ -721,7 +791,9 @@ export class StateEffects {
                 return Action.storeCatalogInWorkspace({ xml });
               } else {
                 return Action.failureResponse({
-                  reason: new Error('Cannot Sync with YJS'),
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
                 });
               }
             }),
@@ -788,7 +860,7 @@ export class StateEffects {
                     } else {
                       // probably some property is undefined
                       console.error(error);
-                      return Action.failure();
+                      return Action.failure({});
                     }
                   }
                   const currentCommunityWorkspace =
@@ -809,7 +881,9 @@ export class StateEffects {
                     );
                   }
                   if (!currentCommunityWorkspace) {
-                    return Action.failure();
+                    return Action.failure({
+                      reason: 'No workspace found',
+                    });
                   } else {
                     return Action.setCommunityWorkspace({
                       workspace: currentCommunityWorkspace,
@@ -818,17 +892,17 @@ export class StateEffects {
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
-                  return Action.failure();
+                  return Action.failure({ reason: error });
                 }
               }),
               catchError((err) => {
                 console.error(err);
-                return of(Action.failure());
+                return of(Action.failure({ reason: err }));
               }),
             ),
       ),
-      catchError(() => {
-        return of(Action.failure());
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
       }),
       share(),
     ),
@@ -965,7 +1039,7 @@ function handleResponse(response: any, query: string) {
       error: null,
     });
   }
-  return Action.failureResponse({
+  return Action.failure({
     reason: new Error(
       'Unknown errror for fetching Visualization data',
     ),

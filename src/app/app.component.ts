@@ -17,6 +17,7 @@ import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  fetchGroupMembers,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -144,6 +145,9 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((id) => {
         this.selectedGroupId = id;
         this.group.setValue(id);
+        if (id) {
+          this.ngrxStore.dispatch(fetchGroupMembers({ groupId: id }));
+        }
       });
     this.subscriptions$.push(sub);
 

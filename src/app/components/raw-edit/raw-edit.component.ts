@@ -33,6 +33,7 @@ import {
   SUCCESS_MODEL_XML,
   MEASURE_CATALOG_XML,
 } from 'src/app/services/store/store.selectors';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-raw-edit',
@@ -149,9 +150,9 @@ export class RawEditComponent implements OnInit, OnDestroy {
           catchError(() => {
             return of(
               failureResponse({
-                reason: new Error(
-                  'The request took too long and was aborted',
-                ),
+                reason: new HttpErrorResponse({
+                  error: 'The request took too long and was aborted',
+                }),
               }),
             );
           }),
@@ -192,9 +193,9 @@ export class RawEditComponent implements OnInit, OnDestroy {
           catchError(() => {
             return of(
               failureResponse({
-                reason: new Error(
-                  'The request took too long and was aborted',
-                ),
+                reason: new HttpErrorResponse({
+                  error: 'The request took too long and was aborted',
+                }),
               }),
             );
           }),

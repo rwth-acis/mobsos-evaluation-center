@@ -12,7 +12,6 @@ import {
 } from '../../models/success.model';
 import { VisualizationCollection } from '../../models/visualization.model';
 import {
-  ApplicationWorkspace,
   CommunityWorkspace,
   EmptyApplicationWorkspace,
 } from '../../models/workspace.model';
@@ -218,7 +217,12 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeGroup, (state, { group }) => ({
     ...state,
-    groups: addGroup(group, state.groups),
+    groups: updateGroup(group, state.groups),
+    selectedGroupId: group.id,
+  })),
+  on(Actions.updateGroup, (state, { group }) => ({
+    ...state,
+    groups: updateGroup(group, state.groups),
     selectedGroupId: group.id,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -558,12 +562,13 @@ function mergeServiceData(
  *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
  */
 function mergeGroupData(
-  groups,
+  groups: GroupCollection,
   groupsFromContactService: {
-    [key: string]: { name: string; member: boolean };
+    [key: string]: string;
   },
   groupsFromMobSOS?,
 ) {
+  const oldGroups = cloneDeep(groups) as GroupCollection;
   groups = {};
 
   // mark all these groups as groups the current user is a member of
@@ -575,10 +580,13 @@ function mergeGroupData(
         name: groupName,
         member: true,
       };
+      if (groupID in oldGroups) {
+        groups[groupID].members = oldGroups[groupID]?.members; // copy potential members that we know about from old groups
+      }
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
-  if (!groupsFromMobSOS) return groups as GroupCollection;
+  if (!groupsFromMobSOS) return groups;
   for (const group of groupsFromMobSOS) {
     const groupID = group.groupID;
     const groupName = group.name;
@@ -591,7 +599,7 @@ function mergeGroupData(
     }
   }
 
-  return groups as GroupCollection;
+  return groups;
 }
 
 function parseXml(xml: string) {
@@ -940,7 +948,7 @@ function removeVisualizationData(
   delete copy[query];
   return copy;
 }
-function addGroup(
+function updateGroup(
   group: GroupInformation,
   groups: GroupCollection,
 ): GroupCollection {
@@ -1190,7 +1198,7 @@ function removeSurveyMeasures(
 }
 function updateSelectedGroup(
   groupsFromContactService: {
-    [key: string]: { name: string; member: boolean };
+    [key: string]: string;
   },
   selectedGroupId: string,
 ): string {
@@ -1203,7 +1211,5 @@ function updateSelectedGroup(
     return Object.keys(groupsFromContactService)[0];
   if (!(selectedGroupId in groupsFromContactService))
     return initialState.selectedGroupId;
-  const group = groupsFromContactService[selectedGroupId];
-  if (!group.member) return initialState.selectedGroupId;
   return selectedGroupId;
 }
