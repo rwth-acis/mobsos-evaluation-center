@@ -1,7 +1,7 @@
-<div class="w-fit">
+<div class="w-fit" *ngIf="members$ | async as members; else loading">
   <h2>{{ communityName$ | async }} Community Members</h2>
   <mat-list class="flex flex-col mb-4">
-    <mat-list-item *ngFor="let member of members$ | async">
+    <mat-list-item *ngFor="let member of members">
       <mat-icon matListIcon>account_circle</mat-icon>
       <h3 matLine>{{ member.name }}</h3>
       <button
@@ -16,11 +16,7 @@
     </mat-list-item>
   </mat-list>
 
-  <mat-expansion-panel
-    class="w-fit mb-4"
-    (opened)="panelOpenState = true"
-    (closed)="panelOpenState = false"
-  >
+  <mat-expansion-panel class="w-fit mb-4">
     <mat-expansion-panel-header>
       <mat-panel-title> Add members </mat-panel-title>
       <mat-panel-description class="flex justify-end">
@@ -39,14 +35,19 @@
     </form>
     <ng-container *ngIf="user !== undefined; else noUser">
       <ng-container *ngIf="user !== null; else loading">
-        {{ user
-        }}<button
-          mat-raised-button
-          color="primary"
-          (click)="addUserToGroup()"
-        >
-          Add <mat-icon>add</mat-icon>
-        </button>
+        <div class="flex justify-between content-center">
+          <div class="flex items-center shadow p-5">
+            <mat-icon matListIcon>account_circle</mat-icon>
+            <span>{{ user }}</span>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="addUserToGroup()"
+          >
+            Add <mat-icon>add</mat-icon>
+          </button>
+        </div>
       </ng-container></ng-container
     >
   </mat-expansion-panel>
