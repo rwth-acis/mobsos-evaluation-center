@@ -179,7 +179,7 @@ export class StateEffects {
           ),
         ),
       ),
-      catchError(() => of(Action.failure())),
+      catchError(() => of(Action.failure({}))),
       share(),
     ),
   );
@@ -584,7 +584,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -606,7 +606,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -676,7 +676,7 @@ export class StateEffects {
                   new GroupMember(undefined, username),
                 ],
               };
-              return Action.storeGroup({
+              return Action.updateGroup({
                 group: updatedGroup,
               });
             }
@@ -705,12 +705,11 @@ export class StateEffects {
             if (res.status === 200) {
               const updatedGroup = {
                 ...group,
-                members: [
-                  ...group.members,
-                  new GroupMember(undefined, username),
-                ],
+                members: group.members.filter(
+                  (member) => member.name !== username,
+                ),
               };
-              return Action.storeGroup({
+              return Action.updateGroup({
                 group: updatedGroup,
               });
             }
@@ -767,7 +766,9 @@ export class StateEffects {
                 return Action.storeModelInWorkspace({ xml });
               } else {
                 return Action.failureResponse({
-                  reason: new Error('Cannot Sync with YJS'),
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
                 });
               }
             }),
@@ -790,7 +791,9 @@ export class StateEffects {
                 return Action.storeCatalogInWorkspace({ xml });
               } else {
                 return Action.failureResponse({
-                  reason: new Error('Cannot Sync with YJS'),
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
                 });
               }
             }),
@@ -857,7 +860,7 @@ export class StateEffects {
                     } else {
                       // probably some property is undefined
                       console.error(error);
-                      return Action.failure();
+                      return Action.failure({});
                     }
                   }
                   const currentCommunityWorkspace =
@@ -878,7 +881,9 @@ export class StateEffects {
                     );
                   }
                   if (!currentCommunityWorkspace) {
-                    return Action.failure();
+                    return Action.failure({
+                      reason: 'No workspace found',
+                    });
                   } else {
                     return Action.setCommunityWorkspace({
                       workspace: currentCommunityWorkspace,
@@ -887,17 +892,17 @@ export class StateEffects {
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
-                  return Action.failure();
+                  return Action.failure({ reason: error });
                 }
               }),
               catchError((err) => {
                 console.error(err);
-                return of(Action.failure());
+                return of(Action.failure({ reason: err }));
               }),
             ),
       ),
-      catchError(() => {
-        return of(Action.failure());
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
       }),
       share(),
     ),
@@ -1034,7 +1039,7 @@ function handleResponse(response: any, query: string) {
       error: null,
     });
   }
-  return Action.failureResponse({
+  return Action.failure({
     reason: new Error(
       'Unknown errror for fetching Visualization data',
     ),

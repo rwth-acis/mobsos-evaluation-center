@@ -1,4 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
 import {
   catchError,
@@ -28,17 +35,20 @@ import {
   styleUrls: ['./community-info.component.scss'],
 })
 export class CommunityInfoComponent implements OnInit, OnDestroy {
+  addGroupMemberError: string;
   members$ = this.ngrxStore.select(SELECTED_GROUP_MEMBERS);
   communityName$ = this.ngrxStore
     .select(SELECTED_GROUP)
     .pipe(map((community) => community?.name));
   user: string;
-  error: string;
+
   subscriptions$: Subscription[] = [];
+
   constructor(
     private ngrxStore: Store,
     private las2peer: Las2peerService,
     private actionState: StateEffects,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -46,9 +56,14 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
   }
 
   async lookupUser(username: string) {
+    this.user = undefined;
+    this.addGroupMemberError = undefined;
+    if (!(username?.length > 0)) {
+      return;
+    }
     const members = await firstValueFrom(this.members$.pipe(take(1)));
     if (members.some((member) => member.name === username)) {
-      this.error = 'User is already part of this group';
+      this.addGroupMemberError = 'User is already part of this group';
       this.user = undefined;
       return;
     }
@@ -62,41 +77,44 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
     if (response.status === 200) {
       this.user = username;
     } else if (response.status === 400) {
-      this.error = response.error;
+      this.addGroupMemberError = response.error;
       this.user = undefined;
     }
   }
 
-  addUserToGroup() {
+  async addUserToGroup() {
     if (!this.user) return;
     this.ngrxStore.dispatch(addUserToGroup({ username: this.user }));
-    const sub = this.actionState.addUserToGroup$
-      .pipe(
-        timeout(300000),
-        catchError(() => {
-          return of(
-            failureResponse({
-              reason: new Error(
-                'The request took too long and was aborted',
-              ),
-            }),
-          );
-        }),
-      )
-      .subscribe((result) => {
-        if ('group' in result) {
-          this.user = undefined;
-        } else {
-          result.reason.message =
-            result.reason.message || result.reason['error'];
-          this.error = result.reason.message;
-        }
-      });
-    this.subscriptions$.push(sub);
+
+    const result = await firstValueFrom(
+      this.actionState.addUserToGroup$.pipe(take(1)),
+    );
+    this.user = undefined;
+    if ('group' in result) {
+    } else {
+      this.addGroupMemberError = `An error occured: ${
+        result.reason.error as string
+      }`;
+    }
   }
 
-  removeMember(username: string) {
+  async removeMember(username: string) {
     this.ngrxStore.dispatch(removeMemberFromGroup({ username }));
+
+    const result = await firstValueFrom(
+      this.actionState.removeMemberFromGroup$.pipe(take(1)),
+    );
+
+    this.user = undefined;
+    if (!('group' in result)) {
+      this.snackBar.open(
+        `An error occured: ${result.reason.error as string}`,
+        'Ok',
+        {
+          duration: 2000,
+        },
+      );
+    }
   }
 
   ngOnDestroy() {

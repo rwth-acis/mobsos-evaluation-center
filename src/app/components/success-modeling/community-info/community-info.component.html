@@ -35,8 +35,10 @@
     </form>
     <ng-container *ngIf="user !== undefined; else noUser">
       <ng-container *ngIf="user !== null; else loading">
+        <mat-divider></mat-divider>
+        <h2>Result</h2>
         <div class="flex justify-between content-center">
-          <div class="flex items-center shadow p-5">
+          <div class="flex items-center">
             <mat-icon matListIcon>account_circle</mat-icon>
             <span>{{ user }}</span>
           </div>
@@ -57,7 +59,7 @@
 </ng-template>
 <ng-template #noUser>
   <app-error-banner
-    *ngIf="error"
-    [message]="error"
+    *ngIf="addGroupMemberError"
+    [message]="addGroupMemberError"
   ></app-error-banner>
 </ng-template>
