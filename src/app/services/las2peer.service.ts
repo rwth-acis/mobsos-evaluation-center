@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import {
   catchError,
@@ -162,11 +162,17 @@ export class Las2peerService {
     anonymous: boolean = false,
   ): Observable<T | Request | any> {
     if (
-      !this.successModelingAvailable ||
-      !this.contactserviceAvailable
+      this.unavailableServices?.some((service) =>
+        url.includes(service.url),
+      )
     ) {
-      console.warn("Core services unavailable, can't make request");
-      return of({ reason: 'Core services unavailable', status: 503 });
+      const error = new HttpErrorResponse({
+        error: `Can't make request to ${url} because the service is unavailable`,
+        status: 503,
+        url,
+      });
+
+      return of(error);
     }
     options = merge(
       {
