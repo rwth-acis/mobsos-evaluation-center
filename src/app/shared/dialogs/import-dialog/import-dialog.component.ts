@@ -8,10 +8,10 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { SuccessModel } from 'src/app/models/success.model';
 import {
+  addCatalogToWorkspace,
   addModelToWorkSpace,
   enableEdit,
   setServiceName,
-  storeCatalog,
 } from 'src/app/services/store/store.actions';
 
 @Component({
@@ -88,7 +88,7 @@ export class ImportDialogComponent implements OnInit {
     } else if (isMeasureCatalog) {
       try {
         this.store.dispatch(
-          storeCatalog({ xml: ImportDialogComponent.xml }),
+          addCatalogToWorkspace({ xml: ImportDialogComponent.xml }),
         );
         alert(
           'Measure catalog successfully imported. You still need to save the model for the chages to take effect.',

@@ -353,7 +353,7 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: addModelToCurrentWorkSpace(state, xml),
   })),
-  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+  on(Actions.storeCatalogInWorkspace, (state, { xml }) => ({
     ...state,
     communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),

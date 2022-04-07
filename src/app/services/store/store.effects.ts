@@ -51,7 +51,9 @@ import {
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
-
+/**
+ * The effects handle complex interactions between components, the backend and the ngrxStore
+ */
 @Injectable()
 export class StateEffects {
   // hardcoded map of current visualization calls to prevent sending a POST request multiple times
@@ -96,7 +98,7 @@ export class StateEffects {
   );
 
   /**
-   * This effect is used to fetch the services from the las2peer network
+   * This effect is used to fetch the services from the las2peer network. The services are store in the store.
    */
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
@@ -143,7 +145,7 @@ export class StateEffects {
   );
 
   /**
-   * This effect is used to fetch the groups from the las2peer network
+   * This effect is used to fetch the groups from the las2peer network and then store them in the store.
    */
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
@@ -185,7 +187,7 @@ export class StateEffects {
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
-   * - reset the success model and fetch the new success model
+   * - fetch the message descriptions for the new service
    */
   fetchMessageDescriptions$ = createEffect(() =>
     this.actions$.pipe(
@@ -242,6 +244,9 @@ export class StateEffects {
     ),
   );
 
+  /** *****************************
+   * This effect fetches the group members and stores them in the store.
+   */
   fetchGroupMembers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroupMembers),
@@ -266,6 +271,7 @@ export class StateEffects {
       share(),
     ),
   );
+
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
@@ -690,6 +696,29 @@ export class StateEffects {
             map((done) => {
               if (done) {
                 return Action.storeModelInWorkspace({ xml });
+              } else {
+                return Action.failureResponse({
+                  reason: new Error('Cannot Sync with YJS'),
+                });
+              }
+            }),
+          );
+      }),
+    ),
+  );
+
+  addCatalogToWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      tap(() => Action.joinWorkSpace({})),
+      ofType(Action.addCatalogToWorkspace),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ xml }, id]) => {
+        return this.workspaceService
+          .syncWithCommunnityWorkspace(id)
+          .pipe(
+            map((done) => {
+              if (done) {
+                return Action.storeCatalogInWorkspace({ xml });
               } else {
                 return Action.failureResponse({
                   reason: new Error('Cannot Sync with YJS'),

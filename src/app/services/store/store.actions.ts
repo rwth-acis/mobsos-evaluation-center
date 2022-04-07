@@ -62,6 +62,7 @@ export enum StoreActions {
   STORE_SUCCESS_MODEL = 'Store the success model as xml string',
   STORE_VISUALIZATION_DATA = 'Store visualization data from the qvs',
   STORE_MODEL_IN_WORKSPACE = 'Store the model in the current workspace',
+  STORE_CATALOG_IN_WORKSPACE = 'Store the catalog in the current workspace',
   UPDATE_COMMUNITY_WORKSPACE = 'updates the current application workspace',
   ADD_FACTOR_TO_DIMENSION = 'add a factor to a success dimension',
   REMOVE_FACTOR_FROM_DIMENSION = 'remove a factor from a success dimension',
@@ -265,7 +266,11 @@ export const editMeasureInCatalog = createAction(
 );
 export const storeGroups = createAction(
   StoreActions.STORE_GROUPS,
-  props<{ groupsFromContactService }>(),
+  props<{
+    groupsFromContactService: {
+      [key: string]: { name: string; member: boolean };
+    };
+  }>(),
 );
 
 export const removeFactor = createAction(
@@ -425,6 +430,11 @@ export const addCatalogToWorkspace = createAction(
 
 export const storeModelInWorkspace = createAction(
   StoreActions.STORE_MODEL_IN_WORKSPACE,
+  props<{ xml: string }>(),
+);
+
+export const storeCatalogInWorkspace = createAction(
+  StoreActions.STORE_CATALOG_IN_WORKSPACE,
   props<{ xml: string }>(),
 );
 
