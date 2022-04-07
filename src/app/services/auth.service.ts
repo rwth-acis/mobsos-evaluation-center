@@ -9,6 +9,11 @@ import { AUTHENTICATED } from './store/store.selectors';
 })
 export class AuthService implements CanActivate {
   constructor(private router: Router, private store: Store) {}
+  /**
+   * This method checks if the user is authenticated.
+   *
+   * @returns  true if the user is authenticated, false otherwise.
+   */
   async canActivate() {
     const auth = await firstValueFrom(
       this.store.select(AUTHENTICATED).pipe(take(1)),

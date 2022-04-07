@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import {
   catchError,
@@ -16,8 +16,8 @@ import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { Questionnaire } from '../models/questionnaire.model';
-import { Requirement } from '../models/reqbaz.model';
 import { GroupMember } from '../models/community.model';
+import { Survey } from '../models/survey.model';
 interface HttpOptions {
   method?: string;
   headers?: {
@@ -45,18 +45,20 @@ const ONE_SECOND_IN_MS = 1000;
   providedIn: 'root',
 })
 export class Las2peerService {
-  SERVICES_PATH = 'las2peer/services/services';
   CONTACT_SERVICE_PATH = 'contactservice';
+  SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
+  QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
+  SURVEYS_SURVEY_PATH = 'surveys';
+
+  SERVICES_PATH = 'las2peer/services/services';
   CONTACT_GROUPS_PATH = 'groups';
   CONTACT_MEMBERS_PATH = 'member';
   LOOKUP_USER_PATH = 'user';
-  SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   SUCCESS_MODELING_MODELS_PATH = 'models';
   SUCCESS_MODELING_MEASURE_PATH = 'measures';
   SUCCESS_MODELING_MESSAGE_DESCRIPTION_PATH = 'messageDescriptions';
   SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
   SUCCESS_MODELING_GROUP_PATH = 'groups';
-  QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
   REQBAZ_PROJECTS_PATH = 'projects';
   REQBAZ_CATEGORIES_PATH = 'categories';
@@ -65,54 +67,67 @@ export class Las2peerService {
   REQBAZ_LEADDEV_PATH = 'leaddevelopers';
   SURVEYS_SERVICE_PATH = 'mobsos-surveys';
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
-  SURVEYS_SURVEY_PATH = 'surveys';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
+
   userCredentials: {
     token: string;
     preferred_username: string;
     sub?: string;
   };
 
-  coreServices = {
-    'mobsos-success-modeling': {
+  coreServices = [
+    {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
       ),
       name: 'MobSOS Success Modeling',
+      available: true,
+      reason: undefined,
     },
-    'mobsos-surveys': {
+    {
       url: environment.mobsosSurveysUrl,
       name: 'MobSOS Surveys',
+      available: true,
+      reason: undefined,
     },
-    contactservice: {
+    {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.CONTACT_SERVICE_PATH,
       ),
       name: 'Contact Service',
+      available: true,
+      reason: undefined,
     },
-    'query-visualization-service': {
+    {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.QUERY_VISUALIZATION_SERVICE_PATH,
       ),
       name: 'MobSOS Query Visualization Service',
+      available: true,
+      reason: undefined,
     },
-  };
-
-  private successModelingAvailable = true;
-  private contactserviceAvailable = true;
+  ];
 
   constructor(private http: HttpClient) {}
 
   get successModelingIsAvailable(): boolean {
-    return this.successModelingAvailable;
+    return !this.unavailableServices.find(
+      (s) => s.name === 'MobSOS Success Modeling',
+    );
   }
 
   get contactserviceIsAvailable(): boolean {
-    return this.contactserviceAvailable;
+    return !this.unavailableServices.find(
+      (s) => s.name === 'Contact Service',
+    );
+  }
+
+  get unavailableServices() {
+    return this.coreServices.filter((service) => !service.available);
   }
 
   setCredentials(
@@ -149,11 +164,17 @@ export class Las2peerService {
     anonymous: boolean = false,
   ): Observable<T | Request | any> {
     if (
-      !this.successModelingAvailable ||
-      !this.contactserviceAvailable
+      this.unavailableServices?.some((service) =>
+        url.includes(service.url),
+      )
     ) {
-      console.warn("Core services unavailable, can't make request");
-      return of({ reason: 'Core services unavailable', status: 503 });
+      const error = new HttpErrorResponse({
+        error: `Can't make request to ${url} because the service is unavailable`,
+        status: 503,
+        url,
+      });
+
+      return of(error);
     }
     options = merge(
       {
@@ -369,92 +390,84 @@ export class Las2peerService {
    * @returns all unavailable services
    */
   checkServiceAvailability() {
-    const requests = Object.values(this.coreServices).map(
-      (service) => {
-        const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
-        return {
-          name: service.name,
-          request: this.makeRequestAndObserve(
-            url,
-            { observe: 'response' },
-            true,
-          ).pipe(
-            timeout(15 * ONE_SECOND_IN_MS),
-            catchError((err) => {
-              return of(err);
-            }),
-          ),
-        };
-      },
-    );
+    const requests = this.coreServices.map((service) => {
+      const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
+      return {
+        name: service.name,
+        request: this.makeRequestAndObserve(
+          url,
+          { observe: 'response' },
+          true,
+        ).pipe(
+          timeout(15 * ONE_SECOND_IN_MS),
+          catchError((err) => {
+            return of(err);
+          }),
+        ),
+      };
+    });
     return forkJoin(requests.map((r) => r.request)).pipe(
       map(
         (responses) =>
-          responses.map((response, index) => {
-            if (!response?.status) {
-              if (
-                typeof response?.message === 'string' &&
-                response?.message
-                  ?.toLocaleLowerCase()
-                  .includes('timeout')
-              ) {
+          responses
+            .map((response, index) => {
+              if (!response?.status) {
+                if (
+                  typeof response?.message === 'string' &&
+                  response?.message
+                    ?.toLocaleLowerCase()
+                    .includes('timeout')
+                ) {
+                  return {
+                    name: requests[index].name,
+                    reason: 'A timeout occurred',
+                  };
+                }
                 return {
                   name: requests[index].name,
-                  reason: 'A timeout occurred',
+                  reason: 'An unknown error occurred',
                 };
+              } else {
+                switch (response.status) {
+                  case 200:
+                    return undefined;
+                  case 404:
+                    return {
+                      name: requests[index].name,
+                      reason: 'Service not found in the network',
+                    };
+                  case 401:
+                    return {
+                      name: requests[index].name,
+                      reason:
+                        'You are not authorized to access this service. You might need to login again.',
+                    };
+                  case 500:
+                    return {
+                      name: requests[index].name,
+                      reason: `Server error: ${
+                        response.error as string
+                      }`,
+                    };
+                  default:
+                    return {
+                      name: requests[index].name,
+                      reason: 'An unknown error occurred',
+                    };
+                }
               }
-              return {
-                name: requests[index].name,
-                reason: 'An unknown error occurred',
-              };
-            } else {
-              switch (response.status) {
-                case 200:
-                  return undefined;
-                case 404:
-                  return {
-                    name: requests[index].name,
-                    reason: 'Service not found in the network',
-                  };
-                case 401:
-                  return {
-                    name: requests[index].name,
-                    reason:
-                      'You are not authorized to access this service. You might need to login again.',
-                  };
-                case 500:
-                  return {
-                    name: requests[index].name,
-                    reason: `Server error: ${
-                      response.error as string
-                    }`,
-                  };
-                default:
-                  return {
-                    name: requests[index].name,
-                    reason: 'An unknown error occurred',
-                  };
-              }
-            }
-          }), // retruns a list of names of the services that are not available as well as the reason for the error
+            })
+            .filter((service) => !!service), // retruns a list of names of the services that are not available as well as the reason for the error
       ),
       tap((services) => {
-        services
-          .filter((service) => !!service)
-          .forEach((service) => {
-            if (
-              service.name === this.coreServices.contactservice.name
-            ) {
-              this.contactserviceAvailable = false;
-            } else if (
-              service.name ===
-              this.coreServices['mobsos-success-modeling'].name
-            ) {
-              this.successModelingAvailable = false;
-            }
-          });
-      }),
-      map((services) => services.filter((r) => r !== undefined)), // removes undefined values,
+        services.forEach((unavailableService) => {
+          const service = this.coreServices.find(
+            (s) => s.name === unavailableService.name,
+          );
+          service.available = false;
+          service.reason = unavailableService.reason;
+        });
+      }), // sets the available property of the services to false for the services that are not available
     );
   }
 
@@ -656,8 +669,12 @@ export class Las2peerService {
       environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
-    return this.makeRequestAndObserve(url).pipe(
-      map(({ surveys }) => surveys),
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        return response.body?.surveys as Survey[];
+      }),
     );
   }
   /**
@@ -791,7 +808,9 @@ export class Las2peerService {
       groupID,
     );
     return this.makeRequest(url)
-      .then((response) => response?.xml)
+      .then((response) => {
+        return response?.xml;
+      })
       .catch((response) => {
         throw response;
       });
@@ -862,7 +881,9 @@ export class Las2peerService {
       method,
       body: JSON.stringify({ xml }),
     })
-      .then((response) => response.xml)
+      .then((response) => {
+        return response?.xml;
+      })
       .catch((response) => {
         console.error(response);
         throw response;
@@ -1045,7 +1066,7 @@ export class Las2peerService {
   authenticateOnReqBaz() {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
-      '/auth/login',
+      'swagger.json',
     );
     return this.makeRequestAndObserve(url, {
       observe: 'response',
@@ -1055,7 +1076,6 @@ export class Las2peerService {
     }).pipe(
       map((response) => {
         return response.status === 200;
-        // will be 404 since the reqbazar does not support this method but we will still be authenticated.
       }),
       catchError(() => {
         return of(false);
@@ -1083,9 +1103,7 @@ export class Las2peerService {
     });
   }
 
-  async fetchRequirementsOnReqBaz(
-    categoryId: number,
-  ): Promise<Requirement[]> {
+  async fetchRequirementsOnReqBaz(categoryId: number) {
     const url = joinAbsoluteUrlPath(
       environment.reqBazUrl,
       this.REQBAZ_CATEGORIES_PATH,
@@ -1099,7 +1117,6 @@ export class Las2peerService {
       options.headers.Authorization =
         'Bearer ' + this.userCredentials.token;
     }
-    // TODO: replace deprecated funtion
     return this.makeRequest(url, options);
   }
 
