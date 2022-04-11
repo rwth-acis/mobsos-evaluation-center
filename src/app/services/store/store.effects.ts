@@ -50,7 +50,10 @@ import {
   SELECTED_GROUP,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
-
+import { Router } from '@angular/router';
+/**
+ * The effects handle complex interactions between components, the backend and the ngrxStore
+ */
 @Injectable()
 export class StateEffects {
   // hardcoded map of current visualization calls to prevent sending a POST request multiple times
@@ -58,14 +61,35 @@ export class StateEffects {
   static visualizationCalls = {};
 
   /**
-   * This effect just logs errors emitted by the other effects
+   * This effect just logs errors emitted by the other effects and redirects the user back to the welcome page if unauthorized.
    */
   failureResponse$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.failureResponse),
-      tap((action) => {
-        if (action.reason) {
-          console.warn('A Failure occured: ', action.reason);
+      withLatestFrom(this.ngrxStore.select(USER)),
+      tap(([action, user]) => {
+        if (action?.reason) {
+          if (action.reason instanceof HttpErrorResponse) {
+            const reason = action.reason;
+            console.warn('HTTP Error: ', reason);
+            if (
+              reason.status === 401 &&
+              reason.error === 'agent not found' &&
+              user.signedIn
+            ) {
+              alert(
+                'You could not be authenticated, reason: ' +
+                  reason.error +
+                  '. Please contact the administrator',
+              );
+              this.ngrxStore.dispatch(
+                Action.storeUser({ user: null }),
+              );
+              void this.router.navigate(['/welcome']);
+            }
+          } else {
+            console.warn('A Failure occured: ', action.reason);
+          }
         }
       }),
       mergeMap(() => of(Action.noop())),
@@ -74,7 +98,7 @@ export class StateEffects {
   );
 
   /**
-   * This effect is used to fetch the services from the las2peer network
+   * This effect is used to fetch the services from the las2peer network. The services are store in the store.
    */
   fetchServices$ = createEffect(() =>
     this.actions$.pipe(
@@ -121,7 +145,7 @@ export class StateEffects {
   );
 
   /**
-   * This effect is used to fetch the groups from the las2peer network
+   * This effect is used to fetch the groups from the las2peer network and then store them in the store.
    */
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
@@ -155,7 +179,7 @@ export class StateEffects {
           ),
         ),
       ),
-      catchError(() => of(Action.failure())),
+      catchError(() => of(Action.failure({}))),
       share(),
     ),
   );
@@ -163,7 +187,7 @@ export class StateEffects {
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
-   * - reset the success model and fetch the new success model
+   * - fetch the message descriptions for the new service
    */
   fetchMessageDescriptions$ = createEffect(() =>
     this.actions$.pipe(
@@ -220,12 +244,16 @@ export class StateEffects {
     ),
   );
 
+  /** *****************************
+   * This effect fetches the group members and stores them in the store.
+   */
   fetchGroupMembers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroupMembers),
       withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      filter(([, group]) => !!group),
       switchMap(([{ groupId }, group]) =>
-        this.l2p.fetchGroupMembersAndObserve(group.name).pipe(
+        this.l2p.fetchGroupMembersAndObserve(group?.name).pipe(
           map((groupMembers: GroupMember[]) =>
             Action.storeGroupMembers({
               groupMembers,
@@ -244,6 +272,7 @@ export class StateEffects {
       share(),
     ),
   );
+
   /** ****************************
    * This effect is called whenever the user selects a new service
    * In this case we do the following:
@@ -461,8 +490,17 @@ export class StateEffects {
                 (
                   res: HttpResponse<any> | HttpErrorResponse | string,
                 ) => {
-                  if (res instanceof HttpResponse && res.status < 400)
+                  if (
+                    res instanceof HttpResponse ||
+                    res instanceof HttpErrorResponse
+                  ) {
                     delete StateEffects.visualizationCalls[query];
+                  }
+                  if (res instanceof HttpErrorResponse) {
+                    this.ngrxStore.dispatch(
+                      Action.failureResponse({ reason: res }),
+                    );
+                  }
                 },
               ),
               map((response) => {
@@ -546,7 +584,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -568,7 +606,7 @@ export class StateEffects {
             }),
           ),
           catchError((err: Error) => {
-            return of(Action.failureResponse({ reason: err }));
+            return of(Action.failure({ reason: err }));
           }),
         ),
       ),
@@ -623,6 +661,73 @@ export class StateEffects {
     ),
   );
 
+  addUserToGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addUserToGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.addUserToGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: [
+                  ...group.members,
+                  new GroupMember(undefined, username),
+                ],
+              };
+              return Action.updateGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  removeMemberFromGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.removeMemberFromGroup),
+      withLatestFrom(this.ngrxStore.select(SELECTED_GROUP)),
+      switchMap(([{ username }, group]) =>
+        this.l2p.removeUserFromGroup(group.name, username).pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const updatedGroup = {
+                ...group,
+                members: group.members.filter(
+                  (member) => member.name !== username,
+                ),
+              };
+              return Action.updateGroup({
+                group: updatedGroup,
+              });
+            }
+
+            return Action.failureResponse(null);
+          }),
+          catchError((err: HttpErrorResponse) => {
+            return of(Action.failureResponse({ reason: err }));
+          }),
+        ),
+      ),
+      catchError((err: HttpErrorResponse) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   addRequirementsBazarProject$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.addReqBazarProject),
@@ -644,6 +749,56 @@ export class StateEffects {
         return of(Action.failureResponse({ reason: err }));
       }),
       share(),
+    ),
+  );
+
+  addModelToWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      tap(() => Action.joinWorkSpace({})),
+      ofType(Action.addModelToWorkSpace),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ xml }, id]) => {
+        return this.workspaceService
+          .syncWithCommunnityWorkspace(id)
+          .pipe(
+            map((done) => {
+              if (done) {
+                return Action.storeModelInWorkspace({ xml });
+              } else {
+                return Action.failureResponse({
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
+                });
+              }
+            }),
+          );
+      }),
+    ),
+  );
+
+  addCatalogToWorkSpace$ = createEffect(() =>
+    this.actions$.pipe(
+      tap(() => Action.joinWorkSpace({})),
+      ofType(Action.addCatalogToWorkspace),
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ xml }, id]) => {
+        return this.workspaceService
+          .syncWithCommunnityWorkspace(id)
+          .pipe(
+            map((done) => {
+              if (done) {
+                return Action.storeCatalogInWorkspace({ xml });
+              } else {
+                return Action.failureResponse({
+                  reason: new HttpErrorResponse({
+                    error: 'Cannot Sync with YJS',
+                  }),
+                });
+              }
+            }),
+          );
+      }),
     ),
   );
 
@@ -705,7 +860,7 @@ export class StateEffects {
                     } else {
                       // probably some property is undefined
                       console.error(error);
-                      return Action.failure();
+                      return Action.failure({});
                     }
                   }
                   const currentCommunityWorkspace =
@@ -726,7 +881,9 @@ export class StateEffects {
                     );
                   }
                   if (!currentCommunityWorkspace) {
-                    return Action.failure();
+                    return Action.failure({
+                      reason: 'No workspace found',
+                    });
                   } else {
                     return Action.setCommunityWorkspace({
                       workspace: currentCommunityWorkspace,
@@ -735,17 +892,17 @@ export class StateEffects {
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
-                  return Action.failure();
+                  return Action.failure({ reason: error });
                 }
               }),
               catchError((err) => {
                 console.error(err);
-                return of(Action.failure());
+                return of(Action.failure({ reason: err }));
               }),
             ),
       ),
-      catchError(() => {
-        return of(Action.failure());
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
       }),
       share(),
     ),
@@ -756,6 +913,7 @@ export class StateEffects {
     private l2p: Las2peerService,
     private ngrxStore: Store,
     private workspaceService: WorkspaceService,
+    private router: Router,
   ) {}
 }
 
@@ -881,7 +1039,7 @@ function handleResponse(response: any, query: string) {
       error: null,
     });
   }
-  return Action.failureResponse({
+  return Action.failure({
     reason: new Error(
       'Unknown errror for fetching Visualization data',
     ),

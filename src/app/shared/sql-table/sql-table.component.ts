@@ -18,15 +18,16 @@ import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store/store.selec
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorDialogComponent } from '../visualizations/error-dialog/error-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-sql-table',
   templateUrl: './sql-table.component.html',
   styleUrls: ['./sql-table.component.scss'],
 })
-export class SqlTableComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+export class SqlTableComponent implements OnInit, OnDestroy {
   @Input() query: string;
   @Input() service: ServiceInformation;
   @Input() query$: Observable<string>;
@@ -40,7 +41,8 @@ export class SqlTableComponent
   // eslint-disable-next-line @typescript-eslint/ban-types
   dataSource$: Observable<MatTableDataSource<{}>>;
   displayedColumns$: Observable<unknown>;
-  constructor(private ngrxStore: Store) {}
+  error$: Observable<HttpErrorResponse>;
+  constructor(private ngrxStore: Store, private dialog: MatDialog) {}
 
   static htmlDecode(input: string) {
     const doc = new DOMParser().parseFromString(input, 'text/html');
@@ -59,7 +61,7 @@ export class SqlTableComponent
 
   ngOnInit() {
     if (this.query$) {
-      this.vdata$ = this.query$.pipe(
+      const storeData$ = this.query$.pipe(
         map((query) => {
           this.query = query;
           const qParams = this.getParamsForQuery(query);
@@ -78,13 +80,13 @@ export class SqlTableComponent
           ),
         ),
         switchMap(([query]) =>
-          this.ngrxStore
-            .select(
-              VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
-            )
-            .pipe(map((vdata) => vdata?.data)),
+          this.ngrxStore.select(
+            VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
+          ),
         ),
       );
+      this.vdata$ = storeData$.pipe(map((vdata) => vdata?.data));
+      this.error$ = storeData$.pipe(map((vdata) => vdata?.error));
     } else {
       let query = this.query;
       const queryParams = this.getParamsForQuery(query);
@@ -127,11 +129,6 @@ export class SqlTableComponent
     );
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (Object.keys(changes).includes('query') && this.query) {
-    }
-  }
-
   getDisplayedColumns(rawData: any[][]): string[] {
     if (!rawData) {
       return;
@@ -158,6 +155,29 @@ export class SqlTableComponent
 
     const dataSource = new MatTableDataSource(src);
     return dataSource;
+  }
+
+  openErrorDialog(
+    error?: HttpErrorResponse | { error: SyntaxError } | string,
+  ): void {
+    let errorText = 'Unknown error';
+    if (error instanceof HttpErrorResponse) {
+      errorText =
+        'Http status code: ' + error.status?.toString() + '\n';
+      errorText += error.statusText;
+      if (typeof error.error === 'string') {
+        errorText += ': ' + error.error;
+      }
+    } else if (Object.keys(error).includes('error')) {
+      errorText = (error as { error: SyntaxError }).error.message;
+    } else if (typeof error === 'string') {
+      errorText = error;
+    }
+    errorText = errorText?.trim();
+    this.dialog.open(ErrorDialogComponent, {
+      width: '80%',
+      data: { error: errorText },
+    });
   }
 
   protected getParamsForQuery(query: string) {

@@ -16,8 +16,10 @@ export class OidcSigninComponent implements OnInit {
     void new UserManager(userManagerSettings)
       .signinRedirectCallback()
       .then((user) => {
-        this.ngrxStore.dispatch(storeUser({ user: user as User }));
-        void this.router.navigateByUrl('/');
+        if (user?.profile?.preferred_username) {
+          this.ngrxStore.dispatch(storeUser({ user: user as User }));
+        }
+        void this.router.navigateByUrl(user.state || '/');
       })
       .catch((err) => {
         console.error(err);

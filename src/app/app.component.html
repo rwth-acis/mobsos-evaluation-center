@@ -20,7 +20,7 @@
         >
           <mat-label>Community</mat-label>
           <mat-select
-            [(ngModel)]="selectedGroupId"
+            [formControl]="group"
             (selectionChange)="onGroupSelected($event.value)"
           >
             <mat-option
@@ -118,6 +118,7 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <las2peer-frontend-statusbar
+      #statusbar
       id="las2peer-statusbar"
       service="{{ title }}"
       [attr.oidcAuthority]="environment.openIdAuthorityUrl"
@@ -149,17 +150,22 @@
       *ngIf="isLoading"
     ></mat-progress-bar>
     <main>
-      <mat-card class="noob-info" *ngIf="noobInfo">
-        Watch
-        <a
-          class="yt-link"
-          href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
-          target="_blank"
-          rel="noopener noreferrer"
-          >this video</a
-        >
-        to learn how to use the MobSOS EC.
-        <div class="align-left">
+      <mat-card
+        class="noob-info flex flex-wrap sm:justify-between"
+        *ngIf="noobInfo"
+      >
+        <div>
+          Watch
+          <a
+            class="yt-link"
+            href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
+            target="_blank"
+            rel="noopener noreferrer"
+            >this video</a
+          >
+          to learn how to use the MobSOS EC.
+        </div>
+        <div>
           <button
             type="button"
             class="mr-3"
@@ -168,15 +174,16 @@
           >
             Close
           </button>
+
+          <button
+            type="button"
+            mat-stroked-button
+            color="warn"
+            (click)="dismissNoobInfo(true)"
+          >
+            Don't show again
+          </button>
         </div>
-        <button
-          type="button"
-          mat-stroked-button
-          color="warn"
-          (click)="dismissNoobInfo(true)"
-        >
-          Don't show again
-        </button>
       </mat-card>
       <router-outlet></router-outlet>
     </main>

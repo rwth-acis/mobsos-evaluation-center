@@ -9,7 +9,7 @@
         'success-modeling.select-application' | translate
       }}</mat-label>
       <mat-select
-        [(ngModel)]="selectedService"
+        [formControl]="service"
         (selectionChange)="onServiceSelected($event.value)"
       >
         <mat-option
