@@ -580,7 +580,7 @@ function mergeGroupData(
         name: groupName,
         member: true,
       };
-      if (groupID in oldGroups) {
+      if (oldGroups && groupID in oldGroups) {
         groups[groupID].members = oldGroups[groupID]?.members; // copy potential members that we know about from old groups
       }
     }
