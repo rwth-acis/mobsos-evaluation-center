@@ -1,5 +1,5 @@
 <!-- only show this view if user is not signed in. Signed in users will be redirected automatically -->
-<div class="container" *ngIf="!user?.signedIn">
+<div class="container mt-5" *ngIf="!user?.signedIn">
   <mat-card class="example-card">
     <mat-card-content>
       <p class="title">
@@ -11,9 +11,6 @@
         <p>
           {{ 'success-modeling.info.username-required' | translate }}
         </p>
-        <p
-          [innerHtml]="'success-modeling.info.sign-in' | translate"
-        ></p>
       </div>
     </mat-card-content>
   </mat-card>
