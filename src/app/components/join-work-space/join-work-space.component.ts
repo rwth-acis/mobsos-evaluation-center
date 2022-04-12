@@ -114,9 +114,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
                 role: UserRole.LURKER,
               }),
             );
-            void this.router.navigateByUrl(
-              '/success-modeling/visitor',
-            );
+            void this.router.navigateByUrl('/success-modeling/guest');
           }
         },
       );
