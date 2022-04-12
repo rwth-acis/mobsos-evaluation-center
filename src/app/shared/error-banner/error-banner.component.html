@@ -1,6 +1,4 @@
 <div class="flex padding-1 items-center">
   <mat-icon class="mr-2" color="warn">error</mat-icon>
-  <span class="flex-grow">
-    {{ message }}
-  </span>
+  <span class="flex-grow" [innerHTML]="message"> </span>
 </div>
