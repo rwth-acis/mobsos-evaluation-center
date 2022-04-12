@@ -25,15 +25,6 @@
       "
     >
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
-        <!-- <app-questionnaires
-          [availableQuestionnaires]="availableQuestionnaires"
-          [model]="successModel"
-          [measures]="measureCatalog.measures"
-          [service]="selectedService$ | async"
-          [editMode]="editMode$ | async"
-          [groupID]="selectedGroupId$ | async"
-        ></app-questionnaires> -->
-        hello
         <div id="dimensions">
           <app-success-dimension
             *ngFor="let dimension of dimensions"
@@ -74,8 +65,11 @@
 <ng-template #showSuccessModelEmpty>
   <!-- success model non existant -->
   <mat-card>
-    The success model is empty. Wait for other users to start adding
-    elements
+    <app-info-banner
+      [message]="
+        'The success model is empty. Wait for other users to start adding elements'
+      "
+    ></app-info-banner>
   </mat-card>
 </ng-template>
 

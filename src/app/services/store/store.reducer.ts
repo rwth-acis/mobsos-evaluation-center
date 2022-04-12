@@ -14,6 +14,7 @@ import { VisualizationCollection } from '../../models/visualization.model';
 import {
   CommunityWorkspace,
   EmptyApplicationWorkspace,
+  UserRole,
 } from '../../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
@@ -308,6 +309,10 @@ const _Reducer = createReducer(
       props,
       true,
     ),
+  })),
+  on(Actions.setUserAsVisitor, (state) => ({
+    ...state,
+    user: { ...state.user, role: UserRole.LURKER },
   })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,

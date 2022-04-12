@@ -101,6 +101,7 @@ export enum StateActions {
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
   SET_SERVICE = 'set the current service',
   SET_SERVICE_NAME = 'set the current service by providing the name',
+  SET_USER_AS_VISITOR = 'set the user as a visitor',
   JOIN_WORKSPACE = 'Join the workspace of another user',
   ADD_SUCCESS_MODEL_TO_WORKSPACE = 'add the success model to the workspace',
   ADD_CATALOG_TO_WORKSPACE = 'add the catalog to the workspace',
@@ -383,6 +384,10 @@ export const joinWorkSpace = createAction(
     role?: UserRole;
     copyModel?: boolean;
   }>(),
+);
+
+export const setUserAsVisitor = createAction(
+  StateActions.SET_USER_AS_VISITOR,
 );
 
 export const setUserName = createAction(
