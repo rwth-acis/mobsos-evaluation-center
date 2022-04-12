@@ -20,22 +20,25 @@
       <mat-panel-title
         >{{ 'success-modeling.info.continue-as-visitor' | translate }}
       </mat-panel-title>
+      <mat-panel-description>
+        {{ 'success-modeling.info.pick-username' | translate }}
+      </mat-panel-description>
     </mat-expansion-panel-header>
-    <h3>{{ 'success-modeling.info.pick-username' | translate }}</h3>
-
-    <mat-form-field>
-      <mat-label>{{
-        'success-modeling.info.username' | translate
-      }}</mat-label>
-      <input title="username" matInput [(ngModel)]="username" />
-    </mat-form-field>
-    <br />
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="joinWorkspace()"
-    >
-      {{ 'success-modeling.info.join' | translate }}
-    </button>
+    <div class="flex flex-col m-auto">
+      <mat-form-field>
+        <mat-label>{{
+          'success-modeling.info.username' | translate
+        }}</mat-label>
+        <input title="username" matInput [(ngModel)]="username" />
+      </mat-form-field>
+      <br />
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="joinWorkspace()"
+      >
+        {{ 'success-modeling.info.join' | translate }}
+      </button>
+    </div>
   </mat-expansion-panel>
 </div>

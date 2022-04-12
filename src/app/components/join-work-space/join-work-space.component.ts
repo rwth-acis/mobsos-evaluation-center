@@ -143,8 +143,8 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   }
 
   joinWorkspace(): void {
-    if (!this.username) {
-      return;
+    if (this.username?.trim()?.length === 0) {
+      return alert('Username cannot be empty');
     }
     this.ngrxStore.dispatch(setUserName({ username: this.username }));
 
@@ -158,7 +158,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
       }),
     );
 
-    void this.router.navigateByUrl('/success-modeling/visitor');
+    void this.router.navigateByUrl('/success-modeling/guest');
   }
 
   ngOnDestroy(): void {

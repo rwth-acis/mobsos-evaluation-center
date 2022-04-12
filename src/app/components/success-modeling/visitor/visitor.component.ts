@@ -1,7 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import {
+  catchError,
+  filter,
+  first,
+  firstValueFrom,
+  of,
+  Subscription,
+  switchMap,
+  take,
+  timeout,
+} from 'rxjs';
 import { User } from 'src/app/models/user.model';
 // eslint-disable-next-line max-len
 import {
@@ -45,24 +55,26 @@ export class VisitorComponent implements OnInit, OnDestroy {
   subscriptions$: Subscription[] = [];
   constructor(private ngrxStore: Store, private router: Router) {}
 
-  ngOnInit(): void {
-    const sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
-      if (owner) {
-        this.workspaceOwner = owner;
-      }
-    });
-    this.subscriptions$.push(sub);
+  async ngOnInit() {
+    const owner = await firstValueFrom(
+      this.applicationWorkspaceOwner$.pipe(
+        timeout(3000),
+        filter((o) => !!o),
+        catchError((err) => of(err)),
+        take(1),
+      ),
+    );
 
-    setTimeout(() => {
-      // if after 3 seconds the workspace is not we redirect
-      if (!this.workspaceOwner) {
-        let link = localStorage.getItem('invite-link'); // if an invite link was cached, we rejoin that workspace
-        if (!link) {
-          link = '/';
-        }
-        void this.router.navigateByUrl(link);
+    if (owner instanceof Error) {
+      let link = localStorage.getItem('invite-link'); // if an invite link was cached, we rejoin that workspace
+      if (!link) {
+        link = '/';
       }
-    }, 3000);
+      void this.router.navigateByUrl(link);
+      return;
+    }
+
+    this.workspaceOwner = owner;
   }
 
   ngOnDestroy(): void {

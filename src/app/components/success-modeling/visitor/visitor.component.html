@@ -1,20 +1,14 @@
-<mat-card
-  id="workspace-info"
-  *ngIf="applicationWorkspaceOwner$ | async as owner"
->
-  <div id="info-content">
-    <mat-icon color="accent">info_outline</mat-icon>
-    <span id="info-text">
-      {{
-        'success-modeling.info.joined-as-visitor'
-          | translate: { owner: owner }
-      }}
-    </span>
-  </div>
+<mat-card *ngIf="applicationWorkspaceOwner$ | async as owner">
+  <app-info-banner
+    [message]="
+      'success-modeling.info.joined-as-visitor'
+        | translate: { owner: owner }
+    "
+  >
+  </app-info-banner>
 </mat-card>
 
 <!-- Success model -->
-
 <ng-container
   *ngIf="
     workspaceOwner && (assetsLoaded$ | async);
@@ -39,6 +33,7 @@
           [editMode]="editMode$ | async"
           [groupID]="selectedGroupId$ | async"
         ></app-questionnaires> -->
+        hello
         <div id="dimensions">
           <app-success-dimension
             *ngFor="let dimension of dimensions"
@@ -86,7 +81,7 @@
 
 <ng-template #notInitialized>
   <!-- success model still loading -->
-  <mat-spinner style="margin: auto"> </mat-spinner>
+  <mat-spinner class="m-auto"> </mat-spinner>
 </ng-template>
 
 <ng-template #notPartOfCommunity>

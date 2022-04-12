@@ -10,7 +10,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     component: SuccessModelingComponent,
   },
-  { path: 'visitor', component: VisitorComponent },
+  { path: 'guest', component: VisitorComponent },
 ];
 
 @NgModule({
