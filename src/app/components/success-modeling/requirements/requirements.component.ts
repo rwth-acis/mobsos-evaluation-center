@@ -207,8 +207,6 @@ export class RequirementsComponent implements OnInit, OnDestroy {
       environment.reqBazFrontendUrl,
       'projects',
       reqBazProject.id,
-      'categories',
-      reqBazProject.categoryId,
       'requirements',
       requirement.id,
     );
