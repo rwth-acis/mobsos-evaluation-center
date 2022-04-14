@@ -10,7 +10,9 @@ mat-divider {
   padding-right: 1rem;
 }
 
-#hints-accordion {
+#hints {
+  max-height: 30vh;
+  overflow-y: scroll;
   mat-expansion-panel {
     margin-bottom: 5px;
     margin-top: 8px;

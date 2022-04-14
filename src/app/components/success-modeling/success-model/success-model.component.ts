@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 
 import {
   catchError,
+  distinctUntilKeyChanged,
   filter,
   map,
   take,
@@ -45,6 +46,7 @@ import {
   IS_MEMBER_OF_SELECTED_GROUP,
   SUCCESS_MODEL_XML,
 } from 'src/app/services/store/store.selectors';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-success-model',
@@ -134,7 +136,10 @@ export class SuccessModelComponent implements OnInit {
 
   ngOnInit(): void {
     let sub = this.selectedService$
-      .pipe(filter((service) => service !== undefined))
+      .pipe(
+        filter((service) => service !== undefined),
+        distinctUntilKeyChanged('name'),
+      )
       .subscribe((service) => {
         this.selectedServiceName = service.alias
           ? service.alias
@@ -191,9 +196,9 @@ export class SuccessModelComponent implements OnInit {
           catchError(() => {
             return of(
               failureResponse({
-                reason: new Error(
-                  'The request took too long and was aborted',
-                ),
+                reason: new HttpErrorResponse({
+                  error: 'The request took too long and was aborted',
+                }),
               }),
             );
           }),
@@ -213,7 +218,7 @@ export class SuccessModelComponent implements OnInit {
               'success-modeling.snackbar-save-failure',
             ) as string;
             if (result instanceof failureResponse) {
-              message += (result as { reason: Error }).reason.message;
+              message += result.reason.error;
             }
             this.snackBar.open(message, 'Ok');
           }

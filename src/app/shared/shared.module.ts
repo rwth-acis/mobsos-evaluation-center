@@ -38,6 +38,8 @@ import { ImportDialogComponent } from './dialogs/import-dialog/import-dialog.com
 import { QuestionnaireInfoDialogComponent } from './dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ErrorBannerComponent } from './error-banner/error-banner.component';
+import { VisualizationsModule } from './visualizations/visualizations.module';
+import { InfoBannerComponent } from './info-banner/info-banner.component';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -48,6 +50,7 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
     ImportDialogComponent,
     QuestionnaireInfoDialogComponent,
     ErrorBannerComponent,
+    InfoBannerComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +65,7 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
     MatInputModule,
     MatIconModule,
     MatTableModule,
+    VisualizationsModule,
   ],
   exports: [
     MatSelectModule,
@@ -96,6 +100,8 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
     FormsModule,
     SqlTableComponent,
     ErrorBannerComponent,
+    InfoBannerComponent,
+    VisualizationsModule,
   ],
 })
 export class SharedModule {}

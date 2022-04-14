@@ -44,6 +44,8 @@ import {
   addCatalogToWorkspace,
   removeSurveyFromModel,
   removeSurveyMeasuresFromModel,
+  fetchSurveys,
+  fetchQuestionnaires,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 import { filter, take } from 'rxjs/operators';
@@ -352,14 +354,9 @@ export class QuestionnairesComponent implements OnInit {
     this._snackBar.open(message, undefined, { duration: 3000 });
   }
 
-  async ngOnInit(): Promise<void> {
-    await this.editMode$
-      .pipe(
-        filter((edit) => !!edit),
-        take(1),
-      )
-      .toPromise();
-    // questionnaires will be fetched once after the edit mode is toggled
+  ngOnInit(): void {
+    this.ngrxStore.dispatch(fetchSurveys());
+    this.ngrxStore.dispatch(fetchQuestionnaires());
   }
 
   async openInfoDialog(survey: Survey) {

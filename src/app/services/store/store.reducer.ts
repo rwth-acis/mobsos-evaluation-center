@@ -11,7 +11,10 @@ import {
   SuccessModel,
 } from '../../models/success.model';
 import { VisualizationCollection } from '../../models/visualization.model';
-import { CommunityWorkspace } from '../../models/workspace.model';
+import {
+  CommunityWorkspace,
+  EmptyApplicationWorkspace,
+} from '../../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -56,13 +59,10 @@ const _Reducer = createReducer(
   on(Actions.storeGroups, (state, { groupsFromContactService }) => ({
     ...state,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    selectedGroupId:
-      groupsFromContactService &&
-      Object.keys(groupsFromContactService).includes(
-        state.selectedGroupId,
-      )
-        ? state.selectedGroupId
-        : initialState.selectedGroupId,
+    selectedGroupId: updateSelectedGroup(
+      groupsFromContactService,
+      state.selectedGroupId,
+    ),
     groups: mergeGroupData(
       state.groups || null,
       groupsFromContactService,
@@ -217,7 +217,12 @@ const _Reducer = createReducer(
   })),
   on(Actions.storeGroup, (state, { group }) => ({
     ...state,
-    groups: addGroup(group, state.groups),
+    groups: updateGroup(group, state.groups),
+    selectedGroupId: group.id,
+  })),
+  on(Actions.updateGroup, (state, { group }) => ({
+    ...state,
+    groups: updateGroup(group, state.groups),
     selectedGroupId: group.id,
   })),
   on(Actions.incrementLoading, (state) => ({
@@ -348,11 +353,11 @@ const _Reducer = createReducer(
       name,
     ),
   })),
-  on(Actions.addModelToWorkSpace, (state, { xml }) => ({
+  on(Actions.storeModelInWorkspace, (state, { xml }) => ({
     ...state,
     communityWorkspace: addModelToCurrentWorkSpace(state, xml),
   })),
-  on(Actions.addCatalogToWorkspace, (state, { xml }) => ({
+  on(Actions.storeCatalogInWorkspace, (state, { xml }) => ({
     ...state,
     communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),
@@ -486,8 +491,6 @@ function mergeServiceData(
         };
       }
     }
-  } else {
-    console.warn('servicesFromL2P not an array, ', servicesFromL2P);
   }
   const firstService = Object.values(serviceCollection)[0];
   if (firstService && Array.isArray(firstService.mobsosIDs)) {
@@ -559,10 +562,13 @@ function mergeServiceData(
  *              710b5aec7334821be0a5e84e8daa": {"name": "MyGroup", "member": false}}
  */
 function mergeGroupData(
-  groups,
-  groupsFromContactService,
+  groups: GroupCollection,
+  groupsFromContactService: {
+    [key: string]: string;
+  },
   groupsFromMobSOS?,
 ) {
+  const oldGroups = cloneDeep(groups) as GroupCollection;
   groups = {};
 
   // mark all these groups as groups the current user is a member of
@@ -574,10 +580,13 @@ function mergeGroupData(
         name: groupName,
         member: true,
       };
+      if (groupID in oldGroups) {
+        groups[groupID].members = oldGroups[groupID]?.members; // copy potential members that we know about from old groups
+      }
     }
     // we are going to merge the groups obtained from MobSOS into the previously acquired object
   }
-  if (!groupsFromMobSOS) return groups as GroupCollection;
+  if (!groupsFromMobSOS) return groups;
   for (const group of groupsFromMobSOS) {
     const groupID = group.groupID;
     const groupName = group.name;
@@ -590,7 +599,7 @@ function mergeGroupData(
     }
   }
 
-  return groups as GroupCollection;
+  return groups;
 }
 
 function parseXml(xml: string) {
@@ -939,7 +948,7 @@ function removeVisualizationData(
   delete copy[query];
   return copy;
 }
-function addGroup(
+function updateGroup(
   group: GroupInformation,
   groups: GroupCollection,
 ): GroupCollection {
@@ -1024,15 +1033,21 @@ function addModelToCurrentWorkSpace(
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
+  const selectedService = state.services[serviceName];
   const copy = cloneDeep(
     state.communityWorkspace,
   ) as CommunityWorkspace;
-  const appWorkspace = getWorkspaceByUserAndService(
+  let appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
     serviceName,
   );
-  if (!appWorkspace) return state.communityWorkspace;
+  if (!appWorkspace) {
+    appWorkspace = new EmptyApplicationWorkspace(
+      owner,
+      selectedService,
+    );
+  }
   const doc = parseXml(xml);
   const model = SuccessModel.fromXml(doc.documentElement);
   appWorkspace.model = model;
@@ -1180,4 +1195,21 @@ function removeSurveyMeasures(
     }
   }
   return copy;
+}
+function updateSelectedGroup(
+  groupsFromContactService: {
+    [key: string]: string;
+  },
+  selectedGroupId: string,
+): string {
+  if (
+    !groupsFromContactService ||
+    Object.keys(groupsFromContactService).length === 0
+  )
+    return selectedGroupId;
+  if (!selectedGroupId)
+    return Object.keys(groupsFromContactService)[0];
+  if (!(selectedGroupId in groupsFromContactService))
+    return initialState.selectedGroupId;
+  return selectedGroupId;
 }

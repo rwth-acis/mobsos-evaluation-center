@@ -16,6 +16,38 @@ export interface ApplicationWorkspace {
   requirements?: Requirement[]; // Requirements
 }
 
+export class ApplicationWorkspace implements ApplicationWorkspace {
+  constructor(
+    public createdBy: string,
+    public visitors: Visitor[],
+    public model: SuccessModel,
+    public catalog: MeasureCatalog,
+    public service: ServiceInformation,
+    public visualizationData: VisualizationCollection,
+    public requirements?: Requirement[],
+  ) {
+    this.createdAt = Date.now().toString();
+  }
+}
+
+export class EmptyApplicationWorkspace extends ApplicationWorkspace {
+  constructor(
+    public createdBy: string,
+    public service: ServiceInformation,
+  ) {
+    super(
+      createdBy,
+      [],
+      undefined,
+      undefined,
+      service,
+      undefined,
+      undefined,
+    );
+    this.createdAt = Date.now().toLocaleString();
+  }
+}
+
 export interface Visitor {
   name: string; // Name of the visitor
 }

@@ -18,7 +18,6 @@ const routes: Routes = [
   },
   {
     path: 'success-modeling',
-    canActivate: [AuthGuard],
     children: [
       {
         path: '',
