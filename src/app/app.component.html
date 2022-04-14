@@ -8,37 +8,48 @@
     <ng-container *ngIf="(user$ | async)?.signedIn">
       <ng-container
         *ngIf="userGroups$ | async as groups; else groupsAreLoading"
-      >
-        <p *ngIf="groups.length === 0" id="noGroups">
-          You are not part of any community yet. <br />
-          Add a community too get started.
-        </p>
-        <!-- group selection -->
-        <mat-form-field
-          id="community-selection"
-          *ngIf="groups.length > 0"
-        >
-          <mat-label>Community</mat-label>
-          <mat-select
-            [formControl]="group"
-            (selectionChange)="onGroupSelected($event.value)"
-          >
-            <mat-option
-              class="mat-body-strong"
-              *ngFor="let group of groups"
-              [value]="group.id"
+        ><ng-container *ngIf="groups.length > 0; else noGroups">
+          <div class="flex items-center mr-5">
+            <!-- group selection -->
+            <mat-form-field id="community-selection">
+              <mat-label>Community</mat-label>
+              <mat-select
+                [formControl]="group"
+                (selectionChange)="onGroupSelected($event.value)"
+              >
+                <mat-option
+                  class="mat-body-strong"
+                  *ngFor="let group of groups"
+                  [value]="group.id"
+                >
+                  {{ group.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button
+              type="button"
+              matTooltip="Add a new community"
+              (click)="openAddCommunityDialog()"
+              mat-icon-button
+              aria-label="Add community button"
             >
-              {{ group.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+          <mat-divider></mat-divider>
+        </ng-container>
       </ng-container>
+
       <mat-nav-list>
-        <a mat-list-item (click)="openAddCommunityDialog()">
+        <a
+          *ngIf="(userGroups$ | async)?.length == 0"
+          mat-list-item
+          (click)="openAddCommunityDialog()"
+        >
           <mat-icon matListIcon> group_add </mat-icon>
           {{ 'shared.pages.add-community' | translate }}
         </a>
-        <mat-divider></mat-divider>
+
         <a
           mat-list-item
           routerLink="/welcome"
@@ -208,4 +219,11 @@
     [diameter]="30"
   >
   </mat-spinner>
+</ng-template>
+
+<ng-template #noGroups>
+  <p class="text-sm m-4">
+    You are not part of any community yet. <br />
+    Add a community too get started.
+  </p>
 </ng-template>
