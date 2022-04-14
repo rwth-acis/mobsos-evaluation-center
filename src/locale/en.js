@@ -175,7 +175,7 @@ export const translations = {
         ' If you have a las2peer <strong>account</strong> , use the login button in the top right corner.',
       'continue-as-visitor': ' Continue as Visitor',
       'joined-as-visitor':
-        '{{owner}} has shared this success model with you. You can watch changes made by the community, but not make changes yourself. If you want to make changes you have to be logged in and be a part of the community',
+        '<strong>{{owner}}</strong> has shared this success model with you. You can watch changes made by the community, but not make changes yourself. If you want to make changes you have to be logged in and be a part of the community',
     },
     'message-no-application-selected':
       'No application selected. Please select an application above to see its success model.',

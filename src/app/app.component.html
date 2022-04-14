@@ -68,9 +68,7 @@
           {{ 'shared.pages.raw-edit' | translate }}
         </a>
         <a
-          *ngIf="
-            expertMode$ | async
-          "
+          *ngIf="expertMode$ | async"
           mat-list-item
           routerLink="/query-visualization"
           routerLinkActive="active"

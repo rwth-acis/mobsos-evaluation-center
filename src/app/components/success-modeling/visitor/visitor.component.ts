@@ -1,13 +1,27 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  filter,
+  first,
+  firstValueFrom,
+  map,
+  of,
+  Subscription,
+  switchMap,
+  take,
+  timeout,
+} from 'rxjs';
 import { User } from 'src/app/models/user.model';
 // eslint-disable-next-line max-len
 import {
   MEASURE_CATALOG,
+  MEASURE_CATALOG_FROM_WORKSPACE,
   MODEL_AND_CATALOG_LOADED,
   SUCCESS_MODEL,
+  SUCCESS_MODEL_FROM_WORKSPACE,
   SUCCESS_MODEL_IS_EMPTY,
   USER,
   WORKSPACE_OWNER,
@@ -26,15 +40,27 @@ export class VisitorComponent implements OnInit, OnDestroy {
     _SELECTED_SERVICE_NAME,
   );
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
-  assetsLoaded$ = this.ngrxStore.select(MODEL_AND_CATALOG_LOADED);
+
   user$ = this.ngrxStore.select(USER);
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
-  showSuccessModelEmpty$ = this.ngrxStore.select(
-    SUCCESS_MODEL_IS_EMPTY,
+
+  successModel$ = this.ngrxStore.select(SUCCESS_MODEL_FROM_WORKSPACE);
+  measureCatalog$ = this.ngrxStore.select(
+    MEASURE_CATALOG_FROM_WORKSPACE,
+  );
+  assetsLoaded$ = combineLatest([
+    this.successModel$,
+    this.measureCatalog$,
+  ]).pipe(map(([model, catalog]) => !!model && !!catalog));
+  showSuccessModelEmpty$ = this.successModel$.pipe(
+    map(
+      (model) =>
+        !Object.values(model.dimensions)?.some(
+          (dimension) => dimension.length > 0,
+        ),
+    ),
   );
 
-  successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
-  measureCatalog$ = this.ngrxStore.select(MEASURE_CATALOG);
   dimensions = Object.keys(translationMap);
   translationMap = translationMap; // maps dimensions to their translation keys
   iconMap = iconMap; // maps dimensions to their icons
@@ -45,24 +71,26 @@ export class VisitorComponent implements OnInit, OnDestroy {
   subscriptions$: Subscription[] = [];
   constructor(private ngrxStore: Store, private router: Router) {}
 
-  ngOnInit(): void {
-    const sub = this.applicationWorkspaceOwner$.subscribe((owner) => {
-      if (owner) {
-        this.workspaceOwner = owner;
-      }
-    });
-    this.subscriptions$.push(sub);
+  async ngOnInit() {
+    const owner = await firstValueFrom(
+      this.applicationWorkspaceOwner$.pipe(
+        timeout(3000),
+        filter((o) => !!o),
+        catchError((err) => of(err)),
+        take(1),
+      ),
+    );
 
-    setTimeout(() => {
-      // if after 3 seconds the workspace is not we redirect
-      if (!this.workspaceOwner) {
-        let link = localStorage.getItem('invite-link'); // if an invite link was cached, we rejoin that workspace
-        if (!link) {
-          link = '/';
-        }
-        void this.router.navigateByUrl(link);
+    if (owner instanceof Error) {
+      let link = localStorage.getItem('invite-link'); // if an invite link was cached, we rejoin that workspace
+      if (!link) {
+        link = '/';
       }
-    }, 3000);
+      void this.router.navigateByUrl(link);
+      return;
+    }
+
+    this.workspaceOwner = owner;
   }
 
   ngOnDestroy(): void {

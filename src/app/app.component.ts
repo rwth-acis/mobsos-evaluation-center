@@ -41,7 +41,7 @@ import {
   timeout,
 } from 'rxjs/operators';
 
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -235,9 +235,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  logout() {
-    this.setUser(null);
-    void this.router.navigate(['/welcome']);
+  async logout() {
+    const signedIn = await firstValueFrom(
+      this.ngrxStore.select(AUTHENTICATED).pipe(take(1)),
+    );
+    if (signedIn) {
+      this.setUser(null);
+      void this.router.navigate(['/welcome']);
+    }
   }
 
   silentSignin(
