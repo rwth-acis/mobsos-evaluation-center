@@ -19,24 +19,12 @@ mat-sidenav-container {
       display: flex !important;
       flex-direction: column !important;
     }
-    #noGroups {
-      margin-top: 5px;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
     mat-form-field {
-      margin-top: 5px;
-      margin-left: 16px;
-      margin-right: 16px;
-
       ::ng-deep .mat-select-value {
         color: white;
       }
     }
 
-    #community-selection {
-      position: relative;
-    }
 
     #groupsLoadingIndicator {
       margin: auto;
@@ -67,17 +55,7 @@ mat-sidenav-container {
 
   mat-sidenav-content {
     height: 100vh;
-    .noob-info {
-      background-color: mat-color($accent, lighter);
-      color: mat-color($accent, darker);
-      display: flex;
-      align-items: center;
-      
-      .yt-link{
-        margin: 0 2px 0 2px 
-      }
-    }
-
+  
     
     mat-progress-bar {
       top: 0;
@@ -128,4 +106,7 @@ mat-sidenav-container {
 }
 .padding-1{
   padding: 1rem;
+}
+.active-link {
+  background: rgba(0, 0, 0, 0.04);
 }

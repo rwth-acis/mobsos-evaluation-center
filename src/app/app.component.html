@@ -9,40 +9,53 @@
       <ng-container
         *ngIf="userGroups$ | async as groups; else groupsAreLoading"
       >
-        <p *ngIf="groups.length === 0" id="noGroups">
-          You are not part of any community yet. <br />
-          Add a community too get started.
-        </p>
-        <!-- group selection -->
-        <mat-form-field
-          id="community-selection"
-          *ngIf="groups.length > 0"
+        <div
+          *ngIf="groups.length > 0; else noGroups"
+          class="flex items-center justify-center mt-2"
         >
-          <mat-label>Community</mat-label>
-          <mat-select
-            [formControl]="group"
-            (selectionChange)="onGroupSelected($event.value)"
-          >
-            <mat-option
-              class="mat-body-strong"
-              *ngFor="let group of groups"
-              [value]="group.id"
+          <!-- group selection -->
+          <mat-form-field>
+            <mat-label>Community</mat-label>
+            <mat-select
+              [formControl]="group"
+              (selectionChange)="onGroupSelected($event.value)"
             >
-              {{ group.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+              <mat-option
+                class="mat-body-strong"
+                *ngFor="let group of groups"
+                [value]="group.id"
+              >
+                {{ group.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            type="button"
+            matTooltip="Add a new community"
+            (click)="openAddCommunityDialog()"
+            mat-icon-button
+            aria-label="Add community button"
+          >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <mat-divider></mat-divider>
       </ng-container>
+
       <mat-nav-list>
-        <a mat-list-item (click)="openAddCommunityDialog()">
+        <a
+          *ngIf="(userGroups$ | async)?.length == 0"
+          mat-list-item
+          (click)="openAddCommunityDialog()"
+        >
           <mat-icon matListIcon> group_add </mat-icon>
           {{ 'shared.pages.add-community' | translate }}
         </a>
-        <mat-divider></mat-divider>
+
         <a
           mat-list-item
           routerLink="/welcome"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>home</mat-icon>
@@ -50,8 +63,8 @@
         </a>
         <a
           mat-list-item
-          routerLink="/"
-          routerLinkActive="active"
+          routerLink="/success-modeling/workspace"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>trending_up</mat-icon>
@@ -61,19 +74,17 @@
           *ngIf="expertMode$ | async"
           mat-list-item
           routerLink="/success-modeling/raw-edit"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>code</mat-icon>
           {{ 'shared.pages.raw-edit' | translate }}
         </a>
         <a
-          *ngIf="
-            expertMode$ | async
-          "
+          *ngIf="expertMode$ | async"
           mat-list-item
           routerLink="/query-visualization"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>show_chart</mat-icon>
@@ -150,41 +161,6 @@
       *ngIf="isLoading"
     ></mat-progress-bar>
     <main>
-      <mat-card
-        class="noob-info flex flex-wrap sm:justify-between"
-        *ngIf="noobInfo"
-      >
-        <div>
-          Watch
-          <a
-            class="yt-link"
-            href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
-            target="_blank"
-            rel="noopener noreferrer"
-            >this video</a
-          >
-          to learn how to use the MobSOS EC.
-        </div>
-        <div>
-          <button
-            type="button"
-            class="mr-3"
-            mat-button
-            (click)="dismissNoobInfo()"
-          >
-            Close
-          </button>
-
-          <button
-            type="button"
-            mat-stroked-button
-            color="warn"
-            (click)="dismissNoobInfo(true)"
-          >
-            Don't show again
-          </button>
-        </div>
-      </mat-card>
       <router-outlet></router-outlet>
     </main>
     <footer id="footer">
@@ -210,4 +186,11 @@
     [diameter]="30"
   >
   </mat-spinner>
+</ng-template>
+
+<ng-template #noGroups>
+  <p class="text-sm m-4">
+    You are not part of any community yet. <br />
+    Add a community too get started.
+  </p>
 </ng-template>

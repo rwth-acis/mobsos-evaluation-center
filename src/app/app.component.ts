@@ -18,6 +18,7 @@ import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
+  logout,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -41,7 +42,7 @@ import {
   timeout,
 } from 'rxjs/operators';
 
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -102,7 +103,6 @@ export class AppComponent implements OnInit, OnDestroy {
   selectedGroupId: string; // used to show the selected group in the form field
   group = new FormControl();
 
-  noobInfo: boolean;
   version = environment.version;
 
   isLoading: boolean;
@@ -132,9 +132,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false,
     );
-
-    const noob = localStorage.getItem('notNewbie');
-    this.noobInfo = noob == null;
   }
 
   ngOnInit(): void {
@@ -204,6 +201,12 @@ export class AppComponent implements OnInit, OnDestroy {
   setUser(user: User): void {
     if (user?.profile?.preferred_username) {
       this.ngrxStore.dispatch(storeUser({ user }));
+      return;
+    }
+
+    if (!user) {
+      this.ngrxStore.dispatch(logout());
+      this.l2pStatusbar.nativeElement.handleClick();
     }
 
     clearInterval(this.silentSigninIntervalHandle);
@@ -228,16 +231,14 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  dismissNoobInfo(remember = false) {
-    this.noobInfo = false;
-    if (remember) {
-      localStorage.setItem('notNewbie', 'true');
+  async logout() {
+    const signedIn = await firstValueFrom(
+      this.ngrxStore.select(AUTHENTICATED).pipe(take(1)),
+    );
+    if (signedIn) {
+      this.setUser(null);
+      void this.router.navigate(['/welcome']);
     }
-  }
-
-  logout() {
-    this.setUser(null);
-    void this.router.navigate(['/welcome']);
   }
 
   silentSignin(

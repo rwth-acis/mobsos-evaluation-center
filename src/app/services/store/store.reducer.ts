@@ -14,6 +14,7 @@ import { VisualizationCollection } from '../../models/visualization.model';
 import {
   CommunityWorkspace,
   EmptyApplicationWorkspace,
+  UserRole,
 } from '../../models/workspace.model';
 import * as Actions from './store.actions';
 import { cloneDeep } from 'lodash-es';
@@ -309,6 +310,10 @@ const _Reducer = createReducer(
       true,
     ),
   })),
+  on(Actions.setUserAsVisitor, (state) => ({
+    ...state,
+    user: { ...state.user, role: UserRole.LURKER },
+  })),
   on(Actions.addMeasureToFactor, (state, props) => ({
     ...state,
     communityWorkspace: addMeasureToFactorInModel(
@@ -360,6 +365,10 @@ const _Reducer = createReducer(
   on(Actions.storeCatalogInWorkspace, (state, { xml }) => ({
     ...state,
     communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
+  })),
+  on(Actions.logout, (state) => ({
+    ...state,
+    user: initialState.user,
   })),
 );
 
@@ -580,7 +589,7 @@ function mergeGroupData(
         name: groupName,
         member: true,
       };
-      if (groupID in oldGroups) {
+      if (oldGroups && groupID in oldGroups) {
         groups[groupID].members = oldGroups[groupID]?.members; // copy potential members that we know about from old groups
       }
     }

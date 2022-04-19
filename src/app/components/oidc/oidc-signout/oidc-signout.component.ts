@@ -18,6 +18,10 @@ export class OidcSignoutComponent implements OnInit {
       .then(() => {
         this.ngrxStore.dispatch(storeUser({ user: null }));
         void this.router.navigate(['/']);
+      })
+      .catch((err) => {
+        console.error(err);
+        void this.router.navigate(['/']);
       });
   }
 

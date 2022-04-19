@@ -6,9 +6,10 @@ import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.c
 import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-space.component';
 import { CustomPreloadingStrategy } from './preloading-strategy';
 import { AuthService as AuthGuard } from './services/auth.service';
+import { NotFoundComponent } from './components/not-found/not-found.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/success-modeling', pathMatch: 'full' },
+  { path: '', redirectTo: 'success-modeling', pathMatch: 'full' },
   {
     path: 'welcome',
     loadChildren: () =>
@@ -21,6 +22,11 @@ const routes: Routes = [
     children: [
       {
         path: '',
+        redirectTo: 'workspace',
+        pathMatch: 'full',
+      },
+      {
+        path: 'workspace',
         loadChildren: () =>
           import(
             './components/success-modeling/success-modeling.module'
@@ -62,6 +68,10 @@ const routes: Routes = [
       import(
         './components/query-visualization/query-visualization.module'
       ).then((m) => m.QueryVisualizationModule),
+  },
+  {
+    path: '**',
+    component: NotFoundComponent,
   },
 ];
 

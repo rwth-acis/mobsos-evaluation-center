@@ -17,6 +17,7 @@ import {
   setCommunityWorkspaceOwner,
   setGroup,
   setServiceName,
+  setUserAsVisitor,
   setUserName,
 } from '../../services/store/store.actions';
 import { USER } from '../../services/store/store.selectors';
@@ -78,46 +79,30 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
           this.groupId = params.groupId;
           this.serviceName = params.serviceName;
 
-          if (user?.signedIn) {
-            // if we are signed in we join the workspace with our regular username
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: params.groupId,
-                serviceName: params.serviceName,
-                owner: params.username,
-                username: user.profile.preferred_username,
-              }),
-            );
-            void this.router.navigateByUrl('/');
-          } else {
-            const cachedName = localStorage.getItem(
-              'visitor-username',
-            );
-            const cachedInviteLink =
-              localStorage.getItem('invite-link');
+          const cachedName = localStorage.getItem('visitor-username');
+          const cachedInviteLink =
+            localStorage.getItem('invite-link');
 
-            if (
-              !cachedName ||
-              !cachedInviteLink ||
-              !this.router.url.includes(cachedInviteLink)
-            ) {
-              localStorage.setItem('invite-link', this.router.url);
-              return;
-            }
-            // if we had joined this workspace before we use the same username
-            this.ngrxStore.dispatch(
-              joinWorkSpace({
-                groupId: params.groupId,
-                serviceName: params.serviceName,
-                owner: params.username,
-                username: cachedName,
-                role: UserRole.LURKER,
-              }),
-            );
-            void this.router.navigateByUrl(
-              '/success-modeling/visitor',
-            );
+          if (
+            !cachedName ||
+            !cachedInviteLink ||
+            !this.router.url.includes(cachedInviteLink)
+          ) {
+            localStorage.setItem('invite-link', this.router.url);
+            return;
           }
+          // if we had joined this workspace before we use the same username
+          this.ngrxStore.dispatch(
+            joinWorkSpace({
+              groupId: params.groupId,
+              serviceName: params.serviceName,
+              owner: params.username,
+              username: cachedName,
+              role: UserRole.LURKER,
+            }),
+          );
+          this.ngrxStore.dispatch(setUserAsVisitor());
+          void this.router.navigateByUrl('/success-modeling/guest');
         },
       );
     this.subscriptions$.push(sub);
@@ -143,8 +128,8 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   }
 
   joinWorkspace(): void {
-    if (!this.username) {
-      return;
+    if (this.username?.trim()?.length === 0) {
+      return alert('Username cannot be empty');
     }
     this.ngrxStore.dispatch(setUserName({ username: this.username }));
 
@@ -158,7 +143,7 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
       }),
     );
 
-    void this.router.navigateByUrl('/success-modeling/visitor');
+    void this.router.navigateByUrl('/success-modeling/guest');
   }
 
   ngOnDestroy(): void {

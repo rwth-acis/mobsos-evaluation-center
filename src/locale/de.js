@@ -178,7 +178,7 @@ export const translations = {
       'sign-in':
         'Falls du einen las2peer <strong>account</strong> besitzt, nutze den Login oben rechts.',
       'joined-as-visitor':
-        '{{owner}} hat dieses Erfolgsmodell mit dir geteilt. Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen. Frag {{owner}} ob er dich zur Community einladen kann, um selbst Änderungen vorzunehmen.',
+        '<strong>{{owner}}</strong> hat dieses Erfolgsmodell mit dir geteilt. Du kannst Änderungen von Anderen beobachten, aber selbst keine Änderungen vornehmen. Frag {{owner}} ob er dich zur Community einladen kann, um selbst Änderungen vorzunehmen.',
     },
     'message-no-application-selected':
       'Es ist keine Anwendung ausgewählt. Bitte wähle oben eine aus, um das Erfolgsmodell zu sehen.',

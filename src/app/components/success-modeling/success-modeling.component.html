@@ -11,6 +11,41 @@
     <ng-container
       *ngIf="selectedGroup$ | async as group; else noGroupSelected"
     >
+      <mat-card
+        *ngIf="noobInfo"
+        class="my-0 noob-info flex flex-wrap sm:justify-between"
+      >
+        <div>
+          Watch
+          <a
+            class="yt-link"
+            href="https://www.youtube.com/watch?v=HoXyG7Y7ovU&t=1s"
+            target="_blank"
+            rel="noopener noreferrer"
+            >this video</a
+          >
+          to learn how to use the MobSOS EC.
+        </div>
+        <div>
+          <button
+            type="button"
+            class="mr-3"
+            mat-button
+            (click)="dismissNoobInfo()"
+          >
+            Close
+          </button>
+
+          <button
+            type="button"
+            mat-stroked-button
+            color="warn"
+            (click)="dismissNoobInfo(true)"
+          >
+            Don't show again
+          </button>
+        </div>
+      </mat-card>
       <h2>
         {{
           'success-modeling.community-workspace'

@@ -19,6 +19,7 @@ import { VisualizationCollection } from '../../models/visualization.model';
 import {
   ApplicationWorkspace,
   CommunityWorkspace,
+  UserRole,
 } from '../../models/workspace.model';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe(callbackFn)
@@ -209,7 +210,7 @@ export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
 export const SUCCESS_MODEL_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.successModel;
 
-const SUCCESS_MODEL_FROM_WORKSPACE = createSelector(
+export const SUCCESS_MODEL_FROM_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
   (workspace) => workspace?.model,
 );
@@ -218,10 +219,19 @@ export const SUCCESS_MODEL = createSelector(
   EDIT_MODE,
   SUCCESS_MODEL_FROM_NETWORK,
   SUCCESS_MODEL_FROM_WORKSPACE,
-  (editMode, successModelFromNetwork, successModelInWorkspace) =>
-    editMode && successModelInWorkspace
-      ? successModelInWorkspace
-      : successModelFromNetwork,
+  USER,
+  (
+    editMode,
+    successModelFromNetwork,
+    successModelInWorkspace,
+    user,
+  ) => {
+    return successModelInWorkspace
+      ? editMode || user.role === UserRole.LURKER
+        ? successModelInWorkspace
+        : successModelFromNetwork
+      : successModelFromNetwork;
+  },
 );
 
 export const DIMENSIONS_IN_MODEL = createSelector(
@@ -235,7 +245,7 @@ export const DIMENSIONS_IN_MODEL = createSelector(
 export const SUCCESS_MODEL_IS_EMPTY = createSelector(
   DIMENSIONS_IN_MODEL,
   (dimensions) =>
-    !dimensions?.find((dimension) => dimension.length > 0),
+    !dimensions?.some((dimension) => dimension.length > 0),
 );
 
 export const SURVEYS_FROM_SUCCESS_MODEL = createSelector(
@@ -283,7 +293,7 @@ export const WORKSPACE_MODEL_XML = createSelector(
 export const MEASURE_CATALOG_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.measureCatalog;
 
-const MEASURE_CATALOG_FROM_WORKSPACE = createSelector(
+export const MEASURE_CATALOG_FROM_WORKSPACE = createSelector(
   APPLICATION_WORKSPACE,
   (workspace) => workspace?.catalog,
 );
