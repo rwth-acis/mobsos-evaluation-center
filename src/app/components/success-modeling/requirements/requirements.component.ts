@@ -28,6 +28,8 @@ import {
 import { cloneDeep } from 'lodash-es';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import 'reqbaz-components/reqbaz-requirements-grid';
+
 @Component({
   selector: 'app-requirements',
   templateUrl: './requirements.component.html',
@@ -36,6 +38,8 @@ import { environment } from 'src/environments/environment';
 export class RequirementsComponent implements OnInit, OnDestroy {
   successModel: SuccessModel;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+
+  backend = environment.reqBazUrl;
 
   user$ = this.ngrxStore.select(USER);
   requirements$ = this.ngrxStore.select(REQUIREMENTS);
