@@ -46,6 +46,7 @@ import { RawEditModule } from './components/raw-edit/raw-edit.module';
 import { SuccessModelingModule } from './components/success-modeling/success-modeling.module';
 import { SharedModule } from './shared/shared.module';
 import { WelcomeModule } from './components/welcome/welcome.module';
+import { NotFoundComponent } from './components/not-found/not-found.component';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -94,6 +95,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     OidcSignoutComponent,
     OidcSilentComponent,
     JoinWorkSpaceComponent,
+    NotFoundComponent,
   ],
   imports: [
     BrowserModule,
