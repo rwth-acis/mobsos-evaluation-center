@@ -18,6 +18,7 @@ import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
+  logout,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -102,7 +103,6 @@ export class AppComponent implements OnInit, OnDestroy {
   selectedGroupId: string; // used to show the selected group in the form field
   group = new FormControl();
 
-  noobInfo: boolean;
   version = environment.version;
 
   isLoading: boolean;
@@ -132,9 +132,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false,
     );
-
-    const noob = localStorage.getItem('notNewbie');
-    this.noobInfo = noob == null;
   }
 
   ngOnInit(): void {
@@ -204,6 +201,12 @@ export class AppComponent implements OnInit, OnDestroy {
   setUser(user: User): void {
     if (user?.profile?.preferred_username) {
       this.ngrxStore.dispatch(storeUser({ user }));
+      return;
+    }
+
+    if (!user) {
+      this.ngrxStore.dispatch(logout());
+      this.l2pStatusbar.nativeElement.handleClick();
     }
 
     clearInterval(this.silentSigninIntervalHandle);
@@ -226,13 +229,6 @@ export class AppComponent implements OnInit, OnDestroy {
       data: null,
       disableClose: true,
     });
-  }
-
-  dismissNoobInfo(remember = false) {
-    this.noobInfo = false;
-    if (remember) {
-      localStorage.setItem('notNewbie', 'true');
-    }
   }
 
   async logout() {

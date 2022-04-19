@@ -58,6 +58,7 @@ export enum StoreActions {
   STORE_SERVICES = 'store services',
   STORE_GROUPS = 'store groups',
   STORE_USER = 'Store the user',
+  LOGOUT_USER = 'log out the user by deleting the user from the store',
   STORE_GROUP = 'Stores a new group in state',
   STORE_GROUP_MEMBERS = 'Stores the group members for a given group',
   STORE_USERNAME = 'Set the username. Called for anonymous users',
@@ -349,6 +350,7 @@ export const storeUser = createAction(
   StoreActions.STORE_USER,
   props<{ user: User }>(),
 );
+export const logout = createAction(StoreActions.LOGOUT_USER);
 
 export const storeVisualizationData = createAction(
   StoreActions.STORE_VISUALIZATION_DATA,

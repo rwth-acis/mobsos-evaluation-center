@@ -1,3 +1,7 @@
+@import '../../../styles';
+
+$primary: map-get($mobsos-evaluation-center-theme, primary);
+$accent: map-get($mobsos-evaluation-center-theme, accent);
 #community-service-select {
   width: 100%;
 }
@@ -61,5 +65,16 @@ app-success-dimension {
     margin: 0;
     padding: 0;
     position: absolute;
+  }
+}
+
+.noob-info {
+  background-color: mat-color($accent, lighter);
+  color: mat-color($accent, darker);
+  display: flex;
+  align-items: center;
+
+  .yt-link {
+    margin: 0 2px 0 2px
   }
 }

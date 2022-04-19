@@ -366,6 +366,10 @@ const _Reducer = createReducer(
     ...state,
     communityWorkspace: addCatalogToCurrentWorkSpace(state, xml),
   })),
+  on(Actions.logout, (state) => ({
+    ...state,
+    user: initialState.user,
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {
