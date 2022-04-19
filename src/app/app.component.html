@@ -8,36 +8,38 @@
     <ng-container *ngIf="(user$ | async)?.signedIn">
       <ng-container
         *ngIf="userGroups$ | async as groups; else groupsAreLoading"
-        ><ng-container *ngIf="groups.length > 0; else noGroups">
-          <div class="flex items-center mr-5">
-            <!-- group selection -->
-            <mat-form-field id="community-selection">
-              <mat-label>Community</mat-label>
-              <mat-select
-                [formControl]="group"
-                (selectionChange)="onGroupSelected($event.value)"
-              >
-                <mat-option
-                  class="mat-body-strong"
-                  *ngFor="let group of groups"
-                  [value]="group.id"
-                >
-                  {{ group.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            <button
-              type="button"
-              matTooltip="Add a new community"
-              (click)="openAddCommunityDialog()"
-              mat-icon-button
-              aria-label="Add community button"
+      >
+        <div
+          *ngIf="groups.length > 0; else noGroups"
+          class="flex items-center justify-center mt-2"
+        >
+          <!-- group selection -->
+          <mat-form-field>
+            <mat-label>Community</mat-label>
+            <mat-select
+              [formControl]="group"
+              (selectionChange)="onGroupSelected($event.value)"
             >
-              <mat-icon>add_circle</mat-icon>
-            </button>
-          </div>
-          <mat-divider></mat-divider>
-        </ng-container>
+              <mat-option
+                class="mat-body-strong"
+                *ngFor="let group of groups"
+                [value]="group.id"
+              >
+                {{ group.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            type="button"
+            matTooltip="Add a new community"
+            (click)="openAddCommunityDialog()"
+            mat-icon-button
+            aria-label="Add community button"
+          >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <mat-divider></mat-divider>
       </ng-container>
 
       <mat-nav-list>

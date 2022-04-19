@@ -20,18 +20,11 @@ mat-sidenav-container {
       flex-direction: column !important;
     }
     mat-form-field {
-      margin-top: 5px;
-      margin-left: 16px;
-      margin-right: 16px;
-
       ::ng-deep .mat-select-value {
         color: white;
       }
     }
 
-    #community-selection {
-      position: relative;
-    }
 
     #groupsLoadingIndicator {
       margin: auto;
