@@ -48,6 +48,7 @@ export class SuccessModelingComponent implements OnInit {
   numberOfRequirements$ = this.ngrxStore.select(
     NUMBER_OF_REQUIREMENTS,
   );
+  noobInfo: boolean;
   constructor(
     private ngrxStore: Store,
     private l2p: Las2peerService,
@@ -55,6 +56,8 @@ export class SuccessModelingComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    const noob = localStorage.getItem('notNewbie');
+    this.noobInfo = noob == null;
     void firstValueFrom(
       this.l2p.authenticateOnReqBaz().pipe(take(1)),
     );
@@ -107,6 +110,13 @@ export class SuccessModelingComponent implements OnInit {
         'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
       );
       this.ngrxStore.dispatch(storeUser({ user: null }));
+    }
+  }
+
+  dismissNoobInfo(remember = false) {
+    this.noobInfo = false;
+    if (remember) {
+      localStorage.setItem('notNewbie', 'true');
     }
   }
 

@@ -55,17 +55,7 @@ mat-sidenav-container {
 
   mat-sidenav-content {
     height: 100vh;
-    .noob-info {
-      background-color: mat-color($accent, lighter);
-      color: mat-color($accent, darker);
-      display: flex;
-      align-items: center;
-      
-      .yt-link{
-        margin: 0 2px 0 2px 
-      }
-    }
-
+  
     
     mat-progress-bar {
       top: 0;

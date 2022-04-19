@@ -103,7 +103,6 @@ export class AppComponent implements OnInit, OnDestroy {
   selectedGroupId: string; // used to show the selected group in the form field
   group = new FormControl();
 
-  noobInfo: boolean;
   version = environment.version;
 
   isLoading: boolean;
@@ -133,9 +132,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false,
     );
-
-    const noob = localStorage.getItem('notNewbie');
-    this.noobInfo = noob == null;
   }
 
   ngOnInit(): void {
@@ -233,13 +229,6 @@ export class AppComponent implements OnInit, OnDestroy {
       data: null,
       disableClose: true,
     });
-  }
-
-  dismissNoobInfo(remember = false) {
-    this.noobInfo = false;
-    if (remember) {
-      localStorage.setItem('notNewbie', 'true');
-    }
   }
 
   async logout() {
