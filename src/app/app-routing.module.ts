@@ -8,7 +8,7 @@ import { CustomPreloadingStrategy } from './preloading-strategy';
 import { AuthService as AuthGuard } from './services/auth.service';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/success-modeling', pathMatch: 'full' },
+  { path: '', redirectTo: 'success-modeling', pathMatch: 'full' },
   {
     path: 'welcome',
     loadChildren: () =>
@@ -21,6 +21,11 @@ const routes: Routes = [
     children: [
       {
         path: '',
+        redirectTo: 'workspace',
+        pathMatch: 'full',
+      },
+      {
+        path: 'workspace',
         loadChildren: () =>
           import(
             './components/success-modeling/success-modeling.module'
