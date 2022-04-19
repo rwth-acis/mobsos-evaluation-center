@@ -53,7 +53,7 @@
         <a
           mat-list-item
           routerLink="/welcome"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>home</mat-icon>
@@ -61,8 +61,8 @@
         </a>
         <a
           mat-list-item
-          routerLink="/"
-          routerLinkActive="active"
+          routerLink="/success-modeling/workspace"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>trending_up</mat-icon>
@@ -72,7 +72,7 @@
           *ngIf="expertMode$ | async"
           mat-list-item
           routerLink="/success-modeling/raw-edit"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>code</mat-icon>
@@ -82,7 +82,7 @@
           *ngIf="expertMode$ | async"
           mat-list-item
           routerLink="/query-visualization"
-          routerLinkActive="active"
+          routerLinkActive="active-link"
           (click)="menuItemClicked()"
         >
           <mat-icon matListIcon>show_chart</mat-icon>
