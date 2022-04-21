@@ -15,6 +15,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { MatTableModule } from '@angular/material/table';
     MatButtonModule,
     MatTableModule,
     MatIconModule,
+    MatDialogModule,
   ],
   exports: [VisualizationComponent],
 })
