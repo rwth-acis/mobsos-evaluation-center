@@ -32,7 +32,10 @@ import {
   SQLQuery,
 } from 'src/app/models/measure.model';
 
-import { ChartVisualization } from 'src/app/models/visualization.model';
+import {
+  ChartVisualization,
+  ValueVisualization,
+} from 'src/app/models/visualization.model';
 import {
   joinAbsoluteUrlPath,
   Las2peerService,
@@ -48,7 +51,7 @@ import {
   fetchQuestionnaires,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
-import { filter, take } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 
 import { Survey } from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
@@ -85,162 +88,6 @@ export class SurveyComponent implements OnInit {
     private ngrxStore: Store,
   ) {}
 
-  static parseXml(xml: string): Document {
-    const parser = new DOMParser();
-    return parser.parseFromString(xml, 'text/xml');
-  }
-
-  private static extractQuestions(
-    formXML: string,
-    service: ServiceInformation,
-  ): Question[] {
-    const result: Question[] = [];
-    const xml = SurveyComponent.parseXml(formXML);
-    let pages = Array.from(xml.getElementsByTagName('qu:Page'));
-    pages = pages.filter((page) => {
-      const type = page.getAttribute('xsi:type');
-      return (
-        type === 'qu:OrdinalScaleQuestionPageType' ||
-        type === 'qu:DichotomousQuestionPageType'
-      );
-    });
-    for (const page of pages) {
-      const minLabel = page.getAttribute('minlabel');
-      const maxLabel = page.getAttribute('maxlabel');
-      const labels = { minLabel, maxLabel };
-      const code = page.getAttribute('qid');
-      let type: 'ordinal' | 'dichotomous';
-      if (
-        page.getAttribute('xsi:type') ===
-        'qu:OrdinalScaleQuestionPageType'
-      ) {
-        type = 'ordinal';
-      } else {
-        type = 'dichotomous';
-      }
-      let dimensionRecommendation: string = null;
-      let factorRecommendation: string = null;
-      const recommendations = Array.from(
-        page.getElementsByTagName('qu:SuccessModelRecommendation'),
-      );
-      if (recommendations.length > 0) {
-        const recommendation = recommendations[0];
-        dimensionRecommendation =
-          recommendation.getAttribute('dimension');
-        factorRecommendation = recommendation.getAttribute('factor');
-      }
-      const instructionsElement = Array.from(
-        page.getElementsByTagName('qu:Instructions'),
-      )[0];
-      const instructions = instructionsElement.innerHTML
-        .trim()
-        .replace('${SURVEY.RESOURCE}', service.alias);
-      result.push({
-        code,
-        type,
-        dimensionRecommendation,
-        factorRecommendation,
-        instructions,
-        labels,
-      });
-    }
-    return result;
-  }
-
-  private static getSQL(surveyId: number, question: Question) {
-    const dbName = environment.mobsosSurveysDatabaseName;
-
-    if (question.type === 'ordinal') {
-      return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
-        SqlString.escape(surveyId.toString()) as string
-      } AND qkey = "${
-        question.code
-      }" GROUP BY Answer ORDER BY number DESC`;
-    } else {
-      // eslint-disable-next-line @typescript-eslint/dot-notation
-      return `SELECT if(qval, '${question.labels.maxLabel}',  '${
-        question.labels.minLabel
-      }') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
-        SqlString.escape(surveyId.toString()) as string
-      } AND qkey = "${
-        question.code
-      }" GROUP BY Answer ORDER BY number DESC`;
-    }
-  }
-
-  private static addMeasuresFromQuestionnaireToModelAndCatalog(
-    questionnaire: Questionnaire,
-    surveyId: number,
-    assignMeasures,
-    service: ServiceInformation,
-    measures: MeasureMap,
-    model: SuccessModel,
-  ): [SuccessModel, MeasureMap] {
-    const questions = SurveyComponent.extractQuestions(
-      questionnaire.formXML,
-      service,
-    );
-    for (const question of questions) {
-      const measureName =
-        questionnaire.name + ': ' + question.instructions;
-      const query = SurveyComponent.getSQL(surveyId, question);
-      const measure = new Measure(
-        measureName,
-        [new SQLQuery('Answer Distribution', query)],
-        new ChartVisualization(
-          question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
-          measureName,
-          measureName,
-          '300px',
-          '300px',
-        ),
-        ['surveyId=' + surveyId.toString(), 'generated'],
-      );
-
-      measures[measureName] = measure;
-      if (
-        assignMeasures &&
-        question.dimensionRecommendation &&
-        question.factorRecommendation
-      ) {
-        let dimension = model.dimensions[
-          question.dimensionRecommendation
-        ] as SuccessFactor[];
-        dimension = SurveyComponent.assignMeasuresToDimension(
-          question,
-          measureName,
-          dimension,
-        );
-        model[question.dimensionRecommendation] = dimension;
-      }
-    }
-    return [model, measures];
-  }
-  private static assignMeasuresToDimension(
-    question: Question,
-    measureName: string,
-    dimension: SuccessFactor[],
-  ): SuccessFactor[] {
-    let targetFactor: SuccessFactor;
-    for (const factor of dimension) {
-      if (factor.name === question.factorRecommendation) {
-        targetFactor = factor;
-        break;
-      }
-    }
-
-    if (!targetFactor) {
-      targetFactor = new SuccessFactor(
-        question.factorRecommendation,
-        [],
-      );
-      dimension.push(targetFactor);
-    }
-    targetFactor.measures.push(measureName);
-
-    return dimension;
-  }
-
   getQuestionnaireByName(name: string): Questionnaire {
     return this.availableQuestionnaires?.find(
       (value) => value.name === name,
@@ -269,20 +116,20 @@ export class SurveyComponent implements OnInit {
         const service = await firstValueFrom(
           this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
         );
-        const model = await firstValueFrom(
+        const currentModel = await firstValueFrom(
           this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
         );
-        const catalog = await firstValueFrom(
+        const currentCatalog = await firstValueFrom(
           this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
         );
-        const [newModel, measures] =
-          SurveyComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
+        const { model, measures } =
+          addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
             selectedSurvey.id as number,
             addMeasures,
             service,
-            cloneDeep(catalog.measures) as MeasureMap,
-            cloneDeep(model) as SuccessModel,
+            cloneDeep(currentCatalog.measures) as MeasureMap,
+            cloneDeep(currentModel) as SuccessModel,
           );
         this.ngrxStore.dispatch(
           addCatalogToWorkspace({
@@ -292,7 +139,7 @@ export class SurveyComponent implements OnInit {
         if (assignMeasures) {
           this.ngrxStore.dispatch(
             addModelToWorkSpace({
-              xml: SuccessModel.fromPlainObject(newModel).toXml()
+              xml: SuccessModel.fromPlainObject(model).toXml()
                 .outerHTML,
             }),
           );
@@ -364,4 +211,223 @@ export class SurveyComponent implements OnInit {
       data: { ...desiredQuestionnaire, surveyId: survey.id },
     });
   }
+}
+
+function extractQuestions(
+  formXML: string,
+  service: ServiceInformation,
+): Question[] {
+  const result: Question[] = [];
+  const xml = parseXml(formXML);
+  let pages = Array.from(xml.getElementsByTagName('qu:Page'));
+  pages = pages.filter((page) => {
+    const type = page.getAttribute('xsi:type');
+    return (
+      type === 'qu:OrdinalScaleQuestionPageType' ||
+      type === 'qu:DichotomousQuestionPageType'
+    );
+  });
+  for (const page of pages) {
+    const minLabel = page.getAttribute('minlabel');
+    const maxLabel = page.getAttribute('maxlabel');
+    const labels = { minLabel, maxLabel };
+    const code = page.getAttribute('qid');
+    let type: 'ordinal' | 'dichotomous';
+    if (
+      page.getAttribute('xsi:type') ===
+      'qu:OrdinalScaleQuestionPageType'
+    ) {
+      type = 'ordinal';
+    } else {
+      type = 'dichotomous';
+    }
+    let dimensionRecommendation: string = null;
+    let factorRecommendation: string = null;
+    const recommendations = Array.from(
+      page.getElementsByTagName('qu:SuccessModelRecommendation'),
+    );
+    if (recommendations.length > 0) {
+      const recommendation = recommendations[0];
+      dimensionRecommendation =
+        recommendation.getAttribute('dimension');
+      factorRecommendation = recommendation.getAttribute('factor');
+    }
+    const instructionsElement = Array.from(
+      page.getElementsByTagName('qu:Instructions'),
+    )[0];
+    const instructions = instructionsElement.innerHTML
+      .trim()
+      .replace('${SURVEY.RESOURCE}', service.alias);
+    result.push({
+      code,
+      type,
+      dimensionRecommendation,
+      factorRecommendation,
+      instructions,
+      labels,
+    });
+  }
+  return result;
+}
+
+function parseXml(xml: string): Document {
+  const parser = new DOMParser();
+  return parser.parseFromString(xml, 'text/xml');
+}
+
+function getChartSQL(surveyId: number, question: Question) {
+  const dbName = environment.mobsosSurveysDatabaseName;
+
+  if (question.type === 'ordinal') {
+    return `SELECT qval AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+      SqlString.escape(surveyId.toString()) as string
+    } AND qkey = "${
+      question.code
+    }" GROUP BY Answer ORDER BY number DESC`;
+  } else {
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    return `SELECT if(qval, '${question.labels.maxLabel}',  '${
+      question.labels.minLabel
+    }') AS Answer, COUNT(*) as number FROM ${dbName}.response WHERE  sid=${
+      SqlString.escape(surveyId.toString()) as string
+    } AND qkey = "${
+      question.code
+    }" GROUP BY Answer ORDER BY number DESC`;
+  }
+}
+
+function generateChartMeasure(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  question: Question,
+): Measure {
+  const measureName =
+    questionnaire.name + ': ' + question.instructions;
+
+  const chartMeasureQuery = getChartSQL(surveyId, question);
+
+  const chartMeasure = new Measure(
+    measureName,
+    [new SQLQuery('Answer Distribution', chartMeasureQuery)],
+    new ChartVisualization(
+      question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
+      measureName,
+      measureName,
+      '300px',
+      '300px',
+    ),
+    ['surveyId=' + surveyId.toString(), 'generated'],
+  );
+  return chartMeasure;
+}
+
+function getMeanValueSQL(surveyId: number, question: Question) {
+  if (question.type !== 'ordinal') return;
+  const dbName = environment.mobsosSurveysDatabaseName;
+
+  return `SELECT AVG(qval) as number FROM ${dbName}.response WHERE  sid=${
+    SqlString.escape(surveyId.toString()) as string
+  } AND qkey = "${question.code}"`;
+}
+function addMeasuresFromQuestionnaireToModelAndCatalog(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  assignMeasures,
+  service: ServiceInformation,
+  measures: MeasureMap,
+  model: SuccessModel,
+): { model: SuccessModel; measures: MeasureMap } {
+  const questions = extractQuestions(questionnaire.formXML, service);
+
+  for (const question of questions) {
+    const chartMeasure = generateChartMeasure(
+      questionnaire,
+      surveyId,
+      question,
+    );
+
+    measures[chartMeasure.name] = chartMeasure;
+    if (
+      assignMeasures &&
+      question.dimensionRecommendation &&
+      question.factorRecommendation
+    ) {
+      let dimension = model.dimensions[
+        question.dimensionRecommendation
+      ] as SuccessFactor[];
+      dimension = assignMeasuresToDimension(
+        question,
+        chartMeasure.name,
+        dimension,
+      );
+      model[question.dimensionRecommendation] = dimension;
+    }
+
+    if (question.type === 'ordinal') {
+      const meanValueMeasure = getMeanValueMeasure(
+        questionnaire,
+        surveyId,
+        question,
+      );
+      measures[meanValueMeasure.name] = meanValueMeasure;
+      if (
+        assignMeasures &&
+        question.dimensionRecommendation &&
+        question.factorRecommendation
+      ) {
+        let dimension = model.dimensions[
+          question.dimensionRecommendation
+        ] as SuccessFactor[];
+        dimension = assignMeasuresToDimension(
+          question,
+          meanValueMeasure.name,
+          dimension,
+        );
+        model[question.dimensionRecommendation] = dimension;
+      }
+    }
+  }
+  return { model, measures };
+}
+
+function getMeanValueMeasure(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  question: Question,
+) {
+  const meanValueMeasureName = `${questionnaire.name}: ${question.instructions} (Mean Value)`;
+  const meanValueMeasureQuery = getMeanValueSQL(surveyId, question);
+
+  const meanValueMeasure = new Measure(
+    meanValueMeasureName,
+    [new SQLQuery('Mean Value', meanValueMeasureQuery)],
+    new ValueVisualization(),
+    ['surveyId=' + surveyId.toString(), 'generated'],
+  );
+  return meanValueMeasure;
+}
+
+function assignMeasuresToDimension(
+  question: Question,
+  measureName: string,
+  dimension: SuccessFactor[],
+): SuccessFactor[] {
+  let targetFactor: SuccessFactor;
+  for (const factor of dimension) {
+    if (factor.name === question.factorRecommendation) {
+      targetFactor = factor;
+      break;
+    }
+  }
+
+  if (!targetFactor) {
+    targetFactor = new SuccessFactor(
+      question.factorRecommendation,
+      [],
+    );
+    dimension.push(targetFactor);
+  }
+  targetFactor.measures.push(measureName);
+
+  return dimension;
 }
