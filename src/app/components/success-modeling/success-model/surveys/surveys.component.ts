@@ -57,11 +57,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-questionnaires',
-  templateUrl: './questionnaires.component.html',
-  styleUrls: ['./questionnaires.component.scss'],
+  selector: 'app-surveys',
+  templateUrl: './surveys.component.html',
+  styleUrls: ['./surveys.component.scss'],
 })
-export class QuestionnairesComponent implements OnInit {
+export class SurveyComponent implements OnInit {
   @Input() model$: Observable<SuccessModel>;
 
   measures$ = this.ngrxStore.select(MEASURES);
@@ -95,7 +95,7 @@ export class QuestionnairesComponent implements OnInit {
     service: ServiceInformation,
   ): Question[] {
     const result: Question[] = [];
-    const xml = QuestionnairesComponent.parseXml(formXML);
+    const xml = SurveyComponent.parseXml(formXML);
     let pages = Array.from(xml.getElementsByTagName('qu:Page'));
     pages = pages.filter((page) => {
       const type = page.getAttribute('xsi:type');
@@ -176,17 +176,14 @@ export class QuestionnairesComponent implements OnInit {
     measures: MeasureMap,
     model: SuccessModel,
   ): [SuccessModel, MeasureMap] {
-    const questions = QuestionnairesComponent.extractQuestions(
+    const questions = SurveyComponent.extractQuestions(
       questionnaire.formXML,
       service,
     );
     for (const question of questions) {
       const measureName =
         questionnaire.name + ': ' + question.instructions;
-      const query = QuestionnairesComponent.getSQL(
-        surveyId,
-        question,
-      );
+      const query = SurveyComponent.getSQL(surveyId, question);
       const measure = new Measure(
         measureName,
         [new SQLQuery('Answer Distribution', query)],
@@ -209,7 +206,7 @@ export class QuestionnairesComponent implements OnInit {
         let dimension = model.dimensions[
           question.dimensionRecommendation
         ] as SuccessFactor[];
-        dimension = QuestionnairesComponent.assignMeasuresToDimension(
+        dimension = SurveyComponent.assignMeasuresToDimension(
           question,
           measureName,
           dimension,
@@ -279,7 +276,7 @@ export class QuestionnairesComponent implements OnInit {
           this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
         );
         const [newModel, measures] =
-          QuestionnairesComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
+          SurveyComponent.addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
             selectedSurvey.id as number,
             addMeasures,

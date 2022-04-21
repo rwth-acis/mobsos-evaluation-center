@@ -17,13 +17,13 @@ import { SuccessFactorComponent } from './success-model/success-dimension/succes
 import { EditFactorDialogComponent } from './success-model/success-dimension/edit-factor-dialog/edit-factor-dialog.component';
 import { EditMeasureDialogComponent } from './success-model/success-dimension/success-factor/edit-measure-dialog/edit-measure-dialog.component';
 import { PickMeasureDialogComponent } from './success-model/success-dimension/success-factor/pick-measure-dialog/pick-measure-dialog.component';
-import { QuestionnairesComponent } from './success-model/questionnaires/questionnaires.component';
-import { PickQuestionnaireDialogComponent } from './success-model/questionnaires/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
-import { DeleteQuestionnaireDialogComponent } from './success-model/questionnaires/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
+import { SurveyComponent } from './success-model/surveys/surveys.component';
+import { PickQuestionnaireDialogComponent } from './success-model/surveys/pick-questionnaire-dialog/pick-questionnaire-dialog.component';
+import { DeleteQuestionnaireDialogComponent } from './success-model/surveys/delete-questionnaire-dialog/delete-questionnaire-dialog.component';
 import { PickReqbazProjectComponent } from './requirements/pick-reqbaz-project/pick-reqbaz-project.component';
 import { SuccessModelingRoutingModule } from './success-modeling-routing.module';
 import { CommunityInfoComponent } from './community-info/community-info.component';
-import { PickSurveyDialogComponent } from './success-model/questionnaires/pick-survey-dialog/pick-survey-dialog.component';
+import { PickSurveyDialogComponent } from './success-model/surveys/pick-survey-dialog/pick-survey-dialog.component';
 import { VisualizationsModule } from 'src/app/shared/visualizations/visualizations.module';
 
 @NgModule({
@@ -35,7 +35,7 @@ import { VisualizationsModule } from 'src/app/shared/visualizations/visualizatio
     EditFactorDialogComponent,
     EditMeasureDialogComponent,
     PickMeasureDialogComponent,
-    QuestionnairesComponent,
+    SurveyComponent,
     PickQuestionnaireDialogComponent,
     DeleteQuestionnaireDialogComponent,
     PickReqbazProjectComponent,
