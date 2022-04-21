@@ -13,6 +13,7 @@
           <ng-container
             *ngIf="(measure$ | async)?.visualization?.unit as unit"
           >
+            <ng-container *ngIf="unit !== 'undefined'"></ng-container>
             {{ unit }}
           </ng-container>
         </div>
