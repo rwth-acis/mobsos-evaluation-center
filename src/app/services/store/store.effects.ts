@@ -911,19 +911,6 @@ export class StateEffects {
     ),
   );
 
-  /** ***************************
-   * This effect prevents that the observables error which would cancel all subscriptions
-   */
-  all$ = createEffect(() =>
-    this.actions$.pipe(
-      catchError((err) => {
-        console.error(err);
-        return of(Action.failure({ reason: err }));
-      }),
-      share(),
-    ),
-  );
-
   constructor(
     private actions$: Actions,
     private l2p: Las2peerService,
