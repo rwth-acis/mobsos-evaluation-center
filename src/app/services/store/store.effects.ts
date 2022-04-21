@@ -174,12 +174,9 @@ export class StateEffects {
               groupsFromContactService: null,
             });
           }),
-          catchError((err) => {
-            this.ngrxStore.dispatch(
-              Action.storeGroups({ groupsFromContactService: null }),
-            );
-            return of(Action.failureResponse({ reason: err }));
-          }),
+          catchError((err) =>
+            of(Action.failureResponse({ reason: err })),
+          ),
         ),
       ),
       catchError(() => of(Action.failure({}))),
