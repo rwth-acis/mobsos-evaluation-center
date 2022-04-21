@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DeleteQuestionnaireDialogComponent } from './delete-questionnaire-dialog/delete-questionnaire-dialog.component';
+import { RemoveSurveyDialogComponent } from './remove-survey-dialog/remove-survey-dialog.component';
 import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
 import { MatDialog } from '@angular/material/dialog';
@@ -304,12 +304,9 @@ export class SurveyComponent implements OnInit {
   async openRemoveQuestionnaireDialog(
     questionnaireIndex: number,
   ): Promise<void> {
-    const dialogRef = this.dialog.open(
-      DeleteQuestionnaireDialogComponent,
-      {
-        minWidth: 300,
-      },
-    );
+    const dialogRef = this.dialog.open(RemoveSurveyDialogComponent, {
+      minWidth: 300,
+    });
     const result = (await dialogRef.afterClosed().toPromise()) as {
       deleteSurvey: boolean;
       deleteMeasures: boolean;
