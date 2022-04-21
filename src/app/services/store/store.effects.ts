@@ -174,9 +174,12 @@ export class StateEffects {
               groupsFromContactService: null,
             });
           }),
-          catchError((err) =>
-            of(Action.failureResponse({ reason: err })),
-          ),
+          catchError((err) => {
+            this.ngrxStore.dispatch(
+              Action.storeGroups({ groupsFromContactService: null }),
+            );
+            return of(Action.failureResponse({ reason: err }));
+          }),
         ),
       ),
       catchError(() => of(Action.failure({}))),
@@ -902,6 +905,19 @@ export class StateEffects {
             ),
       ),
       catchError((err) => {
+        return of(Action.failure({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  /** ***************************
+   * This effect prevents that the observables error which would cancel all subscriptions
+   */
+  all$ = createEffect(() =>
+    this.actions$.pipe(
+      catchError((err) => {
+        console.error(err);
         return of(Action.failure({ reason: err }));
       }),
       share(),
