@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { evaluate, MathExpression } from 'mathjs';
+import { evaluate, MathExpression, round } from 'mathjs';
 /**
  * Pipe to evaluate a math expression.
  * Takes an expression as string or an array of expressions as input and returns the result.
@@ -23,7 +23,8 @@ export class EvaluatePipe implements PipeTransform {
     // if (Array.isArray(exprs)) {
     //   return exprs.map(expr => evaluate(expr, scope));
     // } // array support disabled for now
-    return evaluate(exprs, scope);
+    const result = evaluate(exprs, scope);
+    return round(result, 2);
   }
 }
 interface Scope {
