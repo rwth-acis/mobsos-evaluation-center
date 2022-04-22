@@ -12,7 +12,6 @@ export class LatexPipe implements PipeTransform {
    */
   transform(expression: string): unknown {
     const tex = parse(expression).toTex();
-    return `\\( ${tex} \\)`;
     return katex.renderToString(tex); //fractions are not displayed correctly
   }
 }
