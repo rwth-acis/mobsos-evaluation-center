@@ -8,8 +8,6 @@ import { Measure, SQLQuery } from 'src/app/models/measure.model';
 import {
   ChartVisualization,
   KpiVisualization,
-  KpiVisualizationOperand,
-  KpiVisualizationOperator,
   ValueVisualization,
 } from 'src/app/models/visualization.model';
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
@@ -17,7 +15,6 @@ import { Store } from '@ngrx/store';
 import {
   FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
@@ -28,6 +25,7 @@ import {
   share,
   startWith,
 } from 'rxjs/operators';
+import { MathExpression } from 'mathjs';
 
 export interface DialogData {
   measure: Measure;
@@ -66,7 +64,7 @@ export class EditMeasureDialogComponent implements OnInit {
       '300',
       '300',
     ),
-    KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
+    KPI: new KpiVisualization(),
   };
 
   measureForm: FormGroup;
@@ -116,8 +114,7 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
       case 'KPI':
         this.buildParamsForKPI(
-          (measure.visualization as KpiVisualization)
-            .operationsElements,
+          (measure.visualization as KpiVisualization).expression,
         );
         break;
     }
@@ -172,17 +169,9 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
       case 'KPI':
-        const elements = value.visualization.parameters
-          ? value.visualization.parameters
-          : value.visualization.operationsElements;
-        const operationsElements = elements.map(
-          (e: string, index) => {
-            return { name: e, index };
-          },
-        );
-        measure.visualization = KpiVisualization.fromPlainObject({
-          operationsElements,
-        } as KpiVisualization);
+        const expression = value.visualization.parameters;
+        measure.visualization =
+          KpiVisualization.fromPlainObject(expression);
         break;
     }
     return measure;
@@ -270,65 +259,65 @@ export class EditMeasureDialogComponent implements OnInit {
     // this.data.measure.queries.pop();
   }
 
-  onKpiOperandChange(operandName: string, index: number): void {
-    (
-      this.data.measure.visualization as KpiVisualization
-    ).operationsElements[index] = new KpiVisualizationOperand(
-      operandName,
-      index,
-    );
-  }
+  // onKpiOperandChange(operandName: string, index: number): void {
+  //   (
+  //     this.data.measure.visualization as KpiVisualization
+  //   ).operationsElements[index] = new KpiVisualizationOperand(
+  //     operandName,
+  //     index,
+  //   );
+  // }
 
-  onKpiOperatorChange(operatorName: string, index: number): void {
-    (
-      this.data.measure.visualization as KpiVisualization
-    ).operationsElements[index] = new KpiVisualizationOperator(
-      operatorName,
-      index,
-    );
-    this.formVisualizationParameters.push(new FormControl(''));
-  }
+  // onKpiOperatorChange(operatorName: string, index: number): void {
+  //   (
+  //     this.data.measure.visualization as KpiVisualization
+  //   ).operationsElements[index] = new KpiVisualizationOperator(
+  //     operatorName,
+  //     index,
+  //   );
+  //   this.formVisualizationParameters.push(new FormControl(''));
+  // }
 
-  onAddOperationClicked(): void {
-    this.formVisualizationParameters.push(new FormControl(''));
+  // onAddOperationClicked(): void {
+  //   this.formVisualizationParameters.push(new FormControl(''));
 
-    if (this.formVisualizationParameters.controls.length === 1) {
-      this.formVisualizationParameters.push(new FormControl(''));
-    }
-  }
+  //   if (this.formVisualizationParameters.controls.length === 1) {
+  //     this.formVisualizationParameters.push(new FormControl(''));
+  //   }
+  // }
 
-  onRemoveOperationClicked(): void {
-    const kpiVisualization = this.data.measure
-      .visualization as KpiVisualization;
-    if (kpiVisualization.operationsElements.length >= 3) {
-      kpiVisualization.operationsElements.pop();
-      kpiVisualization.operationsElements.pop();
-    }
+  // onRemoveOperationClicked(): void {
+  //   const kpiVisualization = this.data.measure
+  //     .visualization as KpiVisualization;
+  //   if (kpiVisualization.operationsElements.length >= 3) {
+  //     kpiVisualization.operationsElements.pop();
+  //     kpiVisualization.operationsElements.pop();
+  //   }
 
-    if (this.formVisualizationParameters.controls.length > 2) {
-      this.formVisualizationParameters.removeAt(
-        this.formVisualizationParameters.length - 1,
-      );
-      this.formVisualizationParameters.removeAt(
-        this.formVisualizationParameters.length - 1,
-      );
-    }
-  }
+  //   if (this.formVisualizationParameters.controls.length > 2) {
+  //     this.formVisualizationParameters.removeAt(
+  //       this.formVisualizationParameters.length - 1,
+  //     );
+  //     this.formVisualizationParameters.removeAt(
+  //       this.formVisualizationParameters.length - 1,
+  //     );
+  //   }
+  // }
 
-  onQueryNameChanged(value: string, i: number): void {
-    const currentName = this.data.measure.queries[i].name;
-    const visualizationType = this.data.measure.visualization.type;
-    if (visualizationType === 'KPI') {
-      const visualization = this.data.measure
-        .visualization as KpiVisualization;
-      visualization.operationsElements.forEach((opElement, index) => {
-        if (index % 2 === 0 && opElement.name === currentName) {
-          opElement.name = value;
-        }
-      });
-    }
-    this.data.measure.queries[i].name = value;
-  }
+  // onQueryNameChanged(value: string, i: number): void {
+  //   const currentName = this.data.measure.queries[i].name;
+  //   const visualizationType = this.data.measure.visualization.type;
+  //   if (visualizationType === 'KPI') {
+  //     const visualization = this.data.measure
+  //       .visualization as KpiVisualization;
+  //     visualization.operationsElements.forEach((opElement, index) => {
+  //       if (index % 2 === 0 && opElement.name === currentName) {
+  //         opElement.name = value;
+  //       }
+  //     });
+  //   }
+  //   this.data.measure.queries[i].name = value;
+  // }
   onQueryChanged(sql: string): void {
     this.ngrxStore.dispatch(
       fetchVisualizationData({
@@ -388,23 +377,16 @@ export class EditMeasureDialogComponent implements OnInit {
       }),
     );
   }
-  private buildParamsForKPI(
-    operationsElements?:
-      | KpiVisualizationOperand[]
-      | KpiVisualizationOperator[],
-  ): void {
+  private buildParamsForKPI(expression?: MathExpression): void {
     this.formVisualizationParameters.clear();
     // no initial terms set so we add one operand
-    if (!operationsElements || operationsElements.length === 0) {
+    if (!expression) {
       // this.formVisualizationParameters.push(new FormControl(''));
       return;
     }
-
-    operationsElements.forEach((opElement) => {
-      this.formVisualizationParameters.push(
-        this.fb.control(opElement.name),
-      );
-    });
+    this.formVisualizationParameters.push(
+      this.fb.control({ expression: expression.toString() || '' }),
+    );
   }
 }
 function queriesChanged(
