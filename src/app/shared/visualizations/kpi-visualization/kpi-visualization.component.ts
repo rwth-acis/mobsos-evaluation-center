@@ -26,6 +26,7 @@ import {
   share,
   startWith,
   switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
@@ -48,6 +49,8 @@ export class KpiVisualizationComponent
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
   private subscriptions$: Subscription[] = [];
+  expression$;
+  scope$;
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -119,6 +122,31 @@ export class KpiVisualizationComponent
     //   this.error = err;
     // });
     // this.subscriptions$.push(sub);
+
+    this.expression$ = this.measure$.pipe(
+      map((measure) =>
+        (
+          measure.visualization as KpiVisualization
+        ).operationsElements.reduce(
+          (exp, curr) => exp + curr.name.toString() + ' ',
+          '',
+        ),
+      ),
+    );
+
+    this.scope$ = this.dataArray$.pipe(
+      filter((data) => allDataLoaded(data)),
+      map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
+      map((data) => data.map((d) => d[2][0])), // map each data onto the actual data
+      withLatestFrom(this.measure$),
+      map(([data, measure]) => {
+        const scope = {};
+        measure.queries.forEach((query, index) => {
+          scope[query.name] = data[index];
+        });
+        return scope;
+      }),
+    );
 
     this.kpi$ = this.dataArray$.pipe(
       filter((data) => allDataLoaded(data)),
