@@ -1,13 +1,8 @@
 <!-- header  -->
 <div id="dialog_header">
-  <h1 mat-dialog-title *ngIf="data.create">
+  <h1 mat-dialog-title *ngIf="data.create; else editHeader">
     {{
       'success-modeling.edit-measure-dialog.title-create' | translate
-    }}
-  </h1>
-  <h1 mat-dialog-title *ngIf="!data.create">
-    {{
-      'success-modeling.edit-measure-dialog.title-edit' | translate
     }}
   </h1>
   <button mat-icon-button [mat-dialog-close]="null" color="warn">
@@ -399,3 +394,11 @@
 <ng-template #noQueries>
   Add a query with a name first in step 2</ng-template
 >
+
+<ng-template #editHeader>
+  <h1 mat-dialog-title>
+    {{
+      'success-modeling.edit-measure-dialog.title-edit' | translate
+    }}
+  </h1>
+</ng-template>
