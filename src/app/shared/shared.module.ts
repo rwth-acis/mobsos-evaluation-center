@@ -40,6 +40,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ErrorBannerComponent } from './error-banner/error-banner.component';
 import { VisualizationsModule } from './visualizations/visualizations.module';
 import { InfoBannerComponent } from './info-banner/info-banner.component';
+import { EvaluatePipe } from './evaluate.pipe';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -51,6 +52,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
     QuestionnaireInfoDialogComponent,
     ErrorBannerComponent,
     InfoBannerComponent,
+    EvaluatePipe,
   ],
   imports: [
     CommonModule,
@@ -102,6 +104,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
     ErrorBannerComponent,
     InfoBannerComponent,
     VisualizationsModule,
+    EvaluatePipe,
   ],
 })
 export class SharedModule {}
