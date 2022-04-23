@@ -379,13 +379,8 @@ export class EditMeasureDialogComponent implements OnInit {
   }
   private buildParamsForKPI(expression?: MathExpression): void {
     this.formVisualizationParameters.clear();
-    // no initial terms set so we add one operand
-    if (!expression) {
-      // this.formVisualizationParameters.push(new FormControl(''));
-      return;
-    }
     this.formVisualizationParameters.push(
-      this.fb.control({ expression: expression.toString() || '' }),
+      this.fb.group({ expression: [expression?.toString() || ''] }),
     );
   }
 }
