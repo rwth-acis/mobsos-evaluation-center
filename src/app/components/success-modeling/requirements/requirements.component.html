@@ -4,14 +4,14 @@
   </h3>
 
   <ng-container *ngIf="reqBazProject$ | async as project">
-    <section class="flex justify-center">
+    <!-- <section class="flex justify-center">
       <reqbaz-project-card
         class="mb-5"
         [projectId]="project.id"
         [name]="project.name"
         [description]="project.description || ''"
       ></reqbaz-project-card>
-    </section>
+    </section> -->
     <reqbaz-requirements-grid
       [baseUrl]="backend + '/'"
       [category]="project.categoryId"
