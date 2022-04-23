@@ -50,7 +50,7 @@
     "ngx-markdown": "^13.0.0",
     "ngx-monaco-editor": "^12.0.0",
     "oidc-client": "^1.11.5",
-    "reqbaz-components": "github:rwth-acis/RequirementsBazaar-Components",
+    "reqbaz-components": "github:rwth-acis/RequirementsBazaar-Components#develop",
     "rxjs": "^7.4.0",
     "sqlstring": "^2.3.2",
     "tslib": "^2.0.0",
