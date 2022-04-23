@@ -90,7 +90,7 @@ export class AppComponent implements OnInit, OnDestroy {
   environment = environment; // set it so that it can be accessed in the template
   mobsosSurveysUrl = joinAbsoluteUrlPath(
     environment.mobsosSurveysUrl,
-    'qiestionnaires',
+    'questionnaires',
   );
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
