@@ -1,4 +1,10 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Inject,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogRef,
@@ -40,6 +46,8 @@ export interface DialogData {
   styleUrls: ['./edit-measure-dialog.component.scss'],
 })
 export class EditMeasureDialogComponent implements OnInit {
+  @ViewChild('Expression') expressionRef: ElementRef;
+
   visualizationChoices = {
     Value: 'success-modeling.edit-measure-dialog.choice-value',
     Chart: 'success-modeling.edit-measure-dialog.choice-chart',
@@ -130,6 +138,10 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
+  get queryNames(): string[] {
+    return this.formQueries.value.map((q) => q.name);
+  }
+
   private static encodeXML(sql: string): string {
     sql = sql.replace(/>/g, '&gt;');
     sql = sql.replace(/</g, '&lt;');
@@ -175,6 +187,14 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
     }
     return measure;
+  }
+
+  insertIntoExpression(val: string) {
+    const el = this.expressionRef.nativeElement;
+    const [start, end] = [el.selectionStart, el.selectionEnd];
+    el.setRangeText(val, start, end, 'select');
+    el.selectionStart = el.selectionEnd = el.selectionStart + 1;
+    el.focus();
   }
 
   /**

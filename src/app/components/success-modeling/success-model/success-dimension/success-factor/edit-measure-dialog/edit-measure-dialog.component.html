@@ -107,9 +107,25 @@
             </ng-container>
 
             <ng-container *ngSwitchCase="'KPI'" formGroupName="0">
+              <mat-chip-list
+                cdkDropList
+                cdkDropListOrientation="horizontal"
+              >
+                <mat-chip
+                  cdkDrag
+                  *ngFor="let name of queryNames"
+                  (click)="insertIntoExpression(name)"
+                >
+                  {{ name }}
+                </mat-chip>
+              </mat-chip-list>
               <mat-form-field>
                 <mat-label>Expression</mat-label>
-                <input matInput formControlName="expression" />
+                <input
+                  matInput
+                  formControlName="expression"
+                  #Expression
+                />
               </mat-form-field>
             </ng-container>
 
