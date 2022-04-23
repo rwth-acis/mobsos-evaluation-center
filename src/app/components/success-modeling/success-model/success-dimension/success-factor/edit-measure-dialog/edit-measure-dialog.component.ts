@@ -220,12 +220,23 @@ export class EditMeasureDialogComponent implements OnInit {
    */
 
   controlsForFirstStepInValid(): boolean {
-    return (
-      !this.expressionVariablesAreDefined() ||
-      this.measureForm.get('name').invalid ||
-      this.measureForm.get('description').invalid ||
-      this.measureForm.get('visualization').invalid
-    );
+    if (
+      this.measureForm.get('visualization').get('type').value ===
+      'KPI'
+    ) {
+      return (
+        !this.expressionVariablesAreDefined() ||
+        this.measureForm.get('name').invalid ||
+        this.measureForm.get('description').invalid ||
+        this.measureForm.get('visualization').invalid
+      );
+    } else {
+      return (
+        this.measureForm.get('name').invalid ||
+        this.measureForm.get('description').invalid ||
+        this.measureForm.get('visualization').invalid
+      );
+    }
   }
 
   /**
