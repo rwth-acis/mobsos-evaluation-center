@@ -305,7 +305,6 @@ export class WorkspaceManagementComponent
   }
 
   async onExportClicked() {
-    console.log(this.selections.value);
     if (!this.selectedGroupId)
       return alert('Please select a group first'); // should not happen since component is not rendered in this case
 
