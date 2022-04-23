@@ -172,7 +172,7 @@ export class KpiVisualization extends Visualization {
   }
 
   public static fromPlainObject(obj: any): KpiVisualization {
-    if (!obj.operationsElements) return;
+    if (!obj?.operationsElements) return;
     const expression: MathExpression = obj.operationsElements.reduce(
       (exp, op) => exp + op.name.toString() + ' ',
       '',

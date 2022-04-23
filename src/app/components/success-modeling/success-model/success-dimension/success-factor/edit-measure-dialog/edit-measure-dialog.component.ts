@@ -221,8 +221,8 @@ export class EditMeasureDialogComponent implements OnInit {
 
   controlsForFirstStepInValid(): boolean {
     return (
-      (this.expressionVariablesAreDefined() &&
-        this.measureForm.get('name').invalid) ||
+      !this.expressionVariablesAreDefined() ||
+      this.measureForm.get('name').invalid ||
       this.measureForm.get('description').invalid ||
       this.measureForm.get('visualization').invalid
     );

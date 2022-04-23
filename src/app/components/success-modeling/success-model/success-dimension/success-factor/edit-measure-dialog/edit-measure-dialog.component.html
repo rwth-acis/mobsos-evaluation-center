@@ -12,7 +12,7 @@
 
 <!-- content -->
 <form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
-  <mat-stepper #stepper>
+  <mat-stepper #stepper [linear]="true">
     <!-- first step: choose a name and visualization type -->
     <mat-step
       [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
@@ -123,7 +123,10 @@
                   formControlName="expression"
                   #Expression
                 />
-                <mat-hint *ngIf="!expressionVariablesAreDefined()">
+                <mat-hint
+                  *ngIf="!expressionVariablesAreDefined()"
+                  class="text-red-500"
+                >
                   Some variables are not well defined. You need to add
                   them in step 2
                 </mat-hint>
@@ -284,7 +287,15 @@
               | translate
           }}
         </button>
-        <button mat-stroked-button matStepperNext type="button">
+        <button
+          mat-stroked-button
+          matStepperNext
+          type="button"
+          [disabled]="
+            controlsForFirstStepInValid() ||
+            controlsForSecondStepInValid()
+          "
+        >
           {{
             'success-modeling.edit-measure-dialog.next-label'
               | translate
@@ -317,7 +328,10 @@
             mat-raised-button
             color="primary"
             type="submit"
-            [disabled]="measureForm.invalid"
+            [disabled]="
+              controlsForFirstStepInValid() ||
+              controlsForSecondStepInValid()
+            "
           >
             {{ 'shared.elements.save-label' | translate }}
           </button>
