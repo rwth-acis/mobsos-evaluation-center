@@ -107,10 +107,7 @@
             </ng-container>
 
             <ng-container *ngSwitchCase="'KPI'" formGroupName="0">
-              <mat-chip-list
-                cdkDropList
-                cdkDropListOrientation="horizontal"
-              >
+              <mat-chip-list class="overflow-scroll flex-nowrap">
                 <mat-chip
                   cdkDrag
                   *ngFor="let name of queryNames"
