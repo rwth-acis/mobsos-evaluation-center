@@ -35,7 +35,12 @@
               },
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.json"
+              "src/manifest.json",
+              {
+                "glob": "**/*.js",
+                "input": "node_modules/@webcomponents/webcomponentsjs",
+                "output": "webcomponents/"
+              }
             ],
             "styles": ["src/styles.scss"],
             "scripts": []

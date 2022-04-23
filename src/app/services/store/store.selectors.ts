@@ -234,6 +234,13 @@ export const SUCCESS_MODEL = createSelector(
   },
 );
 
+export const REQBAZ_PROJECT = createSelector(
+  SUCCESS_MODEL,
+  (model) => {
+    return model?.reqBazProject;
+  },
+);
+
 export const DIMENSIONS_IN_MODEL = createSelector(
   SUCCESS_MODEL,
   (model) =>
