@@ -48,6 +48,6 @@ button {
 }
 
 ::ng-deep .mat-chip-list-wrapper {
-  overflow-x: scroll;
+  overflow-x: auto;
   flex-wrap: nowrap !important;
 }

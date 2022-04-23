@@ -123,6 +123,10 @@
                   formControlName="expression"
                   #Expression
                 />
+                <mat-hint *ngIf="!expressionVariablesAreDefined()">
+                  Some variables are not well defined. You need to add
+                  them in step 2
+                </mat-hint>
               </mat-form-field>
             </ng-container>
 

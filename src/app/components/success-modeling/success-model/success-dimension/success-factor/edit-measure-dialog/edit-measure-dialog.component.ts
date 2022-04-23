@@ -32,6 +32,7 @@ import {
   startWith,
 } from 'rxjs/operators';
 import { MathExpression } from 'mathjs';
+import { expression } from 'mathjs';
 
 export interface DialogData {
   measure: Measure;
@@ -142,6 +143,20 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.formQueries.value.map((q) => q.name);
   }
 
+  get KPIExpression() {
+    if (
+      this.measureForm.get('visualization').get('type').value !==
+      'KPI'
+    ) {
+      return;
+    }
+    return this.measureForm
+      .get('visualization')
+      .get('parameters')
+      .get('0')
+      .get('expression');
+  }
+
   private static encodeXML(sql: string): string {
     sql = sql.replace(/>/g, '&gt;');
     sql = sql.replace(/</g, '&lt;');
@@ -206,9 +221,22 @@ export class EditMeasureDialogComponent implements OnInit {
 
   controlsForFirstStepInValid(): boolean {
     return (
-      this.measureForm.get('name').invalid ||
+      (this.expressionVariablesAreDefined() &&
+        this.measureForm.get('name').invalid) ||
       this.measureForm.get('description').invalid ||
       this.measureForm.get('visualization').invalid
+    );
+  }
+
+  /**
+   * Function which checks that each variable in the expression string is defined in a query
+   * @returns
+   */
+  expressionVariablesAreDefined(): boolean {
+    const expressions = this.KPIExpression?.value.match(/\b(\w+)\b/g);
+    if (!expressions) return true;
+    return expressions?.every((expression) =>
+      this.queryNames.includes(expression),
     );
   }
 
