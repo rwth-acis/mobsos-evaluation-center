@@ -172,12 +172,13 @@ export class KpiVisualization extends Visualization {
   }
 
   public static fromPlainObject(obj: any): KpiVisualization {
-    if (!obj?.operationsElements) return;
-    const expression: MathExpression = obj.operationsElements.reduce(
-      (exp, op) => exp + op.name.toString() + ' ',
-      '',
-    );
-    return new KpiVisualization(expression);
+    if (obj?.operationsElements) {
+      const expression: MathExpression =
+        obj.operationsElements.reduce(
+          (exp, op) => exp + op.name.toString() + ' ',
+          '',
+        );
+    } else return new KpiVisualization(obj.expression);
   }
 
   static fromXml(xml: Element): KpiVisualization {

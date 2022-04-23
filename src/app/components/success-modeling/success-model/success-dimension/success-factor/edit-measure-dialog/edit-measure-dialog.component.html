@@ -78,9 +78,7 @@
         </mat-form-field>
         <!-- different options based on visualization type -->
         <div formArrayName="parameters">
-          <ng-container
-            [ngSwitch]="measureForm.get('visualization.type').value"
-          >
+          <ng-container [ngSwitch]="visualizationType">
             <mat-form-field *ngSwitchCase="'Value'" formGroupName="0">
               <input
                 matInput
@@ -129,6 +127,12 @@
                 >
                   Some variables are not well defined. You need to add
                   them in step 2
+                </mat-hint>
+                <mat-hint
+                  *ngIf="!expressionIsValidSyntax()"
+                  class="text-red-500"
+                >
+                  Your expression syntax is invalid.
                 </mat-hint>
               </mat-form-field>
             </ng-container>
@@ -223,9 +227,7 @@
       >
         <mat-form-field>
           <input
-            [required]="
-              measureForm.get('visualization.type').value === 'KPI'
-            "
+            [required]="visualizationType === 'KPI'"
             matInput
             placeholder="{{
               'success-modeling.edit-measure-dialog.query-name-placeholder'

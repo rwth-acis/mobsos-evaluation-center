@@ -33,6 +33,8 @@ import {
 } from 'rxjs/operators';
 import { MathExpression } from 'mathjs';
 import { expression } from 'mathjs';
+import { evaluate } from 'mathjs';
+import { parse } from 'mathjs';
 
 export interface DialogData {
   measure: Measure;
@@ -144,10 +146,7 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   get KPIExpression() {
-    if (
-      this.measureForm.get('visualization').get('type').value !==
-      'KPI'
-    ) {
+    if (this.visualizationType !== 'KPI') {
       return;
     }
     return this.measureForm
@@ -155,6 +154,11 @@ export class EditMeasureDialogComponent implements OnInit {
       .get('parameters')
       .get('0')
       .get('expression');
+  }
+
+  get visualizationType(): string {
+    return this.measureForm.get('visualization')?.get('type')
+      ?.value as string;
   }
 
   private static encodeXML(sql: string): string {
@@ -196,9 +200,10 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
       case 'KPI':
-        const expression = value.visualization.parameters;
-        measure.visualization =
-          KpiVisualization.fromPlainObject(expression);
+        if (!value.visualization.parameters) break;
+        const expression =
+          value.visualization.parameters[0].expression;
+        measure.visualization = new KpiVisualization(expression);
         break;
     }
     return measure;
@@ -220,11 +225,9 @@ export class EditMeasureDialogComponent implements OnInit {
    */
 
   controlsForFirstStepInValid(): boolean {
-    if (
-      this.measureForm.get('visualization').get('type').value ===
-      'KPI'
-    ) {
+    if (this.visualizationType === 'KPI') {
       return (
+        !this.expressionIsValidSyntax() ||
         !this.expressionVariablesAreDefined() ||
         this.measureForm.get('name').invalid ||
         this.measureForm.get('description').invalid ||
@@ -244,7 +247,8 @@ export class EditMeasureDialogComponent implements OnInit {
    * @returns
    */
   expressionVariablesAreDefined(): boolean {
-    const expressions = this.KPIExpression?.value.match(/\b(\w+)\b/g);
+    const expressions =
+      this.KPIExpression?.value.match(/\b([a-zA-Z]+)\b/g);
     if (!expressions) return true;
     return expressions?.every((expression) =>
       this.queryNames.includes(expression),
@@ -297,6 +301,9 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.visualizationType === 'KPI') {
+      if (!this.expressionIsValidSyntax()) return;
+    }
     if (!this.measureForm.valid) {
       return; // should not happen because submit button is disabled if form is invalid
     }
@@ -311,6 +318,19 @@ export class EditMeasureDialogComponent implements OnInit {
   onAddQueryClicked(): void {
     this.formQueries.push(this.fb.group({ name: [''], sql: [''] }));
     // this.data.measure.queries.push(new Query('', ''));
+  }
+
+  expressionIsValidSyntax(): boolean {
+    if (this.visualizationType === 'KPI') {
+      const expr = this.KPIExpression.value;
+      try {
+        parse(expr);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    return;
   }
 
   onRemoveQueryClicked(): void {
