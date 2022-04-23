@@ -53,7 +53,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
 import { WorkspaceService } from './services/workspace.service';
-import { Las2peerService } from './services/las2peer.service';
+import {
+  joinAbsoluteUrlPath,
+  Las2peerService,
+} from './services/las2peer.service';
 import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
@@ -85,7 +88,10 @@ export class AppComponent implements OnInit, OnDestroy {
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void; // what is this used for? Do we still need it?
   environment = environment; // set it so that it can be accessed in the template
-  mobsosSurveysUrl = environment.mobsosSurveysUrl;
+  mobsosSurveysUrl = joinAbsoluteUrlPath(
+    environment.mobsosSurveysUrl,
+    'questionnaires',
+  );
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables

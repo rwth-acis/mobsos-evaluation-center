@@ -46,18 +46,6 @@ const routes: Routes = [
   { path: 'oidc-signout', component: OidcSignoutComponent },
   { path: 'oidc-silent', component: OidcSilentComponent },
   {
-    path: 'success-modeling/oidc-silent',
-    redirectTo: 'oidc-silent', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
-  },
-  {
-    path: 'success-modeling/oidc-signin',
-    redirectTo: 'oidc-signin', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
-  },
-  {
-    path: 'success-modeling/oidc-signout',
-    redirectTo: 'oidc-signout', // for some reason, success-modeling/oidc-silent is called it might be that the statusbar just appends to the current route
-  },
-  {
     path: 'join/:groupId/:serviceName/:username',
     component: JoinWorkSpaceComponent,
   },
