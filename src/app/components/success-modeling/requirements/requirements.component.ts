@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
+  REQBAZ_PROJECT,
   REQUIREMENTS,
   SUCCESS_MODEL,
   USER,
@@ -28,6 +29,9 @@ import {
 import { cloneDeep } from 'lodash-es';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import 'reqbaz-components/reqbaz-requirements-grid';
+import 'reqbaz-components/reqbaz-project-card';
+
 @Component({
   selector: 'app-requirements',
   templateUrl: './requirements.component.html',
@@ -36,6 +40,9 @@ import { environment } from 'src/environments/environment';
 export class RequirementsComponent implements OnInit, OnDestroy {
   successModel: SuccessModel;
   successModel$ = this.ngrxStore.select(SUCCESS_MODEL);
+
+  backend = environment.reqBazUrl;
+  reqBazProject$ = this.ngrxStore.select(REQBAZ_PROJECT);
 
   user$ = this.ngrxStore.select(USER);
   requirements$ = this.ngrxStore.select(REQUIREMENTS);
