@@ -25,6 +25,7 @@ import { SuccessModelingRoutingModule } from './success-modeling-routing.module'
 import { CommunityInfoComponent } from './community-info/community-info.component';
 import { PickSurveyDialogComponent } from './success-model/questionnaires/pick-survey-dialog/pick-survey-dialog.component';
 import { VisualizationsModule } from 'src/app/shared/visualizations/visualizations.module';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @NgModule({
   declarations: [

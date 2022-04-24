@@ -10,7 +10,11 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure, SQLQuery } from 'src/app/models/measure.model';
+import {
+  Measure,
+  Query,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 import {
   ChartVisualization,
   KpiVisualization,
@@ -21,20 +25,26 @@ import { Store } from '@ngrx/store';
 import {
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
   share,
+  filter,
   startWith,
+  take,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { MathExpression } from 'mathjs';
-import { expression } from 'mathjs';
-import { evaluate } from 'mathjs';
 import { parse } from 'mathjs';
+import {
+  MEASURES,
+  MEASURE,
+} from 'src/app/services/store/store.selectors';
 
 export interface DialogData {
   measure: Measure;
@@ -77,6 +87,28 @@ export class EditMeasureDialogComponent implements OnInit {
     ),
     KPI: new KpiVisualization(),
   };
+
+  measureOptions$ = this.ngrxStore.select(MEASURES).pipe(
+    // all measures which are not the measure itself
+    filter(
+      (measures) => !!measures && Object.keys(measures).length > 1,
+    ),
+    map((measures) =>
+      Object.values(measures).filter(
+        (m) =>
+          m.name !== this.data.measure.name &&
+          (m.visualization.type === 'Value' ||
+            m.visualization.type === 'KPI'),
+      ),
+    ),
+  );
+
+  autoCompleteField = new FormControl();
+  filteredOptions$ = this.autoCompleteField.valueChanges.pipe(
+    startWith(''),
+    withLatestFrom(this.measureOptions$),
+    map(([value, measures]) => _filter(value as string, measures)),
+  );
 
   measureForm: FormGroup;
   measure$: Observable<Measure>;
@@ -440,6 +472,36 @@ export class EditMeasureDialogComponent implements OnInit {
     return params as string[];
   }
 
+  /**
+   *
+   * @param event
+   */
+  async onOptionSelected(event) {
+    const selectedOption = event.option.value;
+    const measure = await firstValueFrom(
+      this.ngrxStore
+        .select(MEASURE({ measureName: selectedOption }))
+        .pipe(take(1)),
+    );
+    this.addQueriesToForm(measure.queries);
+    this.autoCompleteField.setValue('', { emitEvent: false });
+  }
+
+  /**
+   * Adds SQL queries to the form
+   * @param queries  Queries to be added
+   */
+  addQueriesToForm(queries: Query[]) {
+    queries.forEach((query) => {
+      this.formQueries.push(
+        this.fb.group({
+          name: [query.name || ''],
+          sql: [(query as SQLQuery).sql],
+        }),
+      );
+    });
+  }
+
   private buildParamsForChart(chartType?: string): void {
     this.formVisualizationParameters.clear();
     this.formVisualizationParameters.push(
@@ -479,4 +541,12 @@ function queriesChanged(
     }
   }
   return false;
+}
+
+function _filter(value: string, options: Measure[]): Measure[] {
+  const filterValue = value.toLowerCase();
+
+  return options.filter((option) =>
+    option.name.toLowerCase().includes(filterValue),
+  );
 }
