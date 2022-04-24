@@ -30,6 +30,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { SqlTableComponent } from './sql-table/sql-table.component';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AddCommunityDialogComponent } from './dialogs/add-community-dialog/add-community-dialog.component';
 import { UnavailableServicesDialogComponent } from './dialogs/unavailable-services-dialog/unavailable-services-dialog.component';
@@ -70,6 +71,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
   exports: [
     MatSelectModule,
     MatTabsModule,
+    MatChipsModule,
     TranslateModule,
     MatDatepickerModule,
     MatNativeDateModule,

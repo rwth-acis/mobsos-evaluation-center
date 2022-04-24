@@ -15,10 +15,14 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { EvaluatePipe } from '../evaluate.pipe';
+import { LatexPipe } from '../latex.pipe';
 
 @NgModule({
   declarations: [
     ErrorDialogComponent,
+    EvaluatePipe,
+    LatexPipe,
     VisualizationComponent,
     ValueVisualizationComponent,
     ChartVisualizerComponent,
