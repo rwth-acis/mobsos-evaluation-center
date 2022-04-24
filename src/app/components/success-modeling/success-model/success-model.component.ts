@@ -228,7 +228,6 @@ export class SuccessModelComponent implements OnInit {
   }
 
   async onExportClicked() {
-    console.log(this.successModel);
     const successModelXML = await lastValueFrom(
       this.ngrxStore.select(SUCCESS_MODEL_XML).pipe(take(1)),
     );

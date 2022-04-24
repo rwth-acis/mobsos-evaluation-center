@@ -597,7 +597,7 @@ export class Las2peerService {
           responseType: 'text',
         }).pipe(
           catchError((err) => {
-            console.log(err);
+            console.error(err);
             return of(undefined);
           }),
         );

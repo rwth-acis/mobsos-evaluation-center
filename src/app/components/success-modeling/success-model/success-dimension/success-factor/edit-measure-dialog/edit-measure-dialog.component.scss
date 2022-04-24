@@ -46,3 +46,8 @@ button {
 .EditMeasureForm {
   height: 80%;
 }
+
+::ng-deep .mat-chip-list-wrapper {
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+}
