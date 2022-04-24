@@ -5,7 +5,7 @@
   <pre>{{ data.error }}</pre>
 </div>
 <div mat-dialog-actions>
-  <button mat-button mat-dialog-close cdkFocusInitial>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>
     {{ 'shared.elements.ok-label' | translate }}
   </button>
 </div>

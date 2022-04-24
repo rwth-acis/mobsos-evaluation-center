@@ -17,6 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { EvaluatePipe } from '../evaluate.pipe';
 import { LatexPipe } from '../latex.pipe';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { LatexPipe } from '../latex.pipe';
     MatButtonModule,
     MatTableModule,
     MatIconModule,
+    MatDialogModule,
   ],
   exports: [VisualizationComponent],
 })
