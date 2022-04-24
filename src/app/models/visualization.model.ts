@@ -75,6 +75,9 @@ export class ValueVisualization extends Visualization {
 
   constructor(public unit?: string) {
     super();
+    if (!unit || unit === 'undefined') {
+      unit = '';
+    }
   }
 
   public static fromPlainObject(
@@ -92,7 +95,7 @@ export class ValueVisualization extends Visualization {
   protected _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const unit = doc.createElement('unit');
-    unit.innerHTML = this.unit;
+    unit.innerHTML = this.unit || '';
     visualizationNode.appendChild(unit);
   }
 }

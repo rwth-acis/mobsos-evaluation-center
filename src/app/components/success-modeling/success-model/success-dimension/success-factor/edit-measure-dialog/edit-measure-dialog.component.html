@@ -220,7 +220,43 @@
           </div>
         </ng-template>
       </mat-expansion-panel>
+      <ng-container
+        *ngIf="
+          (measureOptions$ | async) && visualizationType === 'KPI'
+        "
+      >
+        <mat-form-field>
+          <mat-label>Import from other Measure</mat-label>
 
+          <input
+            type="text"
+            placeholder="Pick one"
+            aria-label="Number"
+            matInput
+            [formControl]="autoCompleteField"
+            [matAutocomplete]="auto"
+          />
+          <mat-icon matSuffix>system_update_alt</mat-icon>
+          <mat-autocomplete
+            autoActiveFirstOption
+            #auto="matAutocomplete"
+            (optionSelected)="onOptionSelected($event)"
+          >
+            <mat-option
+              *ngFor="let option of filteredOptions$ | async"
+              [value]="option.name"
+            >
+              {{ option.name }}
+            </mat-option>
+          </mat-autocomplete>
+          <mat-hint
+            *ngIf="!((filteredOptions$ | async)?.length > 0)"
+            class="text-red-500"
+          >
+            No Measures found
+          </mat-hint>
+        </mat-form-field>
+      </ng-container>
       <!-- queries -->
       <ng-container
         *ngFor="let query of formQueries.controls; let i = index"
