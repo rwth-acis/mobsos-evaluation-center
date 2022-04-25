@@ -174,7 +174,9 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   get queryNames(): string[] {
-    return this.formQueries.value.map((q) => q.name);
+    return this.formQueries.value
+      .map((q) => q.name)
+      .filter((q) => q?.trim().length > 0);
   }
 
   get KPIExpression() {
