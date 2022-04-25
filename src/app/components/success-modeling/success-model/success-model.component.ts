@@ -131,7 +131,6 @@ export class SuccessModelComponent implements OnInit {
   numberOfRequirements = 0;
 
   subscriptions$: Subscription[] = [];
-  saveSubScription: Subscription;
 
   constructor(
     private translate: TranslateService,
@@ -234,7 +233,7 @@ export class SuccessModelComponent implements OnInit {
           result.reason &&
           result.reason instanceof HttpErrorResponse
         ) {
-          message += result.reason.error.msg;
+          message += result.reason.error.message;
         }
         this.snackBar.open(message, 'Ok');
       }
