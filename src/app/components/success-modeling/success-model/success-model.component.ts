@@ -13,7 +13,13 @@ import {
 } from 'rxjs/operators';
 import { iconMap, translationMap } from '../config';
 
-import { combineLatest, lastValueFrom, of, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  lastValueFrom,
+  of,
+  Subscription,
+} from 'rxjs';
 import {
   animate,
   style,
@@ -186,13 +192,15 @@ export class SuccessModelComponent implements OnInit {
     this.ngrxStore.dispatch(setService({ service }));
   }
 
-  onSaveClicked(): void {
-    this.saveInProgress = true;
-    this.ngrxStore.dispatch(saveModelAndCatalog());
-    if (this.saveInProgress) {
-      this.saveSubScription = this.actionState.saveModelAndCatalog$
-        .pipe(
+  async onSaveClicked() {
+    if (!this.saveInProgress) {
+      this.saveInProgress = true;
+      this.ngrxStore.dispatch(saveModelAndCatalog());
+
+      const result = await firstValueFrom(
+        this.actionState.saveModelAndCatalog$.pipe(
           timeout(300000),
+          take(1),
           catchError(() => {
             return of(
               failureResponse({
@@ -202,28 +210,34 @@ export class SuccessModelComponent implements OnInit {
               }),
             );
           }),
-        )
-        .subscribe((result) => {
-          this.saveInProgress = false;
-          if (result.type === HttpActions.SAVE_CATALOG_SUCCESS) {
-            const message = this.translate.instant(
-              'success-modeling.snackbar-save-success',
-            ) as string;
-            this.snackBar.open(message, null, {
-              duration: 2000,
-            });
-            this.ngrxStore.dispatch(disableEdit());
-          } else {
-            let message = this.translate.instant(
-              'success-modeling.snackbar-save-failure',
-            ) as string;
-            if (result instanceof failureResponse) {
-              message += result.reason.error;
-            }
-            this.snackBar.open(message, 'Ok');
-          }
-          this.saveSubScription.unsubscribe();
+        ),
+      );
+
+      this.saveInProgress = false;
+
+      if (result.type === HttpActions.SAVE_CATALOG_SUCCESS) {
+        const message = this.translate.instant(
+          'success-modeling.snackbar-save-success',
+        ) as string;
+        this.snackBar.open(message, null, {
+          duration: 2000,
         });
+        this.ngrxStore.dispatch(disableEdit());
+      } else {
+        let message = this.translate.instant(
+          'success-modeling.snackbar-save-failure',
+        ) as string;
+        if (result instanceof failureResponse) {
+          message += result.reason.error;
+        }
+        if (
+          result.reason &&
+          result.reason instanceof HttpErrorResponse
+        ) {
+          message += result.reason.error.msg;
+        }
+        this.snackBar.open(message, 'Ok');
+      }
     }
   }
 

@@ -377,7 +377,6 @@ export class StateEffects {
         console.error(err);
         return of(Action.failureResponse({ reason: err }));
       }),
-      share(),
     ),
   );
 
