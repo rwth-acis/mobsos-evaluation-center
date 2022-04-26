@@ -207,47 +207,17 @@ export class EditMeasureDialogComponent implements OnInit {
     return sql;
   }
 
-  private static getMeasureFromForm(value: any): Measure {
-    const measure = value as Measure;
-    measure.queries = value.queries.map((q) =>
-      SQLQuery.fromJSON({
-        ...q,
-        sql: EditMeasureDialogComponent.encodeXML(q.sql),
-      }),
-    );
-
-    switch (value.visualization.type) {
-      case 'Value':
-        const unit = value.visualization.parameters
-          ? value.visualization.parameters[0].unit
-          : value.visualization.unit;
-        measure.visualization = new ValueVisualization(
-          unit as string,
-        );
-        break;
-      case 'Chart':
-        const chartType = value.visualization.parameters
-          ? value.visualization.parameters[0].chartType
-          : value.visualization.chartType;
-        measure.visualization = new ChartVisualization(
-          chartType as string,
-        );
-        break;
-      case 'KPI':
-        if (!value.visualization.parameters) break;
-        const expression =
-          value.visualization.parameters[0].expression;
-        measure.visualization = new KpiVisualization(expression);
-        break;
-    }
-    return measure;
-  }
-
   insertIntoExpression(val: string) {
     const el = this.expressionRef.nativeElement;
     const [start, end] = [el.selectionStart, el.selectionEnd];
-    el.setRangeText(val, start, end, 'select');
-    el.selectionStart = el.selectionEnd = el.selectionStart + 1;
+    const expressionControl = this.formVisualizationParameters
+      .get('0')
+      .get('expression');
+    const newText =
+      expressionControl.value.slice(0, start) +
+      val +
+      expressionControl.value.slice(end);
+    expressionControl.setValue(newText);
     el.focus();
   }
 
@@ -295,7 +265,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
-      // startWith(this.data.measure),
+      startWith(this.data.measure),
       distinctUntilChanged(
         (
           prev: { queries: SQLQuery[] },
@@ -305,9 +275,7 @@ export class EditMeasureDialogComponent implements OnInit {
         },
       ),
       map((value) =>
-        EditMeasureDialogComponent.getMeasureFromForm(
-          value ? value : this.data.measure,
-        ),
+        this.getMeasureFromForm(value ? value : this.data.measure),
       ),
       share(),
     );
@@ -342,9 +310,7 @@ export class EditMeasureDialogComponent implements OnInit {
       return; // should not happen because submit button is disabled if form is invalid
     }
 
-    const measure = EditMeasureDialogComponent.getMeasureFromForm(
-      this.measureForm.value,
-    );
+    const measure = this.getMeasureFromForm(this.measureForm.value);
 
     this.dialogRef.close(measure);
   }
@@ -502,6 +468,42 @@ export class EditMeasureDialogComponent implements OnInit {
         }),
       );
     });
+  }
+
+  private getMeasureFromForm(value: any): Measure {
+    const measure = value as Measure;
+    measure.queries = value.queries.map((q) =>
+      SQLQuery.fromJSON({
+        ...q,
+        sql: EditMeasureDialogComponent.encodeXML(q.sql),
+      }),
+    );
+
+    switch (value.visualization.type) {
+      case 'Value':
+        const unit = value.visualization.parameters
+          ? value.visualization.parameters[0].unit
+          : value.visualization.unit;
+        measure.visualization = new ValueVisualization(
+          unit as string,
+        );
+        break;
+      case 'Chart':
+        const chartType = value.visualization.parameters
+          ? value.visualization.parameters[0].chartType
+          : value.visualization.chartType;
+        measure.visualization = new ChartVisualization(
+          chartType as string,
+        );
+        break;
+      case 'KPI':
+        if (!value.visualization.parameters) break;
+        const expression =
+          value.visualization.parameters[0].expression;
+        measure.visualization = new KpiVisualization(expression);
+        break;
+    }
+    return measure;
   }
 
   private buildParamsForChart(chartType?: string): void {
