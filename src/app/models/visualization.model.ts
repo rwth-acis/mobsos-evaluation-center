@@ -219,7 +219,7 @@ export class KpiVisualization extends Visualization {
   protected _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const unit = doc.createElement('expression');
-    unit.innerText = this.expression.toString();
+    unit.innerHTML = this.expression.toString();
     visualizationNode.appendChild(unit);
   }
 }
