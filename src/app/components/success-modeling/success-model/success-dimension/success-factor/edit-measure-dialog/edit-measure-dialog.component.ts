@@ -209,14 +209,14 @@ export class EditMeasureDialogComponent implements OnInit {
 
   private static getMeasureFromForm(value: any): Measure {
     const measure = value as Measure;
-    measure.queries = measure.queries.map((q) =>
+    measure.queries = value.queries.map((q) =>
       SQLQuery.fromJSON({
         ...q,
         sql: EditMeasureDialogComponent.encodeXML(q.sql),
       }),
     );
 
-    switch (measure.visualization.type) {
+    switch (value.visualization.type) {
       case 'Value':
         const unit = value.visualization.parameters
           ? value.visualization.parameters[0].unit
@@ -295,7 +295,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
-      startWith(this.data.measure),
+      // startWith(this.data.measure),
       distinctUntilChanged(
         (
           prev: { queries: SQLQuery[] },
