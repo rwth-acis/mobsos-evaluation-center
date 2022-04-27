@@ -101,11 +101,7 @@ export class QueryVisualizationComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {}
 
-  ngOnInit(): void {
-    this.measure$.subscribe((measure) => {
-      console.log(measure);
-    });
-  }
+  ngOnInit(): void {}
 
   onSubmit() {
     this.form.markAsTouched();

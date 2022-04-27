@@ -1,15 +1,23 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Inject,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure, SQLQuery } from 'src/app/models/measure.model';
+import {
+  Measure,
+  Query,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 import {
   ChartVisualization,
   KpiVisualization,
-  KpiVisualizationOperand,
-  KpiVisualizationOperator,
   ValueVisualization,
 } from 'src/app/models/visualization.model';
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
@@ -21,13 +29,22 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
   share,
+  filter,
   startWith,
+  take,
+  withLatestFrom,
 } from 'rxjs/operators';
+import { MathExpression } from 'mathjs';
+import { parse } from 'mathjs';
+import {
+  MEASURES,
+  MEASURE,
+} from 'src/app/services/store/store.selectors';
 
 export interface DialogData {
   measure: Measure;
@@ -42,6 +59,8 @@ export interface DialogData {
   styleUrls: ['./edit-measure-dialog.component.scss'],
 })
 export class EditMeasureDialogComponent implements OnInit {
+  @ViewChild('Expression') expressionRef: ElementRef;
+
   visualizationChoices = {
     Value: 'success-modeling.edit-measure-dialog.choice-value',
     Chart: 'success-modeling.edit-measure-dialog.choice-chart',
@@ -66,8 +85,30 @@ export class EditMeasureDialogComponent implements OnInit {
       '300',
       '300',
     ),
-    KPI: new KpiVisualization([new KpiVisualizationOperand('', 0)]),
+    KPI: new KpiVisualization(),
   };
+
+  measureOptions$ = this.ngrxStore.select(MEASURES).pipe(
+    // all measures which are not the measure itself
+    filter(
+      (measures) => !!measures && Object.keys(measures).length > 1,
+    ),
+    map((measures) =>
+      Object.values(measures).filter(
+        (m) =>
+          m.name !== this.data.measure.name &&
+          (m.visualization.type === 'Value' ||
+            m.visualization.type === 'KPI'),
+      ),
+    ),
+  );
+
+  autoCompleteField = new FormControl();
+  filteredOptions$ = this.autoCompleteField.valueChanges.pipe(
+    startWith(''),
+    withLatestFrom(this.measureOptions$),
+    map(([value, measures]) => _filter(value as string, measures)),
+  );
 
   measureForm: FormGroup;
   measure$: Observable<Measure>;
@@ -116,8 +157,7 @@ export class EditMeasureDialogComponent implements OnInit {
         break;
       case 'KPI':
         this.buildParamsForKPI(
-          (measure.visualization as KpiVisualization)
-            .operationsElements,
+          (measure.visualization as KpiVisualization).expression,
         );
         break;
     }
@@ -133,6 +173,28 @@ export class EditMeasureDialogComponent implements OnInit {
     return this.measureForm.get('queries') as FormArray;
   }
 
+  get queryNames(): string[] {
+    return this.formQueries.value
+      .map((q) => q.name)
+      .filter((q) => q?.trim().length > 0);
+  }
+
+  get KPIExpression() {
+    if (this.visualizationType !== 'KPI') {
+      return;
+    }
+    return this.measureForm
+      .get('visualization')
+      .get('parameters')
+      .get('0')
+      .get('expression');
+  }
+
+  get visualizationType(): string {
+    return this.measureForm.get('visualization')?.get('type')
+      ?.value as string;
+  }
+
   private static encodeXML(sql: string): string {
     sql = sql.replace(/>/g, '&gt;');
     sql = sql.replace(/</g, '&lt;');
@@ -145,47 +207,18 @@ export class EditMeasureDialogComponent implements OnInit {
     return sql;
   }
 
-  private static getMeasureFromForm(value: any): Measure {
-    const measure = value as Measure;
-    measure.queries = measure.queries.map((q) =>
-      SQLQuery.fromJSON({
-        ...q,
-        sql: EditMeasureDialogComponent.encodeXML(q.sql),
-      }),
-    );
-
-    switch (measure.visualization.type) {
-      case 'Value':
-        const unit = value.visualization.parameters
-          ? value.visualization.parameters[0].unit
-          : value.visualization.unit;
-        measure.visualization = new ValueVisualization(
-          unit as string,
-        );
-        break;
-      case 'Chart':
-        const chartType = value.visualization.parameters
-          ? value.visualization.parameters[0].chartType
-          : value.visualization.chartType;
-        measure.visualization = new ChartVisualization(
-          chartType as string,
-        );
-        break;
-      case 'KPI':
-        const elements = value.visualization.parameters
-          ? value.visualization.parameters
-          : value.visualization.operationsElements;
-        const operationsElements = elements.map(
-          (e: string, index) => {
-            return { name: e, index };
-          },
-        );
-        measure.visualization = KpiVisualization.fromPlainObject({
-          operationsElements,
-        } as KpiVisualization);
-        break;
-    }
-    return measure;
+  insertIntoExpression(val: string) {
+    const el = this.expressionRef.nativeElement;
+    const [start, end] = [el.selectionStart, el.selectionEnd];
+    const expressionControl = this.formVisualizationParameters
+      .get('0')
+      .get('expression');
+    const newText =
+      expressionControl.value.slice(0, start) +
+      val +
+      expressionControl.value.slice(end);
+    expressionControl.setValue(newText);
+    el.focus();
   }
 
   /**
@@ -196,10 +229,33 @@ export class EditMeasureDialogComponent implements OnInit {
    */
 
   controlsForFirstStepInValid(): boolean {
-    return (
-      this.measureForm.get('name').invalid ||
-      this.measureForm.get('description').invalid ||
-      this.measureForm.get('visualization').invalid
+    if (this.visualizationType === 'KPI') {
+      return (
+        !this.expressionIsValidSyntax() ||
+        !this.expressionVariablesAreDefined() ||
+        this.measureForm.get('name').invalid ||
+        this.measureForm.get('description').invalid ||
+        this.measureForm.get('visualization').invalid
+      );
+    } else {
+      return (
+        this.measureForm.get('name').invalid ||
+        this.measureForm.get('description').invalid ||
+        this.measureForm.get('visualization').invalid
+      );
+    }
+  }
+
+  /**
+   * Function which checks that each variable in the expression string is defined in a query
+   * @returns
+   */
+  expressionVariablesAreDefined(): boolean {
+    const expressions =
+      this.KPIExpression?.value.match(/\b([a-zA-Z]+)\b/g);
+    if (!expressions) return true;
+    return expressions?.every((expression) =>
+      this.queryNames.includes(expression),
     );
   }
 
@@ -219,9 +275,7 @@ export class EditMeasureDialogComponent implements OnInit {
         },
       ),
       map((value) =>
-        EditMeasureDialogComponent.getMeasureFromForm(
-          value ? value : this.data.measure,
-        ),
+        this.getMeasureFromForm(value ? value : this.data.measure),
       ),
       share(),
     );
@@ -249,13 +303,14 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.visualizationType === 'KPI') {
+      if (!this.expressionIsValidSyntax()) return;
+    }
     if (!this.measureForm.valid) {
       return; // should not happen because submit button is disabled if form is invalid
     }
 
-    const measure = EditMeasureDialogComponent.getMeasureFromForm(
-      this.measureForm.value,
-    );
+    const measure = this.getMeasureFromForm(this.measureForm.value);
 
     this.dialogRef.close(measure);
   }
@@ -265,70 +320,83 @@ export class EditMeasureDialogComponent implements OnInit {
     // this.data.measure.queries.push(new Query('', ''));
   }
 
+  expressionIsValidSyntax(): boolean {
+    if (this.visualizationType === 'KPI') {
+      const expr = this.KPIExpression.value;
+      try {
+        parse(expr);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    return;
+  }
+
   onRemoveQueryClicked(): void {
     this.formQueries.removeAt(this.formQueries.length - 1);
     // this.data.measure.queries.pop();
   }
 
-  onKpiOperandChange(operandName: string, index: number): void {
-    (
-      this.data.measure.visualization as KpiVisualization
-    ).operationsElements[index] = new KpiVisualizationOperand(
-      operandName,
-      index,
-    );
-  }
+  // onKpiOperandChange(operandName: string, index: number): void {
+  //   (
+  //     this.data.measure.visualization as KpiVisualization
+  //   ).operationsElements[index] = new KpiVisualizationOperand(
+  //     operandName,
+  //     index,
+  //   );
+  // }
 
-  onKpiOperatorChange(operatorName: string, index: number): void {
-    (
-      this.data.measure.visualization as KpiVisualization
-    ).operationsElements[index] = new KpiVisualizationOperator(
-      operatorName,
-      index,
-    );
-    this.formVisualizationParameters.push(new FormControl(''));
-  }
+  // onKpiOperatorChange(operatorName: string, index: number): void {
+  //   (
+  //     this.data.measure.visualization as KpiVisualization
+  //   ).operationsElements[index] = new KpiVisualizationOperator(
+  //     operatorName,
+  //     index,
+  //   );
+  //   this.formVisualizationParameters.push(new FormControl(''));
+  // }
 
-  onAddOperationClicked(): void {
-    this.formVisualizationParameters.push(new FormControl(''));
+  // onAddOperationClicked(): void {
+  //   this.formVisualizationParameters.push(new FormControl(''));
 
-    if (this.formVisualizationParameters.controls.length === 1) {
-      this.formVisualizationParameters.push(new FormControl(''));
-    }
-  }
+  //   if (this.formVisualizationParameters.controls.length === 1) {
+  //     this.formVisualizationParameters.push(new FormControl(''));
+  //   }
+  // }
 
-  onRemoveOperationClicked(): void {
-    const kpiVisualization = this.data.measure
-      .visualization as KpiVisualization;
-    if (kpiVisualization.operationsElements.length >= 3) {
-      kpiVisualization.operationsElements.pop();
-      kpiVisualization.operationsElements.pop();
-    }
+  // onRemoveOperationClicked(): void {
+  //   const kpiVisualization = this.data.measure
+  //     .visualization as KpiVisualization;
+  //   if (kpiVisualization.operationsElements.length >= 3) {
+  //     kpiVisualization.operationsElements.pop();
+  //     kpiVisualization.operationsElements.pop();
+  //   }
 
-    if (this.formVisualizationParameters.controls.length > 2) {
-      this.formVisualizationParameters.removeAt(
-        this.formVisualizationParameters.length - 1,
-      );
-      this.formVisualizationParameters.removeAt(
-        this.formVisualizationParameters.length - 1,
-      );
-    }
-  }
+  //   if (this.formVisualizationParameters.controls.length > 2) {
+  //     this.formVisualizationParameters.removeAt(
+  //       this.formVisualizationParameters.length - 1,
+  //     );
+  //     this.formVisualizationParameters.removeAt(
+  //       this.formVisualizationParameters.length - 1,
+  //     );
+  //   }
+  // }
 
-  onQueryNameChanged(value: string, i: number): void {
-    const currentName = this.data.measure.queries[i].name;
-    const visualizationType = this.data.measure.visualization.type;
-    if (visualizationType === 'KPI') {
-      const visualization = this.data.measure
-        .visualization as KpiVisualization;
-      visualization.operationsElements.forEach((opElement, index) => {
-        if (index % 2 === 0 && opElement.name === currentName) {
-          opElement.name = value;
-        }
-      });
-    }
-    this.data.measure.queries[i].name = value;
-  }
+  // onQueryNameChanged(value: string, i: number): void {
+  //   const currentName = this.data.measure.queries[i].name;
+  //   const visualizationType = this.data.measure.visualization.type;
+  //   if (visualizationType === 'KPI') {
+  //     const visualization = this.data.measure
+  //       .visualization as KpiVisualization;
+  //     visualization.operationsElements.forEach((opElement, index) => {
+  //       if (index % 2 === 0 && opElement.name === currentName) {
+  //         opElement.name = value;
+  //       }
+  //     });
+  //   }
+  //   this.data.measure.queries[i].name = value;
+  // }
   onQueryChanged(sql: string): void {
     this.ngrxStore.dispatch(
       fetchVisualizationData({
@@ -372,6 +440,72 @@ export class EditMeasureDialogComponent implements OnInit {
     return params as string[];
   }
 
+  /**
+   *
+   * @param event
+   */
+  async onOptionSelected(event) {
+    const selectedOption = event.option.value;
+    const measure = await firstValueFrom(
+      this.ngrxStore
+        .select(MEASURE({ measureName: selectedOption }))
+        .pipe(take(1)),
+    );
+    this.addQueriesToForm(measure.queries);
+    this.autoCompleteField.setValue('', { emitEvent: false });
+  }
+
+  /**
+   * Adds SQL queries to the form
+   * @param queries  Queries to be added
+   */
+  addQueriesToForm(queries: Query[]) {
+    queries.forEach((query) => {
+      this.formQueries.push(
+        this.fb.group({
+          name: [query.name || ''],
+          sql: [(query as SQLQuery).sql],
+        }),
+      );
+    });
+  }
+
+  private getMeasureFromForm(value: any): Measure {
+    const measure = value as Measure;
+    measure.queries = value.queries.map((q) =>
+      SQLQuery.fromJSON({
+        ...q,
+        sql: EditMeasureDialogComponent.encodeXML(q.sql),
+      }),
+    );
+
+    switch (value.visualization.type) {
+      case 'Value':
+        const unit = value.visualization.parameters
+          ? value.visualization.parameters[0].unit
+          : value.visualization.unit;
+        measure.visualization = new ValueVisualization(
+          unit as string,
+        );
+        break;
+      case 'Chart':
+        const chartType = value.visualization.parameters
+          ? value.visualization.parameters[0].chartType
+          : value.visualization.chartType;
+        measure.visualization = new ChartVisualization(
+          chartType as string,
+        );
+        break;
+      case 'KPI':
+        if (!value.visualization.parameters) break;
+        const expression =
+          value.visualization.parameters[0].expression;
+        measure.visualization = new KpiVisualization(expression);
+        break;
+    }
+    return measure;
+  }
+
   private buildParamsForChart(chartType?: string): void {
     this.formVisualizationParameters.clear();
     this.formVisualizationParameters.push(
@@ -388,23 +522,11 @@ export class EditMeasureDialogComponent implements OnInit {
       }),
     );
   }
-  private buildParamsForKPI(
-    operationsElements?:
-      | KpiVisualizationOperand[]
-      | KpiVisualizationOperator[],
-  ): void {
+  private buildParamsForKPI(expression?: MathExpression): void {
     this.formVisualizationParameters.clear();
-    // no initial terms set so we add one operand
-    if (!operationsElements || operationsElements.length === 0) {
-      // this.formVisualizationParameters.push(new FormControl(''));
-      return;
-    }
-
-    operationsElements.forEach((opElement) => {
-      this.formVisualizationParameters.push(
-        this.fb.control(opElement.name),
-      );
-    });
+    this.formVisualizationParameters.push(
+      this.fb.group({ expression: [expression?.toString() || ''] }),
+    );
   }
 }
 function queriesChanged(
@@ -423,4 +545,12 @@ function queriesChanged(
     }
   }
   return false;
+}
+
+function _filter(value: string, options: Measure[]): Measure[] {
+  const filterValue = value.toLowerCase();
+
+  return options.filter((option) =>
+    option.name.toLowerCase().includes(filterValue),
+  );
 }
