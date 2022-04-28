@@ -14,7 +14,10 @@
         'success-modeling.questionnaires.pick-questionnaire-dialog.questionnaire-select'
           | translate
       }}</mat-label>
-      <mat-select [(value)]="selectedQuestionnaire">
+      <mat-select
+        [(value)]="selectedQuestionnaire"
+        (selectionChange)="fetchForm($event)"
+      >
         <mat-option
           *ngFor="let questionnaire of availableQuestionnaires"
           [value]="questionnaire"

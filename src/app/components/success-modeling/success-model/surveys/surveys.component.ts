@@ -48,6 +48,7 @@ import {
   removeSurveyFromModel,
   removeSurveyMeasuresFromModel,
   fetchSurveys,
+  fetchQuestionnaireForm,
   fetchQuestionnaires,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
@@ -337,6 +338,10 @@ function addMeasuresFromQuestionnaireToModelAndCatalog(
   measures: MeasureMap,
   model: SuccessModel,
 ): { model: SuccessModel; measures: MeasureMap } {
+  this.ngrxStore.dispatch(
+    fetchQuestionnaireForm({ questionnaireId: questionnaire.id }),
+  );
+  // const formXML = firstValueFrom( this.ngrxStore.select(QUESIONNAIRE({id:questionnaire.id})).pipe(take(1)));
   const questions = extractQuestions(questionnaire.formXML, service);
 
   for (const question of questions) {

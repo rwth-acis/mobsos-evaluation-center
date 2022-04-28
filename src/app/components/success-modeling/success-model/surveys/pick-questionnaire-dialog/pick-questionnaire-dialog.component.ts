@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { SURVEYS_NOT_IN_MODEL } from 'src/app/services/store/store.selectors';
 import { environment } from 'src/environments/environment';
+import { fetchQuestionnaireForm } from '../../../../../services/store/store.actions';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -55,10 +56,21 @@ export class PickQuestionnaireDialogComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  fetchForm() {
+    if (!this.selectedQuestionnaire.formXML) {
+      this.ngrxStore.dispatch(
+        fetchQuestionnaireForm({
+          questionnaireId: this.selectedQuestionnaire.id,
+        }),
+      );
+    }
+  }
+
   getNumberOfQuestions(): number {
     if (!this.selectedQuestionnaire) {
       return null;
     }
+    this.fetchForm();
     const xml = PickQuestionnaireDialogComponent.parseXml(
       this.selectedQuestionnaire.formXML,
     );

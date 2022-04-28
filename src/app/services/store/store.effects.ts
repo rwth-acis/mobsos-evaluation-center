@@ -462,6 +462,29 @@ export class StateEffects {
     ),
   );
 
+  fetchQuestionnaireForm$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchQuestionnaireForm),
+      switchMap((action) =>
+        this.l2p
+          .fetchQuestionnaireFormAndObserve(action.questionnaireId)
+          .pipe(
+            map((form) =>
+              Action.storeQuestionnaireForm({
+                formXML: form,
+                questionnaireId: action.questionnaireId,
+              }),
+            ),
+          ),
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),

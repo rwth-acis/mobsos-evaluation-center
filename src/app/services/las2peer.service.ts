@@ -606,6 +606,23 @@ export class Las2peerService {
     return forkJoin(questionaireFormRequests);
   }
 
+  fetchQuestionnaireFormAndObserve(id: number) {
+    const formUrl = joinAbsoluteUrlPath(
+      environment.mobsosSurveysUrl,
+      this.SURVEYS_QUESTIONNAIRES_PATH,
+      id,
+      this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
+    );
+    return this.makeRequestAndObserve<string>(formUrl, {
+      responseType: 'text',
+    }).pipe(
+      catchError((err) => {
+        console.error(err);
+        return of(undefined);
+      }),
+    );
+  }
+
   async createSurvey(
     name: string,
     description: string,
