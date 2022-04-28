@@ -230,40 +230,72 @@ export class SurveyComponent implements OnInit {
     measures: MeasureMap,
     model: SuccessModel,
   ): Promise<{ model: SuccessModel; measures: MeasureMap }> {
-    this.ngrxStore.dispatch(
-      fetchQuestionnaireForm({ questionnaireId: questionnaire.id }),
-    );
+    if (!questionnaire.formXML) {
+      this.ngrxStore.dispatch(
+        fetchQuestionnaireForm({ questionnaireId: questionnaire.id }),
+      );
 
-    const result = await firstValueFrom(
-      this.effects.fetchQuestionnaireForm$.pipe(
-        timeout(300000),
-        take(1),
-        catchError(() => {
-          return of(
-            failureResponse({
-              reason: new HttpErrorResponse({
-                error: 'The request took too long and was aborted',
+      const result = await firstValueFrom(
+        this.effects.fetchQuestionnaireForm$.pipe(
+          timeout(300000),
+          take(1),
+          catchError(() => {
+            return of(
+              failureResponse({
+                reason: new HttpErrorResponse({
+                  error: 'The request took too long and was aborted',
+                }),
               }),
-            }),
-          );
-        }),
-      ),
+            );
+          }),
+        ),
+      );
+
+      if (result instanceof failureResponse) {
+        console.error('Failure response: ', result);
+      } else {
+        questionnaire.formXML = (
+          result as { formXML: string }
+        ).formXML;
+      }
+    }
+
+    const questions = extractQuestions(
+      questionnaire.formXML,
+      service,
     );
 
-    if (result instanceof failureResponse) {
-      console.error('Failure response: ', result);
-    } else {
-      const formXML = (result as { formXML: string }).formXML;
-      const questions = extractQuestions(formXML, service);
+    for (const question of questions) {
+      const chartMeasure = generateChartMeasure(
+        questionnaire,
+        surveyId,
+        question,
+      );
 
-      for (const question of questions) {
-        const chartMeasure = generateChartMeasure(
+      measures[chartMeasure.name] = chartMeasure;
+      if (
+        assignMeasures &&
+        question.dimensionRecommendation &&
+        question.factorRecommendation
+      ) {
+        let dimension = model.dimensions[
+          question.dimensionRecommendation
+        ] as SuccessFactor[];
+        dimension = assignMeasuresToDimension(
+          question,
+          chartMeasure.name,
+          dimension,
+        );
+        model[question.dimensionRecommendation] = dimension;
+      }
+
+      if (question.type === 'ordinal') {
+        const meanValueMeasure = getMeanValueMeasure(
           questionnaire,
           surveyId,
           question,
         );
-
-        measures[chartMeasure.name] = chartMeasure;
+        measures[meanValueMeasure.name] = meanValueMeasure;
         if (
           assignMeasures &&
           question.dimensionRecommendation &&
@@ -274,38 +306,14 @@ export class SurveyComponent implements OnInit {
           ] as SuccessFactor[];
           dimension = assignMeasuresToDimension(
             question,
-            chartMeasure.name,
+            meanValueMeasure.name,
             dimension,
           );
           model[question.dimensionRecommendation] = dimension;
         }
-
-        if (question.type === 'ordinal') {
-          const meanValueMeasure = getMeanValueMeasure(
-            questionnaire,
-            surveyId,
-            question,
-          );
-          measures[meanValueMeasure.name] = meanValueMeasure;
-          if (
-            assignMeasures &&
-            question.dimensionRecommendation &&
-            question.factorRecommendation
-          ) {
-            let dimension = model.dimensions[
-              question.dimensionRecommendation
-            ] as SuccessFactor[];
-            dimension = assignMeasuresToDimension(
-              question,
-              meanValueMeasure.name,
-              dimension,
-            );
-            model[question.dimensionRecommendation] = dimension;
-          }
-        }
       }
-      return { model, measures };
     }
+    return { model, measures };
   }
 }
 

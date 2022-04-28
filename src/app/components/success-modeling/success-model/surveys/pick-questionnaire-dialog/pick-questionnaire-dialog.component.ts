@@ -25,6 +25,7 @@ import {
   storeQuestionnaireForm,
 } from '../../../../../services/store/store.actions';
 import { MatSelectChange } from '@angular/material/select';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',
@@ -46,6 +47,7 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   constructor(
     private ngrxStore: Store,
     private effects: StateEffects,
+    public dialogRef: MatDialogRef<PickQuestionnaireDialogComponent>,
   ) {}
 
   static parseXml(xml: string): Document {
@@ -74,39 +76,52 @@ export class PickQuestionnaireDialogComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  async fetchForm(event: MatSelectChange) {
-    this.selectedQuestionnaire = Questionnaire.fromJSONObject(
-      event.value,
+  async fetchForm(id: number) {
+    this.ngrxStore.dispatch(
+      fetchQuestionnaireForm({
+        questionnaireId: id,
+      }),
     );
-    if (!this.selectedQuestionnaire.formXML) {
-      this.ngrxStore.dispatch(
-        fetchQuestionnaireForm({
-          questionnaireId: this.selectedQuestionnaire.id,
-        }),
-      );
-      const result = await firstValueFrom(
-        this.effects.fetchQuestionnaireForm$.pipe(
-          timeout(300000),
-          take(1),
-          catchError(() => {
-            return of(
-              failureResponse({
-                reason: new HttpErrorResponse({
-                  error: 'The request took too long and was aborted',
-                }),
+    const result = await firstValueFrom(
+      this.effects.fetchQuestionnaireForm$.pipe(
+        timeout(300000),
+        take(1),
+        catchError(() => {
+          return of(
+            failureResponse({
+              reason: new HttpErrorResponse({
+                error: 'The request took too long and was aborted',
               }),
-            );
-          }),
-        ),
-      );
+            }),
+          );
+        }),
+      ),
+    );
 
-      if (result instanceof HttpErrorResponse) {
-        throw result;
-      }
+    if (result instanceof HttpErrorResponse) {
+      throw result;
+    }
 
-      const xml = (result as { formXML: string }).formXML;
-      this.selectedQuestionnaire.formXML = xml;
-      event.source.writeValue(this.selectedQuestionnaire);
+    const xml = (result as { formXML: string }).formXML;
+    return xml;
+  }
+
+  async onSubmit() {
+    const selectedQuestionnaire = Questionnaire.fromJSONObject(
+      this.selectedQuestionnaire,
+    );
+    try {
+      const xml = await this.fetchForm(selectedQuestionnaire.id);
+      selectedQuestionnaire.formXML = xml;
+      this.dialogRef.close({
+        selectedQuestionnaire,
+        addMeasures: this.addMeasures,
+        assignMeasures: this.assignMeasures,
+        start: this.range.controls.start.value,
+        end: this.range.controls.end.value,
+      });
+    } catch (error) {
+      console.error(error);
     }
   }
 

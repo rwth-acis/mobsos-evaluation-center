@@ -14,10 +14,7 @@
         'success-modeling.questionnaires.pick-questionnaire-dialog.questionnaire-select'
           | translate
       }}</mat-label>
-      <mat-select
-        (selectionChange)="fetchForm($event)"
-        [(ngModel)]="selectedQuestionnaire"
-      >
+      <mat-select [(ngModel)]="selectedQuestionnaire">
         <mat-option
           *ngFor="let questionnaire of availableQuestionnaires"
           [value]="questionnaire"
@@ -142,13 +139,7 @@
 <div mat-dialog-actions>
   <button
     mat-button
-    [mat-dialog-close]="{
-      selectedQuestionnaire: selectedQuestionnaire,
-      addMeasures: addMeasures,
-      assignMeasures: assignMeasures,
-      start: range.controls.start.value,
-      end: range.controls.end.value
-    }"
+    (click)="onSubmit()"
     [disabled]="!selectedQuestionnaire || !range.valid"
   >
     {{ 'shared.elements.ok-label' | translate }}
