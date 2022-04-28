@@ -16,6 +16,12 @@ export class Questionnaire implements Questionnaire {
     public id: number,
     public surveyId: number,
     public description: string = '',
+    public lang: string = 'en',
+    public logo: string = '',
+    public organization: string = '',
+    public owner: string = '',
+    public url: string = '',
+    public formXML: string = '',
   ) {}
 
   static fromXml(xml: Element): Questionnaire {
@@ -25,12 +31,18 @@ export class Questionnaire implements Questionnaire {
     return new Questionnaire(name, id, surveyId);
   }
 
-  public static fromJSONObject(obj: Questionnaire): Questionnaire {
+  public static fromJSONObject(obj: any): Questionnaire {
     return new Questionnaire(
       obj.name,
       obj.id,
       obj.surveyId,
       obj.description,
+      obj.lang,
+      obj.logo,
+      obj.organization,
+      obj.owner,
+      obj.url,
+      obj.formXML,
     );
   }
 

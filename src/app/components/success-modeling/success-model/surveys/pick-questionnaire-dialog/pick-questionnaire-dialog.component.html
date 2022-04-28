@@ -15,8 +15,8 @@
           | translate
       }}</mat-label>
       <mat-select
-        [(value)]="selectedQuestionnaire"
         (selectionChange)="fetchForm($event)"
+        [(ngModel)]="selectedQuestionnaire"
       >
         <mat-option
           *ngFor="let questionnaire of availableQuestionnaires"
@@ -65,32 +65,6 @@
   </p>
 
   <table>
-    <tr>
-      <th>
-        {{
-          'success-modeling.questionnaires.pick-questionnaire-dialog.num-questions'
-            | translate
-        }}
-      </th>
-      <td>
-        {{ selectedQuestionnaire ? getNumberOfQuestions() : '' }}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        {{
-          'success-modeling.questionnaires.pick-questionnaire-dialog.dimensions'
-            | translate
-        }}
-      </th>
-      <td>
-        <span
-          *ngFor="let dimension of getDimensions(); let last = last"
-          >{{ dimension | translate
-          }}<span *ngIf="!last">, </span></span
-        >
-      </td>
-    </tr>
     <tr>
       <th>
         {{

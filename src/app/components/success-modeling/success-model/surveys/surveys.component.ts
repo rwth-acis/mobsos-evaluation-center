@@ -120,7 +120,7 @@ export class SurveyComponent implements OnInit {
       if (addMeasures) {
         const questionnaire = await firstValueFrom(
           this.ngrxStore
-            .select(QUESTIONNAIRE({ qid: selectedSurvey.qid }))
+            .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
             .pipe(take(1)),
         );
         const service = await firstValueFrom(

@@ -469,12 +469,15 @@ export class StateEffects {
         this.l2p
           .fetchQuestionnaireFormAndObserve(action.questionnaireId)
           .pipe(
-            map((form) =>
-              Action.storeQuestionnaireForm({
-                formXML: form,
-                questionnaireId: action.questionnaireId,
-              }),
-            ),
+            map((response) => {
+              if (response?.body) {
+                return Action.storeQuestionnaireForm({
+                  formXML: response.body,
+                  questionnaireId: action.questionnaireId,
+                });
+              }
+              throw response;
+            }),
           ),
       ),
       catchError((err) => {
