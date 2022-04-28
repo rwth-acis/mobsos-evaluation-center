@@ -34,6 +34,7 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import { Survey } from '../../models/survey.model';
+import { Questionnaire } from 'src/app/models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -370,6 +371,20 @@ const _Reducer = createReducer(
     ...state,
     user: initialState.user,
   })),
+  on(
+    Actions.storeQuestionnaireForm,
+    (state, { formXML, questionnaireId }) => ({
+      ...state,
+      questionnaires: state.questionnaires.map((questionnaire) =>
+        questionnaire.id === questionnaireId
+          ? Questionnaire.fromJSONObject({
+              ...questionnaire,
+              formXML,
+            })
+          : questionnaire,
+      ),
+    }),
+  ),
 );
 
 export function Reducer(state: AppState, action: Action): any {

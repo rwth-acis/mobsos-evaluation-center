@@ -35,6 +35,7 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
+
 export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
 
 export const REQUIREMENTS = (state: StoreState) =>
@@ -340,9 +341,9 @@ export const WORKSPACE_CATALOG = createSelector(
   (workspace) => workspace?.catalog,
 );
 
-export const QUESTIONNAIRE = (props: { qid: number }) =>
+export const QUESTIONNAIRE = (props: { id: number }) =>
   createSelector(QUESTIONNAIRES, (qs: Questionnaire[]) =>
-    qs ? qs.find((q) => q.id === props.qid) : undefined,
+    qs ? qs.find((q) => q.id === props.id) : undefined,
   );
 
 export const WORKSPACE_CATALOG_XML = createSelector(
