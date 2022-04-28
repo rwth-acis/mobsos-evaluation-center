@@ -265,7 +265,6 @@ export class EditMeasureDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.measure$ = this.measureForm.valueChanges.pipe(
-      startWith(this.data.measure),
       distinctUntilChanged(
         (
           prev: { queries: SQLQuery[] },
@@ -277,6 +276,7 @@ export class EditMeasureDialogComponent implements OnInit {
       map((value) =>
         this.getMeasureFromForm(value ? value : this.data.measure),
       ),
+      startWith(this.data.measure),
       share(),
     );
   }
