@@ -71,7 +71,7 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
     const response = await this.las2peer
       .lookupUser(username)
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         return err;
       });
     if (response.status === 200) {

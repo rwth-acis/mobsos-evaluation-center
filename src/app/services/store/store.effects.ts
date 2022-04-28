@@ -174,9 +174,12 @@ export class StateEffects {
               groupsFromContactService: null,
             });
           }),
-          catchError((err) =>
-            of(Action.failureResponse({ reason: err })),
-          ),
+          catchError((err) => {
+            this.ngrxStore.dispatch(
+              Action.storeGroups({ groupsFromContactService: null }),
+            );
+            return of(Action.failureResponse({ reason: err }));
+          }),
         ),
       ),
       catchError(() => of(Action.failure({}))),
@@ -358,11 +361,12 @@ export class StateEffects {
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
           .pipe(
-            tap(() =>
+            tap((res) => {
+              if (res instanceof HttpErrorResponse) return;
               this.ngrxStore.dispatch(
                 Action.storeCatalog({ xml: measureCatalogXML }),
-              ),
-            ),
+              );
+            }),
             map(() => Action.saveCatalogSuccess()),
             catchError((err) => {
               console.error(err);
@@ -372,7 +376,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse({ reason: err }));
+        return of(Action.failure({ reason: err }));
       }),
       share(),
     ),

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { HttpErrorResponse } from '@angular/common/http';
+import { MathExpression } from 'mathjs';
 
 export interface VisualizationCollection {
   [query: string]: VisualizationData; // Map of query names to visualization data
@@ -74,6 +75,9 @@ export class ValueVisualization extends Visualization {
 
   constructor(public unit?: string) {
     super();
+    if (!unit || unit === 'undefined') {
+      unit = '';
+    }
   }
 
   public static fromPlainObject(
@@ -91,7 +95,7 @@ export class ValueVisualization extends Visualization {
   protected _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const unit = doc.createElement('unit');
-    unit.innerHTML = this.unit;
+    unit.innerHTML = this.unit || '';
     visualizationNode.appendChild(unit);
   }
 }
@@ -166,115 +170,57 @@ export class ChartVisualization extends Visualization {
 export class KpiVisualization extends Visualization {
   type = 'KPI' as SupportedVisualizationTypes;
 
-  operators = {
-    '/': KpiVisualization.divide,
-    '*': KpiVisualization.multiply,
-    '+': KpiVisualization.add,
-    '-': KpiVisualization.subtract,
-  };
-
-  constructor(
-    public operationsElements?:
-      | KpiVisualizationOperand[]
-      | KpiVisualizationOperator[],
-  ) {
+  constructor(public expression?: MathExpression) {
     super();
   }
 
-  public static fromPlainObject(
-    obj: KpiVisualization,
-  ): KpiVisualization {
-    const operationsElements:
-      | KpiVisualizationOperand[]
-      | KpiVisualizationOperator[] = [];
-    if (!obj.operationsElements) return;
-    obj.operationsElements.forEach((value, index) => {
-      if (index % 2 === 0) {
-        operationsElements.push(
-          new KpiVisualizationOperand(value.name, value.index),
+  public static fromPlainObject(obj: any): KpiVisualization {
+    if (obj?.operationsElements) {
+      const expression: MathExpression =
+        obj.operationsElements.reduce(
+          (exp, op) => exp + op.name.toString() + ' ',
+          '',
         );
-      } else {
-        operationsElements.push(
-          new KpiVisualizationOperator(value.name, value.index),
-        );
-      }
-    });
-    return new KpiVisualization(operationsElements);
-  }
-
-  static divide(left: number, right: number): number {
-    return left / right;
-  }
-
-  static multiply(left: number, right: number): number {
-    return left * right;
-  }
-
-  static add(left: number, right: number) {
-    if (typeof left === 'number' && typeof right === 'number') {
-      return left + right;
-    } else {
-      console.error(
-        `Cannot add ${left} and ${right} their type does not allow it`,
-      );
-      return;
-    }
-  }
-
-  static subtract(left: number, right: number): number {
-    return left - right;
+    } else return new KpiVisualization(obj.expression);
   }
 
   static fromXml(xml: Element): KpiVisualization {
-    const operandNodes = Array.from(
-      xml.getElementsByTagName('operand'),
+    const expressions = Array.from(
+      xml.getElementsByTagName('expression'),
     );
-    const operatorNodes = Array.from(
-      xml.getElementsByTagName('operator'),
-    );
-    const elements = [];
-    for (const operandNode of operandNodes) {
-      elements.push(KpiVisualizationOperand.fromXml(operandNode));
-    }
-    for (const operatorNode of operatorNodes) {
-      elements.push(KpiVisualizationOperator.fromXml(operatorNode));
-    }
-    elements.sort((a, b) => (a.index > b.index ? 1 : -1));
-    return new KpiVisualization(elements);
-  }
-
-  /**
-   * Each term element is either a number or an operand like "/".
-   *
-   * @param term An array of symbols and operators like ["5", "+", "3"].
-   */
-  public evaluateTerm(term: string[]): number {
-    const operatorSigns = Object.keys(this.operators);
-    // find first operator
-    let result;
-    for (let index = 0; index < term.length; index++) {
-      const termPart = term[index];
-      if (operatorSigns.includes(termPart)) {
-        const operatorFunc: CallableFunction =
-          this.operators[termPart];
-        const leftHandSide = this.evaluateTerm(term.slice(0, index));
-        const rightHandSide = this.evaluateTerm(
-          term.slice(index + 1),
-        );
-        result = operatorFunc(leftHandSide, rightHandSide) as number;
+    if (expressions.length > 0) {
+      const e =
+        expressions.length === 0 ? null : expressions[0].innerHTML;
+      return new KpiVisualization(e);
+    } else {
+      // legacy transformation
+      const operandNodes = Array.from(
+        xml.getElementsByTagName('operand'),
+      );
+      const operatorNodes = Array.from(
+        xml.getElementsByTagName('operator'),
+      );
+      const elements = [];
+      for (const operandNode of operandNodes) {
+        elements.push(KpiVisualizationOperand.fromXml(operandNode));
       }
+      for (const operatorNode of operatorNodes) {
+        elements.push(KpiVisualizationOperator.fromXml(operatorNode));
+      }
+      elements.sort((a, b) => (a.index > b.index ? 1 : -1));
+      const expression: MathExpression = elements.reduce(
+        (exp, op) => exp + op.name.toString() + ' ',
+        '',
+      );
+      return new KpiVisualization(expression);
     }
-
-    if (!result) {
-      result = parseFloat(term[0]);
-    }
-    return result as number;
   }
 
   protected _toXml(visualizationNode: Element) {
-    for (const operationElement of this.operationsElements) {
-      visualizationNode.appendChild(operationElement.toXml());
-    }
+    const doc = document.implementation.createDocument('', '', null);
+    const unit = doc.createElement('expression');
+    unit.innerHTML = this.expression.toString();
+    visualizationNode.appendChild(unit);
   }
 }
 

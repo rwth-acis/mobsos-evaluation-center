@@ -1,7 +1,9 @@
 <ng-container *ngIf="!(dataIsLoading$ | async); else loading">
-  <ng-container *ngIf="kpi$ | async as kpi; else noData">
-    <math>{{ kpi.abstractTerm.join(' ') }}</math>
-    <div class="value-visualization">{{ kpi.term.join(' ') }}</div>
+  <ng-container *ngIf="expression$ | async as kpi; else noData">
+    <math> {{ kpi }} =</math>
+    <div class="value-visualization" *ngIf="scope$ | async as scope">
+      {{ kpi | evaluate: scope }}
+    </div>
     <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon> info_outline </mat-icon>
     </button>
