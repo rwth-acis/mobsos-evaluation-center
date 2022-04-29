@@ -288,6 +288,26 @@ export class SurveyComponent implements OnInit {
         model[question.dimensionRecommendation] = dimension;
       }
     }
+    const scoreMeasure = generateScoreMeasure(
+      questionnaire,
+      surveyId,
+      doc,
+    );
+    if (scoreMeasure) {
+      measures[scoreMeasure.name] = scoreMeasure;
+    }
+
+    return { model, measures };
+  }
+}
+
+function generateScoreMeasure(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  doc: Document,
+) {
+  try {
+    const measureName = questionnaire.name + ' Global Score';
     const scores = Array.from(doc.getElementsByTagName('qu:Score'));
     if (scores?.length > 0) {
       const score = scores[0].innerHTML.trim();
@@ -299,7 +319,7 @@ export class SurveyComponent implements OnInit {
       const queries = questionIds.map((questionId) => ({
         query: `SELECT qval as ${questionId} FROM ${dbName}.response WHERE  sid=${
           SqlString.escape(surveyId.toString()) as string
-        } AND qkey = "${questionId}" GROUP BY uid as t${questionId}`,
+        } AND qkey = "${questionId}" GROUP BY uid as "t${questionId}"`,
         id: questionId,
       })); // contains the queries per user and per question
       let joinTables: string; // will contain the user responses in a table where each col is a question and each column is a user
@@ -312,13 +332,21 @@ export class SurveyComponent implements OnInit {
         }
         lastId = id;
       }
-      score.replace(/(\[a-zA-Z0-9.]+)/g, '@$1'); // prepends an @ to every variable so that they correspond to the tablenames for the joint tables
+      score.replace(/(\[a-zA-Z0-9.]+)/g, '"t$1".qval'); // prepends an @ to every variable so that they correspond to the tablenames for the joint tables
       const res = `SELECT AVG(${score}) FROM (
         ${joinTables}
       ) t`; // take the average for each sus score
+      return new Measure(
+        measureName,
+        [new SQLQuery('', res)],
+        new ValueVisualization(''),
+        ['surveyId=' + surveyId.toString(), 'generated'],
+      );
     }
-
-    return { model, measures };
+    return undefined;
+  } catch (error) {
+    console.error(error);
+    return undefined;
   }
 }
 
