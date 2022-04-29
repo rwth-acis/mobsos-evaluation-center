@@ -260,10 +260,9 @@ export class SurveyComponent implements OnInit {
       }
     }
 
-    const questions = extractQuestions(
-      questionnaire.formXML,
-      service,
-    );
+    const doc = parseXml(questionnaire.formXML);
+
+    const questions = extractQuestions(doc, service);
 
     for (const question of questions) {
       const chartMeasure = generateChartMeasure(
@@ -288,42 +287,47 @@ export class SurveyComponent implements OnInit {
         );
         model[question.dimensionRecommendation] = dimension;
       }
-
-      if (question.type === 'ordinal') {
-        const meanValueMeasure = getMeanValueMeasure(
-          questionnaire,
-          surveyId,
-          question,
-        );
-        measures[meanValueMeasure.name] = meanValueMeasure;
-        if (
-          assignMeasures &&
-          question.dimensionRecommendation &&
-          question.factorRecommendation
-        ) {
-          let dimension = model.dimensions[
-            question.dimensionRecommendation
-          ] as SuccessFactor[];
-          dimension = assignMeasuresToDimension(
-            question,
-            meanValueMeasure.name,
-            dimension,
-          );
-          model[question.dimensionRecommendation] = dimension;
-        }
-      }
     }
+    const scores = Array.from(doc.getElementsByTagName('qu:Score'));
+    if (scores?.length > 0) {
+      const score = scores[0].innerHTML.trim();
+      const questionIds = score
+        .split(/ /)
+        .filter((w) => w.match(/\w/))
+        .map((w) => w.replace(/\(|\)/g, '')); // get the variables from the score string
+      const dbName = environment.mobsosSurveysDatabaseName;
+      const queries = questionIds.map((questionId) => ({
+        query: `SELECT qval as ${questionId} FROM ${dbName}.response WHERE  sid=${
+          SqlString.escape(surveyId.toString()) as string
+        } AND qkey = "${questionId}" GROUP BY uid as t${questionId}`,
+        id: questionId,
+      })); // contains the queries per user and per question
+      let joinTables: string; // will contain the user responses in a table where each col is a question and each column is a user
+      let lastId: string; // temp variable to join on
+      for (const { query, id } of queries) {
+        if (!joinTables) {
+          joinTables = query;
+        } else {
+          joinTables += `JOIN ( ${query} ) ON t${lastId}.uid = t${id}uid`;
+        }
+        lastId = id;
+      }
+      score.replace(/(\[a-zA-Z0-9.]+)/g, '@$1'); // prepends an @ to every variable so that they correspond to the tablenames for the joint tables
+      const res = `SELECT AVG(${score}) FROM (
+        ${joinTables}
+      ) t`; // take the average for each sus score
+    }
+
     return { model, measures };
   }
 }
 
 function extractQuestions(
-  formXML: string,
+  el: Document,
   service: ServiceInformation,
 ): Question[] {
   const result: Question[] = [];
-  const xml = parseXml(formXML);
-  let pages = Array.from(xml.getElementsByTagName('qu:Page'));
+  let pages = Array.from(el.getElementsByTagName('qu:Page'));
   pages = pages.filter((page) => {
     const type = page.getAttribute('xsi:type');
     return (
