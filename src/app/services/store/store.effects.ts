@@ -496,50 +496,60 @@ export class StateEffects {
         const query = props.query;
         const queryParams = props.queryParams;
         const dataForQuery = data[query];
-
-        if (
-          query &&
-          !Object.keys(StateEffects.visualizationCalls).includes(
-            query,
-          ) &&
-          shouldFetch(dataForQuery)
-        ) {
-          StateEffects.visualizationCalls[query] =
-            dataForQuery?.fetchDate;
-
-          return this.l2p
-            .fetchVisualizationData(
-              query,
-              queryParams,
-              'JSON',
-              props.cache,
-            )
-            .pipe(
-              timeout(30000),
-              tap(
-                (
-                  res: HttpResponse<any> | HttpErrorResponse | string,
-                ) => {
-                  if (
-                    res instanceof HttpResponse ||
-                    res instanceof HttpErrorResponse
-                  ) {
-                    delete StateEffects.visualizationCalls[query];
-                  }
-                  if (res instanceof HttpErrorResponse) {
-                    this.ngrxStore.dispatch(
-                      Action.failureResponse({ reason: res }),
-                    );
-                  }
-                },
-              ),
-              map((response) => {
-                return handleResponse(response, query);
-              }),
-              catchError((error) => of(handleResponse(error, query))),
-            );
+        if (!query) {
+          return of(Action.failure({ reason: 'No query provided' }));
         }
-        return of(Action.failureResponse(undefined));
+        if (
+          Object.keys(StateEffects.visualizationCalls).includes(query)
+        ) {
+          return of(
+            Action.failure({
+              reason: 'Call already issued, waiting for response',
+            }),
+          );
+        }
+        if (!shouldFetch(dataForQuery)) {
+          return of(Action.failure({ reason: "Shouldn't fetch" }));
+        }
+
+        StateEffects.visualizationCalls[query] =
+          dataForQuery?.fetchDate;
+
+        return this.l2p
+          .fetchVisualizationData(
+            query,
+            queryParams,
+            'JSON',
+            props.cache,
+          )
+          .pipe(
+            timeout(30000),
+            tap(
+              (
+                res: HttpResponse<any> | HttpErrorResponse | string,
+              ) => {
+                if (
+                  res instanceof HttpResponse ||
+                  res instanceof HttpErrorResponse
+                ) {
+                  delete StateEffects.visualizationCalls[query];
+                }
+                if (res instanceof HttpErrorResponse) {
+                  this.ngrxStore.dispatch(
+                    Action.failureResponse({ reason: res }),
+                  );
+                }
+              },
+            ),
+            map((response) => {
+              delete StateEffects.visualizationCalls[query];
+              return handleResponse(response, query);
+            }),
+            catchError((error) => {
+              delete StateEffects.visualizationCalls[query];
+              return of(handleResponse(error, query));
+            }),
+          );
       }),
       catchError((err) =>
         of(

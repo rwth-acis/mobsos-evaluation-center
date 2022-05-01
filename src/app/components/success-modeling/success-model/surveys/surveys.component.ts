@@ -230,6 +230,7 @@ export class SurveyComponent implements OnInit {
     measures: MeasureMap,
     model: SuccessModel,
   ): Promise<{ model: SuccessModel; measures: MeasureMap }> {
+    questionnaire = cloneDeep(questionnaire);
     if (!questionnaire.formXML) {
       this.ngrxStore.dispatch(
         fetchQuestionnaireForm({ questionnaireId: questionnaire.id }),
@@ -254,16 +255,14 @@ export class SurveyComponent implements OnInit {
       if (result instanceof failureResponse) {
         console.error('Failure response: ', result);
       } else {
-        questionnaire.formXML = (
-          result as { formXML: string }
-        ).formXML;
+        const r = result as { formXML: string };
+        questionnaire.formXML = r.formXML;
       }
     }
 
-    const questions = extractQuestions(
-      questionnaire.formXML,
-      service,
-    );
+    const doc = parseXml(questionnaire.formXML);
+
+    const questions = extractQuestions(doc, service);
 
     for (const question of questions) {
       const chartMeasure = generateChartMeasure(
@@ -288,42 +287,70 @@ export class SurveyComponent implements OnInit {
         );
         model[question.dimensionRecommendation] = dimension;
       }
-
-      if (question.type === 'ordinal') {
-        const meanValueMeasure = getMeanValueMeasure(
-          questionnaire,
-          surveyId,
-          question,
-        );
-        measures[meanValueMeasure.name] = meanValueMeasure;
-        if (
-          assignMeasures &&
-          question.dimensionRecommendation &&
-          question.factorRecommendation
-        ) {
-          let dimension = model.dimensions[
-            question.dimensionRecommendation
-          ] as SuccessFactor[];
-          dimension = assignMeasuresToDimension(
-            question,
-            meanValueMeasure.name,
-            dimension,
-          );
-          model[question.dimensionRecommendation] = dimension;
-        }
-      }
     }
+    const scoreMeasure = generateScoreMeasure(
+      questionnaire,
+      surveyId,
+      doc,
+    );
+    if (scoreMeasure) {
+      measures[scoreMeasure.name] = scoreMeasure;
+    }
+
     return { model, measures };
   }
 }
 
+function generateScoreMeasure(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  doc: Document,
+) {
+  try {
+    const measureName = questionnaire.name + ' Global Score';
+    const scores = Array.from(doc.getElementsByTagName('qu:Score'));
+    if (scores?.length > 0) {
+      const dbName = environment.mobsosSurveysDatabaseName;
+      const re = /[a-zA-Z]\S+/g; // a variable is a string starting by a letter
+      const qkeys = scores[0].innerHTML.match(re); // the key for each question
+      const score = scores[0].innerHTML.replace(re, (x) =>
+        x.replace('.', '_'),
+      ); // dots are a special SQL character and therefore need to be replaced in variables
+      const variables = score.match(re); // a variable used to compute the score
+
+      let query = `SELECT AVG(${score}) FROM(\n  SELECT uid,`;
+      for (let index = 0; index < variables.length; index++) {
+        const variable = variables[index];
+        const qkey = qkeys[index];
+        if (index === variables.length - 1) {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable}`;
+        } else {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable},`;
+        }
+      }
+      query += `\n  FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } GROUP BY uid\n) t`;
+
+      return new Measure(
+        measureName,
+        [new SQLQuery('', query)],
+        new ValueVisualization(''),
+        ['surveyId=' + surveyId.toString(), 'generated'],
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+}
+
 function extractQuestions(
-  formXML: string,
+  el: Document,
   service: ServiceInformation,
 ): Question[] {
   const result: Question[] = [];
-  const xml = parseXml(formXML);
-  let pages = Array.from(xml.getElementsByTagName('qu:Page'));
+  let pages = Array.from(el.getElementsByTagName('qu:Page'));
   pages = pages.filter((page) => {
     const type = page.getAttribute('xsi:type');
     return (
