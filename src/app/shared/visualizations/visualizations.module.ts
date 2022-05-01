@@ -18,6 +18,7 @@ import { MatTableModule } from '@angular/material/table';
 import { EvaluatePipe } from '../evaluate.pipe';
 import { LatexPipe } from '../latex.pipe';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     CommonModule,
     GoogleChartsModule,
     MatMenuModule,
+    MatProgressSpinnerModule,
     TranslateModule,
     MatPaginatorModule,
     MatButtonModule,
