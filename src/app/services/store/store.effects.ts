@@ -2,7 +2,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
@@ -75,7 +75,8 @@ export class StateEffects {
             if (
               reason.status === 401 &&
               reason.error === 'agent not found' &&
-              user.signedIn
+              user.signedIn &&
+              isDevMode()
             ) {
               alert(
                 'You could not be authenticated, reason: ' +
