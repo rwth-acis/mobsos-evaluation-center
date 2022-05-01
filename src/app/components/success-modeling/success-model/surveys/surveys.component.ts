@@ -309,47 +309,32 @@ function generateScoreMeasure(
   try {
     const measureName = questionnaire.name + ' Global Score';
     const scores = Array.from(doc.getElementsByTagName('qu:Score'));
-    // if (scores?.length > 0) {
-    if (true) {
-      let score =
-        '(SUS.1 - SUS.2 + SUS.3 - SUS.4 + SUS.5 - SUS.6 + SUS.7 - SUS.8 + SUS.9 - SUS.10 + 20) * 2.5';
-      const questionIds = score
-        .split(/ /)
-        .filter((w) => w.match(/[a-zA-Z]/)) // remove constants from variables
-        .map((w) => w.replace(/\(|\)/g, '')); // get the variables from the score string
+    if (scores?.length > 0) {
       const dbName = environment.mobsosSurveysDatabaseName;
-      const queries = questionIds.map((questionId) => ({
-        query: `SELECT qval  FROM ${dbName}.response WHERE  sid=${
-          SqlString.escape(surveyId.toString()) as string
-        } AND qkey = "${questionId}" GROUP BY uid as t${questionId.replace(
-          '.',
-          '_',
-        )} `,
-        id: questionId,
-      })); // contains the queries per user and per question
-      let joinTables: string; // will contain the user responses in a table where each col is a question and each column is a user
-      let lastId: string; // temp variable to join on
-      for (const { query, id } of queries) {
-        if (!joinTables) {
-          joinTables = query;
-        } else {
-          joinTables += ` JOIN ( ${query} ) ON t${lastId.replace(
-            '.',
-            '_',
-          )}.uid = t${id.replace('.', '_')}.uid \n`;
-        }
-        lastId = id;
-      }
-      score = score.replace(/([a-zA-Z]+).\w/g, (x) =>
+      const re = /[a-zA-Z]\S+/g; // a variable is a string starting by a letter
+      const qkeys = scores[0].innerHTML.match(re); // the key for each question
+      const score = scores[0].innerHTML.replace(re, (x) =>
         x.replace('.', '_'),
-      );
-      score = score.replace(/([a-zA-Z][a-zA-Z0-9._]+)/g, 't$1.qval'); // prepends an @ to every variable so that they correspond to the tablenames for the joint tables
-      const res = `SELECT AVG(${score}) FROM (
-        ${joinTables}
-      ) t`; // take the average for each sus score
+      ); // dots are a special SQL character and therefore need to be replaced in variables
+      const variables = score.match(re); // a variable used to compute the score
+
+      let query = `SELECT AVG(${score}) FROM(\n  SELECT uid,`;
+      for (let index = 0; index < variables.length; index++) {
+        const variable = variables[index];
+        const qkey = qkeys[index];
+        if (index === variables.length - 1) {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable}`;
+        } else {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable},`;
+        }
+      }
+      query += `\n  FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } GROUP BY uid\n) t`;
+
       return new Measure(
         measureName,
-        [new SQLQuery('', res)],
+        [new SQLQuery('', query)],
         new ValueVisualization(''),
         ['surveyId=' + surveyId.toString(), 'generated'],
       );
