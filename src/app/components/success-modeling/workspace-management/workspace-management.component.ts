@@ -194,6 +194,7 @@ export class WorkspaceManagementComponent
         this.ngrxStore.select(USER),
       ]).pipe(take(1)),
     );
+    if (!serviceName || !user?.profile.preferred_username) return;
     const editMode = e.checked;
 
     if (!editMode) {
@@ -203,7 +204,7 @@ export class WorkspaceManagementComponent
       } else {
         this.editControls.writeValue(true);
       }
-    } else if (user?.profile.preferred_username && serviceName) {
+    } else {
       const successModelEmpty = await firstValueFrom(
         this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY).pipe(take(1)),
       );
