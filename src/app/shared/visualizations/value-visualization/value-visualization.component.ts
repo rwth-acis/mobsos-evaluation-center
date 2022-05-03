@@ -17,6 +17,7 @@ import {
   first,
   map,
   mergeMap,
+  startWith,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -50,7 +51,7 @@ export class ValueVisualizationComponent
       distinctUntilKeyChanged('name'),
     );
 
-  dataIsLoading$: Observable<boolean>;
+  dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
     super(ngrxStore, dialog);
@@ -88,8 +89,9 @@ export class ValueVisualizationComponent
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
-    this.dataIsLoading$ = this.data$.pipe(
-      map((data) => data === undefined || data?.loading),
+    this.dataIsReady$ = this.data$.pipe(
+      startWith({ loading: false }),
+      map((data) => !data?.loading),
     );
     this.value$ = this.data$.pipe(
       map(

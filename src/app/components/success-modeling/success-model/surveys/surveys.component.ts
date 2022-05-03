@@ -40,7 +40,14 @@ import {
   joinAbsoluteUrlPath,
   Las2peerService,
 } from 'src/app/services/las2peer.service';
-import { firstValueFrom, Observable } from 'rxjs';
+import {
+  catchError,
+  firstValueFrom,
+  Observable,
+  of,
+  take,
+  timeout,
+} from 'rxjs';
 import {
   addSurveyToModel,
   addModelToWorkSpace,
@@ -48,16 +55,19 @@ import {
   removeSurveyFromModel,
   removeSurveyMeasuresFromModel,
   fetchSurveys,
+  fetchQuestionnaireForm,
   fetchQuestionnaires,
+  failureResponse,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
-import { take } from 'rxjs/operators';
 
 import { Survey } from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { StateEffects } from 'src/app/services/store/store.effects';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-surveys',
@@ -84,7 +94,7 @@ export class SurveyComponent implements OnInit {
     private las2peer: Las2peerService,
     private translate: TranslateService,
     private _snackBar: MatSnackBar,
-
+    private effects: StateEffects,
     private ngrxStore: Store,
   ) {}
 
@@ -110,7 +120,7 @@ export class SurveyComponent implements OnInit {
       if (addMeasures) {
         const questionnaire = await firstValueFrom(
           this.ngrxStore
-            .select(QUESTIONNAIRE({ qid: selectedSurvey.qid }))
+            .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
             .pipe(take(1)),
         );
         const service = await firstValueFrom(
@@ -123,7 +133,7 @@ export class SurveyComponent implements OnInit {
           this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
         );
         const { model, measures } =
-          addMeasuresFromQuestionnaireToModelAndCatalog(
+          await this.addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
             selectedSurvey.id as number,
             addMeasures,
@@ -211,15 +221,136 @@ export class SurveyComponent implements OnInit {
       data: { ...desiredQuestionnaire, surveyId: survey.id },
     });
   }
+
+  private async addMeasuresFromQuestionnaireToModelAndCatalog(
+    questionnaire: Questionnaire,
+    surveyId: number,
+    assignMeasures,
+    service: ServiceInformation,
+    measures: MeasureMap,
+    model: SuccessModel,
+  ): Promise<{ model: SuccessModel; measures: MeasureMap }> {
+    questionnaire = cloneDeep(questionnaire);
+    if (!questionnaire.formXML) {
+      this.ngrxStore.dispatch(
+        fetchQuestionnaireForm({ questionnaireId: questionnaire.id }),
+      );
+
+      const result = await firstValueFrom(
+        this.effects.fetchQuestionnaireForm$.pipe(
+          timeout(300000),
+          take(1),
+          catchError(() => {
+            return of(
+              failureResponse({
+                reason: new HttpErrorResponse({
+                  error: 'The request took too long and was aborted',
+                }),
+              }),
+            );
+          }),
+        ),
+      );
+
+      if (result instanceof failureResponse) {
+        console.error('Failure response: ', result);
+      } else {
+        const r = result as { formXML: string };
+        questionnaire.formXML = r.formXML;
+      }
+    }
+
+    const doc = parseXml(questionnaire.formXML);
+
+    const questions = extractQuestions(doc, service);
+
+    for (const question of questions) {
+      const chartMeasure = generateChartMeasure(
+        questionnaire,
+        surveyId,
+        question,
+      );
+
+      measures[chartMeasure.name] = chartMeasure;
+      if (
+        assignMeasures &&
+        question.dimensionRecommendation &&
+        question.factorRecommendation
+      ) {
+        let dimension = model.dimensions[
+          question.dimensionRecommendation
+        ] as SuccessFactor[];
+        dimension = assignMeasuresToDimension(
+          question,
+          chartMeasure.name,
+          dimension,
+        );
+        model[question.dimensionRecommendation] = dimension;
+      }
+    }
+    const scoreMeasure = generateScoreMeasure(
+      questionnaire,
+      surveyId,
+      doc,
+    );
+    if (scoreMeasure) {
+      measures[scoreMeasure.name] = scoreMeasure;
+    }
+
+    return { model, measures };
+  }
+}
+
+function generateScoreMeasure(
+  questionnaire: Questionnaire,
+  surveyId: number,
+  doc: Document,
+) {
+  try {
+    const measureName = questionnaire.name + ' Global Score';
+    const scores = Array.from(doc.getElementsByTagName('qu:Score'));
+    if (scores?.length > 0) {
+      const dbName = environment.mobsosSurveysDatabaseName;
+      const re = /[a-zA-Z]\S+/g; // a variable is a string starting by a letter
+      const qkeys = scores[0].innerHTML.match(re); // the key for each question
+      const score = scores[0].innerHTML.replace(re, (x) =>
+        x.replace('.', '_'),
+      ); // dots are a special SQL character and therefore need to be replaced in variables
+      const variables = score.match(re); // a variable used to compute the score
+
+      let query = `SELECT AVG(${score}) FROM(\n  SELECT uid,`;
+      for (let index = 0; index < variables.length; index++) {
+        const variable = variables[index];
+        const qkey = qkeys[index];
+        if (index === variables.length - 1) {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable}`;
+        } else {
+          query += `\n    MAX(IF(qkey="${qkey}", qval, NULL)) AS ${variable},`;
+        }
+      }
+      query += `\n  FROM ${dbName}.response WHERE  sid=${
+        SqlString.escape(surveyId.toString()) as string
+      } GROUP BY uid\n) t`;
+
+      return new Measure(
+        measureName,
+        [new SQLQuery('', query)],
+        new ValueVisualization(''),
+        ['surveyId=' + surveyId.toString(), 'generated'],
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
 }
 
 function extractQuestions(
-  formXML: string,
+  el: Document,
   service: ServiceInformation,
 ): Question[] {
   const result: Question[] = [];
-  const xml = parseXml(formXML);
-  let pages = Array.from(xml.getElementsByTagName('qu:Page'));
+  let pages = Array.from(el.getElementsByTagName('qu:Page'));
   pages = pages.filter((page) => {
     const type = page.getAttribute('xsi:type');
     return (
@@ -328,66 +459,6 @@ function getMeanValueSQL(surveyId: number, question: Question) {
   return `SELECT AVG(qval) as number FROM ${dbName}.response WHERE  sid=${
     SqlString.escape(surveyId.toString()) as string
   } AND qkey = "${question.code}"`;
-}
-function addMeasuresFromQuestionnaireToModelAndCatalog(
-  questionnaire: Questionnaire,
-  surveyId: number,
-  assignMeasures,
-  service: ServiceInformation,
-  measures: MeasureMap,
-  model: SuccessModel,
-): { model: SuccessModel; measures: MeasureMap } {
-  const questions = extractQuestions(questionnaire.formXML, service);
-
-  for (const question of questions) {
-    const chartMeasure = generateChartMeasure(
-      questionnaire,
-      surveyId,
-      question,
-    );
-
-    measures[chartMeasure.name] = chartMeasure;
-    if (
-      assignMeasures &&
-      question.dimensionRecommendation &&
-      question.factorRecommendation
-    ) {
-      let dimension = model.dimensions[
-        question.dimensionRecommendation
-      ] as SuccessFactor[];
-      dimension = assignMeasuresToDimension(
-        question,
-        chartMeasure.name,
-        dimension,
-      );
-      model[question.dimensionRecommendation] = dimension;
-    }
-
-    if (question.type === 'ordinal') {
-      const meanValueMeasure = getMeanValueMeasure(
-        questionnaire,
-        surveyId,
-        question,
-      );
-      measures[meanValueMeasure.name] = meanValueMeasure;
-      if (
-        assignMeasures &&
-        question.dimensionRecommendation &&
-        question.factorRecommendation
-      ) {
-        let dimension = model.dimensions[
-          question.dimensionRecommendation
-        ] as SuccessFactor[];
-        dimension = assignMeasuresToDimension(
-          question,
-          meanValueMeasure.name,
-          dimension,
-        );
-        model[question.dimensionRecommendation] = dimension;
-      }
-    }
-  }
-  return { model, measures };
 }
 
 function getMeanValueMeasure(

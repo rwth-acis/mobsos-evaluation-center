@@ -34,6 +34,7 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import { Survey } from '../../models/survey.model';
+import { Questionnaire } from 'src/app/models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -369,6 +370,24 @@ const _Reducer = createReducer(
   on(Actions.logout, (state) => ({
     ...state,
     user: initialState.user,
+  })),
+  on(
+    Actions.storeQuestionnaireForm,
+    (state, { formXML, questionnaireId }) => ({
+      ...state,
+      questionnaires: state.questionnaires.map((questionnaire) =>
+        questionnaire.id === questionnaireId
+          ? Questionnaire.fromJSONObject({
+              ...questionnaire,
+              formXML,
+            })
+          : questionnaire,
+      ),
+    }),
+  ),
+  on(Actions.joinWorkSpace, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner || state.currentWorkSpaceOwner,
   })),
 );
 

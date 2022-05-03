@@ -35,6 +35,7 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
+
 export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
 
 export const REQUIREMENTS = (state: StoreState) =>
@@ -189,14 +190,16 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
           appWorkspace,
           user?.profile?.preferred_username,
         )
-      : 'lurker',
+      : 'Lurker',
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
   EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   (editMode, role) =>
-    editMode && (role === 'owner' || role === 'editor'),
+    editMode &&
+    (role.toLowerCase() === 'owner' ||
+      role.toLowerCase() === 'editor'),
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
@@ -340,9 +343,9 @@ export const WORKSPACE_CATALOG = createSelector(
   (workspace) => workspace?.catalog,
 );
 
-export const QUESTIONNAIRE = (props: { qid: number }) =>
+export const QUESTIONNAIRE = (props: { id: number }) =>
   createSelector(QUESTIONNAIRES, (qs: Questionnaire[]) =>
-    qs ? qs.find((q) => q.id === props.qid) : undefined,
+    qs ? qs.find((q) => q.id === props.id) : undefined,
   );
 
 export const WORKSPACE_CATALOG_XML = createSelector(
@@ -436,7 +439,7 @@ function getUserRoleInWorkspace(
     return;
   }
   if (applicationWorkspace?.createdBy === userName) {
-    return 'owner';
+    return UserRole.OWNER;
   }
   const visitors = applicationWorkspace.visitors || [];
   const visitorSearchResult = visitors?.find(
@@ -445,7 +448,7 @@ function getUserRoleInWorkspace(
   if (visitorSearchResult) {
     return visitorSearchResult.role;
   }
-  return 'spectator';
+  return UserRole.SPECTATOR;
 }
 
 function getAllWorkspacesForService(

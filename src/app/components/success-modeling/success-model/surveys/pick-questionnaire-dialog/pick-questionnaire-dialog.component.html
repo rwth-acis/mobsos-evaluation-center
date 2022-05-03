@@ -14,7 +14,7 @@
         'success-modeling.questionnaires.pick-questionnaire-dialog.questionnaire-select'
           | translate
       }}</mat-label>
-      <mat-select [(value)]="selectedQuestionnaire">
+      <mat-select [(ngModel)]="selectedQuestionnaire">
         <mat-option
           *ngFor="let questionnaire of availableQuestionnaires"
           [value]="questionnaire"
@@ -62,32 +62,6 @@
   </p>
 
   <table>
-    <tr>
-      <th>
-        {{
-          'success-modeling.questionnaires.pick-questionnaire-dialog.num-questions'
-            | translate
-        }}
-      </th>
-      <td>
-        {{ selectedQuestionnaire ? getNumberOfQuestions() : '' }}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        {{
-          'success-modeling.questionnaires.pick-questionnaire-dialog.dimensions'
-            | translate
-        }}
-      </th>
-      <td>
-        <span
-          *ngFor="let dimension of getDimensions(); let last = last"
-          >{{ dimension | translate
-          }}<span *ngIf="!last">, </span></span
-        >
-      </td>
-    </tr>
     <tr>
       <th>
         {{
@@ -165,13 +139,7 @@
 <div mat-dialog-actions>
   <button
     mat-button
-    [mat-dialog-close]="{
-      selectedQuestionnaire: selectedQuestionnaire,
-      addMeasures: addMeasures,
-      assignMeasures: assignMeasures,
-      start: range.controls.start.value,
-      end: range.controls.end.value
-    }"
+    (click)="onSubmit()"
     [disabled]="!selectedQuestionnaire || !range.valid"
   >
     {{ 'shared.elements.ok-label' | translate }}
