@@ -23,23 +23,13 @@ import {
   storeUser,
   toggleExpertMode,
 } from './services/store/store.actions';
-import {
-  AUTHENTICATED,
-  EXPERT_MODE,
-  HTTP_CALL_IS_LOADING,
-  ROLE_IN_CURRENT_WORKSPACE,
-  USER,
-  USER_GROUPS,
-  _SELECTED_GROUP_ID,
-  _SELECTED_SERVICE_NAME,
-} from './services/store/store.selectors';
+import * as storeSelectors from './services/store/store.selectors';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   map,
   take,
-  timeout,
 } from 'rxjs/operators';
 
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
@@ -52,11 +42,7 @@ import { LanguageService } from './services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
-import { WorkspaceService } from './services/workspace.service';
-import {
-  joinAbsoluteUrlPath,
-  Las2peerService,
-} from './services/las2peer.service';
+import { joinAbsoluteUrlPath } from './services/las2peer.service';
 import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
@@ -95,15 +81,17 @@ export class AppComponent implements OnInit, OnDestroy {
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables
-  loading$ = this.ngrxStore.select(HTTP_CALL_IS_LOADING);
-  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  loading$ = this.ngrxStore.select(
+    storeSelectors.HTTP_CALL_IS_LOADING,
+  );
+  expertMode$ = this.ngrxStore.select(storeSelectors.EXPERT_MODE);
 
-  role$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   subscriptions$: Subscription[] = [];
-  userGroups$: Observable<GroupInformation[]> =
-    this.ngrxStore.select(USER_GROUPS);
+  userGroups$: Observable<GroupInformation[]> = this.ngrxStore.select(
+    storeSelectors.USER_GROUPS,
+  );
   user$: Observable<User> = this.ngrxStore
-    .select(USER)
+    .select(storeSelectors.USER)
     .pipe(filter((user) => !!user));
 
   selectedGroupId: string; // used to show the selected group in the form field
@@ -144,7 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.silentSignin();
 
     let sub = this.ngrxStore
-      .select(_SELECTED_GROUP_ID)
+      .select(storeSelectors._SELECTED_GROUP_ID)
       .subscribe((id) => {
         this.selectedGroupId = id;
         this.group.setValue(id);
@@ -161,7 +149,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     sub = this.ngrxStore
-      .select(AUTHENTICATED)
+      .select(storeSelectors.AUTHENTICATED)
       .pipe(distinctUntilChanged())
       .subscribe((auth) => {
         if (!auth) this.l2pStatusbar.nativeElement.handleLogout();
@@ -239,7 +227,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async logout() {
     const signedIn = await firstValueFrom(
-      this.ngrxStore.select(AUTHENTICATED).pipe(take(1)),
+      this.ngrxStore
+        .select(storeSelectors.AUTHENTICATED)
+        .pipe(take(1)),
     );
     if (signedIn) {
       this.setUser(null);
@@ -248,7 +238,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   silentSignin(
-    user$: Observable<User> = this.ngrxStore.select(USER),
+    user$: Observable<User> = this.ngrxStore.select(
+      storeSelectors.USER,
+    ),
   ) {
     const silentLoginFunc = () =>
       AppComponent.userManager

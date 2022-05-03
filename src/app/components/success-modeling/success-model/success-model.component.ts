@@ -48,7 +48,6 @@ import {
   MODEL_AND_CATALOG_LOADED,
   USER,
   USER_IS_OWNER_IN_CURRENT_WORKSPACE,
-  ROLE_IN_CURRENT_WORKSPACE,
   IS_MEMBER_OF_SELECTED_GROUP,
   SUCCESS_MODEL_XML,
 } from 'src/app/services/store/store.selectors';
@@ -96,7 +95,7 @@ export class SuccessModelComponent implements OnInit {
   userIsOwner$ = this.ngrxStore.select(
     USER_IS_OWNER_IN_CURRENT_WORKSPACE,
   );
-  userRole$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
+
   memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   showEditButton$ = combineLatest([
     this.selectedGroup$,
