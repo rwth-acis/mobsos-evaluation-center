@@ -437,7 +437,7 @@ function getUserRoleInWorkspace(
     return;
   }
   if (applicationWorkspace?.createdBy === userName) {
-    return 'owner';
+    return 'Owner';
   }
   const visitors = applicationWorkspace.visitors || [];
   const visitorSearchResult = visitors?.find(
@@ -446,7 +446,7 @@ function getUserRoleInWorkspace(
   if (visitorSearchResult) {
     return visitorSearchResult.role;
   }
-  return 'spectator';
+  return 'Spectator';
 }
 
 function getAllWorkspacesForService(

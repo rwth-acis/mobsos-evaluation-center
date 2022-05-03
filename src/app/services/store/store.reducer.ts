@@ -385,6 +385,10 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+  on(Actions.joinWorkSpace, (state, props) => ({
+    ...state,
+    currentWorkSpaceOwner: props.owner || state.currentWorkSpaceOwner,
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {

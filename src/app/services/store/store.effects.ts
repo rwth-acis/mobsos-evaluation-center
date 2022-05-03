@@ -51,6 +51,7 @@ import {
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
+import { UserRole } from 'src/app/models/workspace.model';
 /**
  * The effects handle complex interactions between components, the backend and the ngrxStore
  */
@@ -855,24 +856,36 @@ export class StateEffects {
         this.ngrxStore.select(SELECTED_GROUP),
       ),
       switchMap(
-        ([action, model, catalog, service, user, vdata, group]) =>
-          this.workspaceService
+        ([action, model, catalog, service, user, vdata, group]) => {
+          return this.workspaceService
             .syncWithCommunnityWorkspace(
               action.groupId ? action.groupId : group.id,
             )
             .pipe(
               map((synced) => {
+                let role: UserRole = action.role;
                 if (synced) {
                   let username: string;
-                  let workspaceOwner: string;
+                  let workspaceOwner = action.owner;
                   if (user?.signedIn) {
                     username = user.profile.preferred_username;
+
                     if (!workspaceOwner) {
                       workspaceOwner = username; // if no workspace owner is specified, the user is the workspace owner
+                    }
+                    if (!role) {
+                      if (workspaceOwner === username) {
+                        role = UserRole.EDITOR;
+                      } else {
+                        role = UserRole.SPECTATOR;
+                      }
                     }
                   } else {
                     username = action.username;
                     workspaceOwner = action.owner;
+                    if (!role) {
+                      role = UserRole.LURKER;
+                    }
                   }
                   try {
                     // try joining the workspace
@@ -883,7 +896,7 @@ export class StateEffects {
                       null,
                       action.copyModel ? model : null,
                       catalog,
-                      action.role,
+                      role,
                       vdata,
                     );
                   } catch (error) {
@@ -901,7 +914,7 @@ export class StateEffects {
                     } else {
                       // probably some property is undefined
                       console.error(error);
-                      return Action.failure({});
+                      return Action.failure({ reason: error });
                     }
                   }
                   const currentCommunityWorkspace =
@@ -933,14 +946,17 @@ export class StateEffects {
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
-                  return Action.failure({ reason: error });
+                  return Action.failureResponse({
+                    reason: new HttpErrorResponse({ error }),
+                  });
                 }
               }),
               catchError((err) => {
                 console.error(err);
                 return of(Action.failure({ reason: err }));
               }),
-            ),
+            );
+        },
       ),
       catchError((err) => {
         return of(Action.failure({ reason: err }));
