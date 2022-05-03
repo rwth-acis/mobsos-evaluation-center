@@ -160,7 +160,8 @@ export const translations = {
         'To save changes for everybody you have to ask the owner of this workspace to hit the save button.',
       'own-workspace':
         'This is your own workspace. You can change the success model to your liking and press the save button at the bottom of the page.',
-      'workspace-of': 'This is the workspace of ',
+      'workspace-of':
+        'This is the workspace of <strong>{{owner}}</strong>. Your role is: <strong>{{role}}</strong>.',
       'workspace-rights-editor':
         'You can make own changes to the success model.',
       'workspace-rights-spectator':
