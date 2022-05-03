@@ -2,7 +2,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
@@ -51,6 +51,7 @@ import {
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
+import { UserRole } from 'src/app/models/workspace.model';
 /**
  * The effects handle complex interactions between components, the backend and the ngrxStore
  */
@@ -75,7 +76,8 @@ export class StateEffects {
             if (
               reason.status === 401 &&
               reason.error === 'agent not found' &&
-              user.signedIn
+              user.signedIn &&
+              isDevMode()
             ) {
               alert(
                 'You could not be authenticated, reason: ' +
@@ -174,9 +176,12 @@ export class StateEffects {
               groupsFromContactService: null,
             });
           }),
-          catchError((err) =>
-            of(Action.failureResponse({ reason: err })),
-          ),
+          catchError((err) => {
+            this.ngrxStore.dispatch(
+              Action.storeGroups({ groupsFromContactService: null }),
+            );
+            return of(Action.failureResponse({ reason: err }));
+          }),
         ),
       ),
       catchError(() => of(Action.failure({}))),
@@ -358,11 +363,12 @@ export class StateEffects {
         this.l2p
           .saveMeasureCatalogAndObserve(groupId, measureCatalogXML)
           .pipe(
-            tap(() =>
+            tap((res) => {
+              if (res instanceof HttpErrorResponse) return;
               this.ngrxStore.dispatch(
                 Action.storeCatalog({ xml: measureCatalogXML }),
-              ),
-            ),
+              );
+            }),
             map(() => Action.saveCatalogSuccess()),
             catchError((err) => {
               console.error(err);
@@ -372,7 +378,7 @@ export class StateEffects {
       ),
       catchError((err) => {
         console.error(err);
-        return of(Action.failureResponse({ reason: err }));
+        return of(Action.failure({ reason: err }));
       }),
       share(),
     ),
@@ -458,6 +464,32 @@ export class StateEffects {
     ),
   );
 
+  fetchQuestionnaireForm$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchQuestionnaireForm),
+      switchMap((action) =>
+        this.l2p
+          .fetchQuestionnaireFormAndObserve(action.questionnaireId)
+          .pipe(
+            map((response) => {
+              if (response?.body) {
+                return Action.storeQuestionnaireForm({
+                  formXML: response.body,
+                  questionnaireId: action.questionnaireId,
+                });
+              }
+              throw response;
+            }),
+          ),
+      ),
+      catchError((err) => {
+        console.error(err);
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
@@ -466,50 +498,60 @@ export class StateEffects {
         const query = props.query;
         const queryParams = props.queryParams;
         const dataForQuery = data[query];
-
-        if (
-          query &&
-          !Object.keys(StateEffects.visualizationCalls).includes(
-            query,
-          ) &&
-          shouldFetch(dataForQuery)
-        ) {
-          StateEffects.visualizationCalls[query] =
-            dataForQuery?.fetchDate;
-
-          return this.l2p
-            .fetchVisualizationData(
-              query,
-              queryParams,
-              'JSON',
-              props.cache,
-            )
-            .pipe(
-              timeout(30000),
-              tap(
-                (
-                  res: HttpResponse<any> | HttpErrorResponse | string,
-                ) => {
-                  if (
-                    res instanceof HttpResponse ||
-                    res instanceof HttpErrorResponse
-                  ) {
-                    delete StateEffects.visualizationCalls[query];
-                  }
-                  if (res instanceof HttpErrorResponse) {
-                    this.ngrxStore.dispatch(
-                      Action.failureResponse({ reason: res }),
-                    );
-                  }
-                },
-              ),
-              map((response) => {
-                return handleResponse(response, query);
-              }),
-              catchError((error) => of(handleResponse(error, query))),
-            );
+        if (!query) {
+          return of(Action.failure({ reason: 'No query provided' }));
         }
-        return of(Action.failureResponse(undefined));
+        if (
+          Object.keys(StateEffects.visualizationCalls).includes(query)
+        ) {
+          return of(
+            Action.failure({
+              reason: 'Call already issued, waiting for response',
+            }),
+          );
+        }
+        if (!shouldFetch(dataForQuery)) {
+          return of(Action.failure({ reason: "Shouldn't fetch" }));
+        }
+
+        StateEffects.visualizationCalls[query] =
+          dataForQuery?.fetchDate;
+
+        return this.l2p
+          .fetchVisualizationData(
+            query,
+            queryParams,
+            'JSON',
+            props.cache,
+          )
+          .pipe(
+            timeout(30000),
+            tap(
+              (
+                res: HttpResponse<any> | HttpErrorResponse | string,
+              ) => {
+                if (
+                  res instanceof HttpResponse ||
+                  res instanceof HttpErrorResponse
+                ) {
+                  delete StateEffects.visualizationCalls[query];
+                }
+                if (res instanceof HttpErrorResponse) {
+                  this.ngrxStore.dispatch(
+                    Action.failureResponse({ reason: res }),
+                  );
+                }
+              },
+            ),
+            map((response) => {
+              delete StateEffects.visualizationCalls[query];
+              return handleResponse(response, query);
+            }),
+            catchError((error) => {
+              delete StateEffects.visualizationCalls[query];
+              return of(handleResponse(error, query));
+            }),
+          );
       }),
       catchError((err) =>
         of(
@@ -814,24 +856,36 @@ export class StateEffects {
         this.ngrxStore.select(SELECTED_GROUP),
       ),
       switchMap(
-        ([action, model, catalog, service, user, vdata, group]) =>
-          this.workspaceService
+        ([action, model, catalog, service, user, vdata, group]) => {
+          return this.workspaceService
             .syncWithCommunnityWorkspace(
               action.groupId ? action.groupId : group.id,
             )
             .pipe(
               map((synced) => {
+                let role: UserRole = action.role;
                 if (synced) {
                   let username: string;
-                  let workspaceOwner: string;
+                  let workspaceOwner = action.owner;
                   if (user?.signedIn) {
                     username = user.profile.preferred_username;
+
                     if (!workspaceOwner) {
                       workspaceOwner = username; // if no workspace owner is specified, the user is the workspace owner
+                    }
+                    if (!role) {
+                      if (workspaceOwner === username) {
+                        role = UserRole.EDITOR;
+                      } else {
+                        role = UserRole.SPECTATOR;
+                      }
                     }
                   } else {
                     username = action.username;
                     workspaceOwner = action.owner;
+                    if (!role) {
+                      role = UserRole.LURKER;
+                    }
                   }
                   try {
                     // try joining the workspace
@@ -842,7 +896,7 @@ export class StateEffects {
                       null,
                       action.copyModel ? model : null,
                       catalog,
-                      action.role,
+                      role,
                       vdata,
                     );
                   } catch (error) {
@@ -860,7 +914,7 @@ export class StateEffects {
                     } else {
                       // probably some property is undefined
                       console.error(error);
-                      return Action.failure({});
+                      return Action.failure({ reason: error });
                     }
                   }
                   const currentCommunityWorkspace =
@@ -892,14 +946,17 @@ export class StateEffects {
                 } else {
                   const error = new Error('Could not sync with yjs');
                   console.error(error.message);
-                  return Action.failure({ reason: error });
+                  return Action.failureResponse({
+                    reason: new HttpErrorResponse({ error }),
+                  });
                 }
               }),
               catchError((err) => {
                 console.error(err);
                 return of(Action.failure({ reason: err }));
               }),
-            ),
+            );
+        },
       ),
       catchError((err) => {
         return of(Action.failure({ reason: err }));

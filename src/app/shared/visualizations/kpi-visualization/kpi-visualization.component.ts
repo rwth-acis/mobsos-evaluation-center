@@ -26,6 +26,7 @@ import {
   share,
   startWith,
   switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
@@ -47,6 +48,8 @@ export class KpiVisualizationComponent
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
+  expression$;
+  scope$;
   private subscriptions$: Subscription[] = [];
 
   constructor(dialog: MatDialog, protected ngrxStore: Store) {
@@ -120,67 +123,25 @@ export class KpiVisualizationComponent
     // });
     // this.subscriptions$.push(sub);
 
-    this.kpi$ = this.dataArray$.pipe(
-      filter((data) => allDataLoaded(data)),
-      distinctUntilChanged(
-        (prev, current) =>
-          getLatestFetchDate(prev) + FIVE_MINUTES >=
-          getLatestFetchDate(current),
+    this.expression$ = this.measure$.pipe(
+      map(
+        (measure) =>
+          (measure.visualization as KpiVisualization).expression,
       ),
+    );
+
+    this.scope$ = this.dataArray$.pipe(
+      filter((data) => allDataLoaded(data)),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
+      map((data) => data.map((d) => d[2][0])), // map each data onto the actual data
       withLatestFrom(this.measure$),
-      filter((data) => !!data),
       map(([data, measure]) => {
-        const abstractTerm: string[] = [];
-        const term: string[] = [];
-
-        const values: number[] = data.map((array) => {
-          const lastEntry = array[array.length - 1][0];
-          if (typeof lastEntry === 'number') {
-            return lastEntry;
-          }
-          if (typeof lastEntry === 'string') {
-            return parseFloat(lastEntry);
-          }
-          console.warn('cannot parse data', lastEntry);
-          return 0;
+        const scope = {};
+        measure.queries.forEach((query, index) => {
+          scope[query.name] = data[index];
         });
-        let visualization: KpiVisualization =
-          measure?.visualization as KpiVisualization;
-        if (!(visualization instanceof KpiVisualization)) {
-          try {
-            visualization = new KpiVisualization(
-              (visualization as KpiVisualization).operationsElements,
-            );
-          } catch (error) {
-            console.error(error);
-          }
-        }
-
-        for (const operationElement of visualization.operationsElements) {
-          abstractTerm.push(operationElement.name);
-          // even index means, that this must be an operand since we only support binary operators
-          if (operationElement.index % 2 === 0) {
-            const value = values[operationElement.index / 2];
-            term.push(value.toString());
-          } else {
-            term.push(operationElement.name);
-          }
-        }
-        if (term.length > 1) {
-          abstractTerm.push('=');
-          abstractTerm.push(measure.name);
-          term.push('=');
-          const termResult = visualization.evaluateTerm(term);
-          if (typeof termResult === 'number') {
-            term.push(termResult.toFixed(2));
-          } else {
-            term.push(termResult);
-          }
-        }
-        return { abstractTerm, term };
+        return scope;
       }),
-      share(),
     );
 
     const sub = this.measure$

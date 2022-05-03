@@ -8,7 +8,7 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import {
   catchError,
   filter,
@@ -37,10 +37,10 @@ export class Interceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler,
   ): Observable<HttpEvent<any>> {
-    if (req.url in this.unreachableServices) {
-      return of(null);
-    }
     if (req.method === 'GET' && req.url in this.cachedRequests) {
+      if (req.url in this.unreachableServices) {
+        throw new HttpErrorResponse({ error: 'Service unreachable' });
+      }
       // a request is already being made to this url
       // this.cachedRequests[req.url].subscribe(() => {});
       return this.cachedRequests[req.url]; // return an observable of the initial request instead of making a new call

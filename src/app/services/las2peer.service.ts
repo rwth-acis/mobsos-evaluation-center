@@ -15,9 +15,9 @@ import {
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
-import { Questionnaire } from '../models/questionnaire.model';
 import { GroupMember } from '../models/community.model';
 import { Survey } from '../models/survey.model';
+import { Questionnaire } from '../models/questionnaire.model';
 interface HttpOptions {
   method?: string;
   headers?: {
@@ -533,24 +533,19 @@ export class Las2peerService {
         (response: { questionnaires: Questionnaire[] }) =>
           response.questionnaires,
       ),
-      switchMap((questionnaires) =>
-        forkJoin([
-          this.fetchQuestionnaireFormsAndObserve(questionnaires),
-          of(questionnaires),
-        ]),
-      ),
-      map(([forms, questionnaires]) => {
+
+      map((questionnaires) => {
         questionnaires = cloneDeep(questionnaires);
-        for (let index = 0; index < questionnaires?.length; index++) {
-          const questionnaire = questionnaires[index];
+        for (const questionnaire of questionnaires) {
           questionnaire.name = decodeURIComponent(questionnaire.name);
           questionnaire.description = decodeURIComponent(
             questionnaire.description,
           );
-          questionnaire.formXML = forms[index];
         }
 
-        return questionnaires;
+        return questionnaires.map((questionnaire) =>
+          Questionnaire.fromJSONObject(questionnaire),
+        );
       }),
       timeout(60000),
     );
@@ -597,13 +592,31 @@ export class Las2peerService {
           responseType: 'text',
         }).pipe(
           catchError((err) => {
-            console.log(err);
+            console.error(err);
             return of(undefined);
           }),
         );
       },
     );
     return forkJoin(questionaireFormRequests);
+  }
+
+  fetchQuestionnaireFormAndObserve(id: number) {
+    const formUrl = joinAbsoluteUrlPath(
+      environment.mobsosSurveysUrl,
+      this.SURVEYS_QUESTIONNAIRES_PATH,
+      id,
+      this.SURVEYS_QUESTIONNAIRE_FORM_SUFFIX,
+    );
+    return this.makeRequestAndObserve<string>(formUrl, {
+      responseType: 'text',
+      observe: 'response',
+    }).pipe(
+      catchError((err) => {
+        console.error(err);
+        return of(err);
+      }),
+    );
   }
 
   async createSurvey(

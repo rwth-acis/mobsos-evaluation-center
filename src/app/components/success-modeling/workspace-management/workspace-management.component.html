@@ -275,9 +275,17 @@
 
 <ng-template #notOwnerInCurrentWorkspace>
   <ng-contiainer *ngIf="roleInWorkspace$ | async as role">
-    {{ 'success-modeling.info.workspace-of' | translate }}
-    <strong>{{ applicationWorkspaceOwner$ | async }}</strong
-    >.
+    <span
+      [innerHTML]="
+        'success-modeling.info.workspace-of'
+          | translate
+            : {
+                owner: applicationWorkspaceOwner$ | async,
+                role: this.role
+              }
+      "
+    ></span>
+
     <span *ngIf="role === 'spectator'">
       {{
         'success-modeling.info.workspace-rights-spectator' | translate

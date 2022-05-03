@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { QuestionnairesComponent } from './questionnaires.component';
+import { SurveyComponent } from './surveys.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -18,12 +18,12 @@ import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { SuccessModel } from 'src/app/models/success.model';
 
 describe('QuestionnairesComponent', () => {
-  let component: QuestionnairesComponent;
-  let fixture: ComponentFixture<QuestionnairesComponent>;
+  let component: SurveyComponent;
+  let fixture: ComponentFixture<SurveyComponent>;
   const initialState = INITIAL_APP_STATE;
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [QuestionnairesComponent],
+      declarations: [SurveyComponent],
       imports: [
         TranslateModule.forRoot({
           loader: {
@@ -47,7 +47,7 @@ describe('QuestionnairesComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(QuestionnairesComponent);
+    fixture = TestBed.createComponent(SurveyComponent);
     component = fixture.componentInstance;
     component.availableQuestionnaires = [];
     component.editMode = false;

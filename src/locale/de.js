@@ -163,7 +163,8 @@ export const translations = {
         'Um Änderungen für alle zu speichern, musst du den Besitzer des Arbeitbereichs fragen, ob er den Speichern-Button für dich drückt.',
       'own-workspace':
         'Das ist dein eigener Arbeitsbereich. Du kannst das Erfolgsmodell nach deinen Wünschen anpassen und den Speichern-Button am Ende der Seite drücken.',
-      'workspace-of': 'Das ist der Arbeitsbereich von ',
+      'workspace-of':
+        'Das ist der Arbeitsbereich von <strong>{{owner}}</strong>. Deine Rolle ist: <strong>{{role}}</strong>.',
       'workspace-rights-editor':
         'Du kannst eigene Änderungen am Erfolgsmodell vornehmen.',
       'workspace-rights-spectator':

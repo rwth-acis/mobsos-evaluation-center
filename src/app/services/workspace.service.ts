@@ -522,45 +522,53 @@ export class WorkspaceService {
     obj: Record<string, unknown>,
     map: Y.Map<any>,
   ) {
+    // console.time('syncObjectToMap');
     try {
       const mapAsObj = map.toJSON() as CommunityWorkspace;
       if (isEqual(obj, mapAsObj)) {
+        // console.timeEnd('syncObjectToMap');
         return true;
       }
-      // delete elements that are present in the map but not in the object.
-      // only delete them on if initialized before to prevent deleting other workspaces
-      const deletedKeys = Object.keys(mapAsObj).filter(
-        (key) => !Object.keys(obj).includes(key),
-      );
-      deletedKeys.map((deletedKey) => map.delete(deletedKey));
-
-      // sync elements from object to map
-      for (const key of Object.keys(obj)) {
-        const objValue = obj[key];
-        let mapValue = map.get(key);
-        if (isEqual(objValue, mapValue)) {
-          continue;
-        }
-        // use YMap if value is an object and use the value itself otherwise
-        if (isPlainObject(objValue)) {
-          if (!(mapValue instanceof Y.Map)) {
-            map.set(key, new Y.Map());
-            mapValue = map.get(key);
-          }
-          this._syncObjectToMap(
-            objValue as Record<string, unknown>,
-            mapValue,
-          );
-        } else {
-          try {
-            if (objValue !== null) {
-              map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        }
+      const keys = Object.keys(obj);
+      for (const key of keys) {
+        map.set(key, obj[key]);
       }
+      // console.timeEnd('syncObjectToMap');
+      return true;
+      // // delete elements that are present in the map but not in the object.
+      // // only delete them on if initialized before to prevent deleting other workspaces
+      // const deletedKeys = Object.keys(mapAsObj).filter(
+      //   (key) => !Object.keys(obj).includes(key),
+      // );
+      // deletedKeys.map((deletedKey) => map.delete(deletedKey));
+
+      // // sync elements from object to map
+      // for (const key of Object.keys(obj)) {
+      //   const objValue = obj[key];
+      //   let mapValue = map.get(key);
+      //   if (isEqual(objValue, mapValue)) {
+      //     continue;
+      //   }
+      //   // use YMap if value is an object and use the value itself otherwise
+      //   if (isPlainObject(objValue)) {
+      //     if (!(mapValue instanceof Y.Map)) {
+      //       map.set(key, new Y.Map());
+      //       mapValue = map.get(key);
+      //     }
+      //     this._syncObjectToMap(
+      //       objValue as Record<string, unknown>,
+      //       mapValue,
+      //     );
+      //   } else {
+      //     try {
+      //       if (objValue !== null) {
+      //         map.set(key, JSON.parse(JSON.stringify(objValue))); // make sure to set only objects which can be parsed as JSON
+      //       }
+      //     } catch (error) {
+      //       console.error(error);
+      //     }
+      //   }
+      // }
     } catch (error) {
       console.error(error);
       return false;
@@ -603,9 +611,13 @@ function addUserToVisitors(
   username: string,
   role: UserRole,
 ): Visitor[] {
-  const userNameAlreadyExistsInWorkspace = visitors.some(
+  const userAlreadyVisitor = visitors.some(
     (visitor) => visitor.username === username,
   );
+  if (userAlreadyVisitor) {
+    return visitors;
+  }
+
   if (role === UserRole.LURKER && !username.includes('(guest')) {
     // hacky way to not add lurkers that joined once again.
     const lurkers = visitors.filter((visitor) =>
@@ -614,12 +626,8 @@ function addUserToVisitors(
     const n = lurkers.length + 1;
     username = username + ' (guest ' + n.toString() + ')'; // We cannot ensure unique usernames for Lurkers so we add a unique suffix
     localStorage.setItem('visitor-username', username); // on future rejoins anonymous user gets reassigned the same name
-    visitors.push(new Visitor(username, role));
   }
-  // logged in users are added if they are not a visitor yet
-  else if (!userNameAlreadyExistsInWorkspace) {
-    visitors.push(new Visitor(username, role));
-  }
+  visitors.push(new Visitor(username, role));
   return visitors.sort();
 }
 

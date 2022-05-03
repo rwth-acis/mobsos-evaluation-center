@@ -28,6 +28,7 @@ import {
 /**
  * Actions to load from backend services
  */
+
 export enum HttpActions {
   FETCH_SERVICES = 'Fetch services from the network',
   FETCH_GROUPS = 'fetch groups from the network',
@@ -38,6 +39,7 @@ export enum HttpActions {
   FETCH_VISUALIZATION_DATA = 'fetch visualization data from the qvs for a given sql query',
   FETCH_QUESTIONNAIRES = 'fetch questionnaires from the mobsos surveys',
   FETCH_SURVEYS = 'fetch surveys from the mobsos surveys',
+  FETCH_QUESTIONNAIRE_FORM = 'Fetch questionnaire form from the mobsos surveys',
   SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
@@ -92,6 +94,7 @@ export enum StoreActions {
   RESET_SUCCESS_MODEL = 'Sets the success model to undefined',
   ADD_MEASURES_TO_CATALOG = 'Add a list of measures to the catalog',
   UPDATE_GROUP = 'update a group',
+  STORE_QUESTIONNAIRE_FORM = 'Store the form for a given questionnaire',
 }
 
 /**
@@ -316,7 +319,14 @@ export const saveCatalog = createAction(
   HttpActions.SAVE_CATALOG,
   props<{ xml: string }>(),
 );
-
+export const fetchQuestionnaireForm = createAction(
+  HttpActions.FETCH_QUESTIONNAIRE_FORM,
+  props<{ questionnaireId: number }>(),
+);
+export const storeQuestionnaireForm = createAction(
+  StoreActions.STORE_QUESTIONNAIRE_FORM,
+  props<{ formXML: string; questionnaireId: number }>(),
+);
 export const setGroup = createAction(
   StateActions.SET_GROUP,
   props<{ groupId: string }>(),

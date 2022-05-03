@@ -30,7 +30,6 @@ import { cloneDeep } from 'lodash-es';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import 'reqbaz-components/reqbaz-requirements-grid';
-import 'reqbaz-components/reqbaz-project-card';
 
 @Component({
   selector: 'app-requirements',
