@@ -65,7 +65,8 @@ export class Visitor implements Visitor {
 }
 
 export enum UserRole {
-  SPECTATOR = 'spectator',
-  EDITOR = 'editor',
-  LURKER = 'lurker',
+  SPECTATOR = 'Spectator',
+  EDITOR = 'Editor',
+  LURKER = 'Lurker',
+  OWNER = 'Owner',
 }

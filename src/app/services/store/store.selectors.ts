@@ -190,14 +190,16 @@ export const ROLE_IN_CURRENT_WORKSPACE = createSelector(
           appWorkspace,
           user?.profile?.preferred_username,
         )
-      : 'lurker',
+      : 'Lurker',
 );
 
 export const USER_HAS_EDIT_RIGHTS = createSelector(
   EDIT_MODE,
   ROLE_IN_CURRENT_WORKSPACE,
   (editMode, role) =>
-    editMode && (role === 'owner' || role === 'editor'),
+    editMode &&
+    (role.toLowerCase() === 'owner' ||
+      role.toLowerCase() === 'editor'),
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
@@ -437,7 +439,7 @@ function getUserRoleInWorkspace(
     return;
   }
   if (applicationWorkspace?.createdBy === userName) {
-    return 'Owner';
+    return UserRole.OWNER;
   }
   const visitors = applicationWorkspace.visitors || [];
   const visitorSearchResult = visitors?.find(
@@ -446,7 +448,7 @@ function getUserRoleInWorkspace(
   if (visitorSearchResult) {
     return visitorSearchResult.role;
   }
-  return 'Spectator';
+  return UserRole.SPECTATOR;
 }
 
 function getAllWorkspacesForService(
