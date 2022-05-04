@@ -76,8 +76,7 @@ export class StateEffects {
             if (
               reason.status === 401 &&
               reason.error === 'agent not found' &&
-              user.signedIn &&
-              isDevMode()
+              user.signedIn
             ) {
               alert(
                 'You could not be authenticated, reason: ' +
