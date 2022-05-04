@@ -18,6 +18,7 @@ import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
+  fetchGroups,
   logout,
   setGroup,
   storeUser,
@@ -128,7 +129,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.silentSignin();
 
     let sub = this.ngrxStore
@@ -173,6 +174,15 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
+
+    await firstValueFrom(
+      this.user$.pipe(
+        filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
+        take(1),
+      ),
+    );
+    this.ngrxStore.dispatch(fetchGroups());
   }
 
   ngOnDestroy(): void {
