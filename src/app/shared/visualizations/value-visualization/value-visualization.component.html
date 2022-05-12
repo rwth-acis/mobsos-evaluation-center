@@ -1,4 +1,4 @@
-<ng-container *ngIf="dataIsReady$ as ready; else loading">
+<ng-container *ngIf="dataIsReady$ | async as ready; else loading">
   <ng-container *ngIf="data$ | async as data">
     <div class="flex flex-col h-full">
       <div id="value-row" class="grow">

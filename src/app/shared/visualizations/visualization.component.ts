@@ -25,20 +25,12 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 export class VisualizationComponent implements OnInit, OnDestroy {
   @Input() measure$: Observable<Measure>;
   measure: Measure;
-  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
-    filter((service) => !!service),
-    distinctUntilKeyChanged('name'),
-    startWith(undefined),
-  );
 
   error$: Observable<HttpErrorResponse>;
   service: ServiceInformation;
   visualizationInitialized = false;
 
-  constructor(
-    protected ngrxStore: Store,
-    protected dialog: MatDialog,
-  ) {}
+  constructor(protected dialog: MatDialog) {}
 
   static htmlDecode(input: string): string {
     const doc = new DOMParser().parseFromString(input, 'text/html');
@@ -114,9 +106,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   fetchVisualizationData(
     query: string,
     queryParams: string[],
+    ngrxStore: Store<any>,
     cache: boolean = true,
   ): void {
-    this.ngrxStore.dispatch(
+    ngrxStore.dispatch(
       fetchVisualizationData({ query, queryParams, cache }),
     );
   }

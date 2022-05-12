@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -18,6 +24,7 @@ import {
   map,
   mergeMap,
   startWith,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -53,8 +60,12 @@ export class ValueVisualizationComponent
 
   dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
-    super(ngrxStore, dialog);
+  constructor(
+    protected dialog: MatDialog,
+    private ngrxStore: Store,
+    private cdref: ChangeDetectorRef,
+  ) {
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -92,6 +103,8 @@ export class ValueVisualizationComponent
     this.dataIsReady$ = this.data$.pipe(
       startWith({ loading: false }),
       map((data) => !data?.loading),
+      distinctUntilChanged(),
+      tap(() => this.cdref.detectChanges()),
     );
     this.value$ = this.data$.pipe(
       map(
@@ -116,7 +129,11 @@ export class ValueVisualizationComponent
         const queryParams = super.getParamsForQuery(query);
         query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(query, queryParams);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+        );
       });
     this.subscriptions$.push(sub);
   }

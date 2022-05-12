@@ -15,6 +15,7 @@ import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,
   RESTRICTED_MODE,
+  SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import {
@@ -53,7 +54,11 @@ export class ChartVisualizerComponent
   query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
-
+  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
+    filter((service) => !!service),
+    distinctUntilKeyChanged('name'),
+    startWith(undefined),
+  );
   formatter_medium; // holds the formatter for the date with format type medium
 
   chartData: ChartData; // data which is needed to build the chart.
@@ -66,11 +71,11 @@ export class ChartVisualizerComponent
 
   subscriptions$: Subscription[] = [];
   constructor(
-    public dialog: MatDialog,
-    protected ngrxStore: Store,
+    protected dialog: MatDialog,
+    private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
   ) {
-    super(ngrxStore, dialog);
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -151,7 +156,12 @@ export class ChartVisualizerComponent
         const queryParams = super.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(query, queryParams, cache);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+          cache,
+        );
       });
     this.subscriptions$.push(sub);
 

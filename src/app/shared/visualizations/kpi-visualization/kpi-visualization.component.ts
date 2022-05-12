@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   applyCompatibilityFixForVisualizationService,
   VisualizationComponent,
@@ -8,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   RESTRICTED_MODE,
+  SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { combineLatest, Observable, Subscription } from 'rxjs';
@@ -23,7 +30,6 @@ import {
   filter,
   first,
   map,
-  share,
   startWith,
   switchMap,
   tap,
@@ -50,10 +56,19 @@ export class KpiVisualizationComponent
   fetchDate$: Observable<string>; // latest fetch date as iso string
   expression$;
   scope$;
-  private subscriptions$: Subscription[] = [];
 
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
-    super(ngrxStore, dialog);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
+    filter((service) => !!service),
+    distinctUntilKeyChanged('name'),
+    startWith(undefined),
+  );
+  private subscriptions$: Subscription[] = [];
+  constructor(
+    protected dialog: MatDialog,
+    private ngrxStore: Store,
+    private cdref: ChangeDetectorRef,
+  ) {
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -111,6 +126,8 @@ export class KpiVisualizationComponent
           data.some((v) => v === null) ||
           data.some((v) => v.loading),
       ),
+      distinctUntilChanged(),
+      tap(() => this.cdref.detectChanges()),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
@@ -154,7 +171,11 @@ export class KpiVisualizationComponent
           const queryParams = this.getParamsForQuery(query);
           query = super.applyVariableReplacements(query, service);
           query = applyCompatibilityFixForVisualizationService(query);
-          super.fetchVisualizationData(query, queryParams);
+          super.fetchVisualizationData(
+            query,
+            queryParams,
+            this.ngrxStore,
+          );
         });
       });
     this.subscriptions$.push(sub);
@@ -175,7 +196,11 @@ export class KpiVisualizationComponent
     const sub = qs$.subscribe((queries) => {
       queries.forEach((query) => {
         const queryParams = super.getParamsForQuery(query);
-        super.fetchVisualizationData(query, queryParams);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+        );
       });
     });
     this.subscriptions$.push(sub);
