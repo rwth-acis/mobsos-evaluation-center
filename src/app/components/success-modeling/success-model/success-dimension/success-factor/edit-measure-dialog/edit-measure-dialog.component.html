@@ -216,37 +216,45 @@
                   >our wiki</a
                 >.
                 <br />
-                <div
-                  *ngFor="
-                    let item of data.service
-                      .serviceMessageDescriptions | keyvalue
+                <ng-container
+                  *ngIf="
+                    data.service.serviceMessageDescriptions?.length >
+                      0;
+                    else noMessageDescriptions
                   "
                 >
-                  <h4>{{ prettifyCustomMessageName(item.key) }}</h4>
-                  <h6>Description</h6>
-                  <markdown ngPreserveWhitespaces>{{
-                    item.value
-                  }}</markdown>
+                  <div
+                    *ngFor="
+                      let item of data.service
+                        .serviceMessageDescriptions | keyvalue
+                    "
+                  >
+                    <h4>{{ prettifyCustomMessageName(item.key) }}</h4>
+                    <h6>Description</h6>
+                    <markdown ngPreserveWhitespaces>{{
+                      item.value
+                    }}</markdown>
 
-                  <mat-expansion-panel [expanded]="false">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title
-                        >Latest Log Entries</mat-panel-title
-                      >
-                    </mat-expansion-panel-header>
-                    <ng-template matExpansionPanelContent>
-                      <app-sql-table
-                        [service]="data.service"
-                        [query]="
-                          'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
-                          item.key +
-                          '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
-                        "
-                      >
-                      </app-sql-table>
-                    </ng-template>
-                  </mat-expansion-panel>
-                </div>
+                    <mat-expansion-panel [expanded]="false">
+                      <mat-expansion-panel-header>
+                        <mat-panel-title
+                          >Latest Log Entries</mat-panel-title
+                        >
+                      </mat-expansion-panel-header>
+                      <ng-template matExpansionPanelContent>
+                        <app-sql-table
+                          [service]="data.service"
+                          [query]="
+                            'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
+                            item.key +
+                            '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
+                          "
+                        >
+                        </app-sql-table>
+                      </ng-template>
+                    </mat-expansion-panel>
+                  </div>
+                </ng-container>
               </div>
             </ng-template>
           </mat-expansion-panel>
@@ -431,4 +439,9 @@
       'success-modeling.edit-measure-dialog.title-edit' | translate
     }}
   </h1>
+</ng-template>
+
+<ng-template #noMessageDescriptions>
+  The service has no message descriptors available. Please contact the
+  service developers.
 </ng-template>
