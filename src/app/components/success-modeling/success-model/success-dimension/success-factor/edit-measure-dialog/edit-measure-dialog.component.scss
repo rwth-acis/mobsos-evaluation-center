@@ -30,7 +30,7 @@ app-sql-table {
   font-family: 'Roboto Mono';
 }
 .navig {
-  height: 80%;
+  
   display: flex;
   
   &.first{
@@ -43,11 +43,15 @@ app-sql-table {
 button {
   margin-right: 7px;
 }
-.EditMeasureForm {
-  height: 80%;
-}
 
 ::ng-deep .mat-chip-list-wrapper {
   overflow-x: auto;
   flex-wrap: nowrap !important;
+}
+::ng-deep .mat-horizontal-content-container {
+  height: inherit;
+}
+
+::ng-deep .mat-horizontal-stepper-content {
+  height: inherit;
 }
