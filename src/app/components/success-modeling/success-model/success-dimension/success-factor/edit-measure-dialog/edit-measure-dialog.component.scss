@@ -29,17 +29,7 @@ app-sql-table {
 #sqlInput {
   font-family: 'Roboto Mono';
 }
-.navig {
-  
-  display: flex;
-  
-  &.first{
-    justify-content: flex-end;
-  }
-  &:not(.first) {
-    justify-content: space-between;
-  }
-}
+
 button {
   margin-right: 7px;
 }
@@ -53,5 +43,14 @@ button {
 }
 
 ::ng-deep .mat-horizontal-stepper-content {
+  display: flex;
+  flex-direction: column;
   height: inherit;
+    
+  mat-dialog-actions.first {
+    justify-content: flex-end;
+  }
+  mat-dialog-actions:not(.first) {
+    justify-content: space-between;
+  }
 }
