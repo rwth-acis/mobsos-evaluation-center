@@ -82,9 +82,6 @@ export class AppComponent implements OnInit, OnDestroy {
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables
-  loading$ = this.ngrxStore.select(
-    storeSelectors.HTTP_CALL_IS_LOADING,
-  );
   expertMode$ = this.ngrxStore.select(storeSelectors.EXPERT_MODE);
 
   subscriptions$: Subscription[] = [];
@@ -100,7 +97,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   version = environment.version;
 
-  isLoading: boolean;
   private silentSigninIntervalHandle: Timer;
 
   constructor(
@@ -141,12 +137,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this.ngrxStore.dispatch(fetchGroupMembers({ groupId: id }));
         }
       });
-    this.subscriptions$.push(sub);
-
-    sub = this.loading$.subscribe((loading) => {
-      this.isLoading = loading;
-      this.changeDetectorRef.detectChanges();
-    });
     this.subscriptions$.push(sub);
 
     sub = this.ngrxStore

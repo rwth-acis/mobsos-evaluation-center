@@ -383,21 +383,9 @@ export class EditMeasureDialogComponent implements OnInit {
   //   }
   // }
 
-  // onQueryNameChanged(value: string, i: number): void {
-  //   const currentName = this.data.measure.queries[i].name;
-  //   const visualizationType = this.data.measure.visualization.type;
-  //   if (visualizationType === 'KPI') {
-  //     const visualization = this.data.measure
-  //       .visualization as KpiVisualization;
-  //     visualization.operationsElements.forEach((opElement, index) => {
-  //       if (index % 2 === 0 && opElement.name === currentName) {
-  //         opElement.name = value;
-  //       }
-  //     });
-  //   }
-  //   this.data.measure.queries[i].name = value;
-  // }
-  onQueryChanged(sql: string): void {
+  onQueryChanged(i: number): void {
+    const sql = this.formQueries.controls[i].get('sql')
+      .value as string;
     this.ngrxStore.dispatch(
       fetchVisualizationData({
         query: sql,

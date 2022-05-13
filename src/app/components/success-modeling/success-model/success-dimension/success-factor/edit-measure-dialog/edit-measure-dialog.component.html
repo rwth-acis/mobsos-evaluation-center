@@ -323,7 +323,7 @@
                     | translate
                 }} #{{ i + 1 }}"
                 [formControl]="query.controls['sql']"
-                (blur)="onQueryChanged(undefined)"
+                (blur)="onQueryChanged(i)"
               ></textarea>
             </mat-form-field>
           </ng-container>
