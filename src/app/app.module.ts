@@ -5,7 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
 import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signout.component';
 import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
@@ -118,7 +117,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,
-    MatProgressBarModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
     }),
