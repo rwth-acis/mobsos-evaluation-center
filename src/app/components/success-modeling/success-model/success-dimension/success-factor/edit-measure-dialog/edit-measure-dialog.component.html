@@ -307,9 +307,6 @@
                     | translate
                 }} #{{ i + 1 }}"
                 [formControl]="query.controls['name']"
-                (change)="
-                  onQueryNameChanged($any($event.target).value, i)
-                "
               />
             </mat-form-field>
             <mat-form-field>
@@ -352,7 +349,7 @@
             color="warn"
             type="button"
             (click)="onRemoveQueryClicked()"
-            [disabled]="data.measure.queries.length <= 1"
+            [disabled]="formQueries.controls.length <= 1"
           >
             {{
               'success-modeling.edit-measure-dialog.remove-query'
