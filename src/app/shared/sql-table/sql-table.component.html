@@ -1,3 +1,6 @@
+<ng-container *ngIf="loading$ | async">
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</ng-container>
 <ng-container *ngIf="dataSource$ | async as dataSource; else noData">
   <table
     mat-table
@@ -44,4 +47,10 @@
       <mat-icon>warning</mat-icon>
     </button>
   </div>
+</ng-template>
+
+<ng-template #noDataAndNoError>
+  <app-info-banner
+    [message]="'The service has not logged any data yet.'"
+  ></app-info-banner>
 </ng-template>

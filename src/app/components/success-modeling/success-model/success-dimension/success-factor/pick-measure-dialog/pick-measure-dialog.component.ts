@@ -122,8 +122,8 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
   async openNewMeasureDialog() {
     this.changeDetectorRef.detach(); // Detach change detection before the dialog opens.
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
-      maxHeight: '90vh',
-      width: '80%',
+      width: '80vw',
+      height: '80vh',
       data: {
         measure: new Measure(
           '',
@@ -150,8 +150,8 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
 
   async onEditClicked(measure: Measure) {
     const dialogRef = this.dialog.open(EditMeasureDialogComponent, {
-      width: '80%',
-      maxHeight: '90vh',
+      width: '80vw',
+      height: '80vh',
       data: {
         measure,
         service: this.service,

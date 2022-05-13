@@ -1,4 +1,4 @@
-<div style="height: 80vh" class="flex flex-col">
+<div class="h-full flex flex-col">
   <!-- header  -->
   <div id="dialog_header">
     <h1 mat-dialog-title *ngIf="data.create; else editHeader">
@@ -218,8 +218,7 @@
                 <br />
                 <ng-container
                   *ngIf="
-                    data.service.serviceMessageDescriptions?.length >
-                      0;
+                    data.service.serviceMessageDescriptions;
                     else noMessageDescriptions
                   "
                 >
@@ -442,6 +441,8 @@
 </ng-template>
 
 <ng-template #noMessageDescriptions>
-  The service has no message descriptors available. Please contact the
-  service developers.
+  <p class="text-gray-400 hover:text-black">
+    The service has no message descriptors available. Please contact
+    the service developers.
+  </p>
 </ng-template>

@@ -200,12 +200,15 @@ export class StateEffects {
       distinctUntilKeyChanged('serviceName'),
       switchMap(({ serviceName }) =>
         this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions: ServiceMessageDescriptions) =>
-            Action.storeMessageDescriptions({
-              descriptions,
-              serviceName,
-            }),
-          ),
+          map((descriptions: ServiceMessageDescriptions) => {
+            if (descriptions && Object.keys(descriptions).length > 0)
+              return Action.storeMessageDescriptions({
+                descriptions,
+                serviceName,
+              });
+            console.warn('Message descriptors are empty');
+            return Action.noop();
+          }),
           catchError((err) => {
             return of(Action.failureResponse({ reason: err }));
           }),

@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   Input,
   OnChanges,
@@ -8,8 +9,14 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { Observable, Subscription } from 'rxjs';
-import { filter, map, switchMap, tap } from 'rxjs/operators';
+import { Observable, of, Subscription } from 'rxjs';
+import {
+  filter,
+  map,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -27,7 +34,9 @@ import { MatDialog } from '@angular/material/dialog';
   templateUrl: './sql-table.component.html',
   styleUrls: ['./sql-table.component.scss'],
 })
-export class SqlTableComponent implements OnInit, OnDestroy {
+export class SqlTableComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @Input() query: string;
   @Input() service: ServiceInformation;
   @Input() query$: Observable<string>;
@@ -36,6 +45,7 @@ export class SqlTableComponent implements OnInit, OnDestroy {
 
   queryParams: string[];
   vdata$: Observable<any[][]>;
+  loading$: Observable<boolean> = of(true);
 
   subscriptions$: Subscription[] = [];
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -87,6 +97,10 @@ export class SqlTableComponent implements OnInit, OnDestroy {
       );
       this.vdata$ = storeData$.pipe(map((vdata) => vdata?.data));
       this.error$ = storeData$.pipe(map((vdata) => vdata?.error));
+      this.loading$ = storeData$.pipe(
+        map((vdata) => vdata?.loading),
+        startWith(true),
+      );
     } else {
       let query = this.query;
       const queryParams = this.getParamsForQuery(query);
@@ -103,6 +117,15 @@ export class SqlTableComponent implements OnInit, OnDestroy {
       this.vdata$ = this.ngrxStore
         .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
         .pipe(map((vdata) => vdata?.data));
+      this.loading$ = this.ngrxStore
+        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
+        .pipe(
+          map((vdata) => {
+            if (!vdata || vdata.loading === undefined) return true;
+            return vdata?.loading;
+          }),
+          startWith(true),
+        );
     }
 
     this.dataSource$ = this.vdata$.pipe(
@@ -121,6 +144,7 @@ export class SqlTableComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.dataSource$ = this.dataSource$.pipe(
+      filter((data) => !!data),
       map((dataSource) => {
         dataSource.sort = this.sort;
         dataSource.paginator = this.paginator;
@@ -142,7 +166,11 @@ export class SqlTableComponent implements OnInit, OnDestroy {
   }
 
   getTableDataSource(rawData: any[][]) {
+    if (!(rawData?.length > 2)) {
+      return;
+    }
     const displayedColumns = this.getDisplayedColumns(rawData);
+
     const src = rawData.slice(2).map((row) => {
       // for the table we need to transform each row in our array to an object with the corresponding label as key
       const obj = {};
