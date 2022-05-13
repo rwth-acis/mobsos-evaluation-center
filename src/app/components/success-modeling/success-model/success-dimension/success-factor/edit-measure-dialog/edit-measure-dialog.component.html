@@ -20,7 +20,7 @@
   >
     <mat-stepper
       #stepper
-      [linear]="true"
+      [linear]="false"
       class="h-full flex flex-col"
     >
       <!-- first step: choose a name and visualization type -->
@@ -388,11 +388,14 @@
         }}</ng-template>
         <ng-template matStepContent>
           <div class="flex flex-col h-full">
-            <section class="flex-grow">
+            <section class="flex-grow flex flex-col">
               <h4>
                 {{ (measure$ | async)?.name }}
               </h4>
-              <app-visualization [measure$]="measure$" class="h-full">
+              <app-visualization
+                [measure$]="measure$"
+                class="flex-grow"
+              >
               </app-visualization>
             </section>
             <mat-dialog-actions class="navig">

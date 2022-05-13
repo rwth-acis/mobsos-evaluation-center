@@ -50,6 +50,9 @@ button {
   section{
     max-height: 55vh;
     overflow-y: auto;
+    app-visualization{
+      max-height: inherit;
+    }
   }
 
   mat-dialog-actions{

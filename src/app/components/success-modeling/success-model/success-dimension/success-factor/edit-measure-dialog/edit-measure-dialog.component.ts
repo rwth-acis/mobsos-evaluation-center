@@ -270,14 +270,13 @@ export class EditMeasureDialogComponent implements OnInit {
           prev: { queries: SQLQuery[] },
           curr: { queries: SQLQuery[] },
         ) => {
-          return queriesChanged(prev, curr);
+          return queriesChanged(prev, curr) === false;
         },
       ),
       map((value) =>
         this.getMeasureFromForm(value ? value : this.data.measure),
       ),
       startWith(this.data.measure),
-      share(),
     );
   }
 
@@ -452,7 +451,7 @@ export class EditMeasureDialogComponent implements OnInit {
       this.formQueries.push(
         this.fb.group({
           name: [query.name || ''],
-          sql: [(query as SQLQuery).sql],
+          sql: [(query as SQLQuery).sql?.trim() || ''],
         }),
       );
     });
@@ -525,10 +524,10 @@ function queriesChanged(
     return true;
   }
   for (let i = 0; i < prev.queries.length; i++) {
-    if (prev.queries[i].name !== curr.queries[i].name) {
+    if (prev.queries[i].name.trim() !== curr.queries[i].name.trim()) {
       return true;
     }
-    if (prev.queries[i].sql !== curr.queries[i].sql) {
+    if (prev.queries[i].sql.trim() !== curr.queries[i].sql.trim()) {
       return true;
     }
   }
