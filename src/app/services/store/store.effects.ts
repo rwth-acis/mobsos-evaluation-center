@@ -234,6 +234,7 @@ export class StateEffects {
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
+        this.workspaceService.stopSynchronizingWorkspace();
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
         this.ngrxStore.dispatch(
@@ -920,7 +921,8 @@ export class StateEffects {
                     }
                   }
                   const currentCommunityWorkspace =
-                    this.workspaceService.currentCommunityWorkspace;
+                    this.workspaceService
+                      .currentCommunityWorkspaceValue;
                   if (
                     user?.signedIn &&
                     !currentCommunityWorkspace[
