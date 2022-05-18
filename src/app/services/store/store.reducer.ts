@@ -1200,26 +1200,22 @@ function removeSurveyMeasures(
   if (!appWorkspace.catalog) return copy;
   const catalog = appWorkspace.catalog;
   if (!catalog.measures) return copy;
-  const removed = [];
-  Object.keys(catalog.measures).forEach((measureName) => {
+  const model = appWorkspace.model;
+  for (const measureName of Object.keys(catalog.measures)) {
     const measure = catalog.measures[measureName];
     if (measure.tags?.includes(measureTag)) {
-      removed.push(measureName);
       delete catalog.measures[measureName];
-    }
-  });
-  for (const measureName of removed) {
-    const model = appWorkspace.model;
-    for (const dimensionName of Object.keys(model.dimensions)) {
-      const factors = model.dimensions[dimensionName];
-      for (const factor of factors) {
-        factor.measures = factor.measures.filter(
-          (m: string) => m !== measureName,
+      for (const dimensionName of Object.keys(model.dimensions)) {
+        const factors = model.dimensions[dimensionName];
+        for (const factor of factors) {
+          factor.measures = factor.measures.filter(
+            (m: string) => m !== measureName,
+          );
+        }
+        model.dimensions[dimensionName] = factors.filter(
+          (f: SuccessFactor) => f.measures?.length > 0,
         );
       }
-      model.dimensions[dimensionName] = factors.filter(
-        (f: SuccessFactor) => f.measures?.length > 0,
-      );
     }
   }
   return copy;
