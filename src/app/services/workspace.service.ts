@@ -8,12 +8,7 @@ import {
 import { setCommunityWorkspace } from './store/store.actions';
 import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import {
-  cloneDeep,
-  isEqual,
-  isPlainObject,
-  isEmpty,
-} from 'lodash-es';
+import { cloneDeep, isEqual, isEmpty } from 'lodash-es';
 import * as Y from 'yjs';
 
 import { SuccessModel } from '../models/success.model';
@@ -64,7 +59,7 @@ export class WorkspaceService {
    * @param ngrxStore Store which contains the local app state
    */
   constructor(private ngrxStore: Store) {
-    const provider = new WebsocketProvider(
+    this.provider = new WebsocketProvider(
       environment.yJsWebsocketUrl,
       'mobsos-ec', // room name
       this.sharedDocument, // collection of properties which will be synced
@@ -81,7 +76,6 @@ export class WorkspaceService {
       .select(_COMMUNITY_WORKSPACE)
       .pipe(
         distinctUntilChanged(),
-        throttleTime(5), // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
         filter(
           (workspace) =>
             !!workspace &&
@@ -103,7 +97,7 @@ export class WorkspaceService {
   /**
    * the current value of the current community workspace
    */
-  get currentCommunityWorkspace(): CommunityWorkspace {
+  get currentCommunityWorkspaceValue(): CommunityWorkspace {
     return this.communityWorkspace$.getValue();
   }
 
@@ -174,6 +168,7 @@ export class WorkspaceService {
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
   syncWithCommunnityWorkspace(groupId: string): Observable<boolean> {
+    this.currentGroupId = groupId;
     if (this.syncDone$.getValue()) return of(true);
 
     this.startSynchronizingWorkspace(groupId);
@@ -203,7 +198,9 @@ export class WorkspaceService {
    *
    * @param groupId id of the current community
    */
-  stopSynchronizingWorkspace(groupId: string): void {
+  stopSynchronizingWorkspace(
+    groupId: string = this.currentGroupId,
+  ): void {
     if (groupId) {
       this.stopSync(groupId);
       this.communityWorkspace$.next({});
@@ -368,7 +365,12 @@ export class WorkspaceService {
 
     if (username === newWorkspaceOwner) {
       if (model) currentApplicationWorkspace.model = model;
-      if (catalog) currentApplicationWorkspace.catalog = catalog;
+      if (catalog) {
+        currentApplicationWorkspace.catalog = addMeasuresToWorkspace(
+          currentApplicationWorkspace.catalog,
+          catalog,
+        );
+      }
     }
 
     if (newWorkspaceOwner !== username) {
@@ -657,4 +659,15 @@ function updateWorkSpaceVisualizationData(
     }
   }
   return currentApplicationWorkspace;
+}
+function addMeasuresToWorkspace(
+  currentCatalog: MeasureCatalog,
+  catalog: MeasureCatalog,
+): MeasureCatalog {
+  if (!currentCatalog) return catalog;
+  if (!catalog) return currentCatalog;
+  for (const [key, value] of Object.entries(catalog.measures)) {
+    currentCatalog.measures[key] = value;
+  }
+  return currentCatalog;
 }
