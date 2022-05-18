@@ -121,20 +121,23 @@ export class SurveyComponent implements OnInit {
         }),
       );
       if (addMeasures) {
-        const questionnaire = await firstValueFrom(
-          this.ngrxStore
-            .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
-            .pipe(take(1)),
-        );
-        const service = await firstValueFrom(
-          this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
-        );
-        const currentModel = await firstValueFrom(
-          this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
-        );
-        const currentCatalog = await firstValueFrom(
-          this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
-        );
+        const [questionnaire, service, currentModel, currentCatalog] =
+          await Promise.all([
+            firstValueFrom(
+              this.ngrxStore
+                .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
+                .pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+            ),
+          ]);
         const { model, measures } =
           await this.addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
@@ -176,7 +179,6 @@ export class SurveyComponent implements OnInit {
     )) as any;
     if (result) {
       const surveyId: number =
-        model.surveys[questionnaireIndex].qid ||
         model.surveys[questionnaireIndex].surveyId;
       if (result.deleteSurvey) {
         this.las2peer
