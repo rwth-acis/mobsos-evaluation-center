@@ -229,10 +229,10 @@ module.exports = {
       'error',
       {
         rules: {
-          'use-host-property-decorator': true,
-          'use-input-property-decorator': true,
-          'use-life-cycle-interface': true,
-          'use-output-property-decorator': true,
+          'no-host-metadata-property': true,
+          'no-inputs-metadata-property': true,
+          'use-lifecycle-interface': true,
+          'no-outputs-metadata-property': true,
         },
       },
     ],
