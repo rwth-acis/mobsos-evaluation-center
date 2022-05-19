@@ -339,7 +339,7 @@ function generateScoreMeasure(
 
       return new Measure(
         measureName,
-        [new SQLQuery('', query)],
+        [new SQLQuery(`${questionnaire.name}: score`, query)],
         new ValueVisualization(''),
         ['surveyId=' + surveyId.toString(), 'generated'],
       );
@@ -444,7 +444,12 @@ function generateChartMeasure(
 
   const chartMeasure = new Measure(
     measureName,
-    [new SQLQuery('Answer Distribution', chartMeasureQuery)],
+    [
+      new SQLQuery(
+        `${questionnaire.name}: ${question.code}`,
+        chartMeasureQuery,
+      ),
+    ],
     new ChartVisualization(
       question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
       measureName,
@@ -476,7 +481,12 @@ function getMeanValueMeasure(
 
   const meanValueMeasure = new Measure(
     meanValueMeasureName,
-    [new SQLQuery('Mean Value', meanValueMeasureQuery)],
+    [
+      new SQLQuery(
+        `${questionnaire.name}: ${question.code}`,
+        meanValueMeasureQuery,
+      ),
+    ],
     new ValueVisualization(),
     ['surveyId=' + surveyId.toString(), 'generated'],
   );
