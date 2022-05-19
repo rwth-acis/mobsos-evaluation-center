@@ -16,14 +16,12 @@
   "
 >
   <ng-container
-    *ngIf="!(showSuccessModelEmpty$ | async); else successModelEmpty"
+    *ngIf="
+      (showSuccessModelEmpty$ | async) === false;
+      else successModelEmpty
+    "
   >
-    <ng-container
-      *ngIf="
-        successModel$ | async as successModel;
-        else noSuccessModel
-      "
-    >
+    <ng-container *ngIf="successModel$ | async as successModel">
       <ng-container *ngIf="measureCatalog$ | async as measureCatalog">
         <div id="dimensions">
           <app-success-dimension

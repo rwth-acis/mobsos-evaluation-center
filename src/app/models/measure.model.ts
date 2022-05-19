@@ -67,7 +67,7 @@ export class Measure implements Measure {
    * @returns JavaScript object representation
    */
   public static fromJSON(obj: Measure): Measure {
-    if (!obj) return;
+    if (!obj) return null;
     const queries: SQLQuery[] = [];
     for (const objQuery of obj.queries) {
       queries.push(SQLQuery.fromJSON(objQuery));
@@ -139,7 +139,7 @@ export class MeasureCatalog implements MeasureCatalog {
    */
   public static fromJSON(obj: MeasureCatalog): MeasureCatalog {
     try {
-      if (!obj?.measures) return;
+      if (!obj?.measures) return null;
       const measureMap: MeasureMap = {};
       for (const measureName of Object.keys(obj.measures)) {
         measureMap[measureName] = Measure.fromJSON(
@@ -149,7 +149,7 @@ export class MeasureCatalog implements MeasureCatalog {
       return new MeasureCatalog(measureMap);
     } catch (e) {
       e.printStackTrace();
-      return;
+      return null;
     }
   }
 
@@ -199,12 +199,12 @@ export class Query implements Query {
 }
 
 export class SQLQuery extends Query {
-  constructor(public name: string, public sql: string) {
+  constructor(public override name: string, public sql: string) {
     super(name);
     this.sql = sql;
   }
 
-  static fromXml(xml: Element): SQLQuery {
+  static override fromXml(xml: Element): SQLQuery {
     const queryName = xml.getAttribute('name');
     const sql = xml.innerHTML;
     return new SQLQuery(queryName, sql);
@@ -217,7 +217,7 @@ export class SQLQuery extends Query {
     return new SQLQuery(obj.name, obj.sql);
   }
 
-  toXml(): Element {
+  override toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
     const query = doc.createElement('query');
     query.setAttribute('name', this.name);

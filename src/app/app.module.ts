@@ -53,6 +53,7 @@ class ImportLoader implements TranslateLoader {
     } else if (lang === 'de') {
       return of(de);
     }
+    return null;
   }
 }
 

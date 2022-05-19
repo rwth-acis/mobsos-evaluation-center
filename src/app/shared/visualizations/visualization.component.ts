@@ -16,7 +16,7 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
   styleUrls: ['./visualization.component.scss'],
   templateUrl: './visualization.component.html',
 })
-export class VisualizationComponent implements OnInit, OnDestroy {
+export class VisualizationComponent {
   @Input() measure$: Observable<Measure>;
   measure: Measure;
 
@@ -28,7 +28,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
 
   static htmlDecode(input: string): string {
     const doc = new DOMParser().parseFromString(input, 'text/html');
-    return doc.documentElement.textContent;
+    return doc.documentElement.textContent || '';
   }
 
   applyVariableReplacements(
@@ -73,7 +73,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   }
 
   getParamsForQuery(query: string): string[] {
-    if (!this.service || this.service?.mobsosIDs?.length === 0) {
+    if (
+      !this.service?.mobsosIDs ||
+      this.service.mobsosIDs.length === 0
+    ) {
       // just for robustness
       // should not be called when there are no service IDs stored in MobSOS anyway
       return [];
@@ -115,8 +118,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * Thus we need to unsubscribe from all subscriptions in the component itself
    * as mentioned on @link https://medium.com/@saniyusuf/part-1-the-case-for-component-inheritance-in-angular-a34fe2a0f7ac
    */
-  ngOnDestroy(): void {}
-  ngOnInit(): void {}
+
   openErrorDialog(
     error?: HttpErrorResponse | { error: SyntaxError } | string,
   ): void {
@@ -128,7 +130,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       if (typeof error.error === 'string') {
         errorText += ': ' + error.error;
       }
-    } else if (Object.keys(error).includes('error')) {
+    } else if (
+      typeof error === 'object' &&
+      Object.keys(error).includes('error')
+    ) {
       errorText = (error as { error: SyntaxError }).error.message;
     } else if (typeof error === 'string') {
       errorText = error;

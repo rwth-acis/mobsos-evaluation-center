@@ -639,25 +639,27 @@ function parseXml(xml: string) {
 
 function parseCatalog(xml: string): MeasureCatalog {
   if (!xml) {
-    return;
+    return null;
   }
   const doc = parseXml(xml);
   try {
     return MeasureCatalog.fromXml(doc.documentElement);
   } catch (e) {
     console.error(e);
+    return null;
   }
 }
 
 function parseModel(xml: string): SuccessModel {
   if (!xml) {
-    return;
+    return null;
   }
   const doc = parseXml(xml);
   try {
     return SuccessModel.fromXml(doc.documentElement);
   } catch (e) {
     console.warn(e);
+    return null;
   }
 }
 function addFactorToDimension(
@@ -962,11 +964,11 @@ function getWorkspaceByUserAndService(
     !communityWorkspace ||
     !Object.keys(communityWorkspace).includes(user)
   ) {
-    return;
+    return null;
   }
   const userWorkspace = communityWorkspace[user];
   if (!Object.keys(userWorkspace).includes(service)) {
-    return;
+    return null;
   }
   return userWorkspace[service];
 }

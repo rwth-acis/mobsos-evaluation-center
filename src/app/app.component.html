@@ -140,7 +140,7 @@
       oidcSilentSigninUrl="oidc-silent"
       [attr.useRedirect]="true"
       autoAppendWidget="true"
-      (signed-in)="setUser($event.detail)"
+      (signed-in)="setUser($event)"
       (signed-out)="logout()"
     >
       <button

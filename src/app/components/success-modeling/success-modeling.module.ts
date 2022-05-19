@@ -25,7 +25,7 @@ import { SuccessModelingRoutingModule } from './success-modeling-routing.module'
 import { CommunityInfoComponent } from './community-info/community-info.component';
 import { PickSurveyDialogComponent } from './success-model/surveys/pick-survey-dialog/pick-survey-dialog.component';
 import { VisualizationsModule } from 'src/app/shared/visualizations/visualizations.module';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [
@@ -50,6 +50,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
   imports: [
     CommonModule,
     SharedModule,
+    MarkdownModule.forChild(),
     SuccessModelingRoutingModule,
     VisualizationsModule,
   ],

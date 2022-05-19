@@ -15,7 +15,10 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { Observable, Subscription } from 'rxjs';
-import { VisualizationData } from 'src/app/models/visualization.model';
+import {
+  VisualizationData,
+  ValueVisualization,
+} from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -44,9 +47,15 @@ export class ValueVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
   data$: Observable<VisualizationData>;
+  unit$ = this.measure$.pipe(
+    map(
+      (measure) =>
+        (measure.visualization as ValueVisualization)?.unit,
+    ),
+  );
 
   query$: Observable<string>;
   value$: Observable<string>;
@@ -61,7 +70,7 @@ export class ValueVisualizationComponent
   dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    protected override dialog: MatDialog,
     private ngrxStore: Store,
     private cdref: ChangeDetectorRef,
   ) {

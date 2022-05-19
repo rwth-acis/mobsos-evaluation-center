@@ -8,8 +8,8 @@
         [options]="chartData.options"
         [formatters]="formatters"
         [columns]="chartData.columnNames"
-        dynamicResize
-        style="width: 100%"
+        [dynamicResize]="true"
+        class="w-full"
         (ready)="chartInitialized = true"
       ></google-chart
     ></ng-container>
@@ -46,7 +46,7 @@
       </button>
     </ng-container>
 
-    <ng-container *ngIf="!(restricted$ | async)">
+    <ng-container *ngIf="(restricted$ | async) === false">
       <button
         *ngIf="query$ | async as query"
         mat-icon-button

@@ -50,7 +50,7 @@ export class SqlTableComponent
   subscriptions$: Subscription[] = [];
   // eslint-disable-next-line @typescript-eslint/ban-types
   dataSource$: Observable<MatTableDataSource<{}>>;
-  displayedColumns$: Observable<unknown>;
+  displayedColumns$: Observable<any>;
   error$: Observable<HttpErrorResponse>;
   constructor(private ngrxStore: Store, private dialog: MatDialog) {}
 
@@ -155,7 +155,7 @@ export class SqlTableComponent
 
   getDisplayedColumns(rawData: any[][]): string[] {
     if (!rawData) {
-      return;
+      return null;
     }
     const displayedColumns = [...(rawData[0] as string[])]; // contains the labels
     for (let i = 0; i < rawData[1].length; i++) {
@@ -167,7 +167,7 @@ export class SqlTableComponent
 
   getTableDataSource(rawData: any[][]) {
     if (!(rawData?.length > 2)) {
-      return;
+      return null;
     }
     const displayedColumns = this.getDisplayedColumns(rawData);
 

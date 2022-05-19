@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { HttpErrorResponse } from '@angular/common/http';
+import { ChartType } from 'angular-google-charts';
 import { MathExpression } from 'mathjs';
 
 export interface VisualizationCollection {
@@ -16,7 +17,7 @@ export class Visualization {
   type: SupportedVisualizationTypes;
 
   static fromXml(xml: Element): Visualization {
-    if (!xml) return;
+    if (!xml) return null;
     const visualizationType = xml.getAttribute('type');
     switch (visualizationType) {
       case 'KPI':
@@ -33,7 +34,7 @@ export class Visualization {
   }
 
   public static fromPlainObject(obj: Visualization): Visualization {
-    if (!obj) return;
+    if (!obj) return null;
     const visualizationType = obj.type;
     switch (visualizationType) {
       case 'KPI':
@@ -71,7 +72,7 @@ export class Visualization {
 }
 
 export class ValueVisualization extends Visualization {
-  type = 'Value' as SupportedVisualizationTypes;
+  override type = 'Value' as SupportedVisualizationTypes;
 
   constructor(public unit?: string) {
     super();
@@ -80,19 +81,19 @@ export class ValueVisualization extends Visualization {
     }
   }
 
-  public static fromPlainObject(
+  public static override fromPlainObject(
     obj: ValueVisualization,
   ): ValueVisualization {
     return new ValueVisualization(obj.unit);
   }
 
-  static fromXml(xml: Element): ValueVisualization {
+  static override fromXml(xml: Element): ValueVisualization {
     const unitArr = Array.from(xml.getElementsByTagName('unit'));
     const unit = unitArr.length === 0 ? null : unitArr[0].innerHTML;
     return new ValueVisualization(unit);
   }
 
-  protected _toXml(visualizationNode: Element) {
+  protected override _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const unit = doc.createElement('unit');
     unit.innerHTML = this.unit || '';
@@ -101,10 +102,10 @@ export class ValueVisualization extends Visualization {
 }
 
 export class ChartVisualization extends Visualization {
-  type = 'Chart' as SupportedVisualizationTypes;
+  override type = 'Chart' as SupportedVisualizationTypes;
 
   constructor(
-    public chartType?: string,
+    public chartType?: ChartType,
     public nodeId?: string,
     public title?: string,
     public height?: string,
@@ -113,7 +114,7 @@ export class ChartVisualization extends Visualization {
     super();
   }
 
-  public static fromPlainObject(
+  public static override fromPlainObject(
     obj: ChartVisualization,
   ): ChartVisualization {
     return new ChartVisualization(
@@ -125,7 +126,7 @@ export class ChartVisualization extends Visualization {
     );
   }
 
-  static fromXml(xml: Element): ChartVisualization {
+  static override fromXml(xml: Element): ChartVisualization {
     const chartType = Array.from(
       xml.getElementsByTagName('chartType'),
     )[0].innerHTML;
@@ -138,7 +139,7 @@ export class ChartVisualization extends Visualization {
     const width = Array.from(xml.getElementsByTagName('width'))[0]
       .innerHTML;
     return new ChartVisualization(
-      chartType,
+      ChartType[chartType],
       nodeId,
       title,
       height,
@@ -146,7 +147,7 @@ export class ChartVisualization extends Visualization {
     );
   }
 
-  protected _toXml(visualizationNode: Element) {
+  protected override _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const chartType = doc.createElement('chartType');
     chartType.innerHTML = this.chartType;
@@ -168,13 +169,13 @@ export class ChartVisualization extends Visualization {
 }
 
 export class KpiVisualization extends Visualization {
-  type = 'KPI' as SupportedVisualizationTypes;
+  override type = 'KPI' as SupportedVisualizationTypes;
 
   constructor(public expression?: MathExpression) {
     super();
   }
 
-  public static fromPlainObject(obj: any): KpiVisualization {
+  public static override fromPlainObject(obj: any): KpiVisualization {
     if (obj?.operationsElements) {
       // legacy
       const expression: MathExpression =
@@ -193,7 +194,7 @@ export class KpiVisualization extends Visualization {
     }
   }
 
-  static fromXml(xml: Element): KpiVisualization {
+  static override fromXml(xml: Element): KpiVisualization {
     const expressions = Array.from(
       xml.getElementsByTagName('expression'),
     );
@@ -228,7 +229,7 @@ export class KpiVisualization extends Visualization {
     }
   }
 
-  protected _toXml(visualizationNode: Element) {
+  protected override _toXml(visualizationNode: Element) {
     const doc = document.implementation.createDocument('', '', null);
     const unit = doc.createElement('expression');
     unit.innerHTML = this.expression.toString();

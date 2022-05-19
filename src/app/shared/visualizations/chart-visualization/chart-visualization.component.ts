@@ -49,7 +49,7 @@ export class ChartVisualizerComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
   query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
@@ -71,7 +71,7 @@ export class ChartVisualizerComponent
 
   subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    protected override dialog: MatDialog,
     private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
   ) {

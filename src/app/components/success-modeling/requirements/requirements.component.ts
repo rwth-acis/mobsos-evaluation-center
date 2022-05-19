@@ -118,7 +118,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.successModel = SuccessModel.fromPlainObject(
-        cloneDeep(this.successModel) ,
+        cloneDeep(this.successModel),
       );
 
       this.ngrxStore.dispatch(removeReqBazarProject());
@@ -207,7 +207,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     const reqBazProject: ReqbazProject =
       this.successModel.reqBazProject;
     if (!reqBazProject) {
-      return;
+      return null;
     }
     return joinAbsoluteUrlPath(
       environment.reqBazFrontendUrl,

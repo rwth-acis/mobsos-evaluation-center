@@ -45,6 +45,7 @@ import {
   MEASURES,
   MEASURE,
 } from 'src/app/services/store/store.selectors';
+import { ChartType } from 'angular-google-charts';
 
 export interface DialogData {
   measure: Measure;
@@ -181,7 +182,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   get KPIExpression() {
     if (this.visualizationType !== 'KPI') {
-      return;
+      return null;
     }
     return this.measureForm
       .get('visualization')
@@ -244,6 +245,10 @@ export class EditMeasureDialogComponent implements OnInit {
         this.measureForm.get('visualization').invalid
       );
     }
+  }
+
+  getControlFromQuery(query, key) {
+    return query.controls[key];
   }
 
   /**
@@ -330,7 +335,7 @@ export class EditMeasureDialogComponent implements OnInit {
         return false;
       }
     }
-    return;
+    return null;
   }
 
   onRemoveQueryClicked(): void {
@@ -482,7 +487,7 @@ export class EditMeasureDialogComponent implements OnInit {
           ? value.visualization.parameters[0].chartType
           : value.visualization.chartType;
         measure.visualization = new ChartVisualization(
-          chartType as string,
+          ChartType[chartType],
         );
         break;
       case 'KPI':

@@ -368,7 +368,8 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      return dialogRef.afterClosed().toPromise() as Promise<boolean>;
+      return firstValueFrom(dialogRef.afterClosed());
     }
+    return null;
   }
 }

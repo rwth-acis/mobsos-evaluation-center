@@ -7,9 +7,7 @@
             class="value-visualization items-center flex h-full w-full"
           >
             {{ value }}
-            <ng-container
-              *ngIf="(measure$ | async)?.visualization?.unit as unit"
-            >
+            <ng-container *ngIf="unit$ | async as unit">
               {{ unit }}
             </ng-container>
           </div>
@@ -20,8 +18,7 @@
         <button mat-icon-button [matMenuTriggerFor]="menu">
           <mat-icon> info_outline </mat-icon>
         </button>
-        {{ role$ | async }}
-        <ng-container *ngIf="!(restricted$ | async)">
+        <ng-container *ngIf="(restricted$ | async) === false">
           <button
             *ngIf="query$ | async as query"
             mat-icon-button

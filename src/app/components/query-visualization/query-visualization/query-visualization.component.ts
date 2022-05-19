@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { ChartType } from 'angular-google-charts';
 import { combineLatest } from 'rxjs';
 import { filter, map, startWith } from 'rxjs/operators';
 import { Measure, SQLQuery } from 'src/app/models/measure.model';
@@ -80,7 +81,9 @@ export class QueryVisualizationComponent implements OnInit {
       let visualization: Visualization;
       switch (visualizationType) {
         case 'Chart':
-          visualization = new ChartVisualization(chartType as string);
+          visualization = new ChartVisualization(
+            ChartType[chartType],
+          );
           break;
         case 'Value':
           visualization = new ValueVisualization();

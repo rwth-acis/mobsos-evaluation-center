@@ -68,6 +68,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ChartType } from 'angular-google-charts';
 
 @Component({
   selector: 'app-surveys',
@@ -344,9 +345,10 @@ function generateScoreMeasure(
         ['surveyId=' + surveyId.toString(), 'generated'],
       );
     }
+    return null;
   } catch (error) {
     console.error(error);
-    return undefined;
+    return null;
   }
 }
 
@@ -451,7 +453,9 @@ function generateChartMeasure(
       ),
     ],
     new ChartVisualization(
-      question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
+      question.type === 'dichotomous'
+        ? ChartType.PieChart
+        : ChartType.BarChart,
       measureName,
       measureName,
       '300px',
@@ -463,7 +467,7 @@ function generateChartMeasure(
 }
 
 function getMeanValueSQL(surveyId: number, question: Question) {
-  if (question.type !== 'ordinal') return;
+  if (question.type !== 'ordinal') return null;
   const dbName = environment.mobsosSurveysDatabaseName;
 
   return `SELECT AVG(qval) as number FROM ${dbName}.response WHERE  sid=${

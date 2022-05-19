@@ -250,7 +250,7 @@ export class WorkspaceService {
       !communityWorkspace ||
       !Object.keys(communityWorkspace).includes(username)
     ) {
-      return;
+      return null;
     }
     const userWorkspace = this.getWorkspaceByUserAndService(
       username,
@@ -261,7 +261,7 @@ export class WorkspaceService {
       serviceName,
     );
     if (!userWorkspace || !ownerWorkspace) {
-      return;
+      return null;
     }
     userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
     userWorkspace.model = cloneDeep(ownerWorkspace.model);
@@ -292,12 +292,12 @@ export class WorkspaceService {
     const ownerWorkspace = communityWorkspace[owner];
     if (!ownerWorkspace) {
       console.error('owner workspace not found');
-      return;
+      return null;
     }
     const applicationWorkspace = ownerWorkspace[selectedServiceName];
     if (!applicationWorkspace) {
       console.error('app workspace not found for current user');
-      return;
+      return null;
     }
     const newRole = role as UserRole;
     applicationWorkspace.visitors = applicationWorkspace.visitors.map(
@@ -585,11 +585,11 @@ export class WorkspaceService {
   ) {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(user)) {
-      return;
+      return null;
     }
     const userWorkspace = communityWorkspace[user];
     if (!Object.keys(userWorkspace).includes(service)) {
-      return;
+      return null;
     }
     return userWorkspace[service];
   }

@@ -36,6 +36,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
+import { MathExpression } from 'mathjs';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -46,7 +47,7 @@ export class KpiVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
@@ -54,8 +55,10 @@ export class KpiVisualizationComponent
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
-  expression$;
-  scope$;
+  expression$: Observable<MathExpression>;
+  scope$: Observable<{
+    [key: string]: number;
+  }>;
 
   service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
     filter((service) => !!service),
@@ -64,7 +67,7 @@ export class KpiVisualizationComponent
   );
   private subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    protected override dialog: MatDialog,
     private ngrxStore: Store,
     private cdref: ChangeDetectorRef,
   ) {
@@ -119,7 +122,6 @@ export class KpiVisualizationComponent
 
     // true if any query is still loading
     this.dataIsLoading$ = this.dataArray$.pipe(
-      startWith(undefined),
       map(
         (data: VisualizationData[]) =>
           data === undefined ||
@@ -128,6 +130,7 @@ export class KpiVisualizationComponent
       ),
       distinctUntilChanged(),
       tap(() => this.cdref.detectChanges()),
+      startWith(false),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred

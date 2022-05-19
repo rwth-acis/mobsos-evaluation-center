@@ -306,7 +306,7 @@
                   'success-modeling.edit-measure-dialog.query-name-placeholder'
                     | translate
                 }} #{{ i + 1 }}"
-                [formControl]="query.controls['name']"
+                [formControl]="getControlFromQuery(query, 'name')"
               />
             </mat-form-field>
             <mat-form-field>
@@ -319,7 +319,7 @@
                   'success-modeling.edit-measure-dialog.query-placeholder'
                     | translate
                 }} #{{ i + 1 }}"
-                [formControl]="query.controls['sql']"
+                [formControl]="getControlFromQuery(query, 'sql')"
                 (blur)="onQueryChanged(i)"
               ></textarea>
             </mat-form-field>
