@@ -144,8 +144,8 @@ export class SurveyComponent implements OnInit {
             selectedSurvey.id as number,
             addMeasures,
             service,
-            cloneDeep(currentCatalog.measures) as MeasureMap,
-            cloneDeep(currentModel) as SuccessModel,
+            cloneDeep(currentCatalog.measures),
+            cloneDeep(currentModel),
           );
         this.ngrxStore.dispatch(
           addCatalogToWorkspace({

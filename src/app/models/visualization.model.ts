@@ -176,12 +176,21 @@ export class KpiVisualization extends Visualization {
 
   public static fromPlainObject(obj: any): KpiVisualization {
     if (obj?.operationsElements) {
+      // legacy
       const expression: MathExpression =
         obj.operationsElements.reduce(
-          (exp, op) => exp + op.name.toString() + ' ',
+          (exp: string, op: { name: string }) =>
+            exp.toString() + op.name.toString() + ' ',
           '',
         );
-    } else return new KpiVisualization(obj.expression);
+      return new KpiVisualization(expression);
+    } else {
+      if (typeof obj.expression !== 'string')
+        return new KpiVisualization(
+          obj.expression.toString() as string,
+        );
+      else return new KpiVisualization(obj.expression as string);
+    }
   }
 
   static fromXml(xml: Element): KpiVisualization {
@@ -200,7 +209,10 @@ export class KpiVisualization extends Visualization {
       const operatorNodes = Array.from(
         xml.getElementsByTagName('operator'),
       );
-      const elements = [];
+      const elements: (
+        | KpiVisualizationOperator
+        | KpiVisualizationOperand
+      )[] = [];
       for (const operandNode of operandNodes) {
         elements.push(KpiVisualizationOperand.fromXml(operandNode));
       }
@@ -209,7 +221,7 @@ export class KpiVisualization extends Visualization {
       }
       elements.sort((a, b) => (a.index > b.index ? 1 : -1));
       const expression: MathExpression = elements.reduce(
-        (exp, op) => exp + op.name.toString() + ' ',
+        (exp, op) => exp + op.name + ' ',
         '',
       );
       return new KpiVisualization(expression);

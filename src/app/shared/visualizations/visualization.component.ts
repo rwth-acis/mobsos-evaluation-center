@@ -6,14 +6,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import {
-  distinctUntilKeyChanged,
-  filter,
-  startWith,
-} from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
-import { SELECTED_SERVICE } from 'src/app/services/store/store.selectors';
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 
@@ -62,7 +56,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         console.error('Service agent id cannot be null');
         return query;
       }
-      // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+      // for now we use the id which has the greatest registrationTime as this is the agent ID
+      // of the most recent service agent started in las2peer
       const maxIndex = Object.values(this.service.mobsosIDs).reduce(
         (max, time, index) => {
           return time > max ? index : max;
@@ -89,7 +84,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     if (matches) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const match of matches) {
-        // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+        // for now we use the id which has the greatest registrationTime as this is the agent ID
+        // of the most recent service agent started in las2peer
         const maxIndex = Object.values(this.service.mobsosIDs).reduce(
           (max, time, index) => {
             return time > max ? index : max;
@@ -148,7 +144,7 @@ export function applyCompatibilityFixForVisualizationService(
   query: string,
 ): string {
   // note that the replace value is actually $$SERVICE$$, but each $ must be escaped with another $
-  if (!query) return;
+  if (!query) return '';
   query = query?.replace(/\$SERVICE\$/g, '$$$$SERVICE$$$$');
   query = VisualizationComponent.htmlDecode(query);
   return query;

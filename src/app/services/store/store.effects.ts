@@ -2,7 +2,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
@@ -79,10 +79,11 @@ export class StateEffects {
               user.signedIn
             ) {
               alert(
-                'You could not be authenticated, reason: ' +
-                  reason.error +
-                  '. Please contact the administrator',
+                `You could not be authenticated, reason: ${
+                  reason.error.toString() as string
+                }.\n. Please contact the administrator`,
               );
+
               this.ngrxStore.dispatch(
                 Action.storeUser({ user: null }),
               );
@@ -514,7 +515,7 @@ export class StateEffects {
           );
         }
         if (!shouldFetch(dataForQuery)) {
-          return of(Action.failure({ reason: "Shouldn't fetch" }));
+          return of(Action.failure({ reason: 'Should not fetch' }));
         }
 
         StateEffects.visualizationCalls[query] =
