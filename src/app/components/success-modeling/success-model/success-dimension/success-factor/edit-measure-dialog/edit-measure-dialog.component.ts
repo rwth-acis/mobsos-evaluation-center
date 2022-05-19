@@ -248,6 +248,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   /**
    * Function which checks that each variable in the expression string is defined in a query
+   *
    * @returns
    */
   expressionVariablesAreDefined(): boolean {
@@ -444,6 +445,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   /**
    * Adds SQL queries to the form
+   *
    * @param queries  Queries to be added
    */
   addQueriesToForm(queries: Query[]) {

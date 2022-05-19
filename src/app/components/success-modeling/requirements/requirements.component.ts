@@ -118,7 +118,7 @@ export class RequirementsComponent implements OnInit, OnDestroy {
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
       this.successModel = SuccessModel.fromPlainObject(
-        cloneDeep(this.successModel) as SuccessModel,
+        cloneDeep(this.successModel) ,
       );
 
       this.ngrxStore.dispatch(removeReqBazarProject());
