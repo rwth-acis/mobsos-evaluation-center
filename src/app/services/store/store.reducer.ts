@@ -1170,7 +1170,7 @@ function removeSurveyFromSuccessModel(
     serviceName,
   );
   appWorkspace.model.surveys = appWorkspace.model.surveys.filter(
-    (s) => s.qid !== id && (s as any).surveyId !== id,
+    (s) => s.id !== id,
   );
 
   return copy;
