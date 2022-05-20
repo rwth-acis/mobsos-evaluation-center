@@ -317,7 +317,7 @@ function generateScoreMeasure(
     const scores = Array.from(doc.getElementsByTagName('qu:Score'));
     if (scores?.length > 0) {
       const dbName = environment.mobsosSurveysDatabaseName;
-      const re = /[a-zA-Z]\S+/g; // a variable is a string starting by a letter
+      const re = /[a-zA-Z]\w+/g; // a variable is a string starting by a letter
       const qkeys = scores[0].innerHTML.match(re); // the key for each question
       const score = scores[0].innerHTML.replace(re, (x) =>
         x.replace('.', '_'),
