@@ -2,7 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ChartType } from 'angular-google-charts';
 import { combineLatest } from 'rxjs';
-import { filter, map, startWith } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+} from 'rxjs/operators';
 import { Measure, SQLQuery } from 'src/app/models/measure.model';
 import {
   ChartVisualization,
@@ -16,7 +21,7 @@ import {
   templateUrl: './query-visualization.component.html',
   styleUrls: ['./query-visualization.component.scss'],
 })
-export class QueryVisualizationComponent implements OnInit {
+export class QueryVisualizationComponent {
   static initialValue = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
   visualizationChoices = [
     {
@@ -59,6 +64,7 @@ export class QueryVisualizationComponent implements OnInit {
     .get('visualization')
     .valueChanges.pipe(
       startWith(this.form.get('visualization').value),
+      distinctUntilChanged(),
     );
 
   selectedChartType$ = this.form
@@ -69,6 +75,7 @@ export class QueryVisualizationComponent implements OnInit {
     .get('query')
     .valueChanges.pipe(
       startWith(QueryVisualizationComponent.initialValue),
+      distinctUntilChanged(),
     );
 
   measure$ = combineLatest([
@@ -103,8 +110,6 @@ export class QueryVisualizationComponent implements OnInit {
   );
 
   constructor(private fb: FormBuilder) {}
-
-  ngOnInit(): void {}
 
   onSubmit() {
     this.form.markAsTouched();
