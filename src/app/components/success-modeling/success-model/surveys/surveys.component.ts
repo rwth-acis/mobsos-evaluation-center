@@ -177,10 +177,14 @@ export class SurveyComponent implements OnInit {
     };
     const model = (await firstValueFrom(
       this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
-    )) as any;
+    )) as SuccessModel;
     if (result) {
-      const surveyId: number =
-        model.surveys[questionnaireIndex].surveyId;
+      const surveyId = model.surveys[questionnaireIndex].id;
+      this.ngrxStore.dispatch(
+        removeSurveyFromModel({
+          id: surveyId,
+        }),
+      );
       if (result.deleteSurvey) {
         this.las2peer
           .deleteSurvey(surveyId)
@@ -192,11 +196,6 @@ export class SurveyComponent implements OnInit {
           removeSurveyMeasuresFromModel({ measureTag }),
         );
       }
-      this.ngrxStore.dispatch(
-        removeSurveyFromModel({
-          id: surveyId,
-        }),
-      );
     }
   }
 
@@ -257,12 +256,11 @@ export class SurveyComponent implements OnInit {
           }),
         ),
       );
-
-      if (result instanceof failureResponse) {
-        console.error('Failure response: ', result);
-      } else {
-        const r = result as { formXML: string };
+      if ('formXML' in result) {
+        const r = result;
         questionnaire.formXML = r.formXML;
+      } else if (result instanceof failureResponse) {
+        console.error('Failure response: ', result);
       }
     }
 
