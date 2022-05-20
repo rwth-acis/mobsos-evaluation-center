@@ -50,7 +50,14 @@ export class ChartVisualizerComponent
   implements OnInit, OnDestroy
 {
   @Input() override measure$: Observable<Measure>;
+  chartData: ChartData; // data which is needed to build the chart.
+  chartInitialized = false; // used for the fadein animation of charts
+  data$: Observable<VisualizationData>; // visualization data fetched from the store
+  dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
+  formatter_medium; // holds the formatter for the date with format type medium
+  formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
 
+  subscriptions$: Subscription[] = [];
   query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
@@ -59,17 +66,7 @@ export class ChartVisualizerComponent
     distinctUntilKeyChanged('name'),
     startWith(undefined),
   );
-  formatter_medium; // holds the formatter for the date with format type medium
 
-  chartData: ChartData; // data which is needed to build the chart.
-  chartInitialized = false; // used for the fadein animation of charts
-  data$: Observable<VisualizationData>; // visualization data fetched from the store
-  // Observable which periodically checks wheter the google charts library is ready
-  dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
-
-  formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
-
-  subscriptions$: Subscription[] = [];
   constructor(
     protected override dialog: MatDialog,
     private ngrxStore: Store,
@@ -84,7 +81,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({

@@ -1,4 +1,4 @@
-<ng-container *ngIf="(measure$ | async)?.visualization?.type as type">
+<ng-container *ngIf="visualizationType$ | async as type">
   <ng-container [ngSwitch]="type">
     <app-kpi-visualization
       *ngSwitchCase="'KPI'"

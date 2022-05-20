@@ -53,13 +53,12 @@ export class KpiVisualizationComponent
   dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
-  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
   expression$: Observable<MathExpression>;
   scope$: Observable<{
     [key: string]: number;
   }>;
-
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
     filter((service) => !!service),
     distinctUntilKeyChanged('name'),
@@ -80,7 +79,7 @@ export class KpiVisualizationComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
       withLatestFrom(this.service$),

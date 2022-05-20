@@ -1,31 +1,33 @@
 <div class="flex flex-col h-full">
-  <div id="measure-header">
-    <ng-container *ngIf="!preview && (canEdit$ | async)">
-      <button
-        mat-icon-button
-        matTooltipShowDelay="0"
-        matTooltip="{{
-          'success-factor.remove-measure-tooltip' | translate
-        }}"
-        (click)="onDeleteClicked($event)"
-      >
-        <mat-icon color="warn">remove_circle_outline</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        color="primary"
-        (click)="onEditClicked($event)"
-        id="edit-button"
-      >
-        <mat-icon>edit</mat-icon>
-      </button>
-    </ng-container>
+  <ng-container *ngIf="measure$ | async">
+    <div id="measure-header">
+      <ng-container *ngIf="!preview && (canEdit$ | async)">
+        <button
+          mat-icon-button
+          matTooltipShowDelay="0"
+          matTooltip="{{
+            'success-factor.remove-measure-tooltip' | translate
+          }}"
+          (click)="onDeleteClicked($event)"
+        >
+          <mat-icon color="warn">remove_circle_outline</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          color="primary"
+          (click)="onEditClicked($event)"
+          id="edit-button"
+        >
+          <mat-icon>edit</mat-icon>
+        </button>
+      </ng-container>
 
-    <h4 *ngIf="measure && !preview">
-      {{ measure.name }}
-    </h4>
-  </div>
+      <h4 *ngIf="measure && !preview">
+        {{ measure.name }}
+      </h4>
+    </div>
 
-  <app-visualization [measure$]="measure$" class="h-full">
-  </app-visualization>
+    <app-visualization [measure$]="measure$" class="h-full">
+    </app-visualization
+  ></ng-container>
 </div>

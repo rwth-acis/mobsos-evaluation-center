@@ -1,10 +1,10 @@
 import { MatDialog } from '@angular/material/dialog';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { ServiceInformation } from 'src/app/models/service.model';
 import { Measure } from 'src/app/models/measure.model';
@@ -16,19 +16,27 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
   styleUrls: ['./visualization.component.scss'],
   templateUrl: './visualization.component.html',
 })
-export class VisualizationComponent {
+export class VisualizationComponent implements OnInit {
   @Input() measure$: Observable<Measure>;
+
   measure: Measure;
 
   error$: Observable<HttpErrorResponse>;
   service: ServiceInformation;
   visualizationInitialized = false;
+  visualizationType$: Observable<any>;
 
   constructor(protected dialog: MatDialog) {}
 
   static htmlDecode(input: string): string {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent || '';
+  }
+
+  ngOnInit(): void {
+    this.visualizationType$ = this.measure$.pipe(
+      map((m) => m.visualization.type as string),
+    );
   }
 
   applyVariableReplacements(

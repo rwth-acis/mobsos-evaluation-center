@@ -388,7 +388,10 @@
         }}</ng-template>
         <ng-template matStepContent>
           <div class="flex flex-col h-full">
-            <section class="flex-grow flex flex-col">
+            <section
+              *ngIf="measure$ | async"
+              class="flex-grow flex flex-col"
+            >
               <h4>
                 {{ (measure$ | async)?.name }}
               </h4>

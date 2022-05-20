@@ -50,12 +50,6 @@ export class ValueVisualizationComponent
   @Input() override measure$: Observable<Measure>;
 
   data$: Observable<VisualizationData>;
-  unit$ = this.measure$.pipe(
-    map(
-      (measure) =>
-        (measure.visualization as ValueVisualization)?.unit,
-    ),
-  );
 
   query$: Observable<string>;
   value$: Observable<string>;
@@ -69,6 +63,7 @@ export class ValueVisualizationComponent
 
   dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
+  unit$: Observable<string>;
   constructor(
     protected override dialog: MatDialog,
     private ngrxStore: Store,
@@ -83,7 +78,13 @@ export class ValueVisualizationComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    this.unit$ = this.measure$.pipe(
+      map(
+        (measure) =>
+          (measure.visualization as ValueVisualization)?.unit,
+      ),
+    );
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
