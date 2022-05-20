@@ -437,9 +437,7 @@ function generateChartMeasure(
   surveyId: number,
   question: Question,
 ): Measure {
-  const measureName =
-    questionnaire.name + ': ' + question.instructions;
-
+  const measureName = `${questionnaire.name}: ${question.code}: ${question.instructions}`;
   const chartMeasureQuery = getChartSQL(surveyId, question);
 
   const chartMeasure = new Measure(
