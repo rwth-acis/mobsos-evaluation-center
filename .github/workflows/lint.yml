@@ -1,8 +1,8 @@
 name: Lint 
 
 on:
-  push:
-    branches: [ documentation ]
+  pull_request:
+    branches: [ test-lint ]
 
 jobs:
   build:
