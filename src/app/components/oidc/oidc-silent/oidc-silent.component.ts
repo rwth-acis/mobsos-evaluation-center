@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { UserManager } from 'oidc-client';
@@ -10,7 +10,7 @@ import { userManagerSettings } from '../oidc-signin/user.manager.settings';
   templateUrl: './oidc-silent.component.html',
   styleUrls: ['./oidc-silent.component.scss'],
 })
-export class OidcSilentComponent implements OnInit {
+export class OidcSilentComponent {
   constructor(private router: Router, private ngrxStore: Store) {
     void new UserManager(userManagerSettings)
       .signinSilentCallback()
@@ -20,6 +20,4 @@ export class OidcSilentComponent implements OnInit {
         void this.router.navigate(['/']);
       });
   }
-
-  ngOnInit() {}
 }

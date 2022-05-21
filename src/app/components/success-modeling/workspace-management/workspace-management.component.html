@@ -33,7 +33,7 @@
       labelPosition="before"
       [checked]="editMode$ | async"
       (change)="onEditModeToggled($event)"
-      [disabled]="!(memberOfGroup$ | async)"
+      [disabled]="(memberOfGroup$ | async) === false"
       [matTooltip]="
         (memberOfGroup$ | async)
           ? ('success-modeling.edit-tooltip' | translate)

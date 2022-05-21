@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { firstValueFrom, take } from 'rxjs';
@@ -30,7 +30,7 @@ interface PickQuestionnaireResult {
   templateUrl: './pick-survey-dialog.component.html',
   styleUrls: ['./pick-survey-dialog.component.scss'],
 })
-export class PickSurveyDialogComponent implements OnInit {
+export class PickSurveyDialogComponent {
   selectedSurvey: Survey;
   addMeasures = true;
   assignMeasures = true;
@@ -43,8 +43,6 @@ export class PickSurveyDialogComponent implements OnInit {
     private dialog: MatDialog,
     private l2p: Las2peerService,
   ) {}
-
-  ngOnInit(): void {}
 
   onAddMeasuresChange(addMeasures: boolean): void {
     if (!addMeasures) {

@@ -15,7 +15,8 @@
           mat-raised-button
           color="primary"
           [disabled]="
-            !(canSaveMeasureCatalog$ | async) || saveInProgress
+            saveInProgress ||
+            (canSaveMeasureCatalog$ | async) === false
           "
           (click)="_onCatalogSaveClicked()"
         >
@@ -26,7 +27,7 @@
           >
           </mat-spinner>
           {{
-            !(selectedGroupId$ | async)
+            (selectedGroupId$ | async) === undefined
               ? ('raw-edit.measures.send-button-no-selected-group'
                 | translate)
               : ('raw-edit.measures.send-button' | translate)
@@ -68,7 +69,7 @@
           color="primary"
           (click)="_onModelSaveClicked()"
           [disabled]="
-            !(canSaveSuccessModel$ | async) || saveInProgress
+            saveInProgress || (canSaveSuccessModel$ | async) === false
           "
         >
           <mat-spinner
@@ -78,7 +79,8 @@
           >
           </mat-spinner>
           {{
-            !(selectedGroupId$ | async) || !(selectedService$ | async)
+            (selectedGroupId$ | async) === undefined ||
+            (selectedService$ | async) === undefined
               ? ('raw-edit.success-models.send-button-no-selected-group-or-application'
                 | translate)
               : ('raw-edit.success-models.send-button' | translate)

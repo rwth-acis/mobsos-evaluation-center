@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AUTHENTICATED } from 'src/app/services/store/store.selectors';
 
@@ -7,10 +7,8 @@ import { AUTHENTICATED } from 'src/app/services/store/store.selectors';
   templateUrl: './info.component.html',
   styleUrls: ['./info.component.scss'],
 })
-export class InfoComponent implements OnInit {
+export class InfoComponent {
   authenticated$ = this.store.select(AUTHENTICATED);
 
   constructor(private store: Store) {}
-
-  ngOnInit(): void {}
 }
