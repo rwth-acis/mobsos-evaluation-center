@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 
@@ -75,7 +75,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     ]),
   ],
 })
-export class SuccessModelComponent implements OnInit {
+export class SuccessModelComponent implements OnInit, OnDestroy {
   @Input() restricted = false;
 
   editMode$ = this.ngrxStore.select(EDIT_MODE);

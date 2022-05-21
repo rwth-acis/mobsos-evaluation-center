@@ -15,7 +15,7 @@ jobs:
       id: extract_branch
     - if: github.ref == 'refs/heads/develop'
       name: Replace build command in Dockerfile
-      uses: jacobtomlinson/gha-find-replace@master
+      uses: jacobtomlinson/gha-find-replace@v2
       with:
         find: "npm run build:prod"
         replace: "npm run build:prod-sbf-dev"

@@ -68,6 +68,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ChartType } from 'angular-google-charts';
 
 @Component({
   selector: 'app-surveys',
@@ -105,10 +106,18 @@ export class SurveyComponent implements OnInit {
   }
 
   async openPickSurveyDialog(): Promise<void> {
-    const { selectedSurvey, addMeasures, assignMeasures } =
-      await firstValueFrom(
-        this.dialog.open(PickSurveyDialogComponent).afterClosed(),
-      );
+    const result = await firstValueFrom(
+      this.dialog
+        .open(PickSurveyDialogComponent, {
+          width: '80vw',
+          maxWidth: '900px',
+          maxHeight: '900px',
+          height: '80vh',
+        })
+        .afterClosed(),
+    );
+    if (!result) return;
+    const { selectedSurvey, addMeasures, assignMeasures } = result;
     if (selectedSurvey) {
       this.ngrxStore.dispatch(
         addSurveyToModel({
@@ -118,28 +127,31 @@ export class SurveyComponent implements OnInit {
         }),
       );
       if (addMeasures) {
-        const questionnaire = await firstValueFrom(
-          this.ngrxStore
-            .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
-            .pipe(take(1)),
-        );
-        const service = await firstValueFrom(
-          this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
-        );
-        const currentModel = await firstValueFrom(
-          this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
-        );
-        const currentCatalog = await firstValueFrom(
-          this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
-        );
+        const [questionnaire, service, currentModel, currentCatalog] =
+          await Promise.all([
+            firstValueFrom(
+              this.ngrxStore
+                .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
+                .pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+            ),
+          ]);
         const { model, measures } =
           await this.addMeasuresFromQuestionnaireToModelAndCatalog(
             questionnaire,
             selectedSurvey.id as number,
             addMeasures,
             service,
-            cloneDeep(currentCatalog.measures) as MeasureMap,
-            cloneDeep(currentModel) as SuccessModel,
+            cloneDeep(currentCatalog.measures),
+            cloneDeep(currentModel),
           );
         this.ngrxStore.dispatch(
           addCatalogToWorkspace({
@@ -170,11 +182,14 @@ export class SurveyComponent implements OnInit {
     };
     const model = (await firstValueFrom(
       this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
-    )) as any;
+    )) as SuccessModel;
     if (result) {
-      const surveyId: number =
-        model.surveys[questionnaireIndex].qid ||
-        model.surveys[questionnaireIndex].surveyId;
+      const surveyId = model.surveys[questionnaireIndex].id;
+      this.ngrxStore.dispatch(
+        removeSurveyFromModel({
+          id: surveyId,
+        }),
+      );
       if (result.deleteSurvey) {
         this.las2peer
           .deleteSurvey(surveyId)
@@ -186,11 +201,6 @@ export class SurveyComponent implements OnInit {
           removeSurveyMeasuresFromModel({ measureTag }),
         );
       }
-      this.ngrxStore.dispatch(
-        removeSurveyFromModel({
-          id: surveyId,
-        }),
-      );
     }
   }
 
@@ -251,12 +261,11 @@ export class SurveyComponent implements OnInit {
           }),
         ),
       );
-
-      if (result instanceof failureResponse) {
-        console.error('Failure response: ', result);
-      } else {
-        const r = result as { formXML: string };
+      if ('formXML' in result) {
+        const r = result;
         questionnaire.formXML = r.formXML;
+      } else if (result instanceof failureResponse) {
+        console.error('Failure response: ', result);
       }
     }
 
@@ -311,7 +320,7 @@ function generateScoreMeasure(
     const scores = Array.from(doc.getElementsByTagName('qu:Score'));
     if (scores?.length > 0) {
       const dbName = environment.mobsosSurveysDatabaseName;
-      const re = /[a-zA-Z]\S+/g; // a variable is a string starting by a letter
+      const re = /[a-zA-Z]\w+/g; // a variable is a string starting by a letter
       const qkeys = scores[0].innerHTML.match(re); // the key for each question
       const score = scores[0].innerHTML.replace(re, (x) =>
         x.replace('.', '_'),
@@ -334,14 +343,15 @@ function generateScoreMeasure(
 
       return new Measure(
         measureName,
-        [new SQLQuery('', query)],
+        [new SQLQuery(`${questionnaire.name}: score`, query)],
         new ValueVisualization(''),
         ['surveyId=' + surveyId.toString(), 'generated'],
       );
     }
+    return null;
   } catch (error) {
     console.error(error);
-    return undefined;
+    return null;
   }
 }
 
@@ -432,16 +442,21 @@ function generateChartMeasure(
   surveyId: number,
   question: Question,
 ): Measure {
-  const measureName =
-    questionnaire.name + ': ' + question.instructions;
-
+  const measureName = `${questionnaire.name}: ${question.code}: ${question.instructions}`;
   const chartMeasureQuery = getChartSQL(surveyId, question);
 
   const chartMeasure = new Measure(
     measureName,
-    [new SQLQuery('Answer Distribution', chartMeasureQuery)],
+    [
+      new SQLQuery(
+        `${questionnaire.name}: ${question.code}`,
+        chartMeasureQuery,
+      ),
+    ],
     new ChartVisualization(
-      question.type === 'dichotomous' ? 'PieChart' : 'BarChart',
+      question.type === 'dichotomous'
+        ? ChartType.PieChart
+        : ChartType.BarChart,
       measureName,
       measureName,
       '300px',
@@ -453,7 +468,7 @@ function generateChartMeasure(
 }
 
 function getMeanValueSQL(surveyId: number, question: Question) {
-  if (question.type !== 'ordinal') return;
+  if (question.type !== 'ordinal') return null;
   const dbName = environment.mobsosSurveysDatabaseName;
 
   return `SELECT AVG(qval) as number FROM ${dbName}.response WHERE  sid=${
@@ -471,7 +486,12 @@ function getMeanValueMeasure(
 
   const meanValueMeasure = new Measure(
     meanValueMeasureName,
-    [new SQLQuery('Mean Value', meanValueMeasureQuery)],
+    [
+      new SQLQuery(
+        `${questionnaire.name}: ${question.code}`,
+        meanValueMeasureQuery,
+      ),
+    ],
     new ValueVisualization(),
     ['surveyId=' + surveyId.toString(), 'generated'],
   );

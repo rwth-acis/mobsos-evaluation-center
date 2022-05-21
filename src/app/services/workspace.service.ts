@@ -8,12 +8,7 @@ import {
 import { setCommunityWorkspace } from './store/store.actions';
 import { Injectable, isDevMode } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import {
-  cloneDeep,
-  isEqual,
-  isPlainObject,
-  isEmpty,
-} from 'lodash-es';
+import { cloneDeep, isEqual, isEmpty } from 'lodash-es';
 import * as Y from 'yjs';
 
 import { SuccessModel } from '../models/success.model';
@@ -64,7 +59,7 @@ export class WorkspaceService {
    * @param ngrxStore Store which contains the local app state
    */
   constructor(private ngrxStore: Store) {
-    const provider = new WebsocketProvider(
+    this.provider = new WebsocketProvider(
       environment.yJsWebsocketUrl,
       'mobsos-ec', // room name
       this.sharedDocument, // collection of properties which will be synced
@@ -81,7 +76,6 @@ export class WorkspaceService {
       .select(_COMMUNITY_WORKSPACE)
       .pipe(
         distinctUntilChanged(),
-        throttleTime(5), // throttle time is absolutely needed here to prevent synchronization loops between store and yjs
         filter(
           (workspace) =>
             !!workspace &&
@@ -103,7 +97,7 @@ export class WorkspaceService {
   /**
    * the current value of the current community workspace
    */
-  get currentCommunityWorkspace(): CommunityWorkspace {
+  get currentCommunityWorkspaceValue(): CommunityWorkspace {
     return this.communityWorkspace$.getValue();
   }
 
@@ -174,6 +168,7 @@ export class WorkspaceService {
    * @returns true when the synchronization with yjs is done, false if there is an error or timeout occurs
    */
   syncWithCommunnityWorkspace(groupId: string): Observable<boolean> {
+    this.currentGroupId = groupId;
     if (this.syncDone$.getValue()) return of(true);
 
     this.startSynchronizingWorkspace(groupId);
@@ -203,7 +198,9 @@ export class WorkspaceService {
    *
    * @param groupId id of the current community
    */
-  stopSynchronizingWorkspace(groupId: string): void {
+  stopSynchronizingWorkspace(
+    groupId: string = this.currentGroupId,
+  ): void {
     if (groupId) {
       this.stopSync(groupId);
       this.communityWorkspace$.next({});
@@ -221,7 +218,7 @@ export class WorkspaceService {
   removeWorkspace(username: string, serviceName: string): void {
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
-    ) as CommunityWorkspace;
+    );
     if (!communityWorkspace) return;
     if (!Object.keys(communityWorkspace).includes(username)) {
       return;
@@ -253,7 +250,7 @@ export class WorkspaceService {
       !communityWorkspace ||
       !Object.keys(communityWorkspace).includes(username)
     ) {
-      return;
+      return null;
     }
     const userWorkspace = this.getWorkspaceByUserAndService(
       username,
@@ -264,7 +261,7 @@ export class WorkspaceService {
       serviceName,
     );
     if (!userWorkspace || !ownerWorkspace) {
-      return;
+      return null;
     }
     userWorkspace.catalog = cloneDeep(ownerWorkspace.catalog);
     userWorkspace.model = cloneDeep(ownerWorkspace.model);
@@ -291,16 +288,16 @@ export class WorkspaceService {
   ): ApplicationWorkspace {
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
-    ) as CommunityWorkspace;
+    );
     const ownerWorkspace = communityWorkspace[owner];
     if (!ownerWorkspace) {
       console.error('owner workspace not found');
-      return;
+      return null;
     }
     const applicationWorkspace = ownerWorkspace[selectedServiceName];
     if (!applicationWorkspace) {
       console.error('app workspace not found for current user');
-      return;
+      return null;
     }
     const newRole = role as UserRole;
     applicationWorkspace.visitors = applicationWorkspace.visitors.map(
@@ -322,7 +319,8 @@ export class WorkspaceService {
    * @param newWorkspaceOwner  The owner of the workspace  to be joined
    * @param serviceName The application workspace is identified by the service name
    * @param username The usernames of the user that wants to join the workspace
-   * @param currentWorkspaceOwner  The owner of the workspace that the user is currently in. If specified, the user will be removed from that workspace
+   * @param currentWorkspaceOwner  The owner of the workspace that the user is currently in.
+   *                                If specified, the user will be removed from that workspace
    * @param model If specified, the model will be copied to the new workspace
    * @param catalog The catalog to be used in the new workspace
    * @param role The role to be set for the user in the new workspace
@@ -350,9 +348,8 @@ export class WorkspaceService {
         'Cannot join workspace as it is not know in communityWorkspace',
       );
     }
-    let currentApplicationWorkspace = communityWorkspace[
-      newWorkspaceOwner
-    ][serviceName] as ApplicationWorkspace;
+    let currentApplicationWorkspace =
+      communityWorkspace[newWorkspaceOwner][serviceName];
     if (!currentApplicationWorkspace) {
       throw new Error(
         'this user has no application workspace for the current service',
@@ -368,7 +365,12 @@ export class WorkspaceService {
 
     if (username === newWorkspaceOwner) {
       if (model) currentApplicationWorkspace.model = model;
-      if (catalog) currentApplicationWorkspace.catalog = catalog;
+      if (catalog) {
+        currentApplicationWorkspace.catalog = addMeasuresToWorkspace(
+          currentApplicationWorkspace.catalog,
+          catalog,
+        );
+      }
     }
 
     if (newWorkspaceOwner !== username) {
@@ -380,9 +382,7 @@ export class WorkspaceService {
       );
     }
 
-    this.communityWorkspace$.next(
-      communityWorkspace as CommunityWorkspace,
-    );
+    this.communityWorkspace$.next(communityWorkspace);
     setTimeout(() => {
       this.syncObject(this.currentGroupId);
     });
@@ -403,7 +403,7 @@ export class WorkspaceService {
     if (!owner || !currentServiceName) return;
     const appWorkspace = cloneDeep(
       this.getWorkspaceByUserAndService(owner, currentServiceName),
-    ) as ApplicationWorkspace;
+    );
     if (!appWorkspace) {
       return;
     }
@@ -412,7 +412,7 @@ export class WorkspaceService {
     );
     const communityWorkspace = cloneDeep(
       this.communityWorkspace$.getValue(),
-    ) as CommunityWorkspace;
+    );
     communityWorkspace[owner][currentServiceName] = appWorkspace;
     this.communityWorkspace$.next(communityWorkspace);
   }
@@ -438,10 +438,7 @@ export class WorkspaceService {
           console.log('Pushing local changes to remote y-js map...');
         }
         this.sharedDocument.transact(() => {
-          this._syncObjectToMap(
-            cloneDeep(obj) as CommunityWorkspace,
-            map,
-          );
+          this._syncObjectToMap(cloneDeep(obj), map);
         }, this.sharedDocument.clientID);
       });
     const sharedDoc = this.sharedDocument;
@@ -588,11 +585,11 @@ export class WorkspaceService {
   ) {
     const communityWorkspace = this.communityWorkspace$.getValue();
     if (!Object.keys(communityWorkspace).includes(user)) {
-      return;
+      return null;
     }
     const userWorkspace = communityWorkspace[user];
     if (!Object.keys(userWorkspace).includes(service)) {
-      return;
+      return null;
     }
     return userWorkspace[service];
   }
@@ -657,4 +654,15 @@ function updateWorkSpaceVisualizationData(
     }
   }
   return currentApplicationWorkspace;
+}
+function addMeasuresToWorkspace(
+  currentCatalog: MeasureCatalog,
+  catalog: MeasureCatalog,
+): MeasureCatalog {
+  if (!currentCatalog) return catalog;
+  if (!catalog) return currentCatalog;
+  for (const [key, value] of Object.entries(catalog.measures)) {
+    currentCatalog.measures[key] = value;
+  }
+  return currentCatalog;
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { firstValueFrom, take } from 'rxjs';
@@ -30,7 +30,7 @@ interface PickQuestionnaireResult {
   templateUrl: './pick-survey-dialog.component.html',
   styleUrls: ['./pick-survey-dialog.component.scss'],
 })
-export class PickSurveyDialogComponent implements OnInit {
+export class PickSurveyDialogComponent {
   selectedSurvey: Survey;
   addMeasures = true;
   assignMeasures = true;
@@ -43,8 +43,6 @@ export class PickSurveyDialogComponent implements OnInit {
     private dialog: MatDialog,
     private l2p: Las2peerService,
   ) {}
-
-  ngOnInit(): void {}
 
   onAddMeasuresChange(addMeasures: boolean): void {
     if (!addMeasures) {
@@ -103,15 +101,15 @@ export class PickSurveyDialogComponent implements OnInit {
     start: string,
     end: string,
   ): Promise<Survey> {
-    const service = await firstValueFrom(
-      this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
-    );
-    const group = await firstValueFrom(
-      this.ngrxStore.select(SELECTED_GROUP).pipe(take(1)),
-    );
-    const user = await firstValueFrom(
-      this.ngrxStore.select(USER).pipe(take(1)),
-    );
+    const [service, group, user] = await Promise.all([
+      firstValueFrom(
+        this.ngrxStore.select(SELECTED_SERVICE).pipe(take(1)),
+      ),
+      firstValueFrom(
+        this.ngrxStore.select(SELECTED_GROUP).pipe(take(1)),
+      ),
+      firstValueFrom(this.ngrxStore.select(USER).pipe(take(1))),
+    ]);
     let serviceName = service.name;
     if (serviceName.includes('@')) {
       serviceName = serviceName.split('@')[0];
@@ -162,6 +160,7 @@ export class PickSurveyDialogComponent implements OnInit {
       });
     } catch (error) {
       console.error(error);
+      return null;
     }
   }
 }

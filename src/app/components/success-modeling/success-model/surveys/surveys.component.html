@@ -92,7 +92,7 @@
     {{
       'success-modeling.questionnaires.no-questionnaires' | translate
     }}
-    <ng-container *ngIf="!(editMode$ | async)">{{
+    <ng-container *ngIf="(editMode$ | async) === false">{{
       'success-modeling.questionnaires.activate-edit' | translate
     }}</ng-container>
   </p>

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MatDialogRef,
   MAT_DIALOG_DATA,
@@ -10,11 +10,9 @@ import { ChartData } from 'src/app/models/chart.model';
   templateUrl: './static-chart.component.html',
   styleUrls: ['./static-chart.component.scss'],
 })
-export class StaticChartComponent implements OnInit {
+export class StaticChartComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public chartData: ChartData,
     private dialogRef: MatDialogRef<StaticChartComponent>,
   ) {}
-
-  ngOnInit(): void {}
 }

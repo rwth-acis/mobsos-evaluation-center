@@ -45,6 +45,7 @@ import {
   MEASURES,
   MEASURE,
 } from 'src/app/services/store/store.selectors';
+import { ChartType } from 'angular-google-charts';
 
 export interface DialogData {
   measure: Measure;
@@ -181,7 +182,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   get KPIExpression() {
     if (this.visualizationType !== 'KPI') {
-      return;
+      return null;
     }
     return this.measureForm
       .get('visualization')
@@ -246,8 +247,13 @@ export class EditMeasureDialogComponent implements OnInit {
     }
   }
 
+  getControlFromQuery(query, key) {
+    return query.controls[key];
+  }
+
   /**
    * Function which checks that each variable in the expression string is defined in a query
+   *
    * @returns
    */
   expressionVariablesAreDefined(): boolean {
@@ -270,14 +276,13 @@ export class EditMeasureDialogComponent implements OnInit {
           prev: { queries: SQLQuery[] },
           curr: { queries: SQLQuery[] },
         ) => {
-          return queriesChanged(prev, curr);
+          return queriesChanged(prev, curr) === false;
         },
       ),
       map((value) =>
         this.getMeasureFromForm(value ? value : this.data.measure),
       ),
       startWith(this.data.measure),
-      share(),
     );
   }
 
@@ -330,7 +335,7 @@ export class EditMeasureDialogComponent implements OnInit {
         return false;
       }
     }
-    return;
+    return null;
   }
 
   onRemoveQueryClicked(): void {
@@ -383,21 +388,9 @@ export class EditMeasureDialogComponent implements OnInit {
   //   }
   // }
 
-  // onQueryNameChanged(value: string, i: number): void {
-  //   const currentName = this.data.measure.queries[i].name;
-  //   const visualizationType = this.data.measure.visualization.type;
-  //   if (visualizationType === 'KPI') {
-  //     const visualization = this.data.measure
-  //       .visualization as KpiVisualization;
-  //     visualization.operationsElements.forEach((opElement, index) => {
-  //       if (index % 2 === 0 && opElement.name === currentName) {
-  //         opElement.name = value;
-  //       }
-  //     });
-  //   }
-  //   this.data.measure.queries[i].name = value;
-  // }
-  onQueryChanged(sql: string): void {
+  onQueryChanged(i: number): void {
+    const sql = this.formQueries.controls[i].get('sql')
+      .value as string;
     this.ngrxStore.dispatch(
       fetchVisualizationData({
         query: sql,
@@ -457,6 +450,7 @@ export class EditMeasureDialogComponent implements OnInit {
 
   /**
    * Adds SQL queries to the form
+   *
    * @param queries  Queries to be added
    */
   addQueriesToForm(queries: Query[]) {
@@ -464,7 +458,7 @@ export class EditMeasureDialogComponent implements OnInit {
       this.formQueries.push(
         this.fb.group({
           name: [query.name || ''],
-          sql: [(query as SQLQuery).sql],
+          sql: [(query as SQLQuery).sql?.trim() || ''],
         }),
       );
     });
@@ -493,7 +487,7 @@ export class EditMeasureDialogComponent implements OnInit {
           ? value.visualization.parameters[0].chartType
           : value.visualization.chartType;
         measure.visualization = new ChartVisualization(
-          chartType as string,
+          ChartType[chartType],
         );
         break;
       case 'KPI':
@@ -537,10 +531,10 @@ function queriesChanged(
     return true;
   }
   for (let i = 0; i < prev.queries.length; i++) {
-    if (prev.queries[i].name !== curr.queries[i].name) {
+    if (prev.queries[i].name.trim() !== curr.queries[i].name.trim()) {
       return true;
     }
-    if (prev.queries[i].sql !== curr.queries[i].sql) {
+    if (prev.queries[i].sql.trim() !== curr.queries[i].sql.trim()) {
       return true;
     }
   }

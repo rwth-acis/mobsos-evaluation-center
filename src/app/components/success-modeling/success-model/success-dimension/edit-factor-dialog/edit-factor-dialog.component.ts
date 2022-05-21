@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MatDialogRef,
   MAT_DIALOG_DATA,
@@ -14,13 +14,11 @@ export interface DialogData {
   templateUrl: './edit-factor-dialog.component.html',
   styleUrls: ['./edit-factor-dialog.component.scss'],
 })
-export class EditFactorDialogComponent implements OnInit {
+export class EditFactorDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<EditFactorDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
-
-  ngOnInit(): void {}
 
   onCancelClick(): void {
     this.dialogRef.close();

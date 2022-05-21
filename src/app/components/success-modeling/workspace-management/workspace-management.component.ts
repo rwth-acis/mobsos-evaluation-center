@@ -208,9 +208,9 @@ export class WorkspaceManagementComponent
       const successModelEmpty = await firstValueFrom(
         this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY).pipe(take(1)),
       );
-      let confirmation = true;
+      let shouldCopyModelToWorkspace = false; // by default we dont copy model. This is because the workspace might contain some model that has not been saved yet and we dont want to overwrite this
       if (!successModelEmpty) {
-        confirmation = await firstValueFrom(
+        shouldCopyModelToWorkspace = await firstValueFrom(
           this.dialog
             .open(ConfirmationDialogComponent, {
               minWidth: 300,
@@ -228,7 +228,7 @@ export class WorkspaceManagementComponent
           groupId,
           serviceName,
           username: user?.profile.preferred_username,
-          copyModel: !!confirmation,
+          copyModel: !!shouldCopyModelToWorkspace,
         }),
       );
     }
@@ -368,7 +368,8 @@ export class WorkspaceManagementComponent
           data: message,
         },
       );
-      return dialogRef.afterClosed().toPromise() as Promise<boolean>;
+      return firstValueFrom(dialogRef.afterClosed());
     }
+    return null;
   }
 }

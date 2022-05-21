@@ -15,6 +15,7 @@ import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,
   RESTRICTED_MODE,
+  SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import {
@@ -48,29 +49,30 @@ export class ChartVisualizerComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
-
-  query$: Observable<string>; // Observable of the sql query
-  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
-  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
-
-  formatter_medium; // holds the formatter for the date with format type medium
-
+  @Input() override measure$: Observable<Measure>;
   chartData: ChartData; // data which is needed to build the chart.
   chartInitialized = false; // used for the fadein animation of charts
   data$: Observable<VisualizationData>; // visualization data fetched from the store
-  // Observable which periodically checks wheter the google charts library is ready
   dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
-
+  formatter_medium; // holds the formatter for the date with format type medium
   formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
 
   subscriptions$: Subscription[] = [];
+  query$: Observable<string>; // Observable of the sql query
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
+    filter((service) => !!service),
+    distinctUntilKeyChanged('name'),
+    startWith(undefined),
+  );
+
   constructor(
-    public dialog: MatDialog,
-    protected ngrxStore: Store,
+    protected override dialog: MatDialog,
+    private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
   ) {
-    super(ngrxStore, dialog);
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -79,7 +81,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({
@@ -151,7 +153,12 @@ export class ChartVisualizerComponent
         const queryParams = super.getParamsForQuery(query);
         query = this.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(query, queryParams, cache);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+          cache,
+        );
       });
     this.subscriptions$.push(sub);
 

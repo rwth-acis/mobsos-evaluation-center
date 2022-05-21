@@ -436,7 +436,7 @@ function getUserRoleInWorkspace(
   userName: string,
 ): string {
   if (!userName || !applicationWorkspace) {
-    return;
+    return null;
   }
   if (applicationWorkspace?.createdBy === userName) {
     return UserRole.OWNER;
@@ -456,7 +456,7 @@ function getAllWorkspacesForService(
   serviceName: string,
 ): ApplicationWorkspace[] {
   if (!workspace) {
-    return;
+    return null;
   }
   const result = [];
   if (!serviceName) {
@@ -486,7 +486,7 @@ function getCurrentUserWorkspace(
   communityWorkspace: CommunityWorkspace,
   user: string,
 ) {
-  if (!communityWorkspace) return;
+  if (!communityWorkspace) return null;
   if (owner && communityWorkspace[owner])
     return communityWorkspace[owner];
   return communityWorkspace[user];

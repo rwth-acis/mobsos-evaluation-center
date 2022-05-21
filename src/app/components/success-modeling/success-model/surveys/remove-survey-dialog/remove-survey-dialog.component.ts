@@ -5,11 +5,9 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './remove-survey-dialog.component.html',
   styleUrls: ['./remove-survey-dialog.component.scss'],
 })
-export class RemoveSurveyDialogComponent implements OnInit {
-  deleteSurvey = true;
+export class RemoveSurveyDialogComponent {
+  deleteSurvey = false;
   deleteMeasures = true;
 
   constructor() {}
-
-  ngOnInit() {}
 }

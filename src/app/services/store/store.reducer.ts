@@ -30,6 +30,7 @@ import {
 } from '../../models/community.model';
 import {
   ServiceCollection,
+  ServiceInformation,
   ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../../models/service.model';
@@ -399,7 +400,7 @@ function addReqBazarProject(state: AppState, project: ReqbazProject) {
   const selectedServiceName = state.selectedServiceName;
   const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
   const workspace = state.communityWorkspace;
-  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const copy = cloneDeep(workspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     currentWorkSpaceOwner,
@@ -418,7 +419,7 @@ function removeReqBazarProject(state: AppState) {
   const selectedServiceName = state.selectedServiceName;
   const currentWorkSpaceOwner = state.currentWorkSpaceOwner;
   const workspace = state.communityWorkspace;
-  const copy = cloneDeep(workspace) as CommunityWorkspace;
+  const copy = cloneDeep(workspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     currentWorkSpaceOwner,
@@ -476,12 +477,12 @@ function updateVisualizationData(
  *
  * The format is {<service-name>: {alias: <service-alias>, mobsosIDs: [<mobsos-md5-agent-ids>]: number}}.
  * Example: {"i5.las2peer.services.mobsos.successModeling.MonitoringDataProvisionService":
- * {alias: "mobsos-success-modeling", mobsosIDs: {"3c3df6941ac59070c01d45611ce15107": 1000000, "3c3df6941ac59070c01d45611ce15107": 1000000,...}}}}}
+ * {alias: "mobsos-success-modeling", mobsosIDs: {"3c3df6941ac59070c01d45611ce15107": 1000000,...}}}}}
  */
 function mergeServiceData(
   serviceCollection: ServiceCollection,
-  servicesFromL2P,
-  servicesFromMobSOS,
+  servicesFromL2P: ServicesFromL2P,
+  servicesFromMobSOS: ServicesFromMobSOS,
 ): ServiceCollection {
   if (!servicesFromMobSOS && !servicesFromL2P)
     return serviceCollection;
@@ -492,7 +493,7 @@ function mergeServiceData(
         // use most recent release and extract the human readable name
         let releases;
         let latestRelease;
-        if (service?.releases?.length > 0) {
+        if (service.releases?.length > 0) {
           releases = Object.keys(service.releases).sort();
           latestRelease = service.releases[releases.slice(-1)[0]];
         }
@@ -522,7 +523,8 @@ function mergeServiceData(
   }
   const firstService = Object.values(serviceCollection)[0];
   if (firstService && Array.isArray(firstService.mobsosIDs)) {
-    // initially mobsos IDs were an array of objects. Since we changed this we might need to reset the structure that is stored in localstorage to an object
+    // initially mobsos IDs were an array of objects.
+    // Since we changed this we might need to reset the structure that is stored in localstorage to an object
     serviceCollection = {};
   }
   if (servicesFromMobSOS) {
@@ -596,7 +598,7 @@ function mergeGroupData(
   },
   groupsFromMobSOS?,
 ) {
-  const oldGroups = cloneDeep(groups) as GroupCollection;
+  const oldGroups = cloneDeep(groups);
   groups = {};
 
   // mark all these groups as groups the current user is a member of
@@ -637,25 +639,27 @@ function parseXml(xml: string) {
 
 function parseCatalog(xml: string): MeasureCatalog {
   if (!xml) {
-    return;
+    return null;
   }
   const doc = parseXml(xml);
   try {
     return MeasureCatalog.fromXml(doc.documentElement);
   } catch (e) {
     console.error(e);
+    return null;
   }
 }
 
 function parseModel(xml: string): SuccessModel {
   if (!xml) {
-    return;
+    return null;
   }
   const doc = parseXml(xml);
   try {
     return SuccessModel.fromXml(doc.documentElement);
   } catch (e) {
     console.warn(e);
+    return null;
   }
 }
 function addFactorToDimension(
@@ -667,7 +671,7 @@ function addFactorToDimension(
     dimensionName: string;
   },
 ) {
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -703,7 +707,7 @@ function removeFactor(
   selectedServiceName: string,
   factorName: string,
 ) {
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -729,7 +733,7 @@ function removeMeasure(
   measureName: string,
 ) {
   if (!measureName) return communityWorkspace;
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -764,7 +768,7 @@ function editFactorInDimension(
   owner: string,
   serviceName: string,
 ) {
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -792,7 +796,7 @@ function addMeasureToMeasureCatalog(
   owner: string,
   serviceName: string,
 ) {
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -815,7 +819,7 @@ function addMeasureToFactorInModel(
 ) {
   if (!props.dimensionName) return communityWorkspace;
 
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -845,7 +849,7 @@ function updateMeasure(
   },
   catalogOnly?: boolean,
 ) {
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -960,11 +964,11 @@ function getWorkspaceByUserAndService(
     !communityWorkspace ||
     !Object.keys(communityWorkspace).includes(user)
   ) {
-    return;
+    return null;
   }
   const userWorkspace = communityWorkspace[user];
   if (!Object.keys(userWorkspace).includes(service)) {
-    return;
+    return null;
   }
   return userWorkspace[service];
 }
@@ -983,7 +987,7 @@ function updateGroup(
   if (!group?.id) {
     return groups;
   }
-  const copy = cloneDeep(groups) as GroupCollection;
+  const copy = cloneDeep(groups);
   copy[group.id] = group;
   return copy;
 }
@@ -994,7 +998,7 @@ function removeMeasureFromCatalog(
   selectedServiceName: string,
 ): CommunityWorkspace {
   if (!measureName) return communityWorkspace;
-  const copy = cloneDeep(communityWorkspace) as CommunityWorkspace;
+  const copy = cloneDeep(communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -1011,9 +1015,7 @@ function updateRequirements(
   state: AppState,
   requirements: Requirement[],
 ) {
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     state.currentWorkSpaceOwner,
@@ -1028,7 +1030,7 @@ function addServiceDescriptions(
   descriptions: { [key: string]: string },
   serviceName: string,
 ) {
-  const copy = cloneDeep(services) as ServiceCollection;
+  const copy = cloneDeep(services);
   if (!serviceName) return services;
   if (serviceName in copy) {
     copy[serviceName] = {
@@ -1044,9 +1046,7 @@ function resetFetchDateForQuery(
   query: string,
 ): VisualizationCollection {
   if (!(query in visualizationData)) return visualizationData;
-  const copy = cloneDeep(
-    visualizationData,
-  ) as VisualizationCollection;
+  const copy = cloneDeep(visualizationData);
 
   copy[query] = {
     ...copy[query],
@@ -1062,9 +1062,7 @@ function addModelToCurrentWorkSpace(
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
   const selectedService = state.services[serviceName];
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   let appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -1085,9 +1083,7 @@ function addModelToCurrentWorkSpace(
 function addCatalogToCurrentWorkSpace(state: AppState, xml: string) {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -1104,9 +1100,7 @@ function addSurveyToModel(
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -1157,7 +1151,7 @@ function addGroupMembers(
   groupId: string,
   groupMembers: GroupMember[],
 ): GroupCollection {
-  const copy = cloneDeep(groups) as GroupCollection;
+  const copy = cloneDeep(groups);
   if (!groupId) return groups;
   if (!copy[groupId]) return groups;
   copy[groupId].members = groupMembers;
@@ -1169,16 +1163,14 @@ function removeSurveyFromSuccessModel(
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
     serviceName,
   );
   appWorkspace.model.surveys = appWorkspace.model.surveys.filter(
-    (s) => s.qid !== id && (s as any).surveyId !== id,
+    (s) => s.id !== id,
   );
 
   return copy;
@@ -1189,9 +1181,7 @@ function removeSurveyMeasures(
 ): CommunityWorkspace {
   const serviceName = state.selectedServiceName;
   const owner = state.currentWorkSpaceOwner;
-  const copy = cloneDeep(
-    state.communityWorkspace,
-  ) as CommunityWorkspace;
+  const copy = cloneDeep(state.communityWorkspace);
   const appWorkspace = getWorkspaceByUserAndService(
     copy,
     owner,
@@ -1200,26 +1190,22 @@ function removeSurveyMeasures(
   if (!appWorkspace.catalog) return copy;
   const catalog = appWorkspace.catalog;
   if (!catalog.measures) return copy;
-  const removed = [];
-  Object.keys(catalog.measures).forEach((measureName) => {
+  const model = appWorkspace.model;
+  for (const measureName of Object.keys(catalog.measures)) {
     const measure = catalog.measures[measureName];
     if (measure.tags?.includes(measureTag)) {
-      removed.push(measureName);
       delete catalog.measures[measureName];
-    }
-  });
-  for (const measureName of removed) {
-    const model = appWorkspace.model;
-    for (const dimensionName of Object.keys(model.dimensions)) {
-      const factors = model.dimensions[dimensionName];
-      for (const factor of factors) {
-        factor.measures = factor.measures.filter(
-          (m: string) => m !== measureName,
+      for (const dimensionName of Object.keys(model.dimensions)) {
+        const factors = model.dimensions[dimensionName];
+        for (const factor of factors) {
+          factor.measures = factor.measures.filter(
+            (m: string) => m !== measureName,
+          );
+        }
+        model.dimensions[dimensionName] = factors.filter(
+          (f: SuccessFactor) => f.measures?.length > 0,
         );
       }
-      model.dimensions[dimensionName] = factors.filter(
-        (f: SuccessFactor) => f.measures?.length > 0,
-      );
     }
   }
   return copy;
