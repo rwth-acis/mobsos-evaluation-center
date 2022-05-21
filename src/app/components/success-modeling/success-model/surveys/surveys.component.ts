@@ -107,11 +107,16 @@ export class SurveyComponent implements OnInit {
 
   async openPickSurveyDialog(): Promise<void> {
     const result = await firstValueFrom(
-      this.dialog.open(PickSurveyDialogComponent).afterClosed(),
+      this.dialog
+        .open(PickSurveyDialogComponent, {
+          width: '80vw',
+          maxWidth: '900px',
+          maxHeight: '900px',
+          height: '80vh',
+        })
+        .afterClosed(),
     );
-    if (!result) {
-      return;
-    }
+    if (!result) return;
     const { selectedSurvey, addMeasures, assignMeasures } = result;
     if (selectedSurvey) {
       this.ngrxStore.dispatch(
