@@ -9,13 +9,12 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../../app.module';
+import { createTranslateLoader } from 'src/app/app.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
-import { SuccessModel } from 'src/app/models/success.model';
 
 describe('QuestionnairesComponent', () => {
   let component: SurveyComponent;
@@ -49,24 +48,24 @@ describe('QuestionnairesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SurveyComponent);
     component = fixture.componentInstance;
-    component.availableQuestionnaires = [];
-    component.editMode = false;
-    component.groupID = 'testGroupID';
-    component.measures = {};
-    component.model = new SuccessModel(
-      'TestModel',
-      'TestService',
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null,
-    );
+    // component.availableQuestionnaires = [];
+    // component.editMode = false;
+    // component.groupID = 'testGroupID';
+    // component.measures = {};
+    // component.model = new SuccessModel(
+    //   'TestModel',
+    //   'TestService',
+    //   {
+    //     'System Quality': [],
+    //     'Information Quality': [],
+    //     Use: [],
+    //     'User Satisfaction': [],
+    //     'Individual Impact': [],
+    //     'Community Impact': [],
+    //   },
+    //   [],
+    //   null,
+    // );
     fixture.detectChanges();
   });
 

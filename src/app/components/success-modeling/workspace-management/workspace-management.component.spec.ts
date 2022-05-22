@@ -9,9 +9,9 @@ import {
   TranslateModule,
 } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
-import { createTranslateLoader } from '../../app.module';
-import { INITIAL_APP_STATE } from '../../models/state.model';
-import { StateEffects } from '../../services/store.effects';
+import { createTranslateLoader } from 'src/app/app.module';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+import { StateEffects } from 'src/app/services/store/store.effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { MatMenuModule } from '@angular/material/menu';
 import { WorkspaceManagementComponent } from './workspace-management.component';

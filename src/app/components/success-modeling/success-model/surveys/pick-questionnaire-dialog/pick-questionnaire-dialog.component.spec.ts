@@ -10,7 +10,7 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../../../app.module';
+import { createTranslateLoader } from 'src/app/app.module';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,30 +27,28 @@ describe('PickQuestionnaireDialogComponent', () => {
   let component: PickQuestionnaireDialogComponent;
   let fixture: ComponentFixture<PickQuestionnaireDialogComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [PickQuestionnaireDialogComponent],
-        imports: [
-          BrowserAnimationsModule,
-          TranslateModule.forRoot({
-            loader: {
-              provide: TranslateLoader,
-              useFactory: createTranslateLoader,
-            },
-          }),
-          MatIconModule,
-          MatSelectModule,
-          MatFormFieldModule,
-          MatDialogModule,
-          MatButtonModule,
-          FormsModule,
-          MatCheckboxModule,
-        ],
-        providers: [{ provide: MAT_DIALOG_DATA, useValue: [] }],
-      }).compileComponents();
-    }),
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [PickQuestionnaireDialogComponent],
+      imports: [
+        BrowserAnimationsModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+        MatIconModule,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatDialogModule,
+        MatButtonModule,
+        FormsModule,
+        MatCheckboxModule,
+      ],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: [] }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(
