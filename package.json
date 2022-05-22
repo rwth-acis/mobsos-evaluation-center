@@ -98,6 +98,7 @@
     "karma-jasmine-html-reporter": "^1.6.0",
     "postcss": "^8.2.15",
     "protractor": "~7.0.0",
+    "puppeteer": "^14.1.1",
     "tailwindcss": "^3.0.23",
     "ts-node": "~7.0.0",
     "tslint": "^6.1.3",
