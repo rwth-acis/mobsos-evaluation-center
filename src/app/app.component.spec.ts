@@ -87,6 +87,6 @@ describe('AppComponent', () => {
     expect(
       compiled.querySelector('las2peer-frontend-statusbar h2')
         .textContent,
-    ).toContain('MobSOS Evaluation Center');
+    ).toContain('MobSOS');
   });
 });
