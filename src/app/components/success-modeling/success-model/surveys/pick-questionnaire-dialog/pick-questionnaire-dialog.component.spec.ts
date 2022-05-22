@@ -17,16 +17,25 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
+  MatDialogRef,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { provideMockStore } from '@ngrx/store/testing';
+import { initialState } from 'src/app/services/store/store.reducer';
+import { StateEffects } from 'src/app/services/store/store.effects';
+import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 
 describe('PickQuestionnaireDialogComponent', () => {
   let component: PickQuestionnaireDialogComponent;
   let fixture: ComponentFixture<PickQuestionnaireDialogComponent>;
-
+  let actions: Actions;
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [PickQuestionnaireDialogComponent],
@@ -46,7 +55,17 @@ describe('PickQuestionnaireDialogComponent', () => {
         FormsModule,
         MatCheckboxModule,
       ],
-      providers: [{ provide: MAT_DIALOG_DATA, useValue: [] }],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+        { provide: MatDialogRef, useValue: {} },
+        provideMockStore({ initialState }),
+        {
+          provide: StateEffects,
+          useValue: { fetchQuestionnaireForm$: of(null) },
+        },
+        provideMockActions(() => actions),
+        HttpClientTestingModule,
+      ],
     }).compileComponents();
   }));
 
@@ -55,6 +74,8 @@ describe('PickQuestionnaireDialogComponent', () => {
       PickQuestionnaireDialogComponent,
     );
     component = fixture.componentInstance;
+    TestBed.inject(StateEffects);
+    TestBed.inject(Actions);
     fixture.detectChanges();
   });
 

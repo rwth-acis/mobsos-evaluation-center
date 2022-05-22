@@ -15,6 +15,7 @@ import { StateEffects } from 'src/app/services/store/store.effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { MatMenuModule } from '@angular/material/menu';
 import { WorkspaceManagementComponent } from './workspace-management.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('WorkspaceManagementComponent', () => {
   let component: WorkspaceManagementComponent;
@@ -37,6 +38,7 @@ describe('WorkspaceManagementComponent', () => {
       ],
       providers: [
         { provide: MatDialogRef, useValue: {} },
+        { provide: MatSnackBar, useValue: {} },
         provideMockStore({ initialState }),
         provideMockActions(() => actions$),
         StateEffects,

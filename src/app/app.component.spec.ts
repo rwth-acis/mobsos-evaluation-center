@@ -22,44 +22,50 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { INITIAL_APP_STATE } from './models/state.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  MatDialogModule,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 
 describe('AppComponent', () => {
   const initialState = INITIAL_APP_STATE;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [
-          RouterTestingModule,
-          BrowserAnimationsModule,
-          TranslateModule.forRoot({
-            loader: {
-              provide: TranslateLoader,
-              useFactory: createTranslateLoader,
-            },
-          }),
-          LoggerModule.forRoot({
-            level: NgxLoggerLevel.TRACE,
-            serverLogLevel: NgxLoggerLevel.OFF,
-          }),
-          MatSidenavModule,
-          MatIconModule,
-          MatListModule,
-          MatButtonModule,
-          MatSlideToggleModule,
-          MatFormFieldModule,
-          MatSelectModule,
-          MatSnackBarModule,
-          MatProgressSpinnerModule,
-          HttpClientTestingModule,
-          ServiceWorkerModule.register('', { enabled: false }),
-        ],
-        declarations: [AppComponent],
-        providers: [provideMockStore({ initialState })],
-        schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      }).compileComponents();
-    }),
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        RouterTestingModule,
+        BrowserAnimationsModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF,
+        }),
+        MatSidenavModule,
+        MatIconModule,
+        MatListModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatSlideToggleModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatSnackBarModule,
+        MatProgressSpinnerModule,
+        HttpClientTestingModule,
+        ServiceWorkerModule.register('', { enabled: false }),
+      ],
+      declarations: [AppComponent],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+        provideMockStore({ initialState }),
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    }).compileComponents();
+  }));
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
@@ -68,7 +74,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should have as title \'mobsos-evaluation-center\'', () => {
+  it("should have as title 'mobsos-evaluation-center'", () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app.title).toEqual('MobSOS Evaluation Center');

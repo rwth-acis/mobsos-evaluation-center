@@ -32,6 +32,7 @@ import {
 } from 'src/app/models/state.model';
 import { createTranslateLoader } from 'src/app/app.module';
 import { StateEffects } from 'src/app/services/store/store.effects';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -45,6 +46,7 @@ describe('RawEditComponent', () => {
       declarations: [RawEditComponent],
       imports: [
         MatTabsModule,
+        RouterTestingModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
