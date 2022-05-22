@@ -9,7 +9,8 @@
     "build:prod": "ng build --configuration production",
     "build:prod-sbf-dev": "ng build --source-map --configuration production --base-href /monitor/ ",
     "build:prod:single-bundle": "ng build --configuration production --single-bundle",
-    "test": "ng test",
+    "test": "ng test --browsers=Chrome",
+    "test-headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "npx ng lint mobsos-evaluation-center",
     "lint:fix": "npx ng lint --fix mobsos-evaluation-center",
     "e2e": "ng e2e"
