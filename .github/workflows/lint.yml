@@ -20,7 +20,7 @@ jobs:
       with:
         node-version: 14.x
     - name: Setup
-      run: npm ci
+      run: npm i
     - name: Test
       run: |
           npm test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
