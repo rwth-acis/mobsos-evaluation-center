@@ -53,7 +53,7 @@ export class Las2peerService {
   SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
   SUCCESS_MODELING_GROUP_PATH = 'groups';
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
-  QUERY_VISUALIZATION_VISUALIZE_MODEL_PATH = '/model/visualize';
+  QUERY_VISUALIZATION_VISUALIZE_MODEL_PATH = '/queries/visualize';
   REQBAZ_PROJECTS_PATH = 'projects';
   REQBAZ_CATEGORIES_PATH = 'categories';
   REQBAZ_REQUIREMENTS_PATH = 'requirements';
