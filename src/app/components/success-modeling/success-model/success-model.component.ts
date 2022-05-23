@@ -157,7 +157,9 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(sub);
 
     sub = this.successModel$.subscribe((successModel) => {
-      this.successModel = successModel;
+      if (successModel) {
+        this.successModel = successModel;
+      }
     });
     this.subscriptions$.push(sub);
 

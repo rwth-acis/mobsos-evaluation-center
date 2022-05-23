@@ -689,6 +689,21 @@ export class StateEffects {
     ),
   );
 
+  storeSuccessModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeSuccessModel),
+      delay(100),
+      tap(({ xml }) => {
+        if (xml) {
+          this.ngrxStore.dispatch(
+            Action.fetchVisualizationDataForSuccessModel(),
+          );
+        }
+      }),
+      mergeMap(() => of(Action.noop())),
+    ),
+  );
+
   fetchQuestionnaires$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchQuestionnaires),
@@ -1207,7 +1222,7 @@ function getQueriesToFetch(
           const queryString = applyVariableReplacements(
             query.sql,
             service,
-          );
+          ).trim();
           const dataForQuery = data[queryString];
           if (shouldFetch(dataForQuery)) {
             queries.push(queryString);
