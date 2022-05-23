@@ -10,7 +10,10 @@ import {
   SuccessFactor,
   SuccessModel,
 } from '../../models/success.model';
-import { VisualizationCollection } from '../../models/visualization.model';
+import {
+  VisualizationCollection,
+  VisualizationData,
+} from '../../models/visualization.model';
 import {
   CommunityWorkspace,
   EmptyApplicationWorkspace,
@@ -390,6 +393,16 @@ const _Reducer = createReducer(
     ...state,
     currentWorkSpaceOwner: props.owner || state.currentWorkSpaceOwner,
   })),
+  on(
+    Actions.storeVisualizationDataForSuccessModel,
+    (state, props) => ({
+      ...state,
+      visualizationData: addVisualizationData(
+        state.visualizationData,
+        props,
+      ),
+    }),
+  ),
 );
 
 export function Reducer(state: AppState, action: Action): any {
@@ -470,6 +483,23 @@ function updateVisualizationData(
   }
 
   return currentVisualizationData;
+}
+
+function addVisualizationData(
+  visualizationData: VisualizationCollection,
+  props: {
+    [query: string]: { data: any; error?: any };
+  },
+): VisualizationCollection {
+  let copy = cloneDeep(visualizationData);
+  for (const query of Object.keys(props)) {
+    copy = updateVisualizationData(copy, {
+      data: props[query].data,
+      query,
+      error: props[query].error,
+    });
+  }
+  return copy;
 }
 
 /**

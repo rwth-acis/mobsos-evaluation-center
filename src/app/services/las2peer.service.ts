@@ -53,6 +53,7 @@ export class Las2peerService {
   SUCCESS_MODELING_SERVICE_DISCOVERY_PATH = 'services';
   SUCCESS_MODELING_GROUP_PATH = 'groups';
   QUERY_VISUALIZATION_VISUALIZE_QUERY_PATH = '/query/visualize';
+  QUERY_VISUALIZATION_VISUALIZE_MODEL_PATH = '/model/visualize';
   REQBAZ_PROJECTS_PATH = 'projects';
   REQBAZ_CATEGORIES_PATH = 'categories';
   REQBAZ_REQUIREMENTS_PATH = 'requirements';
@@ -1018,6 +1019,62 @@ export class Las2peerService {
       query,
       queryparams: queryParams,
       title: '',
+      save: false,
+    };
+    const profile = JSON.parse(localStorage.getItem('profile'));
+    let authorHeader;
+    if (profile) {
+      authorHeader = {
+        Authorization:
+          'Basic ' +
+          btoa(
+            `${profile.preferred_username as string}:${
+              profile.sub as string
+            }`,
+          ),
+      };
+    }
+
+    return this.makeRequestAndObserve(url, {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+      observe: 'response',
+      headers: {
+        ...authorHeader,
+      },
+    }).pipe(
+      catchError((err) => {
+        console.error(err);
+        return of(err);
+      }),
+    );
+  }
+
+  fetchVisualizationDataForSuccessModel(
+    body: { query: string; queryParams: string[] }[],
+    format: string = 'JSON',
+    cache = false,
+  ) {
+    let url: string;
+    if (format) {
+      url = joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
+        this.QUERY_VISUALIZATION_VISUALIZE_MODEL_PATH,
+        `?format=${format}`,
+      );
+    } else {
+      url = joinAbsoluteUrlPath(
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
+        this.QUERY_VISUALIZATION_VISUALIZE_MODEL_PATH,
+      );
+    }
+
+    const requestBody = {
+      cache,
+      dbkey: 'las2peermon',
+      body,
       save: false,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
