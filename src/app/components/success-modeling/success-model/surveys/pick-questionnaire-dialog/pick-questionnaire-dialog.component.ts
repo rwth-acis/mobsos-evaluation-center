@@ -40,8 +40,8 @@ export class PickQuestionnaireDialogComponent {
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   range = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+    start: new FormControl({ value: '', disabled: true }),
+    end: new FormControl({ value: '', disabled: true }),
   });
 
   constructor(
