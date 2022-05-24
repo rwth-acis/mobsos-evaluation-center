@@ -1074,7 +1074,7 @@ export class Las2peerService {
     const requestBody = {
       cache,
       dbkey: 'las2peermon',
-      body,
+      queries: body,
       save: false,
     };
     const profile = JSON.parse(localStorage.getItem('profile'));
