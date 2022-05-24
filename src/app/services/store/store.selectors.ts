@@ -267,12 +267,14 @@ export const SURVEYS_NOT_IN_MODEL = createSelector(
   SURVEYS_FROM_SUCCESS_MODEL,
   SURVEYS,
   (surveysInModels, surveys) =>
-    surveys?.filter(
-      (survey) =>
-        !surveysInModels.find(
-          (surveyInModel) => surveyInModel.id === survey.id,
-        ),
-    ),
+    surveysInModels
+      ? surveys?.filter(
+          (survey) =>
+            !surveysInModels.find(
+              (surveyInModel) => surveyInModel.id === survey.id,
+            ),
+        )
+      : surveys,
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
