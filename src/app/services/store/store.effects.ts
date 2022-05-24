@@ -646,6 +646,15 @@ export class StateEffects {
       ofType(Action.fetchSurveys),
       mergeMap(() =>
         this.l2p.getSurveys().pipe(
+          map((surveys: Survey[]) => {
+            //transform dates
+            surveys = surveys.map((survey) => {
+              survey.start = new Date(survey.start);
+              survey.end = new Date(survey.end);
+              return survey;
+            });
+            return surveys;
+          }),
           map((surveys: Survey[]) =>
             Action.storeSurveys({
               surveys,
