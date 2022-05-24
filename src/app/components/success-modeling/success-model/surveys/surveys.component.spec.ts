@@ -16,10 +16,23 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { SuccessModel } from 'src/app/models/success.model';
+import { of } from 'rxjs';
+import { Survey } from 'src/app/models/survey.model';
 
 describe('QuestionnairesComponent', () => {
   let component: SurveyComponent;
   let fixture: ComponentFixture<SurveyComponent>;
+  let testSurvey = new Survey({
+    description: 'Test Survey',
+    start: new Date().toISOString(),
+    end: new Date(Date.now() + 2000000).toISOString(),
+    id: 0,
+    name: `Test (${new Date().toISOString()})`,
+    organization: 'Test Organization',
+    owner: 'Test Owner',
+    resource: 'Test Resource',
+    'resource-label': 'Test Resource Label',
+  });
   const initialState = INITIAL_APP_STATE;
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -49,24 +62,6 @@ describe('QuestionnairesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SurveyComponent);
     component = fixture.componentInstance;
-    component.availableQuestionnaires = [];
-    component.editMode = false;
-    component.groupID = 'testGroupID';
-    component.measures = {};
-    component.model = new SuccessModel(
-      'TestModel',
-      'TestService',
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null,
-    );
     fixture.detectChanges();
   });
 
