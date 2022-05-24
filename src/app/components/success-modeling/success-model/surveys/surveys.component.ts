@@ -14,6 +14,7 @@ import {
   SUCCESS_MODEL,
   QUESTIONNAIRE,
   MEASURE_CATALOG,
+  SURVEYS_FROM_SUCCESS_MODEL,
 } from 'src/app/services/store/store.selectors';
 import { ServiceInformation } from 'src/app/models/service.model';
 
@@ -43,6 +44,7 @@ import {
 import {
   catchError,
   firstValueFrom,
+  map,
   Observable,
   of,
   take,
@@ -76,14 +78,13 @@ import { ChartType } from 'angular-google-charts';
   styleUrls: ['./surveys.component.scss'],
 })
 export class SurveyComponent implements OnInit {
-  @Input() model$: Observable<SuccessModel>;
-
   measures$ = this.ngrxStore.select(MEASURES);
   service$ = this.ngrxStore.select(SELECTED_SERVICE);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
   group$ = this.ngrxStore.select(SELECTED_GROUP);
+  surveys$ = this.ngrxStore.select(SURVEYS_FROM_SUCCESS_MODEL);
 
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   surveys: any;
