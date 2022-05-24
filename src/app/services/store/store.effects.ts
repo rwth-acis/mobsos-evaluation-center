@@ -528,23 +528,27 @@ export class StateEffects {
           service,
         );
 
-        const requestBody = queries.reduce((acc, query) => {
-          const queryParams = getParamsForQuery(query, service); // might be needed later, for now the variable replacement has already been done
-          if (!query) {
-            console.error('Query is null');
-            return acc;
-          }
+        const requestBody = queries
+          .map((query) => {
+            const queryParams = getParamsForQuery(query, service); // might be needed later, for now the variable replacement has already been done
+            if (!query) {
+              console.warn('Query is null');
+              return null;
+            }
 
-          StateEffects.visualizationCalls[query] =
-            data[query]?.fetchDate;
-          acc.push({ query, queryParams });
-          return acc;
-        }, []);
+            StateEffects.visualizationCalls[query] =
+              data[query]?.fetchDate;
+            return { query, queryParams };
+          })
+          .filter((obj) => obj != null);
         return this.l2p
           .fetchVisualizationDataForSuccessModel(requestBody, 'JSON')
           .pipe(
             // timeout(30000),
             map((response) => {
+              if (response.status !== 200) {
+                throw response;
+              }
               return Action.storeVisualizationDataForSuccessModel({
                 data: response,
               });
