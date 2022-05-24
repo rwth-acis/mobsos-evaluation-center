@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { firstValueFrom, take } from 'rxjs';
+import { firstValueFrom, map, take } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { Survey } from 'src/app/models/survey.model';
 import {
@@ -36,7 +36,18 @@ export class PickSurveyDialogComponent {
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   surveys$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
-
+  currentSurveys$ = this.surveys$.pipe(
+    map((surveys) =>
+      surveys.filter((survey) => {
+        return survey.end > new Date();
+      }),
+    ),
+  );
+  pastSurveys$ = this.surveys$.pipe(
+    map((surveys) =>
+      surveys.filter((survey) => !(survey.end > new Date())),
+    ),
+  );
   constructor(
     private dialogRef: MatDialogRef<PickSurveyDialogComponent>,
     private ngrxStore: Store,
@@ -114,7 +125,7 @@ export class PickSurveyDialogComponent {
     if (serviceName.includes('@')) {
       serviceName = serviceName.split('@')[0];
     }
-    const surveyName = `${service.alias}: ${questionnaire.name} (${start}) `;
+    const surveyName = `${service.alias}: ${questionnaire.name}`;
 
     try {
       const response = await this.l2p.createSurvey(

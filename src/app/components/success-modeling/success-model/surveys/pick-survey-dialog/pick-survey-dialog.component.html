@@ -1,53 +1,66 @@
-<mat-dialog-content>
-  <div class="flex items-center">
-    <mat-form-field class="grow">
-      <mat-label>{{
-        'success-modeling.questionnaires.pick-questionnaire-dialog.survey-select'
+<mat-dialog-content class="flex flex-col justify-between">
+  <div>
+    <div class="flex items-center">
+      <mat-form-field class="grow">
+        <mat-label>{{
+          'success-modeling.questionnaires.pick-questionnaire-dialog.survey-select'
+            | translate
+        }}</mat-label>
+        <mat-select [(value)]="selectedSurvey">
+          <h5 class="px-3 text-slate-500">Current Surveys</h5>
+          <mat-option
+            *ngFor="let survey of currentSurveys$ | async"
+            [value]="survey"
+          >
+            {{ survey.name }}
+          </mat-option>
+
+          <h5 class="px-5 text-slate-500">Past Surveys</h5>
+          <mat-option
+            *ngFor="let survey of pastSurveys$ | async"
+            [value]="survey"
+          >
+            {{ survey.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <a
+        *ngIf="selectedSurvey"
+        mat-icon-button
+        [href]="mobsosSurveysUrl + 'surveys/' + selectedSurvey.id"
+        color="primary"
+        target="_blank"
+      >
+        <mat-icon>open_in_browser</mat-icon>
+      </a>
+    </div>
+
+    <mat-checkbox
+      [ngModel]="addMeasures"
+      (ngModelChange)="onAddMeasuresChange($event)"
+      >{{
+        'success-modeling.questionnaires.pick-questionnaire-dialog.add-measures'
           | translate
-      }}</mat-label>
-      <mat-select [(value)]="selectedSurvey">
-        <mat-option
-          *ngFor="let survey of surveys$ | async"
-          [value]="survey"
-        >
-          {{ survey.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <a
-      *ngIf="selectedSurvey"
-      mat-icon-button
-      [href]="mobsosSurveysUrl + 'surveys/' + selectedSurvey.id"
-      color="primary"
-      target="_blank"
+      }}</mat-checkbox
     >
-      <mat-icon>open_in_browser</mat-icon>
-    </a>
-  </div>
-
-  <mat-checkbox
-    [ngModel]="addMeasures"
-    (ngModelChange)="onAddMeasuresChange($event)"
-    >{{
-      'success-modeling.questionnaires.pick-questionnaire-dialog.add-measures'
+    <br />
+    <mat-checkbox [(ngModel)]="assignMeasures">{{
+      'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
         | translate
-    }}</mat-checkbox
-  >
-  <br />
-  <mat-checkbox [(ngModel)]="assignMeasures">{{
-    'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
-      | translate
-  }}</mat-checkbox>
-  <h5>Don't see your survey?</h5>
-  <button
-    mat-button
-    type="button"
-    color="primary"
-    (click)="openAddSurveyDialog()"
-  >
-    <mat-icon>add</mat-icon> Start a new survey
-  </button>
+    }}</mat-checkbox>
+  </div>
+  <div>
+    <h5>Don't see your survey?</h5>
+    <button
+      mat-button
+      type="button"
+      color="primary"
+      (click)="openAddSurveyDialog()"
+    >
+      <mat-icon>add</mat-icon> Start a new survey
+    </button>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions>
