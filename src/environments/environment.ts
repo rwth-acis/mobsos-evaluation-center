@@ -22,7 +22,8 @@ export const environment: Environment = {
   openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
   openIdClientId: 'localtestclient',
   openIdSilentLoginInterval: 60,
-  las2peerWebConnectorUrl: 'http://localhost:8080',
+  las2peerWebConnectorUrl:
+    'https://git.tech4comp.dbis.rwth-aachen.de',
   mobsosSurveysUrl:
     'https://git.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   visualizationRefreshInterval: 5,
