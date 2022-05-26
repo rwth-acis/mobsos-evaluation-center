@@ -145,22 +145,22 @@ export class ChartVisualizerComponent
       }),
     );
 
-    sub = this.measure$
-      .pipe(withLatestFrom(this.service$))
-      .subscribe(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
-        const queryParams = super.getParamsForQuery(query);
-        query = this.applyVariableReplacements(query, service);
-        query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-          cache,
-        );
-      });
-    this.subscriptions$.push(sub);
+    // sub = this.measure$
+    //   .pipe(withLatestFrom(this.service$))
+    //   .subscribe(([measure, service]) => {
+    //     let query = measure.queries[0].sql;
+    //     const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
+    //     const queryParams = super.getParamsForQuery(query);
+    //     query = this.applyVariableReplacements(query, service);
+    //     query = applyCompatibilityFixForVisualizationService(query);
+    //     super.fetchVisualizationData(
+    //       query,
+    //       queryParams,
+    //       this.ngrxStore,
+    //       cache,
+    //     );
+    //   });
+    // this.subscriptions$.push(sub);
 
     sub = this.data$
       .pipe(

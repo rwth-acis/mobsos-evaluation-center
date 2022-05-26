@@ -376,7 +376,9 @@ export const storeVisualizationData = createAction(
 
 export const storeVisualizationDataForSuccessModel = createAction(
   StoreActions.STORE_VISUALIZATION_DATA_FOR_SUCCESS_MODEL,
-  props<{ [query: string]: { data: any; error?: any } }>(), // use obj with queery as key
+  props<{
+    data: { [query: string]: { data: any[][]; error: any } };
+  }>(), // use obj with queery as key
 );
 
 export const storeCatalog = createAction(

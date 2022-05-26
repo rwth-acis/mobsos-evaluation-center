@@ -549,8 +549,30 @@ export class StateEffects {
               if (response.status !== 200) {
                 throw response;
               }
+              const data: {
+                [query: string]: {
+                  data: any[][];
+                  error: HttpErrorResponse;
+                };
+              } = {};
+              for (const query of Object.keys(response.body)) {
+                if (typeof response.body[query] === 'string') {
+                  data[query] = {
+                    data: null,
+                    error: new HttpErrorResponse({
+                      error: response.body[query],
+                      status: 400,
+                    }),
+                  };
+                } else {
+                  data[query] = {
+                    data: response.body[query],
+                    error: null,
+                  };
+                }
+              }
               return Action.storeVisualizationDataForSuccessModel({
-                data: response,
+                data,
               });
             }),
             catchError((error) => {
@@ -1228,9 +1250,9 @@ function getQueriesToFetch(
             service,
           ).trim();
           const dataForQuery = data[queryString];
-          if (shouldFetch(dataForQuery)) {
-            queries.push(queryString);
-          }
+          // if (shouldFetch(dataForQuery)) {
+          queries.push(queryString);
+          // }
         }
       }
     }

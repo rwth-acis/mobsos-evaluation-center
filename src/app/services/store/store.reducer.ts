@@ -399,7 +399,7 @@ const _Reducer = createReducer(
       ...state,
       visualizationData: addVisualizationData(
         state.visualizationData,
-        props,
+        props.data,
       ),
     }),
   ),
@@ -487,16 +487,16 @@ function updateVisualizationData(
 
 function addVisualizationData(
   visualizationData: VisualizationCollection,
-  props: {
-    [query: string]: { data: any; error?: any };
+  data: {
+    [query: string]: { data: any[][]; error: HttpErrorResponse };
   },
 ): VisualizationCollection {
   let copy = cloneDeep(visualizationData);
-  for (const query of Object.keys(props)) {
+  for (const query of Object.keys(data)) {
     copy = updateVisualizationData(copy, {
-      data: props[query].data,
+      data: data[query].data,
       query,
-      error: props[query].error,
+      error: data[query].error,
     });
   }
   return copy;
