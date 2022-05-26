@@ -163,24 +163,24 @@ export class KpiVisualizationComponent
       }),
     );
 
-    const sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
-      .subscribe(([measure, service]) => {
-        const queryStrings = measure.queries.map(
-          (query) => query.sql,
-        );
-        queryStrings.forEach((query) => {
-          const queryParams = this.getParamsForQuery(query);
-          query = super.applyVariableReplacements(query, service);
-          query = applyCompatibilityFixForVisualizationService(query);
-          super.fetchVisualizationData(
-            query,
-            queryParams,
-            this.ngrxStore,
-          );
-        });
-      });
-    this.subscriptions$.push(sub);
+    // const sub = this.measure$
+    //   .pipe(withLatestFrom(this.service$), first())
+    //   .subscribe(([measure, service]) => {
+    //     const queryStrings = measure.queries.map(
+    //       (query) => query.sql,
+    //     );
+    //     queryStrings.forEach((query) => {
+    //       const queryParams = this.getParamsForQuery(query);
+    //       query = super.applyVariableReplacements(query, service);
+    //       query = applyCompatibilityFixForVisualizationService(query);
+    //       super.fetchVisualizationData(
+    //         query,
+    //         queryParams,
+    //         this.ngrxStore,
+    //       );
+    //     });
+    //   });
+    // this.subscriptions$.push(sub);
   }
 
   onRefreshClicked(queries: string[]): void {

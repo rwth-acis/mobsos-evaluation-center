@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { createAction, props } from '@ngrx/store';
+import { VisualizationData } from 'src/app/models/visualization.model';
 import {
   GroupInformation,
   GroupMember,
@@ -40,6 +41,7 @@ export enum HttpActions {
   FETCH_QUESTIONNAIRES = 'fetch questionnaires from the mobsos surveys',
   FETCH_SURVEYS = 'fetch surveys from the mobsos surveys',
   FETCH_QUESTIONNAIRE_FORM = 'Fetch questionnaire form from the mobsos surveys',
+  FETCH_VISUALIZATION_DATA_FOR_SUCCESS_MODEL = 'Fetches visualization data from the qvs for a given success model',
   SAVE_MODEL_AND_CATALOG = 'send an update to the server for both model and catalog',
   SAVE_CATALOG = 'save catalog on the server',
   SAVE_MODEL = 'save model on the server',
@@ -95,6 +97,7 @@ export enum StoreActions {
   ADD_MEASURES_TO_CATALOG = 'Add a list of measures to the catalog',
   UPDATE_GROUP = 'update a group',
   STORE_QUESTIONNAIRE_FORM = 'Store the form for a given questionnaire',
+  STORE_VISUALIZATION_DATA_FOR_SUCCESS_MODEL = 'STORE_VISUALIZATION_DATA_FOR_SUCCESS_MODEL',
 }
 
 /**
@@ -145,6 +148,10 @@ export const fetchQuestionnaires = createAction(
 );
 
 export const fetchSurveys = createAction(HttpActions.FETCH_SURVEYS);
+
+export const fetchVisualizationDataForSuccessModel = createAction(
+  HttpActions.FETCH_VISUALIZATION_DATA_FOR_SUCCESS_MODEL,
+);
 
 // storing
 export const storeMessageDescriptions = createAction(
@@ -365,6 +372,13 @@ export const logout = createAction(StoreActions.LOGOUT_USER);
 export const storeVisualizationData = createAction(
   StoreActions.STORE_VISUALIZATION_DATA,
   props<{ data?: any; query?: string; error?: any }>(),
+);
+
+export const storeVisualizationDataForSuccessModel = createAction(
+  StoreActions.STORE_VISUALIZATION_DATA_FOR_SUCCESS_MODEL,
+  props<{
+    data: { [query: string]: { data: any[][]; error: any } };
+  }>(), // use obj with queery as key
 );
 
 export const storeCatalog = createAction(

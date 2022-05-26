@@ -23,10 +23,17 @@ import {
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
 import { Questionnaire } from '../../models/questionnaire.model';
-import { ServiceMessageDescriptions } from '../../models/service.model';
+import {
+  MobSOSIDs,
+  ServiceInformation,
+  ServiceMessageDescriptions,
+} from '../../models/service.model';
 import { Survey } from '../../models/survey.model';
 
-import { VisualizationData } from '../../models/visualization.model';
+import {
+  VisualizationCollection,
+  VisualizationData,
+} from '../../models/visualization.model';
 import { Las2peerService } from '../las2peer.service';
 import * as Action from './store.actions';
 import {
@@ -48,10 +55,20 @@ import {
   VISUALIZATION_DATA_FROM_QVS,
   SUCCESS_MODEL_XML,
   SELECTED_GROUP,
+  SUCCESS_MODEL,
+  MEASURE_CATALOG,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
 import { UserRole } from 'src/app/models/workspace.model';
+import {
+  SuccessFactor,
+  SuccessModel,
+} from 'src/app/models/success.model';
+import {
+  MeasureCatalog,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 /**
  * The effects handle complex interactions between components, the backend and the ngrxStore
  */
@@ -494,6 +511,85 @@ export class StateEffects {
     ),
   );
 
+  fetchVisualizationDataForSuccessModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchVisualizationDataForSuccessModel),
+      withLatestFrom(
+        this.ngrxStore.select(VISUALIZATION_DATA),
+        this.ngrxStore.select(SUCCESS_MODEL),
+        this.ngrxStore.select(MEASURE_CATALOG),
+        this.ngrxStore.select(SELECTED_SERVICE),
+      ),
+      mergeMap(([, data, model, catalog, service]) => {
+        const queries = getQueriesToFetch(
+          data,
+          model,
+          catalog,
+          service,
+        );
+
+        const requestBody = queries
+          .map((query) => {
+            const queryParams = getParamsForQuery(query, service); // might be needed later, for now the variable replacement has already been done
+            if (!query) {
+              console.warn('Query is null');
+              return null;
+            }
+
+            StateEffects.visualizationCalls[query] =
+              data[query]?.fetchDate;
+            return { query, queryParams };
+          })
+          .filter((obj) => obj != null);
+        return this.l2p
+          .fetchVisualizationDataForSuccessModel(requestBody, 'JSON')
+          .pipe(
+            // timeout(30000),
+            map((response) => {
+              if (response.status !== 200) {
+                throw response;
+              }
+              const data: {
+                [query: string]: {
+                  data: any[][];
+                  error: HttpErrorResponse;
+                };
+              } = {};
+              for (const query of Object.keys(response.body)) {
+                if (typeof response.body[query] === 'string') {
+                  data[query] = {
+                    data: null,
+                    error: new HttpErrorResponse({
+                      error: response.body[query],
+                      status: 400,
+                    }),
+                  };
+                } else {
+                  data[query] = {
+                    data: response.body[query],
+                    error: null,
+                  };
+                }
+              }
+              return Action.storeVisualizationDataForSuccessModel({
+                data,
+              });
+            }),
+            catchError((error) => {
+              return of(Action.failureResponse({ reason: error }));
+            }),
+          );
+      }),
+      catchError((err) =>
+        of(
+          Action.storeVisualizationData({
+            error: err,
+          }),
+        ),
+      ),
+    ),
+  );
+
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
@@ -616,6 +712,21 @@ export class StateEffects {
         return of(Action.storeSuccessModel({ xml: null }));
       }),
       share(),
+    ),
+  );
+
+  storeSuccessModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.storeSuccessModel),
+      delay(100),
+      tap(({ xml }) => {
+        if (xml) {
+          this.ngrxStore.dispatch(
+            Action.fetchVisualizationDataForSuccessModel(),
+          );
+        }
+      }),
+      mergeMap(() => of(Action.noop())),
     ),
   );
 
@@ -1115,4 +1226,110 @@ function handleResponse(response: any, query: string) {
       'Unknown errror for fetching Visualization data',
     ),
   }); // should not be reached
+}
+
+/**
+ * Takes all measures defined in the model and returns a list of queries to be fetched
+ * @param data existing data that was fetched before
+ * @param model the model from which we retrieve the measureNames
+ * @param catalog the catalog containing the queries for each measure name
+ * @returns List of SQL queries to be fetched. The query is fetched if the data is not available or the data is older than the fetch interval
+ */
+function getQueriesToFetch(
+  data: VisualizationCollection,
+  model: SuccessModel,
+  catalog: MeasureCatalog,
+  service,
+): string[] {
+  if (!model || !catalog) {
+    console.warn(
+      'Visualization data requested but no model or catalog available',
+    );
+    return [];
+  }
+  const queries = [];
+  for (const values of Object.values(model.dimensions)) {
+    const factors = values as SuccessFactor[];
+    for (const factor of factors) {
+      for (const measureName of factor.measures) {
+        const measure = catalog.measures[measureName];
+        for (const query of measure.queries) {
+          const queryString = applyVariableReplacements(
+            query.sql,
+            service,
+          ).trim();
+          const dataForQuery = data[queryString];
+          // if (shouldFetch(dataForQuery)) {
+          queries.push(queryString);
+          // }
+        }
+      }
+    }
+  }
+  return queries;
+}
+function getParamsForQuery(
+  query: string,
+  service: ServiceInformation,
+) {
+  if (!service || service?.mobsosIDs?.length === 0) {
+    // just for robustness
+    // should not be called when there are no service IDs stored in MobSOS anyway
+    return [];
+  }
+  const serviceRegex = /\$SERVICE\$/g;
+  const matches = query?.match(serviceRegex);
+  const params = [];
+  if (matches) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const match of matches) {
+      // for now we use the id which has the greatest registrationTime as this is the agent ID of the most recent service agent started in las2peer
+      const maxIndex: number = Object.values(
+        this.data.service.mobsosIDs as MobSOSIDs,
+      ).reduce((max, time, index) => {
+        return time > max ? index : max;
+      }, 0);
+
+      params.push(Object.keys(this.data.service.mobsosIDs)[maxIndex]);
+    }
+  }
+  return params as string[];
+}
+
+function applyVariableReplacements(
+  query: string,
+  service: ServiceInformation,
+): string {
+  if (query?.includes('$SERVICES$')) {
+    let servicesString = '(';
+    const services = [];
+
+    if (service?.mobsosIDs) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    for (const mobsosID of Object.keys(service.mobsosIDs)) {
+      services.push(`"${mobsosID}"`);
+    }
+    servicesString += services.join(',') + ')';
+    return query?.replace('$SERVICES$', servicesString);
+  } else if (query?.includes('$SERVICE$')) {
+    if (!(Object.keys(service.mobsosIDs).length > 0)) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    // for now we use the id which has the greatest registrationTime as this is the agent ID
+    // of the most recent service agent started in las2peer
+    const maxIndex = Object.values(service.mobsosIDs).reduce(
+      (max, time, index) => {
+        return time > max ? index : max;
+      },
+      0,
+    );
+
+    return query?.replace(
+      '$SERVICE$',
+      ` ${Object.keys(service.mobsosIDs)[maxIndex]} `,
+    );
+  } else return query;
 }
