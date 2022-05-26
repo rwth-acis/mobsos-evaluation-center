@@ -1,360 +1,362 @@
-<!-- header  -->
-<div id="dialog_header">
-  <h1 mat-dialog-title *ngIf="data.create; else editHeader">
-    {{
-      'success-modeling.edit-measure-dialog.title-create' | translate
-    }}
-  </h1>
-  <button mat-icon-button [mat-dialog-close]="null" color="warn">
-    <mat-icon>close</mat-icon>
-  </button>
-</div>
-
-<!-- content -->
-<form [formGroup]="measureForm" (ngSubmit)="onSubmit()">
-  <mat-stepper #stepper [linear]="true">
-    <!-- first step: choose a name and visualization type -->
-    <mat-step
-      [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
-      editable="true"
-    >
-      <ng-template matStepLabel>{{
-        'success-modeling.edit-measure-dialog.description-label'
+<div class="h-full flex flex-col">
+  <!-- header  -->
+  <div id="dialog_header">
+    <h1 mat-dialog-title *ngIf="data.create; else editHeader">
+      {{
+        'success-modeling.edit-measure-dialog.title-create'
           | translate
-      }}</ng-template>
-      <!-- name of the success measure -->
-      <mat-form-field>
-        <input
-          required
-          matInput
-          formControlName="name"
-          placeholder="{{
-            'success-modeling.edit-measure-dialog.name-placeholder'
-              | translate
-          }}"
-        />
-      </mat-form-field>
-      <!-- description -->
-      <mat-form-field>
-        <mat-label>{{
+      }}
+    </h1>
+    <button mat-icon-button [mat-dialog-close]="null" color="warn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- content -->
+  <form
+    [formGroup]="measureForm"
+    (ngSubmit)="onSubmit()"
+    class="flex-grow"
+  >
+    <mat-stepper
+      #stepper
+      [linear]="false"
+      class="h-full flex flex-col"
+    >
+      <!-- first step: choose a name and visualization type -->
+      <mat-step
+        [color]="controlsForFirstStepInValid() ? 'warn' : 'primary'"
+        editable="true"
+      >
+        <ng-template matStepLabel>{{
           'success-modeling.edit-measure-dialog.description-label'
             | translate
-        }}</mat-label>
-        <textarea
-          matInput
-          formControlName="description"
-          maxlength="500"
-          placeholder="{{
-            'success-modeling.edit-measure-dialog.description-placeholder'
-              | translate
-          }} 
+        }}</ng-template>
+
+        <section class="flex-grow">
+          <!-- name of the success measure -->
+          <mat-form-field>
+            <input
+              required
+              matInput
+              formControlName="name"
+              placeholder="{{
+                'success-modeling.edit-measure-dialog.name-placeholder'
+                  | translate
+              }}"
+            />
+          </mat-form-field>
+          <!-- description -->
+          <mat-form-field>
+            <mat-label>{{
+              'success-modeling.edit-measure-dialog.description-label'
+                | translate
+            }}</mat-label>
+            <textarea
+              matInput
+              formControlName="description"
+              maxlength="500"
+              placeholder="{{
+                'success-modeling.edit-measure-dialog.description-placeholder'
+                  | translate
+              }} 
       "
-        ></textarea>
-        <mat-hint *ngIf="data.measure.description"
-          >{{ data.measure.description.trim().length }}/500</mat-hint
-        >
-      </mat-form-field>
-
-      <!-- visualization -->
-      <div formGroupName="visualization">
-        <!-- type of visualization -->
-        <mat-form-field>
-          <mat-label>{{
-            'success-modeling.edit-measure-dialog.visualization-select'
-              | translate
-          }}</mat-label>
-          <mat-select
-            required
-            formControlName="type"
-            (selectionChange)="onVisualizationChange($event.value)"
-          >
-            <mat-option
-              *ngFor="let item of visualizationChoices | keyvalue"
-              [value]="item.key"
+            ></textarea>
+            <mat-hint *ngIf="data.measure.description"
+              >{{
+                data.measure.description.trim().length
+              }}/500</mat-hint
             >
-              {{ item.value | translate }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <!-- different options based on visualization type -->
-        <div formArrayName="parameters">
-          <ng-container [ngSwitch]="visualizationType">
-            <mat-form-field *ngSwitchCase="'Value'" formGroupName="0">
-              <input
-                matInput
-                formControlName="unit"
-                placeholder="{{
-                  'success-modeling.edit-measure-dialog.unit-placeholder'
-                    | translate
-                }}"
-              />
+          </mat-form-field>
+
+          <!-- visualization -->
+          <div formGroupName="visualization">
+            <!-- type of visualization -->
+            <mat-form-field>
+              <mat-label>{{
+                'success-modeling.edit-measure-dialog.visualization-select'
+                  | translate
+              }}</mat-label>
+              <mat-select
+                required
+                formControlName="type"
+                (selectionChange)="
+                  onVisualizationChange($event.value)
+                "
+              >
+                <mat-option
+                  *ngFor="let item of visualizationChoices | keyvalue"
+                  [value]="item.key"
+                >
+                  {{ item.value | translate }}
+                </mat-option>
+              </mat-select>
             </mat-form-field>
-
-            <ng-container *ngSwitchCase="'Chart'" formGroupName="0">
-              <mat-form-field>
-                <mat-label>Type</mat-label>
-                <mat-select formControlName="chartType" required>
-                  <mat-option
-                    *ngFor="let item of chartTypeChoices | keyvalue"
-                    [value]="item.key"
-                  >
-                    {{ item.value | translate }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </ng-container>
-
-            <ng-container *ngSwitchCase="'KPI'" formGroupName="0">
-              <mat-chip-list class="overflow-scroll flex-nowrap">
-                <mat-chip
-                  cdkDrag
-                  *ngFor="let name of queryNames"
-                  (click)="insertIntoExpression(name)"
+            <!-- different options based on visualization type -->
+            <div formArrayName="parameters">
+              <ng-container [ngSwitch]="visualizationType">
+                <mat-form-field
+                  *ngSwitchCase="'Value'"
+                  formGroupName="0"
                 >
-                  {{ name }}
-                </mat-chip>
-              </mat-chip-list>
-              <mat-form-field>
-                <mat-label>Expression</mat-label>
-                <input
-                  matInput
-                  formControlName="expression"
-                  #Expression
-                  placeholder="a/b"
-                />
-                <mat-hint
-                  *ngIf="!expressionVariablesAreDefined()"
-                  class="text-red-500"
+                  <input
+                    matInput
+                    formControlName="unit"
+                    placeholder="{{
+                      'success-modeling.edit-measure-dialog.unit-placeholder'
+                        | translate
+                    }}"
+                  />
+                </mat-form-field>
+
+                <ng-container
+                  *ngSwitchCase="'Chart'"
+                  formGroupName="0"
                 >
-                  Some variables are not well defined. You need to add
-                  them in step 2
-                </mat-hint>
-                <mat-hint
-                  *ngIf="!expressionIsValidSyntax()"
-                  class="text-red-500"
-                >
-                  Your expression syntax is invalid.
-                </mat-hint>
-              </mat-form-field>
-            </ng-container>
+                  <mat-form-field>
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="chartType" required>
+                      <mat-option
+                        *ngFor="
+                          let item of chartTypeChoices | keyvalue
+                        "
+                        [value]="item.key"
+                      >
+                        {{ item.value | translate }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-container>
 
-            <div *ngSwitchDefault>Unsupported visualization type</div>
-          </ng-container>
-        </div>
-      </div>
+                <ng-container *ngSwitchCase="'KPI'" formGroupName="0">
+                  <mat-chip-list class="overflow-scroll flex-nowrap">
+                    <mat-chip
+                      cdkDrag
+                      *ngFor="let name of queryNames"
+                      (click)="insertIntoExpression(name)"
+                    >
+                      {{ name }}
+                    </mat-chip>
+                  </mat-chip-list>
+                  <mat-form-field>
+                    <mat-label>Expression</mat-label>
+                    <input
+                      matInput
+                      formControlName="expression"
+                      #Expression
+                      placeholder="a/b"
+                    />
+                    <mat-hint
+                      *ngIf="!expressionVariablesAreDefined()"
+                      class="text-red-500"
+                    >
+                      Some variables are not well defined. You need to
+                      add them in step 2
+                    </mat-hint>
+                    <mat-hint
+                      *ngIf="!expressionIsValidSyntax()"
+                      class="text-red-500"
+                    >
+                      Your expression syntax is invalid.
+                    </mat-hint>
+                  </mat-form-field>
+                </ng-container>
 
-      <mat-dialog-actions class="navig first">
-        <button mat-stroked-button matStepperNext type="button">
-          {{
-            'success-modeling.edit-measure-dialog.next-label'
-              | translate
-          }}
-        </button>
-      </mat-dialog-actions>
-    </mat-step>
-    <!-- second step: query input -->
-    <mat-step
-      editable="true"
-      [color]="controlsForSecondStepInValid() ? 'warn' : 'primary'"
-    >
-      <ng-template matStepLabel>{{
-        'success-modeling.edit-measure-dialog.data-source-label'
-          | translate
-      }}</ng-template>
-      <!-- query hints based on message description from the service -->
-
-      <mat-expansion-panel class="mb-2">
-        <mat-expansion-panel-header>
-          <mat-panel-title
-            ><mat-icon class="padding-right">help_outline</mat-icon>
-            Help</mat-panel-title
-          >
-          <mat-panel-description>
-            See descriptions and examples of the logged data.
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div id="hints">
-            In general, the monitored messages are stored in the
-            MobSOS database under the <code>MESSAGE</code> table under
-            <code>REMARKS</code> as string or JSON data. The
-            <code>EVENT</code> is a code that descibeds the type of
-            the event. For more information visit
-            <a
-              href="https://github.com/rwth-acis/mobsos-success-modeling/wiki/Manual#23-making-sure-to-get-the-right-data"
-              target="_blank"
-              rel="noopener noreferrer"
-              >our wiki</a
-            >.
-            <br />
-            <div
-              *ngFor="
-                let item of data.service.serviceMessageDescriptions
-                  | keyvalue
-              "
-            >
-              <h4>{{ prettifyCustomMessageName(item.key) }}</h4>
-              <h6>Description</h6>
-              <markdown ngPreserveWhitespaces>{{
-                item.value
-              }}</markdown>
-
-              <mat-expansion-panel [expanded]="false">
-                <mat-expansion-panel-header>
-                  <mat-panel-title
-                    >Latest Log Entries</mat-panel-title
-                  >
-                </mat-expansion-panel-header>
-                <ng-template matExpansionPanelContent>
-                  <app-sql-table
-                    [service]="data.service"
-                    [query]="
-                      'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
-                      item.key +
-                      '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
-                    "
-                  >
-                  </app-sql-table>
-                </ng-template>
-              </mat-expansion-panel>
+                <div *ngSwitchDefault>
+                  Unsupported visualization type
+                </div>
+              </ng-container>
             </div>
           </div>
-        </ng-template>
-      </mat-expansion-panel>
-      <ng-container
-        *ngIf="
-          (measureOptions$ | async) && visualizationType === 'KPI'
-        "
-      >
-        <mat-form-field>
-          <mat-label>Import from other Measure</mat-label>
-
-          <input
-            type="text"
-            placeholder="Pick one"
-            aria-label="Number"
-            matInput
-            [formControl]="autoCompleteField"
-            [matAutocomplete]="auto"
-          />
-          <mat-icon matSuffix>system_update_alt</mat-icon>
-          <mat-autocomplete
-            autoActiveFirstOption
-            #auto="matAutocomplete"
-            (optionSelected)="onOptionSelected($event)"
-          >
-            <mat-option
-              *ngFor="let option of filteredOptions$ | async"
-              [value]="option.name"
-            >
-              {{ option.name }}
-            </mat-option>
-          </mat-autocomplete>
-          <mat-hint
-            *ngIf="!((filteredOptions$ | async)?.length > 0)"
-            class="text-red-500"
-          >
-            No Measures found
-          </mat-hint>
-        </mat-form-field>
-      </ng-container>
-      <!-- queries -->
-      <ng-container
-        *ngFor="let query of formQueries.controls; let i = index"
-      >
-        <mat-form-field>
-          <input
-            [required]="visualizationType === 'KPI'"
-            matInput
-            placeholder="{{
-              'success-modeling.edit-measure-dialog.query-name-placeholder'
+        </section>
+        <mat-dialog-actions class="flex-none first">
+          <button mat-stroked-button matStepperNext type="button">
+            {{
+              'success-modeling.edit-measure-dialog.next-label'
                 | translate
-            }} #{{ i + 1 }}"
-            [formControl]="query.controls['name']"
-            (change)="
-              onQueryNameChanged($any($event.target).value, i)
-            "
-          />
-        </mat-form-field>
-        <mat-form-field>
-          <textarea
-            matInput
-            required
-            rows="3"
-            id="sqlInput"
-            placeholder="{{
-              'success-modeling.edit-measure-dialog.query-placeholder'
-                | translate
-            }} #{{ i + 1 }}"
-            [formControl]="query.controls['sql']"
-            (blur)="onQueryChanged(undefined)"
-          ></textarea>
-        </mat-form-field>
-      </ng-container>
-
-      <!-- add querry button -->
-      <button
-        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
-        mat-button
-        color="primary"
-        type="button"
-        (click)="onAddQueryClicked()"
+            }}
+          </button>
+        </mat-dialog-actions>
+      </mat-step>
+      <!-- second step: query input -->
+      <mat-step
+        editable="true"
+        [color]="controlsForSecondStepInValid() ? 'warn' : 'primary'"
       >
-        {{
-          'success-modeling.edit-measure-dialog.add-query' | translate
-        }}
-      </button>
-      <!-- remove query button -->
-      <button
-        *ngIf="measureForm.get('visualization.type').value === 'KPI'"
-        mat-button
-        color="warn"
-        type="button"
-        (click)="onRemoveQueryClicked()"
-        [disabled]="data.measure.queries.length <= 1"
-      >
-        {{
-          'success-modeling.edit-measure-dialog.remove-query'
+        <ng-template matStepLabel>{{
+          'success-modeling.edit-measure-dialog.data-source-label'
             | translate
-        }}
-      </button>
+        }}</ng-template>
+        <!-- query hints based on message description from the service -->
 
-      <mat-dialog-actions class="navig">
-        <button mat-stroked-button matStepperPrevious type="button">
-          {{
-            'success-modeling.edit-measure-dialog.back-label'
-              | translate
-          }}
-        </button>
-        <button
-          mat-stroked-button
-          matStepperNext
-          type="button"
-          [disabled]="
-            controlsForFirstStepInValid() ||
-            controlsForSecondStepInValid()
-          "
-        >
-          {{
-            'success-modeling.edit-measure-dialog.next-label'
-              | translate
-          }}
-        </button>
-      </mat-dialog-actions>
-    </mat-step>
-    <!-- last step: preview of the visualization -->
-    <mat-step editable="true" state="analytics">
-      <ng-template matStepLabel>{{
-        'success-modeling.edit-measure-dialog.preview-title'
-          | translate
-      }}</ng-template>
-      <ng-template matStepContent>
-        <h4>
-          {{ (measure$ | async)?.name }}
-        </h4>
-        <app-visualization [measure$]="measure$" class="h-full">
-        </app-visualization>
+        <section class="flex-grow">
+          <mat-expansion-panel class="mb-2">
+            <mat-expansion-panel-header>
+              <mat-panel-title
+                ><mat-icon class="padding-right"
+                  >help_outline</mat-icon
+                >
+                Help</mat-panel-title
+              >
+              <mat-panel-description>
+                See descriptions and examples of the logged data.
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <ng-template matExpansionPanelContent>
+              <div id="hints">
+                In general, the monitored messages are stored in the
+                MobSOS database under the <code>MESSAGE</code> table
+                under <code>REMARKS</code> as string or JSON data. The
+                <code>EVENT</code> is a code that descibeds the type
+                of the event. For more information visit
+                <a
+                  href="https://github.com/rwth-acis/mobsos-success-modeling/wiki/Manual#23-making-sure-to-get-the-right-data"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >our wiki</a
+                >.
+                <br />
+                <ng-container
+                  *ngIf="
+                    data.service.serviceMessageDescriptions;
+                    else noMessageDescriptions
+                  "
+                >
+                  <div
+                    *ngFor="
+                      let item of data.service
+                        .serviceMessageDescriptions | keyvalue
+                    "
+                  >
+                    <h4>{{ prettifyCustomMessageName(item.key) }}</h4>
+                    <h6>Description</h6>
+                    <markdown ngPreserveWhitespaces>{{
+                      item.value
+                    }}</markdown>
 
+                    <mat-expansion-panel [expanded]="false">
+                      <mat-expansion-panel-header>
+                        <mat-panel-title
+                          >Latest Log Entries</mat-panel-title
+                        >
+                      </mat-expansion-panel-header>
+                      <ng-template matExpansionPanelContent>
+                        <app-sql-table
+                          [service]="data.service"
+                          [query]="
+                            'SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT=&quot' +
+                            item.key +
+                            '&quot AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5'
+                          "
+                        >
+                        </app-sql-table>
+                      </ng-template>
+                    </mat-expansion-panel>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-template>
+          </mat-expansion-panel>
+          <ng-container
+            *ngIf="
+              (measureOptions$ | async) && visualizationType === 'KPI'
+            "
+          >
+            <mat-form-field>
+              <mat-label>Import from other Measure</mat-label>
+
+              <input
+                type="text"
+                placeholder="Pick one"
+                aria-label="Number"
+                matInput
+                [formControl]="autoCompleteField"
+                [matAutocomplete]="auto"
+              />
+              <mat-icon matSuffix>system_update_alt</mat-icon>
+              <mat-autocomplete
+                autoActiveFirstOption
+                #auto="matAutocomplete"
+                (optionSelected)="onOptionSelected($event)"
+              >
+                <mat-option
+                  *ngFor="let option of filteredOptions$ | async"
+                  [value]="option.name"
+                >
+                  {{ option.name }}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-hint
+                *ngIf="!((filteredOptions$ | async)?.length > 0)"
+                class="text-red-500"
+              >
+                No Measures found
+              </mat-hint>
+            </mat-form-field>
+          </ng-container>
+          <!-- queries -->
+          <ng-container
+            *ngFor="let query of formQueries.controls; let i = index"
+          >
+            <mat-form-field>
+              <input
+                [required]="visualizationType === 'KPI'"
+                matInput
+                placeholder="{{
+                  'success-modeling.edit-measure-dialog.query-name-placeholder'
+                    | translate
+                }} #{{ i + 1 }}"
+                [formControl]="getControlFromQuery(query, 'name')"
+              />
+            </mat-form-field>
+            <mat-form-field>
+              <textarea
+                matInput
+                required
+                rows="5"
+                id="sqlInput"
+                placeholder="{{
+                  'success-modeling.edit-measure-dialog.query-placeholder'
+                    | translate
+                }} #{{ i + 1 }}"
+                [formControl]="getControlFromQuery(query, 'sql')"
+                (blur)="onQueryChanged(i)"
+              ></textarea>
+            </mat-form-field>
+          </ng-container>
+
+          <!-- add querry button -->
+          <button
+            *ngIf="
+              measureForm.get('visualization.type').value === 'KPI'
+            "
+            mat-button
+            color="primary"
+            type="button"
+            (click)="onAddQueryClicked()"
+          >
+            {{
+              'success-modeling.edit-measure-dialog.add-query'
+                | translate
+            }}
+          </button>
+          <!-- remove query button -->
+          <button
+            *ngIf="
+              measureForm.get('visualization.type').value === 'KPI'
+            "
+            mat-button
+            color="warn"
+            type="button"
+            (click)="onRemoveQueryClicked()"
+            [disabled]="formQueries.controls.length <= 1"
+          >
+            {{
+              'success-modeling.edit-measure-dialog.remove-query'
+                | translate
+            }}
+          </button>
+        </section>
         <mat-dialog-actions class="navig">
           <button mat-stroked-button matStepperPrevious type="button">
             {{
@@ -362,24 +364,73 @@
                 | translate
             }}
           </button>
-          <!-- submits the form -->
           <button
-            mat-raised-button
-            color="primary"
-            type="submit"
+            mat-stroked-button
+            matStepperNext
+            type="button"
             [disabled]="
               controlsForFirstStepInValid() ||
               controlsForSecondStepInValid()
             "
           >
-            {{ 'shared.elements.save-label' | translate }}
+            {{
+              'success-modeling.edit-measure-dialog.next-label'
+                | translate
+            }}
           </button>
         </mat-dialog-actions>
-      </ng-template>
-    </mat-step>
-  </mat-stepper>
-</form>
-
+      </mat-step>
+      <!-- last step: preview of the visualization -->
+      <mat-step editable="true" state="analytics">
+        <ng-template matStepLabel>{{
+          'success-modeling.edit-measure-dialog.preview-title'
+            | translate
+        }}</ng-template>
+        <ng-template matStepContent>
+          <div class="flex flex-col h-full">
+            <section
+              *ngIf="measure$ | async"
+              class="flex-grow flex flex-col"
+            >
+              <h4>
+                {{ (measure$ | async)?.name }}
+              </h4>
+              <app-visualization
+                [measure$]="measure$"
+                class="flex-grow"
+              >
+              </app-visualization>
+            </section>
+            <mat-dialog-actions class="navig">
+              <button
+                mat-stroked-button
+                matStepperPrevious
+                type="button"
+              >
+                {{
+                  'success-modeling.edit-measure-dialog.back-label'
+                    | translate
+                }}
+              </button>
+              <!-- submits the form -->
+              <button
+                mat-raised-button
+                color="primary"
+                type="submit"
+                [disabled]="
+                  controlsForFirstStepInValid() ||
+                  controlsForSecondStepInValid()
+                "
+              >
+                {{ 'shared.elements.save-label' | translate }}
+              </button>
+            </mat-dialog-actions>
+          </div>
+        </ng-template>
+      </mat-step>
+    </mat-stepper>
+  </form>
+</div>
 <ng-template #noQueries>
   Add a query with a name first in step 2</ng-template
 >
@@ -390,4 +441,11 @@
       'success-modeling.edit-measure-dialog.title-edit' | translate
     }}
   </h1>
+</ng-template>
+
+<ng-template #noMessageDescriptions>
+  <p class="text-gray-400 hover:text-black">
+    The service has no message descriptors available. Please contact
+    the service developers.
+  </p>
 </ng-template>

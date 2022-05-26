@@ -2,7 +2,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
@@ -76,14 +76,14 @@ export class StateEffects {
             if (
               reason.status === 401 &&
               reason.error === 'agent not found' &&
-              user.signedIn &&
-              isDevMode()
+              user.signedIn
             ) {
               alert(
-                'You could not be authenticated, reason: ' +
-                  reason.error +
-                  '. Please contact the administrator',
+                `You could not be authenticated, reason: ${
+                  reason.error.toString() as string
+                }.\n. Please contact the administrator`,
               );
+
               this.ngrxStore.dispatch(
                 Action.storeUser({ user: null }),
               );
@@ -201,12 +201,15 @@ export class StateEffects {
       distinctUntilKeyChanged('serviceName'),
       switchMap(({ serviceName }) =>
         this.l2p.fetchMessageDescriptionsAndObserve(serviceName).pipe(
-          map((descriptions: ServiceMessageDescriptions) =>
-            Action.storeMessageDescriptions({
-              descriptions,
-              serviceName,
-            }),
-          ),
+          map((descriptions: ServiceMessageDescriptions) => {
+            if (descriptions && Object.keys(descriptions).length > 0)
+              return Action.storeMessageDescriptions({
+                descriptions,
+                serviceName,
+              });
+            console.warn('Message descriptors are empty');
+            return Action.noop();
+          }),
           catchError((err) => {
             return of(Action.failureResponse({ reason: err }));
           }),
@@ -232,6 +235,7 @@ export class StateEffects {
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
+        this.workspaceService.stopSynchronizingWorkspace();
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
         this.ngrxStore.dispatch(
@@ -511,7 +515,7 @@ export class StateEffects {
           );
         }
         if (!shouldFetch(dataForQuery)) {
-          return of(Action.failure({ reason: "Shouldn't fetch" }));
+          return of(Action.failure({ reason: 'Should not fetch' }));
         }
 
         StateEffects.visualizationCalls[query] =
@@ -918,7 +922,8 @@ export class StateEffects {
                     }
                   }
                   const currentCommunityWorkspace =
-                    this.workspaceService.currentCommunityWorkspace;
+                    this.workspaceService
+                      .currentCommunityWorkspaceValue;
                   if (
                     user?.signedIn &&
                     !currentCommunityWorkspace[

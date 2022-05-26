@@ -19,7 +19,7 @@ import { EvaluatePipe } from '../evaluate.pipe';
 import { LatexPipe } from '../latex.pipe';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
+import {MatTooltipModule} from '@angular/material/tooltip';
 @NgModule({
   declarations: [
     ErrorDialogComponent,
@@ -44,6 +44,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatTableModule,
     MatIconModule,
     MatDialogModule,
+    MatTooltipModule
   ],
   exports: [VisualizationComponent],
 })

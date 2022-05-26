@@ -48,3 +48,4 @@ Thumbs.db
 .vscode/launch.json
 yjs-websocket/node_modules/
 src/assets/monaco/*
+.vscode/settings.json

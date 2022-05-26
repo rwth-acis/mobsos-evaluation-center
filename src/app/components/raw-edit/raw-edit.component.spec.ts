@@ -11,7 +11,7 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../app.module';
+
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { FormsModule } from '@angular/forms';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
@@ -21,12 +21,18 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { AppState, INITIAL_APP_STATE } from '../models/state.model';
-import { StateEffects } from '../services/store.effects';
+
 import { Observable } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { _COMMUNITY_WORKSPACE } from '../services/store.selectors';
+
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  AppState,
+  INITIAL_APP_STATE,
+} from 'src/app/models/state.model';
+import { createTranslateLoader } from 'src/app/app.module';
+import { StateEffects } from 'src/app/services/store/store.effects';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -35,39 +41,38 @@ describe('RawEditComponent', () => {
   // eslint-disable-next-line prefer-const
   let actions$: Observable<any>;
   let store: MockStore<AppState>;
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [RawEditComponent],
-        imports: [
-          MatTabsModule,
-          TranslateModule.forRoot({
-            loader: {
-              provide: TranslateLoader,
-              useFactory: createTranslateLoader,
-            },
-          }),
-          MonacoEditorModule.forRoot(),
-          FormsModule,
-          MatProgressSpinnerModule,
-          MatSelectModule,
-          LoggerModule.forRoot({
-            level: NgxLoggerLevel.TRACE,
-            serverLogLevel: NgxLoggerLevel.OFF,
-          }),
-          MatSnackBarModule,
-          BrowserAnimationsModule,
-          HttpClientTestingModule,
-        ],
-        providers: [
-          provideMockStore({ initialState }),
-          StateEffects,
-          provideMockActions(() => actions$),
-        ],
-      }).compileComponents();
-      store = TestBed.inject(MockStore);
-    }),
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [RawEditComponent],
+      imports: [
+        MatTabsModule,
+        RouterTestingModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+        MonacoEditorModule.forRoot(),
+        FormsModule,
+        MatProgressSpinnerModule,
+        MatSelectModule,
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF,
+        }),
+        MatSnackBarModule,
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+      ],
+      providers: [
+        provideMockStore({ initialState }),
+        StateEffects,
+        provideMockActions(() => actions$),
+      ],
+    }).compileComponents();
+    store = TestBed.inject(MockStore);
+  }));
 
   beforeEach(() => {
     // store = TestBed.inject(MockStore);

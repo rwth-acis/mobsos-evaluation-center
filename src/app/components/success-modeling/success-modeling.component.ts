@@ -11,13 +11,10 @@ import {
 import { Las2peerService } from 'src/app/services/las2peer.service';
 import {
   disableEdit,
-  fetchGroups,
   fetchMeasureCatalog,
   fetchMessageDescriptions,
-  fetchQuestionnaires,
   fetchServices,
   fetchSuccessModel,
-  fetchSurveys,
   joinWorkSpace,
   setCommunityWorkspaceOwner,
   storeUser,
@@ -63,6 +60,15 @@ export class SuccessModelingComponent implements OnInit {
     );
     this.ngrxStore.dispatch(disableEdit());
     await this.checkCoreServices();
+    const authorized = await firstValueFrom(
+      this.l2p.checkAuthorization(),
+    );
+    if (!authorized) {
+      alert(
+        'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
+      );
+      this.ngrxStore.dispatch(storeUser({ user: null }));
+    }
 
     const [user, groupId, serviceName] = await firstValueFrom(
       this.user$.pipe(
@@ -78,7 +84,7 @@ export class SuccessModelingComponent implements OnInit {
 
     // only gets called ONCE if user is signed in
     // initial fetching
-    this.ngrxStore.dispatch(fetchGroups());
+
     this.ngrxStore.dispatch(fetchServices());
 
     if (!groupId) return;
@@ -101,16 +107,6 @@ export class SuccessModelingComponent implements OnInit {
       }),
     );
     await _timeout(3000);
-
-    const authorized = await firstValueFrom(
-      this.l2p.checkAuthorization(),
-    );
-    if (!authorized) {
-      alert(
-        'You are logged in, but las2peer could not authorize you. This most likely means that your agent could not be found. Please contact the administrator.',
-      );
-      this.ngrxStore.dispatch(storeUser({ user: null }));
-    }
   }
 
   dismissNoobInfo(remember = false) {

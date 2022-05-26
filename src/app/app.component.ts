@@ -13,11 +13,11 @@ import { environment } from '../environments/environment';
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
 import { DomSanitizer } from '@angular/platform-browser';
-import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
+  fetchGroups,
   logout,
   setGroup,
   storeUser,
@@ -81,9 +81,6 @@ export class AppComponent implements OnInit, OnDestroy {
   reqBazFrontendUrl = environment.reqBazFrontendUrl;
 
   // Observables
-  loading$ = this.ngrxStore.select(
-    storeSelectors.HTTP_CALL_IS_LOADING,
-  );
   expertMode$ = this.ngrxStore.select(storeSelectors.EXPERT_MODE);
 
   subscriptions$: Subscription[] = [];
@@ -99,8 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   version = environment.version;
 
-  isLoading: boolean;
-  private silentSigninIntervalHandle: Timer;
+  private silentSigninIntervalHandle;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -128,7 +124,7 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.silentSignin();
 
     let sub = this.ngrxStore
@@ -140,12 +136,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this.ngrxStore.dispatch(fetchGroupMembers({ groupId: id }));
         }
       });
-    this.subscriptions$.push(sub);
-
-    sub = this.loading$.subscribe((loading) => {
-      this.isLoading = loading;
-      this.changeDetectorRef.detectChanges();
-    });
     this.subscriptions$.push(sub);
 
     sub = this.ngrxStore
@@ -173,6 +163,15 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
+
+    await firstValueFrom(
+      this.user$.pipe(
+        filter((u) => !!u?.signedIn),
+        distinctUntilKeyChanged('signedIn'),
+        take(1),
+      ),
+    );
+    this.ngrxStore.dispatch(fetchGroups());
   }
 
   ngOnDestroy(): void {
@@ -192,7 +191,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(toggleExpertMode());
   }
 
-  setUser(user: User): void {
+  setUser(e): void {
+    const user = e.detail;
     if (user?.profile?.preferred_username) {
       this.ngrxStore.dispatch(storeUser({ user }));
       return;

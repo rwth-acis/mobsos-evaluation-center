@@ -9,17 +9,22 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../../app.module';
+import { createTranslateLoader } from 'src/app/app.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
-import { SuccessModel } from 'src/app/models/success.model';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { StateEffects } from 'src/app/services/store/store.effects';
+import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { of } from 'rxjs';
 
-describe('QuestionnairesComponent', () => {
+describe('SruveysComponent', () => {
   let component: SurveyComponent;
   let fixture: ComponentFixture<SurveyComponent>;
+  let actions: Actions;
   const initialState = INITIAL_APP_STATE;
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -31,42 +36,52 @@ describe('QuestionnairesComponent', () => {
             useFactory: createTranslateLoader,
           },
         }),
+        MatDialogModule,
         LoggerModule.forRoot({
           level: NgxLoggerLevel.TRACE,
           serverLogLevel: NgxLoggerLevel.OFF,
         }),
         MatIconModule,
+        MatSnackBarModule,
         MatCardModule,
         MatTooltipModule,
         MatButtonModule,
         MatDialogModule,
         HttpClientTestingModule,
       ],
-      providers: [provideMockStore({ initialState })],
+      providers: [
+        provideMockStore({ initialState }),
+        {
+          provide: StateEffects,
+          useValue: { fetchQuestionnaireForm$: of(null) },
+        },
+        provideMockActions(() => actions),
+      ],
     }).compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SurveyComponent);
     component = fixture.componentInstance;
-    component.availableQuestionnaires = [];
-    component.editMode = false;
-    component.groupID = 'testGroupID';
-    component.measures = {};
-    component.model = new SuccessModel(
-      'TestModel',
-      'TestService',
-      {
-        'System Quality': [],
-        'Information Quality': [],
-        Use: [],
-        'User Satisfaction': [],
-        'Individual Impact': [],
-        'Community Impact': [],
-      },
-      [],
-      null,
-    );
+    actions = TestBed.inject(Actions);
+    // component.availableQuestionnaires = [];
+    // component.editMode = false;
+    // component.groupID = 'testGroupID';
+    // component.measures = {};
+    // component.model = new SuccessModel(
+    //   'TestModel',
+    //   'TestService',
+    //   {
+    //     'System Quality': [],
+    //     'Information Quality': [],
+    //     Use: [],
+    //     'User Satisfaction': [],
+    //     'Individual Impact': [],
+    //     'Community Impact': [],
+    //   },
+    //   [],
+    //   null,
+    // );
     fixture.detectChanges();
   });
 

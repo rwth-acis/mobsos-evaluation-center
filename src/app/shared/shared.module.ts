@@ -22,6 +22,7 @@ import {
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -61,6 +62,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
     FormsModule,
     MatCardModule,
     ReactiveFormsModule,
+    MatProgressBarModule,
     MatFormFieldModule,
     MatPaginatorModule,
     MatInputModule,

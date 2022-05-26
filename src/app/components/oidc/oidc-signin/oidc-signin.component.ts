@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { UserManager } from 'oidc-client';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -11,7 +11,7 @@ import { userManagerSettings } from './user.manager.settings';
   templateUrl: './oidc-signin.component.html',
   styleUrls: ['./oidc-signin.component.scss'],
 })
-export class OidcSigninComponent implements OnInit {
+export class OidcSigninComponent {
   constructor(private router: Router, private ngrxStore: Store) {
     void new UserManager(userManagerSettings)
       .signinRedirectCallback()
@@ -31,6 +31,4 @@ export class OidcSigninComponent implements OnInit {
         void this.router.navigateByUrl('/');
       });
   }
-
-  ngOnInit(): void {}
 }

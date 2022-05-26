@@ -1,9 +1,4 @@
-import {
-  Component,
-  HostListener,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { SuccessModel } from 'src/app/models/success.model';
@@ -19,7 +14,7 @@ import {
   templateUrl: './import-dialog.component.html',
   styleUrls: ['./import-dialog.component.scss'],
 })
-export class ImportDialogComponent implements OnInit {
+export class ImportDialogComponent {
   static xml: string;
   @HostListener('window:drop', ['$event.target'])
   @ViewChild('fileInput')
@@ -31,7 +26,6 @@ export class ImportDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<ImportDialogComponent>,
   ) {}
 
-  ngOnInit(): void {}
   dropHandler(ev) {
     const file = ev.target.files[0];
     this.fileName = file.name;

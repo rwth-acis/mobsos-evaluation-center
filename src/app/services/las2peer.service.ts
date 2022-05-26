@@ -4,14 +4,7 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
-import {
-  catchError,
-  map,
-  switchMap,
-  take,
-  tap,
-  timeout,
-} from 'rxjs/operators';
+import { catchError, map, take, tap, timeout } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';

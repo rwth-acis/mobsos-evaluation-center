@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   applyCompatibilityFixForVisualizationService,
   VisualizationComponent,
@@ -8,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   RESTRICTED_MODE,
+  SELECTED_SERVICE,
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { combineLatest, Observable, Subscription } from 'rxjs';
@@ -23,13 +30,13 @@ import {
   filter,
   first,
   map,
-  share,
   startWith,
   switchMap,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
+import { MathExpression } from 'mathjs';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -40,20 +47,30 @@ export class KpiVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
-  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
-  expression$;
-  scope$;
+  expression$: Observable<MathExpression>;
+  scope$: Observable<{
+    [key: string]: number;
+  }>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
+  service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
+    filter((service) => !!service),
+    distinctUntilKeyChanged('name'),
+    startWith(undefined),
+  );
   private subscriptions$: Subscription[] = [];
-
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
-    super(ngrxStore, dialog);
+  constructor(
+    protected override dialog: MatDialog,
+    private ngrxStore: Store,
+    private cdref: ChangeDetectorRef,
+  ) {
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -62,9 +79,10 @@ export class KpiVisualizationComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
+      filter((measure) => !!measure),
       withLatestFrom(this.service$),
       map(([measure, service]) =>
         // apply replacement for each query
@@ -104,13 +122,15 @@ export class KpiVisualizationComponent
 
     // true if any query is still loading
     this.dataIsLoading$ = this.dataArray$.pipe(
-      startWith(undefined),
       map(
         (data: VisualizationData[]) =>
           data === undefined ||
           data.some((v) => v === null) ||
           data.some((v) => v.loading),
       ),
+      distinctUntilChanged(),
+      tap(() => this.cdref.detectChanges()),
+      startWith(false),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
@@ -154,7 +174,11 @@ export class KpiVisualizationComponent
           const queryParams = this.getParamsForQuery(query);
           query = super.applyVariableReplacements(query, service);
           query = applyCompatibilityFixForVisualizationService(query);
-          super.fetchVisualizationData(query, queryParams);
+          super.fetchVisualizationData(
+            query,
+            queryParams,
+            this.ngrxStore,
+          );
         });
       });
     this.subscriptions$.push(sub);
@@ -175,7 +199,11 @@ export class KpiVisualizationComponent
     const sub = qs$.subscribe((queries) => {
       queries.forEach((query) => {
         const queryParams = super.getParamsForQuery(query);
-        super.fetchVisualizationData(query, queryParams);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+        );
       });
     });
     this.subscriptions$.push(sub);

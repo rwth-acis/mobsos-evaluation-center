@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -9,7 +15,10 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { Observable, Subscription } from 'rxjs';
-import { VisualizationData } from 'src/app/models/visualization.model';
+import {
+  VisualizationData,
+  ValueVisualization,
+} from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -18,6 +27,7 @@ import {
   map,
   mergeMap,
   startWith,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
@@ -37,7 +47,7 @@ export class ValueVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
   data$: Observable<VisualizationData>;
 
@@ -53,8 +63,13 @@ export class ValueVisualizationComponent
 
   dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
-  constructor(dialog: MatDialog, protected ngrxStore: Store) {
-    super(ngrxStore, dialog);
+  unit$: Observable<string>;
+  constructor(
+    protected override dialog: MatDialog,
+    private ngrxStore: Store,
+    private cdref: ChangeDetectorRef,
+  ) {
+    super(dialog);
   }
 
   ngOnDestroy(): void {
@@ -63,7 +78,13 @@ export class ValueVisualizationComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    this.unit$ = this.measure$.pipe(
+      map(
+        (measure) =>
+          (measure.visualization as ValueVisualization)?.unit,
+      ),
+    );
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
       withLatestFrom(this.service$),
@@ -92,6 +113,8 @@ export class ValueVisualizationComponent
     this.dataIsReady$ = this.data$.pipe(
       startWith({ loading: false }),
       map((data) => !data?.loading),
+      distinctUntilChanged(),
+      tap(() => this.cdref.detectChanges()),
     );
     this.value$ = this.data$.pipe(
       map(
@@ -116,7 +139,11 @@ export class ValueVisualizationComponent
         const queryParams = super.getParamsForQuery(query);
         query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(query, queryParams);
+        super.fetchVisualizationData(
+          query,
+          queryParams,
+          this.ngrxStore,
+        );
       });
     this.subscriptions$.push(sub);
   }

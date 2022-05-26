@@ -5,12 +5,10 @@ import { Component, Input, OnInit } from '@angular/core';
   templateUrl: './visualization-info.component.html',
   styleUrls: ['./visualization-info.component.scss'],
 })
-export class VisualizationInfoComponent implements OnInit {
+export class VisualizationInfoComponent {
   @Input() fetchDate: string;
   @Input() fetchError: string;
   @Input() description: string;
 
   constructor() {}
-
-  ngOnInit(): void {}
 }
