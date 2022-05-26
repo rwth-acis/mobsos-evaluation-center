@@ -82,6 +82,7 @@ export class KpiVisualizationComponent
   override ngOnInit(): void {
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
+      filter((measure) => !!measure),
       withLatestFrom(this.service$),
       map(([measure, service]) =>
         // apply replacement for each query

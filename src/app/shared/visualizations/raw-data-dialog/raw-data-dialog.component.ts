@@ -50,6 +50,7 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
       this.res = o;
     } else {
       console.error('Invalid data input');
+      this.dataSource = new MatTableDataSource([]);
     }
   }
   ngAfterViewInit(): void {

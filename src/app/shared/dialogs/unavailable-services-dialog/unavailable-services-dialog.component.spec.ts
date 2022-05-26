@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { UnavailableServicesDialogComponent } from './unavailable-services-dialog.component';
 
@@ -8,13 +9,15 @@ describe('UnavailableServicesDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UnavailableServicesDialogComponent ]
-    })
-    .compileComponents();
+      declarations: [UnavailableServicesDialogComponent],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: [] }],
+    }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(UnavailableServicesDialogComponent);
+    fixture = TestBed.createComponent(
+      UnavailableServicesDialogComponent,
+    );
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
