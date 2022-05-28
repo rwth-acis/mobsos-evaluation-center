@@ -29,7 +29,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
@@ -341,6 +341,12 @@ export class EditMeasureDialogComponent implements OnInit {
   onRemoveQueryClicked(): void {
     this.formQueries.removeAt(this.formQueries.length - 1);
     // this.data.measure.queries.pop();
+  }
+
+  getExampleDataQuery(key: string) {
+    return of(
+      `SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT="${key}" AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5`,
+    );
   }
 
   // onKpiOperandChange(operandName: string, index: number): void {
