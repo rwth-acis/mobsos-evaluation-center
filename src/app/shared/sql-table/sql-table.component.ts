@@ -1,16 +1,17 @@
 import {
   AfterViewInit,
   Component,
+  EventEmitter,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  SimpleChanges,
+  Output,
   ViewChild,
 } from '@angular/core';
 
 import { Observable, of, Subscription } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
   startWith,
@@ -37,11 +38,11 @@ import { MatDialog } from '@angular/material/dialog';
 export class SqlTableComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
-  @Input() query: string;
   @Input() service: ServiceInformation;
   @Input() query$: Observable<string>;
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @Output() isLoading: EventEmitter<any> = new EventEmitter();
 
   queryParams: string[];
   vdata$: Observable<any[][]>;
@@ -70,64 +71,39 @@ export class SqlTableComponent
   }
 
   ngOnInit() {
-    if (this.query$) {
-      const storeData$ = this.query$.pipe(
-        map((query) => {
-          this.query = query;
-          const qParams = this.getParamsForQuery(query);
-          query = this.applyVariableReplacements(query);
-          query =
-            SqlTableComponent.applyCompatibilityFixForVisualizationService(
-              query,
-            );
-          this.query = query;
-          this.queryParams = qParams;
-          return [query, qParams] as [string, string[]];
-        }),
-        tap(([query, queryParams]) =>
-          this.ngrxStore.dispatch(
-            fetchVisualizationData({ query, queryParams }),
-          ),
+    const storeData$ = this.query$.pipe(
+      map((query) => {
+        const qParams = this.getParamsForQuery(query);
+        query = this.applyVariableReplacements(query);
+        query =
+          SqlTableComponent.applyCompatibilityFixForVisualizationService(
+            query,
+          );
+        return [query, qParams] as [string, string[]];
+      }),
+      tap(([query, queryParams]) =>
+        this.ngrxStore.dispatch(
+          fetchVisualizationData({ query, queryParams }),
         ),
-        switchMap(([query]) =>
-          this.ngrxStore.select(
-            VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
-          ),
+      ),
+      switchMap(([query]) =>
+        this.ngrxStore.select(
+          VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
         ),
-      );
-      this.vdata$ = storeData$.pipe(map((vdata) => vdata?.data));
-      this.error$ = storeData$.pipe(map((vdata) => vdata?.error));
-      this.loading$ = storeData$.pipe(
-        map((vdata) => vdata?.loading),
-        startWith(true),
-      );
-    } else {
-      let query = this.query;
-      const queryParams = this.getParamsForQuery(query);
-      query = this.applyVariableReplacements(query);
-      query =
-        SqlTableComponent.applyCompatibilityFixForVisualizationService(
-          query,
-        );
-      this.query = query;
-      this.queryParams = queryParams;
-      this.ngrxStore.dispatch(
-        fetchVisualizationData({ query, queryParams }),
-      );
-      this.vdata$ = this.ngrxStore
-        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
-        .pipe(map((vdata) => vdata?.data));
-      this.loading$ = this.ngrxStore
-        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString: query }))
-        .pipe(
-          map((vdata) => {
-            if (!vdata || vdata.loading === undefined) return true;
-            return vdata?.loading;
-          }),
-          startWith(true),
-        );
-    }
+      ),
+      distinctUntilChanged(),
+    );
 
+    this.vdata$ = storeData$.pipe(map((vdata) => vdata?.data));
+    this.error$ = storeData$.pipe(map((vdata) => vdata?.error));
+    this.loading$ = storeData$.pipe(
+      map((vdata) => !vdata || vdata?.loading),
+      startWith(true),
+    );
+    const sub = this.loading$.subscribe((loading) => {
+      this.isLoading.emit(loading);
+    });
+    this.subscriptions$.push(sub);
     this.dataSource$ = this.vdata$.pipe(
       filter((data) => !!data),
       map((data) => this.getTableDataSource(data)),

@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import {
   applyCompatibilityFixForVisualizationService,
@@ -48,6 +50,9 @@ export class KpiVisualizationComponent
   implements OnInit, OnDestroy
 {
   @Input() override measure$: Observable<Measure>;
+
+  @Output() override isLoading: EventEmitter<any> =
+    new EventEmitter();
 
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
@@ -163,7 +168,7 @@ export class KpiVisualizationComponent
       }),
     );
 
-    const sub = this.measure$
+    let sub = this.measure$
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
         const queryStrings = measure.queries.map(
@@ -179,6 +184,12 @@ export class KpiVisualizationComponent
             this.ngrxStore,
           );
         });
+      });
+    this.subscriptions$.push(sub);
+    sub = this.dataIsLoading$
+      .pipe(startWith(true))
+      .subscribe((loading) => {
+        this.isLoading.emit(loading);
       });
     this.subscriptions$.push(sub);
   }

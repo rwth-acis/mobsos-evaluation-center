@@ -45,12 +45,24 @@
     </form>
   </mat-card>
   <br />
-  <ng-container [ngSwitch]="selectedVisualizationType$ | async">
-    <div class="w-fit mx-auto" *ngSwitchCase="'Table'">
-      <app-sql-table [query$]="queryInput$"></app-sql-table>
-    </div>
-    <mat-card class="w-1/2 mx-auto" *ngSwitchDefault>
-      <app-visualization [measure$]="measure$"> </app-visualization>
-    </mat-card>
+  <ng-container *ngIf="selectedVisualizationType$ | async as type">
+    <ng-container [ngSwitch]="type">
+      <div class="w-fit mx-auto" *ngSwitchCase="'Table'">
+        <app-sql-table
+          [query$]="queryInput$"
+          (isLoading)="setLoading($event)"
+        ></app-sql-table>
+      </div>
+      <ng-container *ngSwitchDefault>
+        <mat-card class="w-1/2 mx-auto" *ngIf="measure$ | async">
+          <app-visualization
+            [measure$]="measure$"
+            (isLoading)="setLoading($event)"
+          >
+          </app-visualization>
+        </mat-card>
+      </ng-container>
+    </ng-container>
+    <mat-spinner *ngIf="dataIsLoading" class="mx-auto"></mat-spinner>
   </ng-container>
 </div>

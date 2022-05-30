@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ChartType } from 'angular-google-charts';
 import { combineLatest } from 'rxjs';
@@ -6,7 +6,10 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  shareReplay,
   startWith,
+  tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { Measure, SQLQuery } from 'src/app/models/measure.model';
 import {
@@ -21,8 +24,8 @@ import {
   templateUrl: './query-visualization.component.html',
   styleUrls: ['./query-visualization.component.scss'],
 })
-export class QueryVisualizationComponent {
-  static initialValue = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
+export class QueryVisualizationComponent implements OnInit {
+  static initialQuery = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
   visualizationChoices = [
     {
       label: 'success-modeling.edit-measure-dialog.choice-table',
@@ -53,7 +56,7 @@ export class QueryVisualizationComponent {
 
   form = this.fb.group(
     {
-      query: [QueryVisualizationComponent.initialValue],
+      query: [QueryVisualizationComponent.initialQuery],
       visualization: [this.visualizationChoices[0].value],
       chartType: ['BarChart'],
     },
@@ -62,28 +65,39 @@ export class QueryVisualizationComponent {
 
   selectedVisualizationType$ = this.form
     .get('visualization')
-    .valueChanges.pipe(
-      startWith(this.form.get('visualization').value),
-      distinctUntilChanged(),
-    );
+    .valueChanges.pipe(startWith('Table'), shareReplay(1));
 
-  selectedChartType$ = this.form
-    .get('chartType')
-    .valueChanges.pipe(startWith(this.form.get('chartType').value));
+  selectedChartType$ = combineLatest([
+    this.form.get('chartType').valueChanges,
+    this.selectedVisualizationType$,
+  ]).pipe(
+    filter(([, visualizationType]) =>
+      visualizationType === 'Chart' ? true : false,
+    ),
+    map(([chartType]) => chartType),
+    distinctUntilChanged(),
+    shareReplay(1),
+  );
 
   queryInput$ = this.form
     .get('query')
     .valueChanges.pipe(
-      startWith(QueryVisualizationComponent.initialValue),
+      startWith(QueryVisualizationComponent.initialQuery),
       distinctUntilChanged(),
     );
 
   measure$ = combineLatest([
-    this.queryInput$,
-    this.selectedVisualizationType$,
-    this.selectedChartType$,
+    this.queryInput$.pipe(distinctUntilChanged()),
+    this.selectedVisualizationType$.pipe(distinctUntilChanged()),
+    this.selectedChartType$.pipe(
+      startWith('BarChart'),
+      distinctUntilChanged(),
+    ),
   ]).pipe(
-    filter(([, visualizationType]) => visualizationType !== 'Table'),
+    filter(([, visualizationType]) => {
+      return !!visualizationType && visualizationType !== 'Table';
+    }),
+    distinctUntilChanged(),
     map(([query, visualizationType, chartType]) => {
       let visualization: Visualization;
       switch (visualizationType) {
@@ -107,9 +121,24 @@ export class QueryVisualizationComponent {
         [],
       );
     }),
+    filter((m) => !!m),
+    tap(() => {
+      this.changeDetectorRef.detectChanges();
+    }),
   );
 
-  constructor(private fb: FormBuilder) {}
+  dataIsLoading: boolean = true;
+
+  constructor(
+    private fb: FormBuilder,
+    private changeDetectorRef: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {}
+
+  setLoading(loading: boolean) {
+    this.dataIsLoading = loading;
+  }
 
   onSubmit() {
     this.form.markAsTouched();

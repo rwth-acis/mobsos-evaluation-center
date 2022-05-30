@@ -1,5 +1,11 @@
 import { MatDialog } from '@angular/material/dialog';
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,6 +24,8 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 })
 export class VisualizationComponent implements OnInit {
   @Input() measure$: Observable<Measure>;
+
+  @Output() isLoading: EventEmitter<any> = new EventEmitter();
 
   measure: Measure;
 
@@ -151,6 +159,9 @@ export class VisualizationComponent implements OnInit {
       width: '80%',
       data: { error: errorText },
     });
+  }
+  setLoading(loading: boolean) {
+    this.isLoading.emit(loading);
   }
 }
 export function applyCompatibilityFixForVisualizationService(

@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -48,6 +50,9 @@ export class ValueVisualizationComponent
   implements OnInit, OnDestroy
 {
   @Input() override measure$: Observable<Measure>;
+
+  @Output() override isLoading: EventEmitter<any> =
+    new EventEmitter();
 
   data$: Observable<VisualizationData>;
 
@@ -132,7 +137,7 @@ export class ValueVisualizationComponent
       ),
     );
 
-    const sub = this.measure$
+    let sub = this.measure$
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
@@ -144,6 +149,12 @@ export class ValueVisualizationComponent
           queryParams,
           this.ngrxStore,
         );
+      });
+    this.subscriptions$.push(sub);
+    sub = this.dataIsReady$
+      .pipe(startWith(false))
+      .subscribe((isReady) => {
+        this.isLoading.emit(!isReady);
       });
     this.subscriptions$.push(sub);
   }

@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   ChartType,
   Formatter,
@@ -50,6 +57,10 @@ export class ChartVisualizerComponent
   implements OnInit, OnDestroy
 {
   @Input() override measure$: Observable<Measure>;
+
+  @Output() override isLoading: EventEmitter<any> =
+    new EventEmitter();
+
   chartData: ChartData; // data which is needed to build the chart.
   chartInitialized = false; // used for the fadein animation of charts
   data$: Observable<VisualizationData>; // visualization data fetched from the store
@@ -177,6 +188,10 @@ export class ChartVisualizerComponent
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
       });
+    this.subscriptions$.push(sub);
+    this.dataIsReady$.pipe(startWith(false)).subscribe((ready) => {
+      this.isLoading.emit(!ready);
+    });
     this.subscriptions$.push(sub);
   }
 
