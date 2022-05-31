@@ -103,15 +103,7 @@ export class ChartVisualizerComponent
 
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
-      withLatestFrom(this.service$),
-      map(([measure, service]) =>
-        applyCompatibilityFixForVisualizationService(
-          super.applyVariableReplacements(
-            measure.queries[0].sql,
-            service,
-          ),
-        ),
-      ),
+      map((measure) => measure.queries[0].sql),
       filter((query) => !!query),
       distinctUntilChanged(),
     );
@@ -156,21 +148,12 @@ export class ChartVisualizerComponent
       }),
     );
 
-    sub = this.measure$
-      .pipe(withLatestFrom(this.service$))
-      .subscribe(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
-        const queryParams = super.getParamsForQuery(query);
-        query = this.applyVariableReplacements(query, service);
-        query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-          cache,
-        );
-      });
+    sub = this.measure$.subscribe((measure) => {
+      let query = measure.queries[0].sql;
+      const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
+      query = applyCompatibilityFixForVisualizationService(query);
+      super.fetchVisualizationData(query, this.ngrxStore, cache);
+    });
     this.subscriptions$.push(sub);
 
     sub = this.data$
@@ -213,7 +196,6 @@ export class ChartVisualizerComponent
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: super.getParamsForQuery(query),
       }),
     );
     this.chartData = null;

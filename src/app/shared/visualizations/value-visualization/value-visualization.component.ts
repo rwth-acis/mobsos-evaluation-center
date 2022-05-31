@@ -92,10 +92,8 @@ export class ValueVisualizationComponent
     );
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
-      withLatestFrom(this.service$),
-      map(([measure, service]) => {
+      map((measure) => {
         let query = measure.queries[0].sql;
-        query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
         return query;
       }),
@@ -141,14 +139,8 @@ export class ValueVisualizationComponent
       .pipe(withLatestFrom(this.service$), first())
       .subscribe(([measure, service]) => {
         let query = measure.queries[0].sql;
-        const queryParams = super.getParamsForQuery(query);
-        query = super.applyVariableReplacements(query, service);
         query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-        );
+        super.fetchVisualizationData(query, this.ngrxStore);
       });
     this.subscriptions$.push(sub);
     sub = this.dataIsReady$
@@ -163,7 +155,6 @@ export class ValueVisualizationComponent
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: super.getParamsForQuery(query),
       }),
     );
   }

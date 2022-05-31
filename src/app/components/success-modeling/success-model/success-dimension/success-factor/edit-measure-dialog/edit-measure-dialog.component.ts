@@ -400,7 +400,6 @@ export class EditMeasureDialogComponent implements OnInit {
     this.ngrxStore.dispatch(
       fetchVisualizationData({
         query: sql,
-        queryParams: this.getParamsForQuery(sql),
       }),
     );
   }

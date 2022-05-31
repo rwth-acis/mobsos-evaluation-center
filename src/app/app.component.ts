@@ -154,12 +154,12 @@ export class AppComponent implements OnInit, OnDestroy {
         { duration: 10000 },
       );
       // Logging the state in dev mode
-      sub = this.ngrxStore
-        .pipe(map((store: StoreState) => store.Reducer))
-        .subscribe((state) => {
-          console.log(state);
-        });
-      this.subscriptions$.push(sub);
+      // sub = this.ngrxStore
+      //   .pipe(map((store: StoreState) => store.Reducer))
+      //   .subscribe((state) => {
+      //     console.log(state);
+      //   });
+      // this.subscriptions$.push(sub);
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
