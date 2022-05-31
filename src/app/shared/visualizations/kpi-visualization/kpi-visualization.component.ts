@@ -32,6 +32,7 @@ import {
   filter,
   first,
   map,
+  shareReplay,
   startWith,
   switchMap,
   tap,
@@ -97,6 +98,7 @@ export class KpiVisualizationComponent
           return q;
         }),
       ),
+      shareReplay(1),
       distinctUntilChanged(),
     );
 
@@ -115,6 +117,7 @@ export class KpiVisualizationComponent
     );
 
     this.fetchDate$ = this.dataArray$.pipe(
+      filter((data) => !!data),
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
       map((dates) =>
         dates.reduce((max, curr) =>
@@ -133,8 +136,10 @@ export class KpiVisualizationComponent
           data.some((v) => v.loading),
       ),
       distinctUntilChanged(),
-      tap(() => this.cdref.detectChanges()),
-      startWith(false),
+      tap((loading) => {
+        this.isLoading.emit(loading);
+        this.cdref.detectChanges();
+      }),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
@@ -142,16 +147,12 @@ export class KpiVisualizationComponent
       map((data) => data.find((vdata) => !!vdata.error)?.error),
     );
 
-    // let sub = this.error$.subscribe((err) => {
-    //   this.error = err;
-    // });
-    // this.subscriptions$.push(sub);
-
     this.expression$ = this.measure$.pipe(
       map(
         (measure) =>
           (measure.visualization as KpiVisualization).expression,
       ),
+      shareReplay(1),
     );
 
     this.scope$ = this.dataArray$.pipe(
@@ -166,32 +167,8 @@ export class KpiVisualizationComponent
         });
         return scope;
       }),
+      shareReplay(1),
     );
-
-    let sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
-      .subscribe(([measure, service]) => {
-        const queryStrings = measure.queries.map(
-          (query) => query.sql,
-        );
-        queryStrings.forEach((query) => {
-          const queryParams = this.getParamsForQuery(query);
-          query = super.applyVariableReplacements(query, service);
-          query = applyCompatibilityFixForVisualizationService(query);
-          super.fetchVisualizationData(
-            query,
-            queryParams,
-            this.ngrxStore,
-          );
-        });
-      });
-    this.subscriptions$.push(sub);
-    sub = this.dataIsLoading$
-      .pipe(startWith(true))
-      .subscribe((loading) => {
-        this.isLoading.emit(loading);
-      });
-    this.subscriptions$.push(sub);
   }
 
   onRefreshClicked(queries: string[]): void {
@@ -206,6 +183,7 @@ export class KpiVisualizationComponent
   }
 
   fetchData(qs$: Observable<string[]>) {
+    this.isLoading.emit(true);
     const sub = qs$.subscribe((queries) => {
       queries.forEach((query) => {
         const queryParams = super.getParamsForQuery(query);
@@ -228,12 +206,14 @@ function getDataFromStore(
       store
         .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
         .pipe(
-          filter((d) => !!d),
-          distinctUntilKeyChanged('fetchDate'),
+          distinctUntilChanged(
+            (prev, curr) => prev.fetchDate === curr.fetchDate,
+          ),
+          shareReplay(1),
         ),
   );
 
-  return combineLatest(data);
+  return combineLatest(data).pipe(shareReplay(1));
 }
 function allDataLoaded(data: VisualizationData[]): boolean {
   if (!data) return false;
