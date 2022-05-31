@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ChartType } from 'angular-google-charts';
 import { combineLatest } from 'rxjs';
@@ -23,7 +23,7 @@ import {
   templateUrl: './query-visualization.component.html',
   styleUrls: ['./query-visualization.component.scss'],
 })
-export class QueryVisualizationComponent implements OnInit {
+export class QueryVisualizationComponent {
   static initialQuery = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
   visualizationChoices = [
     {
@@ -129,8 +129,6 @@ export class QueryVisualizationComponent implements OnInit {
     private fb: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
   ) {}
-
-  ngOnInit(): void {}
 
   setLoading(loading: boolean) {
     this.dataIsLoading = loading;
