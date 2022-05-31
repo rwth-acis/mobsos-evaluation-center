@@ -9,7 +9,6 @@ import {
   shareReplay,
   startWith,
   tap,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { Measure, SQLQuery } from 'src/app/models/measure.model';
 import {
@@ -97,7 +96,6 @@ export class QueryVisualizationComponent implements OnInit {
     filter(([, visualizationType]) => {
       return !!visualizationType && visualizationType !== 'Table';
     }),
-    distinctUntilChanged(),
     map(([query, visualizationType, chartType]) => {
       let visualization: Visualization;
       switch (visualizationType) {
@@ -122,9 +120,7 @@ export class QueryVisualizationComponent implements OnInit {
       );
     }),
     filter((m) => !!m),
-    tap(() => {
-      this.changeDetectorRef.detectChanges();
-    }),
+    shareReplay(1),
   );
 
   dataIsLoading: boolean = true;
