@@ -14,6 +14,7 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  shareReplay,
   startWith,
   switchMap,
   tap,
@@ -92,6 +93,7 @@ export class SqlTableComponent
         ),
       ),
       distinctUntilChanged(),
+      shareReplay(1),
     );
 
     this.vdata$ = storeData$.pipe(map((vdata) => vdata?.data));
