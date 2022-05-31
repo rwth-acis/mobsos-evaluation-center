@@ -23,7 +23,7 @@ import {
   templateUrl: './query-visualization.component.html',
   styleUrls: ['./query-visualization.component.scss'],
 })
-export class QueryVisualizationComponent implements OnInit {
+export class QueryVisualizationComponent {
   static initialQuery = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
   visualizationChoices = [
     {
@@ -129,8 +129,6 @@ export class QueryVisualizationComponent implements OnInit {
     private fb: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
   ) {}
-
-  ngOnInit(): void {}
 
   setLoading(loading: boolean) {
     if (this.dataIsLoading !== loading) {
