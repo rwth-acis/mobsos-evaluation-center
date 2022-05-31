@@ -81,7 +81,7 @@ export class SqlTableComponent
       tap((query) =>
         this.ngrxStore.dispatch(fetchVisualizationData({ query })),
       ),
-      switchMap(([query]) =>
+      switchMap((query) =>
         this.ngrxStore.select(
           VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
         ),

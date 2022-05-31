@@ -349,51 +349,6 @@ export class EditMeasureDialogComponent implements OnInit {
     );
   }
 
-  // onKpiOperandChange(operandName: string, index: number): void {
-  //   (
-  //     this.data.measure.visualization as KpiVisualization
-  //   ).operationsElements[index] = new KpiVisualizationOperand(
-  //     operandName,
-  //     index,
-  //   );
-  // }
-
-  // onKpiOperatorChange(operatorName: string, index: number): void {
-  //   (
-  //     this.data.measure.visualization as KpiVisualization
-  //   ).operationsElements[index] = new KpiVisualizationOperator(
-  //     operatorName,
-  //     index,
-  //   );
-  //   this.formVisualizationParameters.push(new FormControl(''));
-  // }
-
-  // onAddOperationClicked(): void {
-  //   this.formVisualizationParameters.push(new FormControl(''));
-
-  //   if (this.formVisualizationParameters.controls.length === 1) {
-  //     this.formVisualizationParameters.push(new FormControl(''));
-  //   }
-  // }
-
-  // onRemoveOperationClicked(): void {
-  //   const kpiVisualization = this.data.measure
-  //     .visualization as KpiVisualization;
-  //   if (kpiVisualization.operationsElements.length >= 3) {
-  //     kpiVisualization.operationsElements.pop();
-  //     kpiVisualization.operationsElements.pop();
-  //   }
-
-  //   if (this.formVisualizationParameters.controls.length > 2) {
-  //     this.formVisualizationParameters.removeAt(
-  //       this.formVisualizationParameters.length - 1,
-  //     );
-  //     this.formVisualizationParameters.removeAt(
-  //       this.formVisualizationParameters.length - 1,
-  //     );
-  //   }
-  // }
-
   onQueryChanged(i: number): void {
     const sql = this.formQueries.controls[i].get('sql')
       .value as string;
