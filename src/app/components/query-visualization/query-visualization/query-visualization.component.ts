@@ -133,7 +133,10 @@ export class QueryVisualizationComponent implements OnInit {
   ngOnInit(): void {}
 
   setLoading(loading: boolean) {
-    this.dataIsLoading = loading;
+    if (this.dataIsLoading !== loading) {
+      this.dataIsLoading = loading;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   onSubmit() {
