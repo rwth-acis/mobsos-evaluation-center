@@ -55,10 +55,7 @@
       </div>
       <ng-container *ngSwitchDefault>
         <mat-card class="w-1/2 mx-auto" *ngIf="measure$ | async">
-          <app-visualization
-            [measure$]="measure$"
-            (isLoading)="setLoading($event)"
-          >
+          <app-visualization [measure$]="measure$">
           </app-visualization>
         </mat-card>
       </ng-container>

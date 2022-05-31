@@ -31,8 +31,10 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  shareReplay,
   startWith,
   switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { Observable, Subscription } from 'rxjs';
@@ -114,32 +116,36 @@ export class ChartVisualizerComponent
       ),
       filter((query) => !!query),
       distinctUntilChanged(),
+      shareReplay(1),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
+      tap(() => {
+        this.isLoading.emit(true);
+      }),
       switchMap((queryString) =>
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
           .pipe(
-            filter((data) => !!data),
-            distinctUntilKeyChanged('fetchDate'),
+            distinctUntilChanged(
+              (prev, curr) => prev?.fetchDate === curr?.fetchDate,
+            ),
+            shareReplay(1),
           ),
       ),
-      startWith({
-        data: undefined,
-        loading: true,
-        fetchDate: undefined,
-      }),
-      filter((data) => !!data),
-      distinctUntilKeyChanged('fetchDate'),
+      shareReplay(1),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
 
     this.dataIsReady$ = this.data$.pipe(
+      tap((data) => {
+        this.isLoading.emit(!data || data.loading);
+      }),
       map((data) => data && !data.loading),
       distinctUntilChanged(),
+      shareReplay(1),
     );
 
     // loads the package for the charttype and emits if package is loaded
