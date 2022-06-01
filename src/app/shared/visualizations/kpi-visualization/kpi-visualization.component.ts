@@ -91,12 +91,9 @@ export class KpiVisualizationComponent
       withLatestFrom(this.service$),
       map(([measure, service]) =>
         // apply replacement for each query
-        measure.queries.map((query) => {
-          let q = query.sql;
-          q = this.applyVariableReplacements(q, service);
-          q = applyCompatibilityFixForVisualizationService(q);
-          return q;
-        }),
+        measure.queries.map((query) =>
+          applyCompatibilityFixForVisualizationService(query.sql),
+        ),
       ),
       shareReplay(1),
       distinctUntilChanged(),
@@ -176,7 +173,6 @@ export class KpiVisualizationComponent
       this.ngrxStore.dispatch(
         refreshVisualization({
           query,
-          queryParams: super.getParamsForQuery(query),
         }),
       );
     });
@@ -186,12 +182,7 @@ export class KpiVisualizationComponent
     this.isLoading.emit(true);
     const sub = qs$.subscribe((queries) => {
       queries.forEach((query) => {
-        const queryParams = super.getParamsForQuery(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-        );
+        super.fetchVisualizationData(query, this.ngrxStore);
       });
     });
     this.subscriptions$.push(sub);

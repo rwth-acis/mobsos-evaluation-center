@@ -73,21 +73,15 @@ export class SqlTableComponent
 
   ngOnInit() {
     const storeData$ = this.query$.pipe(
-      map((query) => {
-        const qParams = this.getParamsForQuery(query);
-        query = this.applyVariableReplacements(query);
-        query =
-          SqlTableComponent.applyCompatibilityFixForVisualizationService(
-            query,
-          );
-        return [query, qParams] as [string, string[]];
-      }),
-      tap(([query, queryParams]) =>
-        this.ngrxStore.dispatch(
-          fetchVisualizationData({ query, queryParams }),
+      map((query) =>
+        SqlTableComponent.applyCompatibilityFixForVisualizationService(
+          query,
         ),
       ),
-      switchMap(([query]) =>
+      tap((query) =>
+        this.ngrxStore.dispatch(fetchVisualizationData({ query })),
+      ),
+      switchMap((query) =>
         this.ngrxStore.select(
           VISUALIZATION_DATA_FOR_QUERY({ queryString: query }),
         ),

@@ -125,7 +125,7 @@ export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
 export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
 export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
-  props<{ query: string; queryParams: string[]; cache?: boolean }>(),
+  props<{ query: string; cache?: boolean }>(),
 );
 export const fetchMessageDescriptions = createAction(
   HttpActions.FETCH_SERVICE_MESSAGE_DESCRIPTIONS,
@@ -408,7 +408,7 @@ export const setUserName = createAction(
 );
 export const refreshVisualization = createAction(
   HttpActions.REFRESH_VISUALIZATION,
-  props<{ query: string; queryParams?: string[] }>(),
+  props<{ query: string }>(),
 );
 export const resetFetchDate = createAction(
   StateActions.RESET_FETCH_DATE,

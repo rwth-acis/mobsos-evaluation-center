@@ -47,86 +47,12 @@ export class VisualizationComponent implements OnInit {
     );
   }
 
-  applyVariableReplacements(
-    query: string,
-    service: ServiceInformation,
-  ): string {
-    if (!this.service) {
-      this.service = service;
-    }
-    if (query?.includes('$SERVICES$')) {
-      let servicesString = '(';
-      const services = [];
-
-      if (!this.service?.mobsosIDs) {
-        console.error('Service agent id cannot be null');
-        return query;
-      }
-      for (const mobsosID of Object.keys(this.service.mobsosIDs)) {
-        services.push(`"${mobsosID}"`);
-      }
-      servicesString += services.join(',') + ')';
-      return query?.replace('$SERVICES$', servicesString);
-    } else if (query?.includes('$SERVICE$')) {
-      if (!(Object.keys(this.service.mobsosIDs).length > 0)) {
-        console.error('Service agent id cannot be null');
-        return query;
-      }
-      // for now we use the id which has the greatest registrationTime as this is the agent ID
-      // of the most recent service agent started in las2peer
-      const maxIndex = Object.values(this.service.mobsosIDs).reduce(
-        (max, time, index) => {
-          return time > max ? index : max;
-        },
-        0,
-      );
-
-      return query?.replace(
-        '$SERVICE$',
-        ` ${Object.keys(this.service.mobsosIDs)[maxIndex]} `,
-      );
-    } else return query;
-  }
-
-  getParamsForQuery(query: string): string[] {
-    if (
-      !this.service?.mobsosIDs ||
-      this.service.mobsosIDs.length === 0
-    ) {
-      // just for robustness
-      // should not be called when there are no service IDs stored in MobSOS anyway
-      return [];
-    }
-    const serviceRegex = /\$SERVICE\$/g;
-    const matches = query?.match(serviceRegex);
-    const params = [];
-    if (matches) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for (const match of matches) {
-        // for now we use the id which has the greatest registrationTime as this is the agent ID
-        // of the most recent service agent started in las2peer
-        const maxIndex = Object.values(this.service.mobsosIDs).reduce(
-          (max, time, index) => {
-            return time > max ? index : max;
-          },
-          0,
-        );
-
-        params.push(Object.keys(this.service.mobsosIDs)[maxIndex]);
-      }
-    }
-    return params as string[];
-  }
-
   fetchVisualizationData(
     query: string,
-    queryParams: string[],
     ngrxStore: Store<any>,
     cache: boolean = true,
   ): void {
-    ngrxStore.dispatch(
-      fetchVisualizationData({ query, queryParams, cache }),
-    );
+    ngrxStore.dispatch(fetchVisualizationData({ query, cache }));
   }
 
   /** Note that lifecycle hooks are not called by components
