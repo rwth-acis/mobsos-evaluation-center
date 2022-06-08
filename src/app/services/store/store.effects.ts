@@ -2,7 +2,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
@@ -23,7 +23,10 @@ import {
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
 import { Questionnaire } from '../../models/questionnaire.model';
-import { ServiceMessageDescriptions } from '../../models/service.model';
+import {
+  ServiceInformation,
+  ServiceMessageDescriptions,
+} from '../../models/service.model';
 import { Survey } from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
@@ -79,10 +82,11 @@ export class StateEffects {
               user.signedIn
             ) {
               alert(
-                'You could not be authenticated, reason: ' +
-                  reason.error +
-                  '. Please contact the administrator',
+                `You could not be authenticated, reason: ${
+                  reason.error.toString() as string
+                }.\n. Please contact the administrator`,
               );
+
               this.ngrxStore.dispatch(
                 Action.storeUser({ user: null }),
               );
@@ -234,6 +238,7 @@ export class StateEffects {
       ofType(Action.setGroup),
       filter(({ groupId }) => !!groupId),
       tap(({ groupId }) => {
+        this.workspaceService.stopSynchronizingWorkspace();
         this.workspaceService.syncWithCommunnityWorkspace(groupId);
         this.ngrxStore.dispatch(fetchMeasureCatalog({ groupId }));
         this.ngrxStore.dispatch(
@@ -495,10 +500,13 @@ export class StateEffects {
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
-      withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([props, data]) => {
-        const query = props.query;
-        const queryParams = props.queryParams;
+      withLatestFrom(
+        this.ngrxStore.select(VISUALIZATION_DATA),
+        this.ngrxStore.select(SELECTED_SERVICE),
+      ),
+      mergeMap(([props, data, service]) => {
+        const query = applyVariableReplacements(props.query, service);
+        const queryParams = getParamsForQuery(props.query, service);
         const dataForQuery = data[query];
         if (!query) {
           return of(Action.failure({ reason: 'No query provided' }));
@@ -513,7 +521,7 @@ export class StateEffects {
           );
         }
         if (!shouldFetch(dataForQuery)) {
-          return of(Action.failure({ reason: "Shouldn't fetch" }));
+          return of(Action.failure({ reason: 'Should not fetch' }));
         }
 
         StateEffects.visualizationCalls[query] =
@@ -573,11 +581,11 @@ export class StateEffects {
         this.ngrxStore.dispatch(resetFetchDate({ query }));
       }),
       delay(100),
-      mergeMap(({ query, queryParams }) =>
+      mergeMap(({ query }) =>
         of(
           Action.fetchVisualizationData({
             query,
-            queryParams,
+
             cache: false,
           }),
         ),
@@ -644,6 +652,15 @@ export class StateEffects {
       ofType(Action.fetchSurveys),
       mergeMap(() =>
         this.l2p.getSurveys().pipe(
+          map((surveys: Survey[]) => {
+            //transform dates
+            surveys = surveys.map((survey) => {
+              survey.start = new Date(survey.start);
+              survey.end = new Date(survey.end);
+              return survey;
+            });
+            return surveys;
+          }),
           map((surveys: Survey[]) =>
             Action.storeSurveys({
               surveys,
@@ -920,7 +937,8 @@ export class StateEffects {
                     }
                   }
                   const currentCommunityWorkspace =
-                    this.workspaceService.currentCommunityWorkspace;
+                    this.workspaceService
+                      .currentCommunityWorkspaceValue;
                   if (
                     user?.signedIn &&
                     !currentCommunityWorkspace[
@@ -1103,4 +1121,72 @@ function handleResponse(response: any, query: string) {
       'Unknown errror for fetching Visualization data',
     ),
   }); // should not be reached
+}
+
+function applyVariableReplacements(
+  query: string,
+  service: ServiceInformation,
+): string {
+  if (query?.includes('$SERVICES$')) {
+    let servicesString = '(';
+    const services = [];
+
+    if (!service?.mobsosIDs) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    for (const mobsosID of Object.keys(service.mobsosIDs)) {
+      services.push(`"${mobsosID}"`);
+    }
+    servicesString += services.join(',') + ')';
+    return query?.replace('$SERVICES$', servicesString);
+  } else if (query?.includes('$SERVICE$')) {
+    if (!(Object.keys(service.mobsosIDs).length > 0)) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    // for now we use the id which has the greatest registrationTime as this is the agent ID
+    // of the most recent service agent started in las2peer
+    const maxIndex = Object.values(service.mobsosIDs).reduce(
+      (max, time, index) => {
+        return time > max ? index : max;
+      },
+      0,
+    );
+
+    return query?.replace(
+      '$SERVICE$',
+      ` ${Object.keys(service.mobsosIDs)[maxIndex]} `,
+    );
+  } else return query;
+}
+
+function getParamsForQuery(
+  query: string,
+  service: ServiceInformation,
+): string[] {
+  if (!(service?.mobsosIDs?.length > 0)) {
+    // just for robustness
+    // should not be called when there are no service IDs stored in MobSOS anyway
+    return [];
+  }
+  const serviceRegex = /\$SERVICE\$/g;
+  const matches = query?.match(serviceRegex);
+  const params = [];
+  if (matches) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const match of matches) {
+      // for now we use the id which has the greatest registrationTime as this is the agent ID
+      // of the most recent service agent started in las2peer
+      const maxIndex = Object.values(service.mobsosIDs).reduce(
+        (max, time, index) => {
+          return time > max ? index : max;
+        },
+        0,
+      );
+
+      params.push(Object.keys(service.mobsosIDs)[maxIndex]);
+    }
+  }
+  return params as string[];
 }

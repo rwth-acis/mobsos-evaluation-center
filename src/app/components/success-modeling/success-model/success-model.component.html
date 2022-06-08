@@ -8,7 +8,7 @@
   <ng-container *ngIf="assetsLoaded$ | async; else notInitialized">
     <ng-container
       *ngIf="
-        !(editMode$ | async) && successModelEmpty$ | async;
+        (editMode$ | async) === false && successModelEmpty$ | async;
         else successModel
       "
     >
@@ -41,7 +41,7 @@
         }}
       </h3>
       <!-- questionnaires -->
-      <app-surveys [model$]="successModel$"></app-surveys>
+      <app-surveys></app-surveys>
       <!-- success dimensions -->
       <div id="dimensions">
         <app-success-dimension
@@ -92,4 +92,10 @@
 <ng-template #notInitialized>
   <!-- success model still loading -->
   <mat-spinner style="margin: auto"> </mat-spinner>
+</ng-template>
+
+<ng-template #notPartOfCommunity>
+  <app-error-banner
+    [message]="'You are not a part of this community'"
+  ></app-error-banner>
 </ng-template>

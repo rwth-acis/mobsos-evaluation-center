@@ -59,7 +59,7 @@ export class SuccessModel implements SuccessModel {
     try {
       if (!service) {
         console.warn("Service can't be undefined");
-        return;
+        return null;
       }
       return new SuccessModel(
         service.alias,

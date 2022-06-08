@@ -17,9 +17,11 @@ import {
 import { User } from 'src/app/models/user.model';
 // eslint-disable-next-line max-len
 import {
+  IS_MEMBER_OF_SELECTED_GROUP,
   MEASURE_CATALOG,
   MEASURE_CATALOG_FROM_WORKSPACE,
   MODEL_AND_CATALOG_LOADED,
+  SELECTED_GROUP,
   SUCCESS_MODEL,
   SUCCESS_MODEL_FROM_WORKSPACE,
   SUCCESS_MODEL_IS_EMPTY,
@@ -40,7 +42,8 @@ export class VisitorComponent implements OnInit, OnDestroy {
     _SELECTED_SERVICE_NAME,
   );
   selectedGroupId$ = this.ngrxStore.select(_SELECTED_GROUP_ID);
-
+  selectedGroup$ = this.ngrxStore.select(SELECTED_GROUP);
+  memberOfGroup$ = this.ngrxStore.select(IS_MEMBER_OF_SELECTED_GROUP);
   user$ = this.ngrxStore.select(USER);
   applicationWorkspaceOwner$ = this.ngrxStore.select(WORKSPACE_OWNER);
 

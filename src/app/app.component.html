@@ -44,7 +44,7 @@
 
       <mat-nav-list>
         <a
-          *ngIf="(userGroups$ | async)?.length == 0"
+          *ngIf="(userGroups$ | async)?.length === 0"
           mat-list-item
           (click)="openAddCommunityDialog()"
         >
@@ -113,14 +113,14 @@
         <button
           mat-list-item
           (click)="useLanguage('en')"
-          [disabled]="languageService.getCurrentLanguage() == 'en'"
+          [disabled]="languageService.getCurrentLanguage() === 'en'"
         >
           English
         </button>
         <button
           mat-list-item
           (click)="useLanguage('de')"
-          [disabled]="languageService.getCurrentLanguage() == 'de'"
+          [disabled]="languageService.getCurrentLanguage() === 'de'"
         >
           Deutsch
         </button>
@@ -140,7 +140,7 @@
       oidcSilentSigninUrl="oidc-silent"
       [attr.useRedirect]="true"
       autoAppendWidget="true"
-      (signed-in)="setUser($event.detail)"
+      (signed-in)="setUser($event)"
       (signed-out)="logout()"
     >
       <button

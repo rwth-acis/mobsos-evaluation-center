@@ -1,13 +1,15 @@
-<ng-container *ngIf="!(dataIsLoading$ | async); else loading">
+<ng-container
+  *ngIf="(dataIsLoading$ | async) === false; else loading"
+>
   <ng-container *ngIf="expression$ | async as kpi; else noData">
-    <math> {{ kpi }} =</math>
+    <div>{{ kpi }} =</div>
     <div class="value-visualization" *ngIf="scope$ | async as scope">
       {{ kpi | evaluate: scope }}
     </div>
     <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon> info_outline </mat-icon>
     </button>
-    <ng-container *ngIf="!(restricted$ | async)">
+    <ng-container *ngIf="(restricted$ | async) === false">
       <button
         *ngIf="queries$ | async as queries"
         mat-icon-button

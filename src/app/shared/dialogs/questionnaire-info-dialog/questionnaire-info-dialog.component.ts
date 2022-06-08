@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MatDialogRef,
   MAT_DIALOG_DATA,
@@ -10,11 +10,9 @@ import { Questionnaire } from 'src/app/models/questionnaire.model';
   templateUrl: './questionnaire-info-dialog.component.html',
   styleUrls: ['./questionnaire-info-dialog.component.scss'],
 })
-export class QuestionnaireInfoDialogComponent implements OnInit {
+export class QuestionnaireInfoDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<QuestionnaireInfoDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Questionnaire,
   ) {}
-
-  ngOnInit(): void {}
 }

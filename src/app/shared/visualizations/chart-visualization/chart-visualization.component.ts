@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   ChartType,
   Formatter,
@@ -24,8 +31,10 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  shareReplay,
   startWith,
   switchMap,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { Observable, Subscription } from 'rxjs';
@@ -49,8 +58,19 @@ export class ChartVisualizerComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
 
+  @Output() override isLoading: EventEmitter<any> =
+    new EventEmitter();
+
+  chartData: ChartData; // data which is needed to build the chart.
+  chartInitialized = false; // used for the fadein animation of charts
+  data$: Observable<VisualizationData>; // visualization data fetched from the store
+  dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
+  formatter_medium; // holds the formatter for the date with format type medium
+  formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
+
+  subscriptions$: Subscription[] = [];
   query$: Observable<string>; // Observable of the sql query
   expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
@@ -59,19 +79,9 @@ export class ChartVisualizerComponent
     distinctUntilKeyChanged('name'),
     startWith(undefined),
   );
-  formatter_medium; // holds the formatter for the date with format type medium
 
-  chartData: ChartData; // data which is needed to build the chart.
-  chartInitialized = false; // used for the fadein animation of charts
-  data$: Observable<VisualizationData>; // visualization data fetched from the store
-  // Observable which periodically checks wheter the google charts library is ready
-  dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
-
-  formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
-
-  subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    protected override dialog: MatDialog,
     private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
   ) {
@@ -84,7 +94,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({
@@ -95,43 +105,39 @@ export class ChartVisualizerComponent
 
     // gets the query string from the measure and applies variable replacements
     this.query$ = this.measure$.pipe(
-      withLatestFrom(this.service$),
-      map(([measure, service]) =>
-        applyCompatibilityFixForVisualizationService(
-          super.applyVariableReplacements(
-            measure.queries[0].sql,
-            service,
-          ),
-        ),
-      ),
+      map((measure) => measure.queries[0].sql),
       filter((query) => !!query),
       distinctUntilChanged(),
+      shareReplay(1),
     );
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
+      tap(() => {
+        this.isLoading.emit(true);
+      }),
       switchMap((queryString) =>
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
           .pipe(
-            filter((data) => !!data),
-            distinctUntilKeyChanged('fetchDate'),
+            distinctUntilChanged(
+              (prev, curr) => prev?.fetchDate === curr?.fetchDate,
+            ),
+            shareReplay(1),
           ),
       ),
-      startWith({
-        data: undefined,
-        loading: true,
-        fetchDate: undefined,
-      }),
-      filter((data) => !!data),
-      distinctUntilKeyChanged('fetchDate'),
+      shareReplay(1),
     );
 
     this.error$ = this.data$.pipe(map((data) => data?.error));
 
     this.dataIsReady$ = this.data$.pipe(
+      tap((data) => {
+        this.isLoading.emit(!data || data.loading);
+      }),
       map((data) => data && !data.loading),
       distinctUntilChanged(),
+      shareReplay(1),
     );
 
     // loads the package for the charttype and emits if package is loaded
@@ -148,21 +154,12 @@ export class ChartVisualizerComponent
       }),
     );
 
-    sub = this.measure$
-      .pipe(withLatestFrom(this.service$))
-      .subscribe(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
-        const queryParams = super.getParamsForQuery(query);
-        query = this.applyVariableReplacements(query, service);
-        query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-          cache,
-        );
-      });
+    sub = this.measure$.subscribe((measure) => {
+      let query = measure.queries[0].sql;
+      const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
+      query = applyCompatibilityFixForVisualizationService(query);
+      super.fetchVisualizationData(query, this.ngrxStore, cache);
+    });
     this.subscriptions$.push(sub);
 
     sub = this.data$
@@ -180,6 +177,10 @@ export class ChartVisualizerComponent
       .subscribe(([dataTable, measure]) => {
         this.prepareChart(dataTable, measure.visualization);
       });
+    this.subscriptions$.push(sub);
+    this.dataIsReady$.pipe(startWith(false)).subscribe((ready) => {
+      this.isLoading.emit(!ready);
+    });
     this.subscriptions$.push(sub);
   }
 
@@ -201,7 +202,6 @@ export class ChartVisualizerComponent
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: super.getParamsForQuery(query),
       }),
     );
     this.chartData = null;

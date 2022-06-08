@@ -32,8 +32,8 @@ export class ApplicationWorkspace implements ApplicationWorkspace {
 
 export class EmptyApplicationWorkspace extends ApplicationWorkspace {
   constructor(
-    public createdBy: string,
-    public service: ServiceInformation,
+    public override createdBy: string,
+    public override service: ServiceInformation,
   ) {
     super(
       createdBy,

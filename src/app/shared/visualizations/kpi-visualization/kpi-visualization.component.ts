@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import {
   applyCompatibilityFixForVisualizationService,
@@ -30,12 +32,14 @@ import {
   filter,
   first,
   map,
+  shareReplay,
   startWith,
   switchMap,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
+import { MathExpression } from 'mathjs';
 
 @Component({
   selector: 'app-kpi-visualization',
@@ -46,17 +50,21 @@ export class KpiVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() measure$: Observable<Measure>;
+  @Input() override measure$: Observable<Measure>;
+
+  @Output() override isLoading: EventEmitter<any> =
+    new EventEmitter();
 
   queries$: Observable<string[]>;
   dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
-  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   fetchDate$: Observable<string>; // latest fetch date as iso string
-  expression$;
-  scope$;
-
+  expression$: Observable<MathExpression>;
+  scope$: Observable<{
+    [key: string]: number;
+  }>;
+  restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
   service$ = this.ngrxStore.select(SELECTED_SERVICE).pipe(
     filter((service) => !!service),
     distinctUntilKeyChanged('name'),
@@ -64,7 +72,7 @@ export class KpiVisualizationComponent
   );
   private subscriptions$: Subscription[] = [];
   constructor(
-    protected dialog: MatDialog,
+    protected override dialog: MatDialog,
     private ngrxStore: Store,
     private cdref: ChangeDetectorRef,
   ) {
@@ -77,19 +85,17 @@ export class KpiVisualizationComponent
     );
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     // gets the query strings from the measure and applies variable replacements
     this.queries$ = this.measure$.pipe(
       withLatestFrom(this.service$),
       map(([measure, service]) =>
         // apply replacement for each query
-        measure.queries.map((query) => {
-          let q = query.sql;
-          q = this.applyVariableReplacements(q, service);
-          q = applyCompatibilityFixForVisualizationService(q);
-          return q;
-        }),
+        measure.queries.map((query) =>
+          applyCompatibilityFixForVisualizationService(query.sql),
+        ),
       ),
+      shareReplay(1),
       distinctUntilChanged(),
     );
 
@@ -108,6 +114,7 @@ export class KpiVisualizationComponent
     );
 
     this.fetchDate$ = this.dataArray$.pipe(
+      filter((data) => !!data),
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
       map((dates) =>
         dates.reduce((max, curr) =>
@@ -119,7 +126,6 @@ export class KpiVisualizationComponent
 
     // true if any query is still loading
     this.dataIsLoading$ = this.dataArray$.pipe(
-      startWith(undefined),
       map(
         (data: VisualizationData[]) =>
           data === undefined ||
@@ -127,7 +133,10 @@ export class KpiVisualizationComponent
           data.some((v) => v.loading),
       ),
       distinctUntilChanged(),
-      tap(() => this.cdref.detectChanges()),
+      tap((loading) => {
+        this.isLoading.emit(loading);
+        this.cdref.detectChanges();
+      }),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
@@ -135,16 +144,12 @@ export class KpiVisualizationComponent
       map((data) => data.find((vdata) => !!vdata.error)?.error),
     );
 
-    // let sub = this.error$.subscribe((err) => {
-    //   this.error = err;
-    // });
-    // this.subscriptions$.push(sub);
-
     this.expression$ = this.measure$.pipe(
       map(
         (measure) =>
           (measure.visualization as KpiVisualization).expression,
       ),
+      shareReplay(1),
     );
 
     this.scope$ = this.dataArray$.pipe(
@@ -159,26 +164,8 @@ export class KpiVisualizationComponent
         });
         return scope;
       }),
+      shareReplay(1),
     );
-
-    const sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
-      .subscribe(([measure, service]) => {
-        const queryStrings = measure.queries.map(
-          (query) => query.sql,
-        );
-        queryStrings.forEach((query) => {
-          const queryParams = this.getParamsForQuery(query);
-          query = super.applyVariableReplacements(query, service);
-          query = applyCompatibilityFixForVisualizationService(query);
-          super.fetchVisualizationData(
-            query,
-            queryParams,
-            this.ngrxStore,
-          );
-        });
-      });
-    this.subscriptions$.push(sub);
   }
 
   onRefreshClicked(queries: string[]): void {
@@ -186,21 +173,16 @@ export class KpiVisualizationComponent
       this.ngrxStore.dispatch(
         refreshVisualization({
           query,
-          queryParams: super.getParamsForQuery(query),
         }),
       );
     });
   }
 
   fetchData(qs$: Observable<string[]>) {
+    this.isLoading.emit(true);
     const sub = qs$.subscribe((queries) => {
       queries.forEach((query) => {
-        const queryParams = super.getParamsForQuery(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-        );
+        super.fetchVisualizationData(query, this.ngrxStore);
       });
     });
     this.subscriptions$.push(sub);
@@ -215,12 +197,14 @@ function getDataFromStore(
       store
         .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
         .pipe(
-          filter((d) => !!d),
-          distinctUntilKeyChanged('fetchDate'),
+          distinctUntilChanged(
+            (prev, curr) => prev.fetchDate === curr.fetchDate,
+          ),
+          shareReplay(1),
         ),
   );
 
-  return combineLatest(data);
+  return combineLatest(data).pipe(shareReplay(1));
 }
 function allDataLoaded(data: VisualizationData[]): boolean {
   if (!data) return false;

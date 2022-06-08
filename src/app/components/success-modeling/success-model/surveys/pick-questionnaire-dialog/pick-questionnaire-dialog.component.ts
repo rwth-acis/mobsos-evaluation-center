@@ -33,15 +33,15 @@ import { MatDialogRef } from '@angular/material/dialog';
   styleUrls: ['./pick-questionnaire-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PickQuestionnaireDialogComponent implements OnInit {
+export class PickQuestionnaireDialogComponent {
   selectedQuestionnaire: Questionnaire;
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
   questionnaires$ = this.ngrxStore.select(QUESTIONNAIRES);
   range = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+    start: new FormControl({ value: '', disabled: true }),
+    end: new FormControl({ value: '', disabled: true }),
   });
 
   constructor(
@@ -74,8 +74,6 @@ export class PickQuestionnaireDialogComponent implements OnInit {
   //   }
   // }
 
-  ngOnInit(): void {}
-
   async fetchForm(id: number) {
     this.ngrxStore.dispatch(
       fetchQuestionnaireForm({
@@ -97,13 +95,13 @@ export class PickQuestionnaireDialogComponent implements OnInit {
         }),
       ),
     );
-
-    if (result instanceof HttpErrorResponse) {
+    if ('formXML' in result) {
+      const xml = (result as { formXML: string }).formXML;
+      return xml;
+    } else if (result instanceof HttpErrorResponse) {
       throw result;
     }
-
-    const xml = (result as { formXML: string }).formXML;
-    return xml;
+    return null;
   }
 
   async onSubmit() {

@@ -31,7 +31,12 @@ export interface ServicesFromMobSOS {
  * Services from Las2peer
  */
 export interface ServicesFromL2P {
-  [key: string]: { name: string }; // L2P ID and its service
+  [key: string]: {
+    name: string;
+    releases: {
+      [key: string]: { supplement: { class: string; name: string } };
+    };
+  }; // L2P ID and its service
 }
 /**
  * Service information from MobSOS

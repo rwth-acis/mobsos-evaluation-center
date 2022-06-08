@@ -267,12 +267,14 @@ export const SURVEYS_NOT_IN_MODEL = createSelector(
   SURVEYS_FROM_SUCCESS_MODEL,
   SURVEYS,
   (surveysInModels, surveys) =>
-    surveys?.filter(
-      (survey) =>
-        !surveysInModels.find(
-          (surveyInModel) => surveyInModel.id === survey.id,
-        ),
-    ),
+    surveysInModels
+      ? surveys?.filter(
+          (survey) =>
+            !surveysInModels.find(
+              (surveyInModel) => surveyInModel.id === survey.id,
+            ),
+        )
+      : surveys,
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
@@ -436,7 +438,7 @@ function getUserRoleInWorkspace(
   userName: string,
 ): string {
   if (!userName || !applicationWorkspace) {
-    return;
+    return null;
   }
   if (applicationWorkspace?.createdBy === userName) {
     return UserRole.OWNER;
@@ -456,7 +458,7 @@ function getAllWorkspacesForService(
   serviceName: string,
 ): ApplicationWorkspace[] {
   if (!workspace) {
-    return;
+    return null;
   }
   const result = [];
   if (!serviceName) {
@@ -486,7 +488,7 @@ function getCurrentUserWorkspace(
   communityWorkspace: CommunityWorkspace,
   user: string,
 ) {
-  if (!communityWorkspace) return;
+  if (!communityWorkspace) return null;
   if (owner && communityWorkspace[owner])
     return communityWorkspace[owner];
   return communityWorkspace[user];

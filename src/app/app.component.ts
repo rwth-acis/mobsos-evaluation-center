@@ -13,7 +13,6 @@ import { environment } from '../environments/environment';
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
 import { DomSanitizer } from '@angular/platform-browser';
-import Timer = NodeJS.Timer;
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
@@ -97,7 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   version = environment.version;
 
-  private silentSigninIntervalHandle: Timer;
+  private silentSigninIntervalHandle;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -155,12 +154,12 @@ export class AppComponent implements OnInit, OnDestroy {
         { duration: 10000 },
       );
       // Logging the state in dev mode
-      sub = this.ngrxStore
-        .pipe(map((store: StoreState) => store.Reducer))
-        .subscribe((state) => {
-          console.log(state);
-        });
-      this.subscriptions$.push(sub);
+      // sub = this.ngrxStore
+      //   .pipe(map((store: StoreState) => store.Reducer))
+      //   .subscribe((state) => {
+      //     console.log(state);
+      //   });
+      // this.subscriptions$.push(sub);
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
@@ -192,7 +191,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(toggleExpertMode());
   }
 
-  setUser(user: User): void {
+  setUser(e): void {
+    const user = e.detail;
     if (user?.profile?.preferred_username) {
       this.ngrxStore.dispatch(storeUser({ user }));
       return;

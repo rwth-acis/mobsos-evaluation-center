@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { EditFactorDialogComponent } from './edit-factor-dialog/edit-factor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,7 +19,7 @@ import {
   templateUrl: './success-dimension.component.html',
   styleUrls: ['./success-dimension.component.scss'],
 })
-export class SuccessDimensionComponent implements OnInit {
+export class SuccessDimensionComponent {
   @Input() name: string;
   @Input() description: string;
   @Input() icon: string;
@@ -41,8 +41,6 @@ export class SuccessDimensionComponent implements OnInit {
   @Input() set factors(factors: SuccessFactor[]) {
     this._factors = [...factors];
   }
-
-  ngOnInit(): void {}
 
   async openAddFactorDialog(): Promise<void> {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {

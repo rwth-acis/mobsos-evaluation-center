@@ -27,9 +27,9 @@
       >
     </button>
   </mat-card-header>
-  <mat-card-content *ngIf="(model$ | async)?.surveys as surveys">
+  <mat-card-content *ngIf="surveys$ | async as surveys">
     <ng-container *ngIf="surveys?.length > 0; else noSurveys">
-      <div class="w-fit">
+      <div class="w-full">
         <div
           *ngFor="let survey of surveys; let i = index"
           class="flex justify-between items-center"
@@ -92,7 +92,7 @@
     {{
       'success-modeling.questionnaires.no-questionnaires' | translate
     }}
-    <ng-container *ngIf="!(editMode$ | async)">{{
+    <ng-container *ngIf="(editMode$ | async) === false">{{
       'success-modeling.questionnaires.activate-edit' | translate
     }}</ng-container>
   </p>
