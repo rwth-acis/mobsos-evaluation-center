@@ -111,6 +111,33 @@ export class Measure implements IMeasure {
 }
 
 export class LimeSurveyMeasure implements IMeasure {
+  static fromXml(xml: Element): LimeSurveyMeasure {
+    const measureName = xml.getAttribute('name');
+    let description = '';
+    if (xml.getElementsByTagName('description')?.length > 0) {
+      description = xml
+        .getElementsByTagName('description')[0]
+        .textContent.trim();
+    }
+    const title = xml.getAttribute('title');
+
+    const visualizationNode = Array.from(
+      xml.getElementsByTagName('visualization'),
+    )[0];
+    const visualization = Visualization.fromXml(visualizationNode);
+    const tagsCsv = xml.getAttribute('tags');
+    let tags: string[] = [];
+    if (tagsCsv) {
+      tags = tagsCsv.split(';');
+    }
+    return new LimeSurveyMeasure(
+      measureName,
+      title,
+      visualization,
+      tags,
+      description,
+    );
+  }
   toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
     const measure = doc.createElement('measure');
@@ -165,7 +192,15 @@ export class MeasureCatalog implements MeasureCatalog {
     const measureMap: MeasureMap = {};
     for (const measureNode of measureNodes) {
       const measureName = measureNode.getAttribute('name');
-      measureMap[measureName] = Measure.fromXml(measureNode);
+      if (
+        Array.from(measureNode.getElementsByTagName('query')).length >
+        0
+      ) {
+        measureMap[measureName] = Measure.fromXml(measureNode);
+      } else if (measureNode.getAttribute('title')) {
+        measureMap[measureName] =
+          LimeSurveyMeasure.fromXml(measureNode);
+      }
     }
     return new MeasureCatalog(measureMap);
   }
