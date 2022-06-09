@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 
 import {
+  combineLatest,
   firstValueFrom,
   forkJoin,
   Observable,
@@ -37,7 +38,13 @@ import { ServiceInformation } from 'src/app/models/service.model';
 import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
-import { VisualizationData } from 'src/app/models/visualization.model';
+import {
+  ChartVisualization,
+  KpiVisualization,
+  ValueVisualization,
+  Visualization,
+  VisualizationData,
+} from 'src/app/models/visualization.model';
 
 @Component({
   selector: 'app-success-measure',
@@ -51,6 +58,9 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() preview = false;
 
   data$: Observable<VisualizationData | VisualizationData[]>;
+  visualzation$: Observable<
+    KpiVisualization | ChartVisualization | ValueVisualization
+  >;
   measure$: Observable<IMeasure>;
   service$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
@@ -80,11 +90,31 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     );
     this.subscriptions$.push(sub);
 
+    this.visualzation$ = this.measure$.pipe(
+      map((measure) => {
+        switch (measure.visualization.type) {
+          case 'Chart':
+            return measure.visualization as ChartVisualization;
+          case 'KPI':
+            return measure.visualization as KpiVisualization;
+          case 'Value':
+            return measure.visualization as ValueVisualization;
+
+          default:
+            console.error(
+              'Unknown visualization type: ' +
+                measure.visualization.type,
+            );
+            return null;
+        }
+      }),
+    );
+
     // retrieve all data for each query from the store
     this.data$ = this.measure$.pipe(
       map((measure) => Measure.fromJSON(measure as Measure).queries),
       switchMap((queries) =>
-        forkJoin(
+        combineLatest(
           queries.map((query) =>
             this.ngrxStore
               .select(
