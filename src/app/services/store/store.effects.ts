@@ -863,6 +863,29 @@ export class StateEffects {
     ),
   );
 
+  fetchLimeSurveySurveys$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveysFromLimeSurvey),
+      mergeMap(() =>
+        this.l2p.fetchSurveysFromLimeSurvey().pipe(
+          map((res) => {
+            if (res.status === 200) {
+              return Action.storeSurveysFromLimeSurvey({
+                surveys: res.body,
+              });
+            } else {
+              return Action.failureResponse(null);
+            }
+          }),
+        ),
+      ),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
