@@ -1,4 +1,11 @@
-export interface Survey {
+export interface ISurvey {
+  start: Date; // Start date of the survey
+  end: Date; // End date of the survey
+  id: number | string; // ID of the survey
+  name: string; // Name of the survey
+}
+
+export class Survey implements ISurvey {
   description?: string; // Description of the survey
   start: Date; // Start date of the survey
   end: Date; // End date of the survey
@@ -12,9 +19,6 @@ export interface Survey {
   qid: number; // ID of the questionnaire
   resource: string; // Resource on which the survey is based (e.g. a service)
   'resource-label'?: string; // Resource label of the survey
-}
-
-export class Survey implements Survey {
   constructor(form: SurveyForm) {
     this.description = form?.description;
     this.start = new Date(form.start);
@@ -54,6 +58,19 @@ export class Survey implements Survey {
   }
 }
 
+export class LimeSurvey implements ISurvey {
+  start: Date; // Start date of the survey
+  end: Date; // End date of the survey
+  id: string; // ID of the survey
+  name: string; // Name of the survey
+  constructor(form: LimeSurveyForm) {
+    this.start = new Date(form.startdate);
+    this.end = new Date(form.expires);
+    this.id = form.sid;
+    this.name = form.title;
+  }
+}
+
 interface SurveyForm {
   description?: string;
   start?: string;
@@ -70,12 +87,12 @@ interface SurveyForm {
   'resource-label'?: string;
 }
 
-export interface LimeSurvey {
+export interface LimeSurveyForm {
   sid: string;
-  surveyls_title: string;
+  title: string;
   startdate: string;
-  expires: string;
   active: 'Y' | 'N';
+  expires: string;
 }
 
 export interface LimeSurveyResponses {
