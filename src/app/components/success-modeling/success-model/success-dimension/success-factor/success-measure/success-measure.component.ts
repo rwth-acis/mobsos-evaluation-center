@@ -63,9 +63,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() preview = false;
 
   data$: Observable<VisualizationData | VisualizationData[]>;
-  visualzation$: Observable<
-    KpiVisualization | ChartVisualization | ValueVisualization
-  >;
+  visualzation$: Observable<Visualization>;
   measure$: Observable<Measure>;
   service$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
@@ -173,7 +171,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       }),
       shareReplay(1),
     );
-    this.measure$
+    sub = this.measure$
       .pipe(
         map((measure) => ({
           queries: Measure.fromJSON(measure as Measure).queries,
@@ -187,6 +185,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
           );
         });
       });
+    this.subscriptions$.push(sub);
   }
 
   ngOnDestroy(): void {

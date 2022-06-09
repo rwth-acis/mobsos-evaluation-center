@@ -43,12 +43,14 @@
           [visualization$]="visualzation$"
           [description$]="description$"
           [data$]="data$"
+          [queries$]="queries$"
         ></app-value-visualization>
         <app-chart-visualization
           *ngSwitchCase="'Chart'"
           [data$]="data$"
           [description$]="description$"
           [visualization$]="visualzation$"
+          [queries$]="queries$"
         ></app-chart-visualization>
         <div *ngSwitchDefault>Unknown chartType: {{ type }}</div>
       </ng-container>

@@ -101,6 +101,11 @@ export class EditMeasureDialogComponent implements OnInit {
             m.visualization.type === 'KPI'),
       ),
     ),
+    map((measures) =>
+      measures
+        .filter((m) => !(m instanceof Measure))
+        .map((m) => m as Measure),
+    ),
   );
 
   autoCompleteField = new FormControl();
@@ -403,8 +408,10 @@ export class EditMeasureDialogComponent implements OnInit {
         .select(MEASURE({ measureName: selectedOption }))
         .pipe(take(1)),
     );
-    this.addQueriesToForm(measure.queries);
-    this.autoCompleteField.setValue('', { emitEvent: false });
+    if (measure instanceof Measure) {
+      this.addQueriesToForm(measure.queries);
+      this.autoCompleteField.setValue('', { emitEvent: false });
+    }
   }
 
   /**

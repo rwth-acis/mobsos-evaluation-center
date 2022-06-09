@@ -295,7 +295,9 @@ export class SQLQuery extends Query {
 
   static override fromXml(xml: Element): SQLQuery {
     const queryName = xml.getAttribute('name');
-    const sql = xml.innerHTML;
+    const sql = xml.innerHTML
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>');
     return new SQLQuery(queryName, sql);
   }
 

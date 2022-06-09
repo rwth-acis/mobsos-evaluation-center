@@ -1,11 +1,9 @@
 import {
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
 } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -14,33 +12,26 @@ import { Store } from '@ngrx/store';
 import {
   RESTRICTED_MODE,
   SELECTED_SERVICE,
-  VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { Observable, Subscription } from 'rxjs';
 import {
   VisualizationData,
   ValueVisualization,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
-  mergeMap,
   shareReplay,
   tap,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure } from 'src/app/models/measure.model';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
-import {
-  applyCompatibilityFixForVisualizationService,
-  VisualizationComponent,
-} from '../visualization.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { SQLQuery } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-value-visualization',
@@ -52,10 +43,10 @@ export class ValueVisualizationComponent
 {
   // @Input() override measure$: Observable<Measure>;
 
-  @Input() data$: Observable<VisualizationData>;
-  @Input() visualization$: Observable<ValueVisualization>;
+  @Input() data$: Observable<VisualizationData | VisualizationData[]>;
+  @Input() visualization$: Observable<Visualization>;
   @Input() description$: Observable<string>;
-
+  @Input() queries$: Observable<SQLQuery[]>;
   query$: Observable<string>;
   value$: Observable<string>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
@@ -70,6 +61,8 @@ export class ValueVisualizationComponent
   private subscriptions$: Subscription[] = [];
   unit$: Observable<string>;
   error$: Observable<HttpErrorResponse>;
+  fetchDate$: Observable<string>;
+  fetchError$: Observable<any>;
   constructor(
     private dialog: MatDialog,
     private ngrxStore: Store,
@@ -83,14 +76,18 @@ export class ValueVisualizationComponent
   }
 
   ngOnInit(): void {
-    this.unit$ = this.visualization$.pipe(map((viz) => viz?.unit));
-    this.error$ = this.data$.pipe(map((data) => data?.error));
+    this.unit$ = this.visualization$.pipe(
+      map((viz) => (viz as ValueVisualization)?.unit),
+    );
+    this.error$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.error),
+    );
     this.dataIsReady$ = this.data$.pipe(
       distinctUntilChanged(),
       tap(() => {
         this.cdref.detectChanges();
       }),
-      map((data) => !data?.loading),
+      map((data) => !(data as VisualizationData)?.loading),
       shareReplay(1),
     );
     this.value$ = this.data$.pipe(
@@ -108,6 +105,22 @@ export class ValueVisualizationComponent
       map((value: string | number | boolean) =>
         typeof value === 'string' ? value : value.toString(),
       ),
+      shareReplay(1),
+    );
+    this.query$ = this.queries$.pipe(
+      filter((queries) => !!queries),
+      map((queries) => queries[0].sql),
+    );
+    this.fetchDate$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.fetchDate),
+      distinctUntilChanged(),
+      shareReplay(1),
+    );
+
+    this.fetchError$ = this.data$.pipe(
+      filter((data) => !!data),
+      map((data) => (data as VisualizationData)?.error?.error),
+      distinctUntilChanged(),
       shareReplay(1),
     );
   }

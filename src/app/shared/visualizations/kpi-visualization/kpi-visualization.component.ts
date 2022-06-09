@@ -1,45 +1,32 @@
 import {
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
 } from '@angular/core';
-import {
-  applyCompatibilityFixForVisualizationService,
-  VisualizationComponent,
-} from '../visualization.component';
+
 import { MatDialog } from '@angular/material/dialog';
 
 import { Store } from '@ngrx/store';
 import {
   RESTRICTED_MODE,
   SELECTED_SERVICE,
-  VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
-import { combineLatest, Observable, Subscription } from 'rxjs';
-import {
-  Measure,
-  Query,
-  SQLQuery,
-} from 'src/app/models/measure.model';
+import { Observable, Subscription } from 'rxjs';
+import { SQLQuery } from 'src/app/models/measure.model';
 import {
   KpiVisualization,
+  Visualization,
   VisualizationData,
 } from 'src/app/models/visualization.model';
 import {
-  catchError,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
   shareReplay,
   startWith,
-  switchMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
@@ -53,8 +40,8 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
   styleUrls: ['./kpi-visualization.component.scss'],
 })
 export class KpiVisualizationComponent implements OnInit, OnDestroy {
-  @Input() data$: Observable<VisualizationData[]>;
-  @Input() visualization$: Observable<KpiVisualization>;
+  @Input() data$: Observable<VisualizationData | VisualizationData[]>;
+  @Input() visualization$: Observable<Visualization>;
   @Input() queries$: Observable<SQLQuery[]>;
   @Input() description$: Observable<string>;
   dataIsLoading$: Observable<boolean>;
@@ -87,13 +74,18 @@ export class KpiVisualizationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.fetchDate$ = this.data$.pipe(
       filter((data) => !!data),
-      map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
+      map((data) => data as VisualizationData[]),
+      map((data) =>
+        data.map((entry) =>
+          entry ? new Date(entry.fetchDate) : undefined,
+        ),
+      ), // map each entry onto its fetch date
       map((dates) =>
         dates.reduce((max, curr) =>
-          curr.getTime() > max.getTime() ? curr : max,
+          curr?.getTime() > max?.getTime() ? curr : max,
         ),
       ), // take the latest fetch date
-      map((timestamp) => timestamp.toISOString()), // convert to iso string
+      map((timestamp) => timestamp?.toISOString()), // convert to iso string
     );
 
     // true if any query is still loading
@@ -102,25 +94,36 @@ export class KpiVisualizationComponent implements OnInit, OnDestroy {
         (data: VisualizationData[]) =>
           data === undefined ||
           data.some((v) => v === null) ||
-          data.some((v) => v.loading),
+          data.some((v) => v?.loading),
       ),
       distinctUntilChanged(),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
     this.error$ = this.data$.pipe(
-      map((data) => data.find((vdata) => !!vdata.error)?.error),
+      map(
+        (data) =>
+          (data as VisualizationData[]).find(
+            (vdata) => !!vdata?.error,
+          )?.error,
+      ),
     );
 
     this.expression$ = this.visualization$.pipe(
-      map((viz) => viz.expression),
+      map((viz) => (viz as KpiVisualization).expression),
       shareReplay(1),
     );
 
     this.scope$ = this.data$.pipe(
-      filter((data) => allDataLoaded(data)),
-      map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
-      map((data) => data.map((d) => d[2][0])), // map each data onto the actual data
+      filter((data) => allDataLoaded(data as VisualizationData[])),
+      map((data) => data as VisualizationData[]),
+      map((data) => data.map((vdata) => vdata?.data)), // map each vdata onto the actual data
+      filter((data) => data.some((d) => !!d)), // filter out empty data
+      map((data) =>
+        data.map((d) => {
+          return d[2][0];
+        }),
+      ), // map each data onto the actual data
       withLatestFrom(this.queries$),
       map(([data, queries]) =>
         queries.reduce(
@@ -175,8 +178,9 @@ function allDataLoaded(data: VisualizationData[]): boolean {
   if (!data) return false;
 
   return (
-    !data.some((v) => v.data === null) &&
-    !data.some((vdata) => vdata.error) &&
-    !data.some((vdata) => vdata.loading)
+    !data.some((vdata) => vdata === null) &&
+    !data.some((v) => v?.data === null) &&
+    !data.some((vdata) => vdata?.error) &&
+    !data.some((vdata) => vdata?.loading)
   );
 }

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
+  ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
 } from '@angular/core';
 import {
   ChartType,
@@ -13,17 +12,12 @@ import {
   getPackageForChart,
   ScriptLoaderService,
 } from 'angular-google-charts';
-import {
-  applyCompatibilityFixForVisualizationService,
-  VisualizationComponent,
-} from '../visualization.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,
   RESTRICTED_MODE,
   SELECTED_SERVICE,
-  VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import {
   delayWhen,
@@ -34,7 +28,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import { Observable, Subscription } from 'rxjs';
@@ -46,10 +39,10 @@ import {
 import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
-import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { StaticChartComponent } from './static-chart/static-chart.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { SQLQuery } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-chart-visualization',
@@ -58,8 +51,10 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 })
 export class ChartVisualizerComponent implements OnInit, OnDestroy {
   // @Input() override measure$: Observable<IMeasure>;
-  @Input() data$: Observable<VisualizationData>;
-  @Input() visualization$: Observable<ChartVisualization>;
+  @Input() data$: Observable<VisualizationData | VisualizationData[]>;
+  @Input() visualization$: Observable<Visualization>;
+  @Input() description$: Observable<string>;
+  @Input() queries$: Observable<SQLQuery[]>;
   // @Output() override isLoading: EventEmitter<any> =
   //   new EventEmitter();
 
@@ -80,11 +75,14 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     startWith(undefined),
   );
   error$: Observable<HttpErrorResponse>;
+  fetchDate$: Observable<string>;
+  fetchError$: Observable<any>;
 
   constructor(
     private dialog: MatDialog,
     private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnDestroy(): void {
@@ -102,17 +100,35 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     );
     this.subscriptions$.push(sub);
 
-    this.error$ = this.data$.pipe(map((data) => data?.error));
+    this.query$ = this.queries$.pipe(
+      filter((queries) => !!queries),
+      map((queries) => queries[0].sql),
+    );
+    this.error$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.error),
+    );
 
     this.dataIsReady$ = this.data$.pipe(
-      map((data) => data && !data.loading),
+      map((data) => data && !(data as VisualizationData).loading),
+      distinctUntilChanged(),
+      shareReplay(1),
+    );
+
+    this.fetchDate$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.fetchDate),
+      distinctUntilChanged(),
+      shareReplay(1),
+    );
+
+    this.fetchError$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.error?.error),
       distinctUntilChanged(),
       shareReplay(1),
     );
 
     // loads the package for the charttype and emits if package is loaded
     const chartLibReady$ = this.visualization$.pipe(
-      map((viz) => viz.chartType),
+      map((viz) => (viz as ChartVisualization).chartType),
       switchMap((chartType) => {
         const type = getPackageForChart(
           ChartType[chartType] as ChartType,
@@ -123,7 +139,12 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
 
     sub = this.data$
       .pipe(
-        map((vdata) => vdata?.data),
+        filter((data) => !!data),
+        map((vdata) => vdata as VisualizationData),
+        distinctUntilChanged(
+          (prev, curr) => curr?.fetchDate <= prev?.fetchDate,
+        ),
+        map((data) => data.data),
         filter(
           (data) =>
             data !== undefined &&
@@ -145,6 +166,13 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     } else {
       return 'opacity: 0;';
     }
+  }
+
+  setChartReady() {
+    if (this.chartInitialized) return;
+
+    this.chartInitialized = true;
+    this.cdr.detectChanges();
   }
 
   openErrorDialog(
@@ -173,9 +201,11 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     });
   }
 
-  openRawDataDialog(data: any[][]): void {
+  openRawDataDialog(
+    data: VisualizationData[] | VisualizationData,
+  ): void {
     this.dialog.open(RawDataDialogComponent, {
-      data,
+      data: (data as VisualizationData).data,
     });
   }
 

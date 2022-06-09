@@ -22,7 +22,11 @@ import {
   editMeasureInCatalog,
   removeMeasureFromCatalog,
 } from 'src/app/services/store/store.actions';
-import { Measure, SQLQuery } from 'src/app/models/measure.model';
+import {
+  IMeasure,
+  Measure,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 import { ValueVisualization } from 'src/app/models/visualization.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { MatAccordion } from '@angular/material/expansion';
@@ -169,7 +173,7 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  getMeasureObservableByIndex(index: number): Observable<Measure> {
+  getMeasureObservableByIndex(index: number): Observable<IMeasure> {
     return this.measures$.pipe(map((measures) => measures[index]));
   }
 
