@@ -4,7 +4,7 @@ Simple limesurvey proxy.
 
 ## Installation
 
-Make sure nodejs is installed. Rename the ``.env.template`` to `.env` Adjust the properties.
+Make sure nodejs is installed. Rename the ``.env.template`` to `.env` and adjust the properties.
 Run:
 
 ```bash

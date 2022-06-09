@@ -43,7 +43,19 @@ app.get('/responses', async (req, res) => {
   if (!req.query.sid) {
     res.status(400).send({ error: 'No survey id provided' });
   }
-  const sid = req.query.sid; // survey id
+  const responses = await getSurveyResponses(req.query.sid);
+  res.send(responses);
+});
+
+app.listen(port, async () => {
+  console.log(`Example app listening on port ${port}`);
+  const surveys = await service.getSurveyList();
+  console.log(
+    `Service initialized, number of surveys: ${surveys.length}`,
+  );
+});
+
+async function getSurveyResponses(sid) {
   const questionsFromLimeSurvey = await service.getQuestions(sid); // list of questions for first survey
   const responsesFromLimeSurvey =
     await service.getResponsesBySurveyId(sid); // list of responses for first survey
@@ -81,13 +93,5 @@ app.get('/responses', async (req, res) => {
       };
     },
   );
-  res.send(responsesToQuestions);
-});
-
-app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}`);
-  const surveys = await service.getSurveyList();
-  console.log(
-    `Service initialized, number of surveys: ${surveys.length}`,
-  );
-});
+  return responsesToQuestions;
+}
