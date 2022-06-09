@@ -11,6 +11,7 @@ import {
   firstValueFrom,
   forkJoin,
   Observable,
+  of,
   Subscription,
 } from 'rxjs';
 
@@ -66,6 +67,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     this.ngrxStore.select(SELECTED_SERVICE);
   subscriptions$: Subscription[] = [];
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
+
   service: ServiceInformation;
   measure: IMeasure;
 
@@ -75,6 +77,9 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
+  /**
+   * @todo implement loading functionality and error message display (currently still in visualization component)
+   */
   async ngOnInit(): Promise<void> {
     this.measure$ = this.ngrxStore
       .select(MEASURE({ measureName: this.measureName }))
@@ -82,7 +87,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     let sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
-        this.measure = cloneDeep(measure);
+        this.measure = cloneDeep(measure); // needed for when we want to edit the measure
       });
     this.subscriptions$.push(sub);
     sub = this.service$.subscribe(
@@ -112,30 +117,43 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
 
     // retrieve all data for each query from the store
     this.data$ = this.measure$.pipe(
-      map((measure) => Measure.fromJSON(measure as Measure).queries),
-      switchMap((queries) =>
-        combineLatest(
-          queries.map((query) =>
-            this.ngrxStore
-              .select(
-                VISUALIZATION_DATA_FOR_QUERY({
-                  queryString: query.sql,
-                }),
-              )
-              .pipe(
-                distinctUntilChanged(
-                  (prev, curr) => prev?.fetchDate === curr?.fetchDate,
-                ),
-                shareReplay(1),
+      map((measure) => Measure.fromJSON(measure as Measure).queries), // get all queries
+      switchMap((queries) => {
+        if (!queries || queries.length === 0) {
+          return of(null);
+        } else if (queries.length === 1) {
+          return this.ngrxStore // case for value and chart
+            .select(
+              VISUALIZATION_DATA_FOR_QUERY({
+                queryString: queries[0].sql,
+              }),
+            )
+            .pipe(
+              distinctUntilChanged(
+                (prev, curr) => prev?.fetchDate === curr?.fetchDate,
               ),
-          ),
-        ),
-      ),
-      map((data) => {
-        if (data.length === 1) {
-          return data[0];
+              shareReplay(1),
+            );
+        } else {
+          // case for kpi
+          return combineLatest(
+            queries.map((query) =>
+              this.ngrxStore
+                .select(
+                  VISUALIZATION_DATA_FOR_QUERY({
+                    queryString: query.sql,
+                  }),
+                )
+                .pipe(
+                  distinctUntilChanged(
+                    (prev, curr) =>
+                      prev?.fetchDate === curr?.fetchDate,
+                  ),
+                  shareReplay(1),
+                ),
+            ),
+          );
         }
-        return data;
       }),
       shareReplay(1),
     );
