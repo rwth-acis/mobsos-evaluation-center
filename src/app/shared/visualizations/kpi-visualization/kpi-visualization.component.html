@@ -27,7 +27,7 @@
         <app-visualization-info
           [fetchError]="(error$ | async)?.error"
           [fetchDate]="fetchDate$ | async"
-          [description]="(measure$ | async)?.description"
+          [description]="description$ | async"
         ></app-visualization-info>
       </div>
     </mat-menu>

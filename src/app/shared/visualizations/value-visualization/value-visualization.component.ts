@@ -49,12 +49,11 @@ export class ValueVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() override measure$: Observable<Measure>;
+  // @Input() override measure$: Observable<Measure>;
 
-  @Output() override isLoading: EventEmitter<any> =
-    new EventEmitter();
-
-  data$: Observable<VisualizationData>;
+  @Input() override data$: Observable<VisualizationData>;
+  @Input() override visualization$: Observable<ValueVisualization>;
+  @Input() description$: Observable<string>;
 
   query$: Observable<string>;
   value$: Observable<string>;
@@ -84,46 +83,11 @@ export class ValueVisualizationComponent
   }
 
   override ngOnInit(): void {
-    this.unit$ = this.measure$.pipe(
-      map(
-        (measure) =>
-          (measure.visualization as ValueVisualization)?.unit,
-      ),
-    );
-
-    // gets the query string from the measure and applies variable replacements
-    this.query$ = this.measure$.pipe(
-      map((measure) => {
-        let query = measure.queries[0].sql;
-        query = applyCompatibilityFixForVisualizationService(query);
-        return query;
-      }),
-      distinctUntilChanged(),
-      shareReplay(1),
-    );
-    // selects the query data for the query from the store
-    this.data$ = this.query$.pipe(
-      filter((query) => !!query),
-      distinctUntilChanged(),
-      tap(() => this.isLoading.emit(true)),
-      mergeMap((queryString) =>
-        this.ngrxStore
-          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
-          .pipe(
-            distinctUntilChanged(
-              (prev, curr) => prev?.fetchDate === curr?.fetchDate,
-            ),
-            shareReplay(1),
-          ),
-      ),
-      shareReplay(1),
-    );
-
+    this.unit$ = this.visualization$.pipe(map((viz) => viz?.unit));
     this.error$ = this.data$.pipe(map((data) => data?.error));
     this.dataIsReady$ = this.data$.pipe(
       distinctUntilChanged(),
-      tap((data) => {
-        this.isLoading.emit(!data || data.loading);
+      tap(() => {
         this.cdref.detectChanges();
       }),
       map((data) => !data?.loading),
@@ -146,14 +110,6 @@ export class ValueVisualizationComponent
       ),
       shareReplay(1),
     );
-
-    let sub = this.measure$.pipe(first()).subscribe((measure) => {
-      const query = applyCompatibilityFixForVisualizationService(
-        measure.queries[0].sql,
-      );
-      super.fetchVisualizationData(query, this.ngrxStore);
-    });
-    this.subscriptions$.push(sub);
   }
 
   onRefreshClicked(query: string): void {

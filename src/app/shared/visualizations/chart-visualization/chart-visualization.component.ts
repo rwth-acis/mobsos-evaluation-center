@@ -104,46 +104,17 @@ export class ChartVisualizerComponent
     );
     this.subscriptions$.push(sub);
 
-    // gets the query string from the measure and applies variable replacements
-    this.query$ = this.measure$.pipe(
-      map((measure) => measure.queries[0].sql),
-      filter((query) => !!query),
-      distinctUntilChanged(),
-      shareReplay(1),
-    );
-
-    // selects the query data for the query from the store
-    this.data$ = this.query$.pipe(
-      switchMap((queryString) =>
-        this.ngrxStore
-          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
-          .pipe(
-            distinctUntilChanged(
-              (prev, curr) => prev?.fetchDate === curr?.fetchDate,
-            ),
-            shareReplay(1),
-          ),
-      ),
-      shareReplay(1),
-    );
-
     this.error$ = this.data$.pipe(map((data) => data?.error));
 
     this.dataIsReady$ = this.data$.pipe(
-      // tap((data) => {
-      //   this.isLoading.emit(!data || data.loading);
-      // }),
       map((data) => data && !data.loading),
       distinctUntilChanged(),
       shareReplay(1),
     );
 
     // loads the package for the charttype and emits if package is loaded
-    const chartLibReady$ = this.measure$.pipe(
-      map(
-        (measure) =>
-          (measure.visualization as ChartVisualization).chartType,
-      ),
+    const chartLibReady$ = this.visualization$.pipe(
+      map((viz) => viz.chartType),
       switchMap((chartType) => {
         const type = getPackageForChart(
           ChartType[chartType] as ChartType,
@@ -151,14 +122,6 @@ export class ChartVisualizerComponent
         return this.scriptLoader.loadChartPackages(type);
       }),
     );
-
-    sub = this.measure$.subscribe((measure) => {
-      let query = measure.queries[0].sql;
-      const cache = !this.measure?.tags.includes('generated'); // dont cache results for generated measures
-      query = applyCompatibilityFixForVisualizationService(query);
-      super.fetchVisualizationData(query, this.ngrxStore, cache);
-    });
-    this.subscriptions$.push(sub);
 
     sub = this.data$
       .pipe(
@@ -169,16 +132,12 @@ export class ChartVisualizerComponent
             data instanceof Array &&
             data.length >= 2,
         ),
-        withLatestFrom(this.measure$),
+        withLatestFrom(this.visualization$),
         delayWhen(() => chartLibReady$),
       )
-      .subscribe(([dataTable, measure]) => {
-        this.prepareChart(dataTable, measure.visualization);
+      .subscribe(([dataTable, visualization]) => {
+        this.prepareChart(dataTable, visualization);
       });
-    this.subscriptions$.push(sub);
-    this.dataIsReady$.pipe(startWith(false)).subscribe((ready) => {
-      this.isLoading.emit(!ready);
-    });
     this.subscriptions$.push(sub);
   }
 

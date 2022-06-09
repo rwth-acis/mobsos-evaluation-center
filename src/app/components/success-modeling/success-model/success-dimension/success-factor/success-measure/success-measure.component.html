@@ -35,13 +35,19 @@
           *ngSwitchCase="'KPI'"
           [data$]="data$"
           [visualization$]="visualzation$"
+          [queries$]="queries$"
+          [description$]="description$"
         ></app-kpi-visualization>
         <app-value-visualization
           *ngSwitchCase="'Value'"
           [visualization$]="visualzation$"
+          [description$]="description$"
+          [data$]="data$"
         ></app-value-visualization>
         <app-chart-visualization
           *ngSwitchCase="'Chart'"
+          [data$]="data$"
+          [description$]="description$"
           [visualization$]="visualzation$"
         ></app-chart-visualization>
         <div *ngSwitchDefault>Unknown chartType: {{ type }}</div>

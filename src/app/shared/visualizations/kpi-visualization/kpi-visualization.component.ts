@@ -20,7 +20,11 @@ import {
   VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { combineLatest, Observable, Subscription } from 'rxjs';
-import { Measure } from 'src/app/models/measure.model';
+import {
+  Measure,
+  Query,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 import {
   KpiVisualization,
   VisualizationData,
@@ -50,14 +54,10 @@ export class KpiVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  // @Input() override measure$: Observable<Measure>;
   @Input() override data$: Observable<VisualizationData[]>;
   @Input() override visualization$: Observable<KpiVisualization>;
-  // @Output() override isLoading: EventEmitter<any> =
-  //   new EventEmitter();
-
-  // queries$: Observable<string[]>;
-  // dataArray$: Observable<VisualizationData[]>;
+  @Input() queries$: Observable<SQLQuery[]>;
+  @Input() description$: Observable<string>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   fetchDate$: Observable<string>; // latest fetch date as iso string
@@ -87,34 +87,7 @@ export class KpiVisualizationComponent
   }
 
   override ngOnInit(): void {
-    // gets the query strings from the measure and applies variable replacements
-    this.queries$ = this.measure$.pipe(
-      withLatestFrom(this.service$),
-      map(([measure, service]) =>
-        // apply replacement for each query
-        measure.queries.map((query) =>
-          applyCompatibilityFixForVisualizationService(query.sql),
-        ),
-      ),
-      shareReplay(1),
-      distinctUntilChanged(),
-    );
-
-    this.fetchData(this.queries$);
-
-    // selects the query data for each query from the store
-    this.dataArray$ = this.queries$.pipe(
-      filter((qs) => !!qs),
-      switchMap((queries) =>
-        getDataFromStore(queries, this.ngrxStore),
-      ),
-      catchError((error) => {
-        console.error(error);
-        return [null, null];
-      }),
-    );
-
-    this.fetchDate$ = this.dataArray$.pipe(
+    this.fetchDate$ = this.data$.pipe(
       filter((data) => !!data),
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
       map((dates) =>
@@ -126,7 +99,7 @@ export class KpiVisualizationComponent
     );
 
     // true if any query is still loading
-    this.dataIsLoading$ = this.dataArray$.pipe(
+    this.dataIsLoading$ = this.data$.pipe(
       map(
         (data: VisualizationData[]) =>
           data === undefined ||
@@ -134,79 +107,46 @@ export class KpiVisualizationComponent
           data.some((v) => v.loading),
       ),
       distinctUntilChanged(),
-      tap((loading) => {
-        this.isLoading.emit(loading);
-        this.cdref.detectChanges();
-      }),
     );
 
     // if any vdata has an erorr then error observable will contain the first error which occurred
-    this.error$ = this.dataArray$.pipe(
+    this.error$ = this.data$.pipe(
       map((data) => data.find((vdata) => !!vdata.error)?.error),
     );
 
-    this.expression$ = this.measure$.pipe(
-      map(
-        (measure) =>
-          (measure.visualization as KpiVisualization).expression,
-      ),
+    this.expression$ = this.visualization$.pipe(
+      map((viz) => viz.expression),
       shareReplay(1),
     );
 
-    this.scope$ = this.dataArray$.pipe(
+    this.scope$ = this.data$.pipe(
       filter((data) => allDataLoaded(data)),
       map((data) => data.map((vdata) => vdata.data)), // map each vdata onto the actual data
       map((data) => data.map((d) => d[2][0])), // map each data onto the actual data
-      withLatestFrom(this.measure$),
-      map(([data, measure]) => {
-        const scope = {};
-        measure.queries.forEach((query, index) => {
-          scope[query.name] = data[index];
-        });
-        return scope;
-      }),
+      withLatestFrom(this.queries$),
+      map(([data, queries]) =>
+        queries.reduce(
+          (acc, query, i) => (acc[query.name] = data[i]),
+          {},
+        ),
+      ),
       shareReplay(1),
     );
   }
 
-  onRefreshClicked(queries: string[]): void {
-    queries.forEach((query) => {
-      this.ngrxStore.dispatch(
-        refreshVisualization({
-          query,
-        }),
-      );
-    });
-  }
-
-  fetchData(qs$: Observable<string[]>) {
-    this.isLoading.emit(true);
-    const sub = qs$.subscribe((queries) => {
-      queries.forEach((query) => {
-        super.fetchVisualizationData(query, this.ngrxStore);
+  onRefreshClicked(queries: SQLQuery[]): void {
+    queries
+      .map((query) => query.sql)
+      .forEach((query) => {
+        this.ngrxStore.dispatch(
+          refreshVisualization({
+            query,
+          }),
+        );
       });
-    });
-    this.subscriptions$.push(sub);
   }
 }
-function getDataFromStore(
-  queries: string[],
-  store: Store<any>,
-): Observable<VisualizationData[]> {
-  const data = queries.map(
-    (queryString: string): Observable<VisualizationData> =>
-      store
-        .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
-        .pipe(
-          distinctUntilChanged(
-            (prev, curr) => prev.fetchDate === curr.fetchDate,
-          ),
-          shareReplay(1),
-        ),
-  );
 
-  return combineLatest(data).pipe(shareReplay(1));
-}
 function allDataLoaded(data: VisualizationData[]): boolean {
   if (!data) return false;
 
@@ -216,20 +156,3 @@ function allDataLoaded(data: VisualizationData[]): boolean {
     !data.some((vdata) => vdata.loading)
   );
 }
-/**
- * Function which returns the greatest timestamp when comparing fetchDate
- *
- * @param data
- */
-function getLatestFetchDate(data: VisualizationData[]): number {
-  if (!data) return null;
-  return data.reduce(
-    (max, curr) =>
-      new Date(curr.fetchDate).getTime() > new Date(max).getTime()
-        ? new Date(curr.fetchDate).getTime()
-        : max,
-    0,
-  );
-}
-const THIRTY_SECONDS = 30000;
-const FIVE_MINUTES = THIRTY_SECONDS * 2 * 5;

@@ -90,15 +90,14 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   measureOptions$ = this.ngrxStore.select(MEASURES).pipe(
-    // all measures which are not the measure itself
     filter(
       (measures) => !!measures && Object.keys(measures).length > 1,
     ),
     map((measures) =>
       Object.values(measures).filter(
         (m) =>
-          m.name !== this.data.measure.name &&
-          (m.visualization.type === 'Value' ||
+          m.name !== this.data.measure.name && // all measures which are not the measure itself
+          (m.visualization.type === 'Value' || // only interested in queries that retrun a single value
             m.visualization.type === 'KPI'),
       ),
     ),

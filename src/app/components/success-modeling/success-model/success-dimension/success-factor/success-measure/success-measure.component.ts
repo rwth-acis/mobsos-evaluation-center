@@ -36,7 +36,11 @@ import {
   removeMeasureFromModel,
 } from 'src/app/services/store/store.actions';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { IMeasure, Measure } from 'src/app/models/measure.model';
+import {
+  IMeasure,
+  Measure,
+  SQLQuery,
+} from 'src/app/models/measure.model';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import {
@@ -62,11 +66,13 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   visualzation$: Observable<
     KpiVisualization | ChartVisualization | ValueVisualization
   >;
-  measure$: Observable<IMeasure>;
+  measure$: Observable<Measure>;
   service$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
   subscriptions$: Subscription[] = [];
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
+  queries$: Observable<SQLQuery[]>;
+  description$: Observable<string>;
 
   service: ServiceInformation;
   measure: IMeasure;
@@ -83,7 +89,10 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.measure$ = this.ngrxStore
       .select(MEASURE({ measureName: this.measureName }))
-      .pipe(filter((measure) => !!measure));
+      .pipe(
+        filter((measure) => !!measure),
+        map((measure) => Measure.fromJSON(measure as Measure)),
+      );
     let sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
@@ -94,6 +103,13 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       (service) => (this.service = service),
     );
     this.subscriptions$.push(sub);
+
+    this.queries$ = this.measure$.pipe(
+      map((measure) => measure.queries),
+    );
+    this.description$ = this.measure$.pipe(
+      map((measure) => measure.description),
+    );
 
     this.visualzation$ = this.measure$.pipe(
       map((measure) => {
@@ -157,21 +173,20 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       }),
       shareReplay(1),
     );
-
-    // dispatch a data fetch for each query once
-    const queries = await firstValueFrom(
-      this.measure$.pipe(
-        map(
-          (measure) => Measure.fromJSON(measure as Measure).queries,
-        ),
-        take(1),
-      ),
-    );
-    queries.forEach((query) => {
-      this.ngrxStore.dispatch(
-        fetchVisualizationData({ query: query.sql }),
-      );
-    });
+    this.measure$
+      .pipe(
+        map((measure) => ({
+          queries: Measure.fromJSON(measure as Measure).queries,
+          cache: measure.tags?.includes('generated'),
+        })),
+      )
+      .subscribe(({ queries, cache }) => {
+        queries.forEach((query) => {
+          this.ngrxStore.dispatch(
+            fetchVisualizationData({ query: query.sql, cache }),
+          );
+        });
+      });
   }
 
   ngOnDestroy(): void {
