@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
-import { VisualizationComponent } from './visualization.component';
 import { ValueVisualizationComponent } from './value-visualization/value-visualization.component';
 import { ChartVisualizerComponent } from './chart-visualization/chart-visualization.component';
 import { KpiVisualizationComponent } from './kpi-visualization/kpi-visualization.component';
@@ -19,13 +18,12 @@ import { EvaluatePipe } from '../evaluate.pipe';
 import { LatexPipe } from '../latex.pipe';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @NgModule({
   declarations: [
     ErrorDialogComponent,
     EvaluatePipe,
     LatexPipe,
-    VisualizationComponent,
     ValueVisualizationComponent,
     ChartVisualizerComponent,
     KpiVisualizationComponent,
@@ -44,8 +42,12 @@ import {MatTooltipModule} from '@angular/material/tooltip';
     MatTableModule,
     MatIconModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
   ],
-  exports: [VisualizationComponent],
+  exports: [
+    ValueVisualizationComponent,
+    ChartVisualizerComponent,
+    KpiVisualizationComponent,
+  ],
 })
 export class VisualizationsModule {}

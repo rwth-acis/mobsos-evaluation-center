@@ -18,6 +18,7 @@ import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
   fetchGroups,
+  fetchSurveysFromLimeSurvey,
   logout,
   setGroup,
   storeUser,
@@ -127,6 +128,8 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.silentSignin();
 
+    this.ngrxStore.dispatch(fetchSurveysFromLimeSurvey());
+
     let sub = this.ngrxStore
       .select(storeSelectors._SELECTED_GROUP_ID)
       .subscribe((id) => {
@@ -154,12 +157,12 @@ export class AppComponent implements OnInit, OnDestroy {
         { duration: 10000 },
       );
       // Logging the state in dev mode
-      // sub = this.ngrxStore
-      //   .pipe(map((store: StoreState) => store.Reducer))
-      //   .subscribe((state) => {
-      //     console.log(state);
-      //   });
-      // this.subscriptions$.push(sub);
+      sub = this.ngrxStore
+        .pipe(map((store: StoreState) => store.Reducer))
+        .subscribe((state) => {
+          console.log(state);
+        });
+      this.subscriptions$.push(sub);
     } else {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }

@@ -63,7 +63,7 @@ import {
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 
-import { Survey } from 'src/app/models/survey.model';
+import { ISurvey, Survey } from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -185,7 +185,7 @@ export class SurveyComponent implements OnInit {
       this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
     )) as SuccessModel;
     if (result) {
-      const surveyId = model.surveys[questionnaireIndex].id;
+      const surveyId = model.surveys[questionnaireIndex].id as number;
       this.ngrxStore.dispatch(
         removeSurveyFromModel({
           id: surveyId,
@@ -205,7 +205,7 @@ export class SurveyComponent implements OnInit {
     }
   }
 
-  shareSurveyLink(surveyId: number) {
+  shareSurveyLink(surveyId: number | string) {
     const base = environment.mobsosSurveysUrl;
     const link = joinAbsoluteUrlPath(base, 'surveys', surveyId);
 
@@ -220,13 +220,17 @@ export class SurveyComponent implements OnInit {
     this.ngrxStore.dispatch(fetchSurveys());
     this.ngrxStore.dispatch(fetchQuestionnaires());
   }
-
-  async openInfoDialog(survey: Survey) {
+  /**
+   * @todo workaround. This will not yet work for limesurvey surveys.
+   * @param survey
+   */
+  async openInfoDialog(survey: ISurvey) {
     const questionnaires = await firstValueFrom(
       this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
     );
+    const s = survey as Survey;
     const desiredQuestionnaire = questionnaires.find(
-      (q) => q.id === survey.qid,
+      (q) => q.id === s.qid,
     );
     this.dialog.open(QuestionnaireInfoDialogComponent, {
       data: { ...desiredQuestionnaire, surveyId: survey.id },

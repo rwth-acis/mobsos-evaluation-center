@@ -53,11 +53,30 @@
           (isLoading)="setLoading($event)"
         ></app-sql-table>
       </div>
+      <div class="w-1/2 mx-auto" *ngSwitchCase="'Chart'">
+        <app-chart-visualization
+          [data$]="data$"
+          [description$]="description$"
+          [visualization$]="visualzation$"
+        ></app-chart-visualization>
+      </div>
+      <div class="w-fit mx-auto" *ngSwitchCase="'KPI'">
+        <app-kpi-visualization
+          [data$]="data$"
+          [visualization$]="visualzation$"
+          [queries$]="queries$"
+          [description$]="description$"
+        ></app-kpi-visualization>
+      </div>
+      <div class="w-fit mx-auto" *ngSwitchCase="'Value'">
+        <app-value-visualization
+          [visualization$]="visualzation$"
+          [description$]="description$"
+          [data$]="data$"
+        ></app-value-visualization>
+      </div>
       <ng-container *ngSwitchDefault>
-        <mat-card class="w-1/2 mx-auto" *ngIf="measure$ | async">
-          <app-visualization [measure$]="measure$">
-          </app-visualization>
-        </mat-card>
+        Unknown visualization type {{ type }}
       </ng-container>
     </ng-container>
     <mat-spinner *ngIf="dataIsLoading" class="mx-auto"></mat-spinner>

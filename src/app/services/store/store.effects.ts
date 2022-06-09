@@ -866,7 +866,7 @@ export class StateEffects {
   fetchLimeSurveySurveys$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSurveysFromLimeSurvey),
-      mergeMap(() =>
+      switchMap(() =>
         this.l2p.fetchSurveysFromLimeSurvey().pipe(
           map((res) => {
             if (res.status === 200) {
@@ -895,6 +895,7 @@ export class StateEffects {
             if (res.status === 200) {
               return Action.storeResponsesForSurveyFromLimeSurvey({
                 responses: res.body,
+                sid,
               });
             } else {
               return Action.failureResponse(null);

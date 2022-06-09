@@ -8,7 +8,11 @@
       "files": [
         "*.ts"
       ],
+      "env": {
+        "es6": true
+      },
       "parserOptions": {
+        "ecmaVersion": 2017,
         "project": [
           "tsconfig.json"
         ],

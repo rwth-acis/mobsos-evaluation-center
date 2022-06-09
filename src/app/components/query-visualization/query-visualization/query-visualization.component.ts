@@ -1,13 +1,15 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { ChartType } from 'angular-google-charts';
-import { combineLatest } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
   map,
   shareReplay,
   startWith,
+  switchMap,
   tap,
 } from 'rxjs/operators';
 import { Measure, SQLQuery } from 'src/app/models/measure.model';
@@ -17,6 +19,8 @@ import {
   KpiVisualization,
   Visualization,
 } from 'src/app/models/visualization.model';
+import { fetchVisualizationData } from 'src/app/services/store/store.actions';
+import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store/store.selectors';
 
 @Component({
   selector: 'app-query-visualization',
@@ -124,10 +128,16 @@ export class QueryVisualizationComponent {
   );
 
   dataIsLoading: boolean = true;
+  queries$: any;
+  description$: any;
+  visualzation$: any;
+  data$: any;
+  subscriptions$: any;
 
   constructor(
     private fb: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef,
+    private ngrxStore: Store,
   ) {}
 
   setLoading(loading: boolean) {
@@ -135,6 +145,93 @@ export class QueryVisualizationComponent {
       this.dataIsLoading = loading;
       this.changeDetectorRef.detectChanges();
     }
+  }
+
+  ngOnInit() {
+    this.queries$ = this.measure$.pipe(
+      map((measure) => measure.queries),
+    );
+    this.description$ = this.measure$.pipe(
+      map((measure) => measure.description),
+    );
+
+    this.visualzation$ = this.measure$.pipe(
+      map((measure) => {
+        switch (measure.visualization.type) {
+          case 'Chart':
+            return measure.visualization as ChartVisualization;
+          case 'KPI':
+            return measure.visualization as KpiVisualization;
+          case 'Value':
+            return measure.visualization as ValueVisualization;
+
+          default:
+            console.error(
+              'Unknown visualization type: ' +
+                measure.visualization.type,
+            );
+            return null;
+        }
+      }),
+    );
+
+    // retrieve all data for each query from the store
+    this.data$ = this.measure$.pipe(
+      map((measure) => Measure.fromJSON(measure as Measure).queries), // get all queries
+      switchMap((queries) => {
+        if (!queries || queries.length === 0) {
+          return of(null);
+        } else if (queries.length === 1) {
+          return this.ngrxStore // case for value and chart
+            .select(
+              VISUALIZATION_DATA_FOR_QUERY({
+                queryString: queries[0].sql,
+              }),
+            )
+            .pipe(
+              distinctUntilChanged(
+                (prev, curr) => prev?.fetchDate === curr?.fetchDate,
+              ),
+              shareReplay(1),
+            );
+        } else {
+          // case for kpi
+          return combineLatest(
+            queries.map((query) =>
+              this.ngrxStore
+                .select(
+                  VISUALIZATION_DATA_FOR_QUERY({
+                    queryString: query.sql,
+                  }),
+                )
+                .pipe(
+                  distinctUntilChanged(
+                    (prev, curr) =>
+                      prev?.fetchDate === curr?.fetchDate,
+                  ),
+                  shareReplay(1),
+                ),
+            ),
+          );
+        }
+      }),
+      shareReplay(1),
+    );
+    const sub = this.measure$
+      .pipe(
+        map((measure) => ({
+          queries: Measure.fromJSON(measure as Measure).queries,
+          cache: measure.tags?.includes('generated'),
+        })),
+      )
+      .subscribe(({ queries, cache }) => {
+        queries.forEach((query) => {
+          this.ngrxStore.dispatch(
+            fetchVisualizationData({ query: query.sql, cache }),
+          );
+        });
+      });
+    this.subscriptions$.push(sub);
   }
 
   onSubmit() {

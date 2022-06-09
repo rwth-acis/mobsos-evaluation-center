@@ -250,7 +250,7 @@ interface PlainSuccessModel {
   name: string;
   service: string;
   dimensions: DimensionMap;
-  surveys: Survey[];
+  surveys: ISurvey[];
   reqBazProject: ReqbazProject;
 }
 

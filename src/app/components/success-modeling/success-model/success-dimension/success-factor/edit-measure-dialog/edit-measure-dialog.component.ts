@@ -90,17 +90,21 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   measureOptions$ = this.ngrxStore.select(MEASURES).pipe(
-    // all measures which are not the measure itself
     filter(
       (measures) => !!measures && Object.keys(measures).length > 1,
     ),
     map((measures) =>
       Object.values(measures).filter(
         (m) =>
-          m.name !== this.data.measure.name &&
-          (m.visualization.type === 'Value' ||
+          m.name !== this.data.measure.name && // all measures which are not the measure itself
+          (m.visualization.type === 'Value' || // only interested in queries that retrun a single value
             m.visualization.type === 'KPI'),
       ),
+    ),
+    map((measures) =>
+      measures
+        .filter((m) => !(m instanceof Measure))
+        .map((m) => m as Measure),
     ),
   );
 
@@ -404,8 +408,10 @@ export class EditMeasureDialogComponent implements OnInit {
         .select(MEASURE({ measureName: selectedOption }))
         .pipe(take(1)),
     );
-    this.addQueriesToForm(measure.queries);
-    this.autoCompleteField.setValue('', { emitEvent: false });
+    if (measure instanceof Measure) {
+      this.addQueriesToForm(measure.queries);
+      this.autoCompleteField.setValue('', { emitEvent: false });
+    }
   }
 
   /**

@@ -104,8 +104,8 @@ export class Las2peerService {
       reason: undefined,
     },
   ];
-  LIME_SURVEY_SURVEYS_PATH: string | number;
-  LIME_SURVEY_RESPONSES_PATH: string | number;
+  LIME_SURVEY_SURVEYS_PATH: string | number = 'surveys';
+  LIME_SURVEY_RESPONSES_PATH: string | number = 'responses';
 
   constructor(private http: HttpClient) {}
 
@@ -1283,6 +1283,9 @@ export class Las2peerService {
   fetchSurveysFromLimeSurvey() {
     const url = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
+      environment.limeSurveyProxyUrl.includes('localhost')
+        ? 'local'
+        : '',
       this.LIME_SURVEY_SURVEYS_PATH,
     );
     return this.makeRequestAndObserve(url, { observe: 'response' });
