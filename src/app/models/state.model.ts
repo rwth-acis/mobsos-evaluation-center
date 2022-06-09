@@ -4,7 +4,11 @@ import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
-import { Survey } from './survey.model';
+import {
+  LimeSurvey,
+  LimeSurveyResponses,
+  Survey,
+} from './survey.model';
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
@@ -32,6 +36,8 @@ export interface AppState {
   requirements: Requirement[]; // requirements for the Requirement Bazaar project that is connected to the current success model
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
   surveys: Survey[]; // surveys from mobsos surveys
+  limeSurveySurveys: LimeSurvey[]; // surveys from limesurvey
+  limeSurveyResponses: { [sid: string]: LimeSurveyResponses }; // responses from limesurvey per survey referenced by the surveyid
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -54,6 +60,8 @@ export const INITIAL_APP_STATE: AppState = {
   requirements: undefined,
   questionnaires: undefined,
   surveys: undefined,
+  limeSurveySurveys: undefined,
+  limeSurveyResponses: undefined,
 };
 /**
  * What the store looks like
