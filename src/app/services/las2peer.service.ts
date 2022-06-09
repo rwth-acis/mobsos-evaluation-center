@@ -104,6 +104,8 @@ export class Las2peerService {
       reason: undefined,
     },
   ];
+  LIME_SURVEY_SURVEYS_PATH: string | number;
+  LIME_SURVEY_RESPONSES_PATH: string | number;
 
   constructor(private http: HttpClient) {}
 
@@ -1276,6 +1278,23 @@ export class Las2peerService {
       method: 'DELETE',
       responseType: 'text',
     });
+  }
+
+  fetchSurveysFromLimeSurvey() {
+    const url = joinAbsoluteUrlPath(
+      environment.limeSurveyProxyUrl,
+      this.LIME_SURVEY_SURVEYS_PATH,
+    );
+    return this.makeRequestAndObserve(url, { observe: 'response' });
+  }
+
+  fetchResponsesForSurveyFromLimeSurvey(sid: string) {
+    const url = joinAbsoluteUrlPath(
+      environment.limeSurveyProxyUrl,
+      this.LIME_SURVEY_RESPONSES_PATH,
+      `?sid=${sid}`,
+    );
+    return this.makeRequestAndObserve(url, { observe: 'response' });
   }
 }
 
