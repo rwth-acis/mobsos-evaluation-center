@@ -48,19 +48,18 @@ import { refreshVisualization } from 'src/app/services/store/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
 import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { StaticChartComponent } from './static-chart/static-chart.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 
 @Component({
   selector: 'app-chart-visualization',
   templateUrl: './chart-visualization.component.html',
   styleUrls: ['./chart-visualization.component.scss'],
 })
-export class ChartVisualizerComponent
-  extends VisualizationComponent
-  implements OnInit, OnDestroy
-{
+export class ChartVisualizerComponent implements OnInit, OnDestroy {
   // @Input() override measure$: Observable<IMeasure>;
-  @Input() override data$: Observable<VisualizationData>;
-  @Input() override visualization$: Observable<ChartVisualization>;
+  @Input() data$: Observable<VisualizationData>;
+  @Input() visualization$: Observable<ChartVisualization>;
   // @Output() override isLoading: EventEmitter<any> =
   //   new EventEmitter();
 
@@ -80,14 +79,13 @@ export class ChartVisualizerComponent
     distinctUntilKeyChanged('name'),
     startWith(undefined),
   );
+  error$: Observable<HttpErrorResponse>;
 
   constructor(
-    protected override dialog: MatDialog,
+    private dialog: MatDialog,
     private ngrxStore: Store,
     private scriptLoader: ScriptLoaderService,
-  ) {
-    super(dialog);
-  }
+  ) {}
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) =>
@@ -95,7 +93,7 @@ export class ChartVisualizerComponent
     );
   }
 
-  override ngOnInit(): void {
+  ngOnInit(): void {
     let sub = this.scriptLoader.loadChartPackages().subscribe(
       () =>
         (this.formatter_medium = new google.visualization.DateFormat({
@@ -147,6 +145,32 @@ export class ChartVisualizerComponent
     } else {
       return 'opacity: 0;';
     }
+  }
+
+  openErrorDialog(
+    error?: HttpErrorResponse | { error: SyntaxError } | string,
+  ): void {
+    let errorText = 'Unknown error';
+    if (error instanceof HttpErrorResponse) {
+      errorText =
+        'Http status code: ' + error.status?.toString() + '\n';
+      errorText += error.statusText;
+      if (typeof error.error === 'string') {
+        errorText += ': ' + error.error;
+      }
+    } else if (
+      typeof error === 'object' &&
+      Object.keys(error).includes('error')
+    ) {
+      errorText = (error as { error: SyntaxError }).error.message;
+    } else if (typeof error === 'string') {
+      errorText = error;
+    }
+    errorText = errorText?.trim();
+    this.dialog.open(ErrorDialogComponent, {
+      width: '80%',
+      data: { error: errorText },
+    });
   }
 
   openRawDataDialog(data: any[][]): void {

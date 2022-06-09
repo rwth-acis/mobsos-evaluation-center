@@ -44,18 +44,17 @@ import {
 } from 'rxjs/operators';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
 import { MathExpression } from 'mathjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 
 @Component({
   selector: 'app-kpi-visualization',
   templateUrl: './kpi-visualization.component.html',
   styleUrls: ['./kpi-visualization.component.scss'],
 })
-export class KpiVisualizationComponent
-  extends VisualizationComponent
-  implements OnInit, OnDestroy
-{
-  @Input() override data$: Observable<VisualizationData[]>;
-  @Input() override visualization$: Observable<KpiVisualization>;
+export class KpiVisualizationComponent implements OnInit, OnDestroy {
+  @Input() data$: Observable<VisualizationData[]>;
+  @Input() visualization$: Observable<KpiVisualization>;
   @Input() queries$: Observable<SQLQuery[]>;
   @Input() description$: Observable<string>;
   dataIsLoading$: Observable<boolean>;
@@ -72,13 +71,12 @@ export class KpiVisualizationComponent
     startWith(undefined),
   );
   private subscriptions$: Subscription[] = [];
+  error$: Observable<{ error: any }>;
   constructor(
-    protected override dialog: MatDialog,
+    private dialog: MatDialog,
     private ngrxStore: Store,
     private cdref: ChangeDetectorRef,
-  ) {
-    super(dialog);
-  }
+  ) {}
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) =>
@@ -86,7 +84,7 @@ export class KpiVisualizationComponent
     );
   }
 
-  override ngOnInit(): void {
+  ngOnInit(): void {
     this.fetchDate$ = this.data$.pipe(
       filter((data) => !!data),
       map((data) => data.map((entry) => new Date(entry.fetchDate))), // map each entry onto its fetch date
@@ -144,6 +142,32 @@ export class KpiVisualizationComponent
           }),
         );
       });
+  }
+
+  openErrorDialog(
+    error?: HttpErrorResponse | { error: SyntaxError } | string,
+  ): void {
+    let errorText = 'Unknown error';
+    if (error instanceof HttpErrorResponse) {
+      errorText =
+        'Http status code: ' + error.status?.toString() + '\n';
+      errorText += error.statusText;
+      if (typeof error.error === 'string') {
+        errorText += ': ' + error.error;
+      }
+    } else if (
+      typeof error === 'object' &&
+      Object.keys(error).includes('error')
+    ) {
+      errorText = (error as { error: SyntaxError }).error.message;
+    } else if (typeof error === 'string') {
+      errorText = error;
+    }
+    errorText = errorText?.trim();
+    this.dialog.open(ErrorDialogComponent, {
+      width: '80%',
+      data: { error: errorText },
+    });
   }
 }
 
