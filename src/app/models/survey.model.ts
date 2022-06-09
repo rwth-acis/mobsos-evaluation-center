@@ -69,3 +69,18 @@ interface SurveyForm {
   resource?: string;
   'resource-label'?: string;
 }
+
+export interface LimeSurvey {
+  sid: string;
+  surveyls_title: string;
+  startdate: string;
+  expires: string;
+  active: 'Y' | 'N';
+}
+
+export interface LimeSurveyResponses {
+  question: string;
+  title: string;
+  type: 'L' | '5' | 'S' | 'T';
+  responses: { [response: string]: number }; // counts how much each response was voted
+}
