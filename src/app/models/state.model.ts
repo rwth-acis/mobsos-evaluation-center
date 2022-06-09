@@ -5,7 +5,7 @@ import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
 import {
-  LimeSurvey,
+  LimeSurveyForm,
   LimeSurveyResponses,
   Survey,
 } from './survey.model';
@@ -36,7 +36,7 @@ export interface AppState {
   requirements: Requirement[]; // requirements for the Requirement Bazaar project that is connected to the current success model
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
   surveys: Survey[]; // surveys from mobsos surveys
-  limeSurveySurveys: LimeSurvey[]; // surveys from limesurvey
+  limeSurveySurveys: LimeSurveyForm[]; // surveys from limesurvey
   limeSurveyResponses: { [sid: string]: LimeSurveyResponses }; // responses from limesurvey per survey referenced by the surveyid
 }
 

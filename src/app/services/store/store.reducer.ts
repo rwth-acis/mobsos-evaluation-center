@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Action, createReducer, on } from '@ngrx/store';
 
-import { Measure, MeasureCatalog } from '../../models/measure.model';
+import {
+  LimeSurveyMeasure,
+  Measure,
+  MeasureCatalog,
+} from '../../models/measure.model';
 import {
   AppState,
   INITIAL_APP_STATE,
@@ -1210,19 +1214,23 @@ function removeSurveyMeasures(
   if (!catalog.measures) return copy;
   const model = appWorkspace.model;
   for (const measureName of Object.keys(catalog.measures)) {
-    const measure = catalog.measures[measureName];
-    if (measure.tags?.includes(measureTag)) {
-      delete catalog.measures[measureName];
-      for (const dimensionName of Object.keys(model.dimensions)) {
-        const factors = model.dimensions[dimensionName];
-        for (const factor of factors) {
-          factor.measures = factor.measures.filter(
-            (m: string) => m !== measureName,
+    let measure = catalog.measures[measureName];
+    if (measure instanceof LimeSurveyMeasure) {
+    } else {
+      measure = Measure.fromJSON(measure as any);
+      if ((measure as Measure).tags?.includes(measureTag)) {
+        delete catalog.measures[measureName];
+        for (const dimensionName of Object.keys(model.dimensions)) {
+          const factors = model.dimensions[dimensionName];
+          for (const factor of factors) {
+            factor.measures = factor.measures.filter(
+              (m: string) => m !== measureName,
+            );
+          }
+          model.dimensions[dimensionName] = factors.filter(
+            (f: SuccessFactor) => f.measures?.length > 0,
           );
         }
-        model.dimensions[dimensionName] = factors.filter(
-          (f: SuccessFactor) => f.measures?.length > 0,
-        );
       }
     }
   }
