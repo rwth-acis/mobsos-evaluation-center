@@ -10,12 +10,17 @@ import { Store } from '@ngrx/store';
 
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { map, Observable } from 'rxjs';
+import { distinctUntilChanged, map, Observable } from 'rxjs';
 
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure } from 'src/app/models/measure.model';
+import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
+import {
+  Visualization,
+  VisualizationData,
+  VisualizationType,
+} from 'src/app/models/visualization.model';
 
 @Component({
   selector: 'app-visualization',
@@ -23,16 +28,16 @@ import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
   templateUrl: './visualization.component.html',
 })
 export class VisualizationComponent implements OnInit {
-  @Input() measure$: Observable<Measure>;
-
-  @Output() isLoading: EventEmitter<any> = new EventEmitter();
+  // @Input() measure$: Observable<Measure>;
+  @Input() data$: Observable<VisualizationData | VisualizationData[]>; // visualization data fetched from the store
+  @Input() visualization$: Observable<Visualization>;
 
   measure: Measure;
 
   error$: Observable<HttpErrorResponse>;
+  visualizationType$: Observable<string>;
   service: ServiceInformation;
   visualizationInitialized = false;
-  visualizationType$: Observable<any>;
 
   constructor(protected dialog: MatDialog) {}
 
@@ -40,10 +45,10 @@ export class VisualizationComponent implements OnInit {
     const doc = new DOMParser().parseFromString(input, 'text/html');
     return doc.documentElement.textContent || '';
   }
-
   ngOnInit(): void {
-    this.visualizationType$ = this.measure$.pipe(
-      map((m) => m.visualization.type as string),
+    this.visualizationType$ = this.visualization$.pipe(
+      map((viz) => viz.type), // get the visualization type
+      distinctUntilChanged(), // only emit if the visualization type changes
     );
   }
 
@@ -85,9 +90,6 @@ export class VisualizationComponent implements OnInit {
       width: '80%',
       data: { error: errorText },
     });
-  }
-  setLoading(loading: boolean) {
-    this.isLoading.emit(loading);
   }
 }
 export function applyCompatibilityFixForVisualizationService(

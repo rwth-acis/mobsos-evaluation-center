@@ -297,7 +297,7 @@ export const WORKSPACE_MODEL_XML = createSelector(
   WORKSPACE_MODEL,
   (model) =>
     model
-      ? SuccessModel.fromPlainObject(model)?.toXml()?.outerHTML
+      ? SuccessModel.fromPlainObject(model as any)?.toXml()?.outerHTML
       : undefined,
 );
 

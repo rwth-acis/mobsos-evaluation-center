@@ -895,6 +895,7 @@ export class StateEffects {
             if (res.status === 200) {
               return Action.storeResponsesForSurveyFromLimeSurvey({
                 responses: res.body,
+                sid,
               });
             } else {
               return Action.failureResponse(null);

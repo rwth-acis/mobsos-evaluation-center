@@ -50,13 +50,14 @@ export class KpiVisualizationComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() override measure$: Observable<Measure>;
+  // @Input() override measure$: Observable<Measure>;
+  @Input() override data$: Observable<VisualizationData[]>;
+  @Input() override visualization$: Observable<KpiVisualization>;
+  // @Output() override isLoading: EventEmitter<any> =
+  //   new EventEmitter();
 
-  @Output() override isLoading: EventEmitter<any> =
-    new EventEmitter();
-
-  queries$: Observable<string[]>;
-  dataArray$: Observable<VisualizationData[]>;
+  // queries$: Observable<string[]>;
+  // dataArray$: Observable<VisualizationData[]>;
   dataIsLoading$: Observable<boolean>;
   kpi$: Observable<{ abstractTerm: string[]; term: string[] }>;
   fetchDate$: Observable<string>; // latest fetch date as iso string

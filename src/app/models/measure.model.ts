@@ -17,6 +17,7 @@ export interface MeasureMap {
  */
 export interface IMeasure {
   name: string;
+  visualization: Visualization;
 }
 
 export class Measure implements IMeasure {

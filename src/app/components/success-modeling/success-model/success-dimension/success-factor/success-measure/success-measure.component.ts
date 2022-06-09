@@ -6,26 +6,38 @@ import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
 
-import { Observable, Subscription } from 'rxjs';
+import {
+  firstValueFrom,
+  forkJoin,
+  Observable,
+  Subscription,
+} from 'rxjs';
 
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  map,
+  shareReplay,
+  switchMap,
+  take,
 } from 'rxjs/operators';
 import {
   MEASURE,
   SELECTED_SERVICE,
   USER_HAS_EDIT_RIGHTS,
+  VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import {
   editMeasure,
+  fetchVisualizationData,
   removeMeasureFromModel,
 } from 'src/app/services/store/store.actions';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
+import { VisualizationData } from 'src/app/models/visualization.model';
 
 @Component({
   selector: 'app-success-measure',
@@ -38,6 +50,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() factorName = '';
   @Input() preview = false;
 
+  data$: Observable<VisualizationData | VisualizationData[]>;
   measure$: Observable<IMeasure>;
   service$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
@@ -52,14 +65,13 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.measure$ = this.ngrxStore
       .select(MEASURE({ measureName: this.measureName }))
       .pipe(filter((measure) => !!measure));
     let sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.measure = cloneDeep(measure);
       });
     this.subscriptions$.push(sub);
@@ -67,6 +79,51 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
       (service) => (this.service = service),
     );
     this.subscriptions$.push(sub);
+
+    // retrieve all data for each query from the store
+    this.data$ = this.measure$.pipe(
+      map((measure) => Measure.fromJSON(measure as Measure).queries),
+      switchMap((queries) =>
+        forkJoin(
+          queries.map((query) =>
+            this.ngrxStore
+              .select(
+                VISUALIZATION_DATA_FOR_QUERY({
+                  queryString: query.sql,
+                }),
+              )
+              .pipe(
+                distinctUntilChanged(
+                  (prev, curr) => prev?.fetchDate === curr?.fetchDate,
+                ),
+                shareReplay(1),
+              ),
+          ),
+        ),
+      ),
+      map((data) => {
+        if (data.length === 1) {
+          return data[0];
+        }
+        return data;
+      }),
+      shareReplay(1),
+    );
+
+    // dispatch a data fetch for each query once
+    const queries = await firstValueFrom(
+      this.measure$.pipe(
+        map(
+          (measure) => Measure.fromJSON(measure as Measure).queries,
+        ),
+        take(1),
+      ),
+    );
+    queries.forEach((query) => {
+      this.ngrxStore.dispatch(
+        fetchVisualizationData({ query: query.sql }),
+      );
+    });
   }
 
   ngOnDestroy(): void {

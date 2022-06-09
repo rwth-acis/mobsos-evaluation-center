@@ -46,7 +46,7 @@ import {
 import { ChartData } from 'src/app/models/chart.model';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
 import { RawDataDialogComponent } from '../raw-data-dialog/raw-data-dialog.component';
-import { Measure } from 'src/app/models/measure.model';
+import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { StaticChartComponent } from './static-chart/static-chart.component';
 
 @Component({
@@ -58,14 +58,15 @@ export class ChartVisualizerComponent
   extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() override measure$: Observable<Measure>;
-
-  @Output() override isLoading: EventEmitter<any> =
-    new EventEmitter();
+  // @Input() override measure$: Observable<IMeasure>;
+  @Input() override data$: Observable<VisualizationData>;
+  @Input() override visualization$: Observable<ChartVisualization>;
+  // @Output() override isLoading: EventEmitter<any> =
+  //   new EventEmitter();
 
   chartData: ChartData; // data which is needed to build the chart.
   chartInitialized = false; // used for the fadein animation of charts
-  data$: Observable<VisualizationData>; // visualization data fetched from the store
+
   dataIsReady$: Observable<boolean>; // Observable which is true when data is currently loading from the server
   formatter_medium; // holds the formatter for the date with format type medium
   formatters: Formatter[] = []; // formatters are used to format js dates into human readable format
@@ -113,9 +114,6 @@ export class ChartVisualizerComponent
 
     // selects the query data for the query from the store
     this.data$ = this.query$.pipe(
-      tap(() => {
-        this.isLoading.emit(true);
-      }),
       switchMap((queryString) =>
         this.ngrxStore
           .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
@@ -132,9 +130,9 @@ export class ChartVisualizerComponent
     this.error$ = this.data$.pipe(map((data) => data?.error));
 
     this.dataIsReady$ = this.data$.pipe(
-      tap((data) => {
-        this.isLoading.emit(!data || data.loading);
-      }),
+      // tap((data) => {
+      //   this.isLoading.emit(!data || data.loading);
+      // }),
       map((data) => data && !data.loading),
       distinctUntilChanged(),
       shareReplay(1),
