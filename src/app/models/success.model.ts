@@ -1,6 +1,6 @@
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
-import { Survey } from './survey.model';
+import { ISurvey, LimeSurvey, Survey } from './survey.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -44,7 +44,7 @@ export class SuccessModel implements SuccessModel {
     public name: string,
     public service: string,
     public dimensions: DimensionMap,
-    public surveys: Survey[],
+    public surveys: ISurvey[],
     public reqBazProject: ReqbazProject,
   ) {}
 
@@ -184,7 +184,13 @@ export class SuccessModel implements SuccessModel {
     successModel.setAttribute('service', this.service);
     const questionnaires = doc.createElement('surveys');
     for (const surveyObj of this.surveys) {
-      questionnaires.appendChild(surveyObj.toXml());
+      if (surveyObj instanceof Survey) {
+        const survey = surveyObj.toXml();
+        questionnaires.appendChild(survey);
+      } else if (surveyObj instanceof LimeSurvey) {
+        const survey = surveyObj.toXml();
+        questionnaires.appendChild(survey);
+      }
     }
     successModel.appendChild(questionnaires);
     if (this.reqBazProject) {
