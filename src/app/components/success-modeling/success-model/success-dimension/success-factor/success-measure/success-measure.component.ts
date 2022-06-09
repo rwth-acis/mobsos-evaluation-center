@@ -23,7 +23,7 @@ import {
   removeMeasureFromModel,
 } from 'src/app/services/store/store.actions';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure } from 'src/app/models/measure.model';
+import { IMeasure, Measure } from 'src/app/models/measure.model';
 import { EditMeasureDialogComponent } from '../edit-measure-dialog/edit-measure-dialog.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 
@@ -38,13 +38,13 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   @Input() factorName = '';
   @Input() preview = false;
 
-  measure$: Observable<Measure>;
+  measure$: Observable<IMeasure>;
   service$: Observable<ServiceInformation> =
     this.ngrxStore.select(SELECTED_SERVICE);
   subscriptions$: Subscription[] = [];
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);
   service: ServiceInformation;
-  measure: Measure;
+  measure: IMeasure;
 
   constructor(
     private translate: TranslateService,
@@ -55,10 +55,7 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.measure$ = this.ngrxStore
       .select(MEASURE({ measureName: this.measureName }))
-      .pipe(
-        filter((measure) => !!measure),
-        distinctUntilKeyChanged('queries'),
-      );
+      .pipe(filter((measure) => !!measure));
     let sub = this.measure$
       .pipe(distinctUntilChanged())
       .subscribe((measure) => {
