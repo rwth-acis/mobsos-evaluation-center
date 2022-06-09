@@ -17,7 +17,11 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import { SuccessFactor } from '../../models/success.model';
-import { Survey } from '../../models/survey.model';
+import {
+  LimeSurvey,
+  LimeSurveyResponses,
+  Survey,
+} from '../../models/survey.model';
 import { User } from '../../models/user.model';
 
 import {
@@ -51,6 +55,8 @@ export enum HttpActions {
   REMOVE_MEMBER_FROM_GROUP = 'removes a member from the current group',
   SUCCESS_RESPONSE = 'response was successful',
   FAILURE_RESPONSE = 'response was not successful',
+  FETCH_SURVEYS_FROM_LIMESURVEY = 'Fetches the list of surveys available in LimeSurvey',
+  FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY = 'Fetches the responses for a particular survey from LimeSurvey',
 }
 /**
  * Actions that store data in the state store
@@ -95,6 +101,8 @@ export enum StoreActions {
   ADD_MEASURES_TO_CATALOG = 'Add a list of measures to the catalog',
   UPDATE_GROUP = 'update a group',
   STORE_QUESTIONNAIRE_FORM = 'Store the form for a given questionnaire',
+  STORE_SURVEYS_FROM_LIMESURVEY = 'Store surveys from limesurvey ',
+  STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY = 'store the responses for a given Limesurvey',
 }
 
 /**
@@ -123,6 +131,13 @@ export enum StateActions {
 // fetching
 export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
 export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
+export const fetchSurveysFromLimeSurvey = createAction(
+  HttpActions.FETCH_SURVEYS_FROM_LIMESURVEY,
+);
+export const fetchResponsesForSurveyFromLimeSurvey = createAction(
+  HttpActions.FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY,
+  props<{ sid: string }>(),
+);
 export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
   props<{ query: string; cache?: boolean }>(),
@@ -147,6 +162,16 @@ export const fetchQuestionnaires = createAction(
 export const fetchSurveys = createAction(HttpActions.FETCH_SURVEYS);
 
 // storing
+export const storeSurveysFromLimeSurvey = createAction(
+  StoreActions.STORE_SURVEYS_FROM_LIMESURVEY,
+  props<{ surveys: LimeSurvey[] }>(),
+);
+
+export const storeResponsesForSurveyFromLimeSurvey = createAction(
+  StoreActions.STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY,
+  props<{ responses: LimeSurveyResponses }>(),
+);
+
 export const storeMessageDescriptions = createAction(
   StoreActions.STORE_SERVICE_MESSAGE_DESCRIPTIONS,
   props<{
