@@ -169,7 +169,7 @@ export const storeSurveysFromLimeSurvey = createAction(
 
 export const storeResponsesForSurveyFromLimeSurvey = createAction(
   StoreActions.STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY,
-  props<{ responses: LimeSurveyResponses }>(),
+  props<{ responses: LimeSurveyResponses; sid: string }>(),
 );
 
 export const storeMessageDescriptions = createAction(
