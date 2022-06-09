@@ -10,16 +10,16 @@ export interface MeasureCatalog {
  * Map of measures
  */
 export interface MeasureMap {
-  [key: string]: Measure; // measures are identified by their name
+  [key: string]: IMeasure; // measures are identified by their name
 }
 /**
  * Success Measure
  */
-export interface Measure {
+export interface IMeasure {
   name: string;
 }
 
-export class Measure implements Measure {
+export class Measure implements IMeasure {
   constructor(
     public name: string,
     public queries: SQLQuery[],
@@ -110,6 +110,45 @@ export class Measure implements Measure {
   }
 }
 
+export class LimeSurveyMeasure implements IMeasure {
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const measure = doc.createElement('measure');
+    measure.setAttribute('name', this.name);
+    if (this.tags) measure.setAttribute('tags', this.tags.join(';'));
+    const description = doc.createElement('description');
+    description.textContent = this.description;
+    measure.appendChild(description);
+    measure.setAttribute('title', this.title);
+    if (this.visualization) {
+      measure.appendChild(this.visualization.toXml());
+    }
+    return measure;
+  }
+  static fromJSON(obj: LimeSurveyMeasure): LimeSurveyMeasure {
+    if (!obj) return null;
+    const title = obj.title;
+    const visualization = Visualization.fromPlainObject(
+      obj.visualization,
+    );
+    const description = obj.description;
+    return new LimeSurveyMeasure(
+      obj.name,
+      title,
+      visualization,
+      obj.tags,
+      description,
+    );
+  }
+  constructor(
+    public name: string,
+    public title: string,
+    public visualization: Visualization,
+    public tags: string[],
+    public description?: string,
+  ) {}
+}
+
 export class MeasureCatalog implements MeasureCatalog {
   constructor(public measures: MeasureMap) {}
 
@@ -142,9 +181,13 @@ export class MeasureCatalog implements MeasureCatalog {
       if (!obj?.measures) return null;
       const measureMap: MeasureMap = {};
       for (const measureName of Object.keys(obj.measures)) {
-        measureMap[measureName] = Measure.fromJSON(
-          obj.measures[measureName],
-        );
+        const measure = obj.measures[measureName];
+        if (measure instanceof Measure) {
+          measureMap[measureName] = Measure.fromJSON(measure);
+        } else if (measure instanceof LimeSurveyMeasure) {
+          measureMap[measureName] =
+            LimeSurveyMeasure.fromJSON(measure);
+        }
       }
       return new MeasureCatalog(measureMap);
     } catch (e) {
@@ -162,10 +205,20 @@ export class MeasureCatalog implements MeasureCatalog {
     const doc = document.implementation.createDocument('', '', null);
     const catalog = doc.createElement('Catalog');
     for (const measure of Object.values(this.measures)) {
-      if (typeof measure.toXml === 'undefined') {
-        catalog.appendChild(Measure.fromJSON(measure).toXml());
-      } else {
-        catalog.appendChild(measure.toXml());
+      if (measure instanceof Measure) {
+        if (typeof measure.toXml === 'undefined') {
+          catalog.appendChild(Measure.fromJSON(measure).toXml());
+        } else {
+          catalog.appendChild(measure.toXml());
+        }
+      } else if (measure instanceof LimeSurveyMeasure) {
+        if (typeof measure.toXml === 'undefined') {
+          catalog.appendChild(
+            LimeSurveyMeasure.fromJSON(measure).toXml(),
+          );
+        } else {
+          catalog.appendChild(measure.toXml());
+        }
       }
     }
     return catalog;
