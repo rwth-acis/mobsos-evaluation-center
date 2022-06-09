@@ -34,7 +34,10 @@ import {
   ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../../models/service.model';
-import { Survey } from '../../models/survey.model';
+import {
+  LimeSurveyResponses,
+  Survey,
+} from '../../models/survey.model';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
@@ -390,6 +393,21 @@ const _Reducer = createReducer(
     ...state,
     currentWorkSpaceOwner: props.owner || state.currentWorkSpaceOwner,
   })),
+  on(Actions.storeSurveysFromLimeSurvey, (state, { surveys }) => ({
+    ...state,
+    limeSurveySurveys: surveys,
+  })),
+  on(
+    Actions.storeResponsesForSurveyFromLimeSurvey,
+    (state, { responses, sid }) => ({
+      ...state,
+      limeSurveyResponses: addLimeSurveyResponsesForSurvey(
+        state.limeSurveyResponses,
+        responses,
+        sid,
+      ),
+    }),
+  ),
 );
 
 export function Reducer(state: AppState, action: Action): any {
@@ -1226,4 +1244,14 @@ function updateSelectedGroup(
   if (!(selectedGroupId in groupsFromContactService))
     return initialState.selectedGroupId;
   return selectedGroupId;
+}
+function addLimeSurveyResponsesForSurvey(
+  responseCollection: { [sid: string]: LimeSurveyResponses },
+  responses: LimeSurveyResponses,
+  sid: string,
+): { [sid: string]: LimeSurveyResponses } {
+  let copy = cloneDeep(responseCollection);
+  if (!copy) copy = {};
+  copy[sid] = responses;
+  return copy;
 }
