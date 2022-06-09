@@ -1,4 +1,7 @@
+/* eslint-env es6 */
+/* eslint-disable no-console */
 const express = require('express');
+const cors = require('cors');
 const limesurvey = require('node-limesurvey');
 require('dotenv').config();
 
@@ -11,7 +14,11 @@ const service = limesurvey({
   password: process.env.LIMESURVEY_PASSWORD,
 });
 const port = 3000;
-
+app.use(
+  cors({
+    origin: 'http://localhost:4200',
+  }),
+);
 /**
  * Returns list of surveys, format:
  * {
@@ -24,6 +31,12 @@ const port = 3000;
  */
 app.get('/surveys', async (req, res) => {
   const surveys = await service.getSurveyList(); // list of surveys
+  res.send(surveys); // send first response to first survey to client
+});
+
+app.get('/local/surveys', async (req, res) => {
+  const surveys = await service.getSurveyList(); // list of surveys
+  console.log(surveys);
   res.send(surveys); // send first response to first survey to client
 });
 
