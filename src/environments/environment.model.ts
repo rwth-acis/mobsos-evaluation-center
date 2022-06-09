@@ -1,4 +1,5 @@
 export interface Environment {
+  limeSurveyProxyUrl: string;
   production: boolean; // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: boolean; // true if the timestamps coming from the MobSOS surveys database are in local time and not UTC
   openIdAuthorityUrl: string; // URL of the OpenID Connect server

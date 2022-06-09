@@ -33,6 +33,7 @@ export const environment: Environment = {
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
   version: packageInfo.version,
+  limeSurveyProxyUrl: 'http://localhost:3000',
 };
 
 /*
