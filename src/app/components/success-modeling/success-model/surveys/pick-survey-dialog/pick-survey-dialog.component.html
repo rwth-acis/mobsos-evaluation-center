@@ -44,7 +44,7 @@
         </mat-autocomplete>
       </mat-form-field>
       <a
-        *ngIf="selectedSurvey"
+        *ngIf="selectedSurvey && isMobSOSSurvey(selectedSurvey)"
         mat-icon-button
         [href]="mobsosSurveysUrl + 'surveys/' + selectedSurvey.id"
         color="primary"

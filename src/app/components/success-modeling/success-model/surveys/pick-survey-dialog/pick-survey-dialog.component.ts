@@ -243,6 +243,10 @@ export class PickSurveyDialogComponent implements OnInit {
       return null;
     }
   }
+
+  isMobSOSSurvey(selectedSurvey: ISurvey) {
+    return selectedSurvey instanceof Survey;
+  }
 }
 
 function nowAsIsoDate(): string {
