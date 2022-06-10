@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import {
+  combineLatest,
   filter,
   map,
   Observable,
@@ -60,10 +61,9 @@ export class LimesurveyMeasureComponent implements OnInit {
       ),
     );
 
-    this.data$ = this.measure$.pipe(
-      withLatestFrom(responses$),
+    this.data$ = combineLatest([this.measure$, responses$]).pipe(
       map(([measure, responses]) => {
-        responses;
+        let data = [];
       }),
     );
   }

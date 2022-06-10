@@ -292,7 +292,7 @@ export const SURVEYS_NOT_IN_MODEL = createSelector(
       ? surveys?.filter(
           (survey) =>
             !surveysInModels.find(
-              (surveyInModel) => surveyInModel.id === survey.id,
+              (surveyInModel) => surveyInModel?.id === survey?.id,
             ),
         )
       : surveys,
