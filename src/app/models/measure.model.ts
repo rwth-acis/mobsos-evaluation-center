@@ -174,6 +174,7 @@ export class LimeSurveyMeasure implements IMeasure {
     public visualization: Visualization,
     public tags: string[],
     public description?: string,
+    public sid?: string,
   ) {}
 }
 

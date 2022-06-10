@@ -121,9 +121,14 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
 export const LIMESURVEY_RESPONSES = (state: StoreState) =>
   state.Reducer.limeSurveyResponses;
 
+export const RESPONSES_FOR_LIMESURVEY = (props: { sid: string }) =>
+  createSelector(LIMESURVEY_RESPONSES, (res) =>
+    res ? res[props.sid] : undefined,
+  );
+
 export const QUESTIONS_FROM_LIMESURVEY = (props: { sid: string }) =>
   createSelector(LIMESURVEY_RESPONSES, (res) =>
-    res
+    res && props.sid in res
       ? res[props.sid].map((response) => ({
           statement: response.question,
           type: response.type,

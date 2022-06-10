@@ -97,8 +97,10 @@ export class SuccessModel implements SuccessModel {
         );
       }
     }
-    const surveys = obj.surveys.map((s: Survey) =>
-      Survey.fromPlainObject(s),
+    const surveys = obj.surveys.map((s: ISurvey) =>
+      s instanceof Survey
+        ? Survey.fromPlainObject(s as Survey)
+        : LimeSurvey.fromJSON(s as LimeSurvey),
     );
     let reqBazProject;
     if (obj.reqBazProject) {

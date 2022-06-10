@@ -1216,6 +1216,20 @@ function removeSurveyMeasures(
   for (const measureName of Object.keys(catalog.measures)) {
     let measure = catalog.measures[measureName];
     if (measure instanceof LimeSurveyMeasure) {
+       if ((measure as LimeSurveyMeasure).tags?.includes(measureTag)) {
+         delete catalog.measures[measureName];
+         for (const dimensionName of Object.keys(model.dimensions)) {
+           const factors = model.dimensions[dimensionName];
+           for (const factor of factors) {
+             factor.measures = factor.measures.filter(
+               (m: string) => m !== measureName,
+             );
+           }
+           model.dimensions[dimensionName] = factors.filter(
+             (f: SuccessFactor) => f.measures?.length > 0,
+           );
+         }
+       }
     } else {
       measure = Measure.fromJSON(measure as any);
       if ((measure as Measure).tags?.includes(measureTag)) {

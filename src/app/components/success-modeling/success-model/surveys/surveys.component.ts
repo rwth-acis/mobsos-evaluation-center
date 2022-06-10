@@ -183,20 +183,10 @@ export class SurveyComponent implements OnInit {
           }
         }
       } else {
-        this.ngrxStore.dispatch(
-          fetchResponsesForSurveyFromLimeSurvey({
-            sid: (selectedSurvey as ISurvey).id as string,
-          }),
-        );
         if (addMeasures) {
-          const [currentModel, currentCatalog] = await Promise.all([
-            firstValueFrom(
-              this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
-            ),
-            firstValueFrom(
-              this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
-            ),
-          ]);
+          const currentCatalog = await firstValueFrom(
+            this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+          );
           const catalog = await this.addMeasuresFromSurveyToCatalog(
             cloneDeep(currentCatalog),
             selectedSurvey,
@@ -219,10 +209,7 @@ export class SurveyComponent implements OnInit {
     const questions = await firstValueFrom(
       this.ngrxStore
         .select(QUESTIONS_FROM_LIMESURVEY({ sid: survey.id }))
-        .pipe(
-          delayWhen(() => this.effects.fetchLimeSurveyResponses$),
-          take(1),
-        ), // delay until questions are fetched
+        .pipe(take(1)), // delay until questions are fetched
     );
     if (!questions) {
       console.error('No questions found for survey', survey);
@@ -252,6 +239,8 @@ export class SurveyComponent implements OnInit {
         question.statement,
         v,
         ['surveyId=' + survey.id, 'generated'],
+        null,
+        survey.id,
       );
       catalog.measures[m.name] = m;
     }
