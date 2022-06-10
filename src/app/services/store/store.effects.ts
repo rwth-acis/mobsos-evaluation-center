@@ -27,7 +27,11 @@ import {
   ServiceInformation,
   ServiceMessageDescriptions,
 } from '../../models/service.model';
-import { Survey } from '../../models/survey.model';
+import {
+  LimeSurvey,
+  LimeSurveyForm,
+  Survey,
+} from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
 import { Las2peerService } from '../las2peer.service';
@@ -870,8 +874,13 @@ export class StateEffects {
         this.l2p.fetchSurveysFromLimeSurvey().pipe(
           map((res) => {
             if (res.status === 200) {
+              const surveys = res.body.map(
+                (survey: LimeSurveyForm) => {
+                  return new LimeSurvey(survey);
+                },
+              );
               return Action.storeSurveysFromLimeSurvey({
-                surveys: res.body,
+                surveys,
               });
             } else {
               return Action.failureResponse(null);
