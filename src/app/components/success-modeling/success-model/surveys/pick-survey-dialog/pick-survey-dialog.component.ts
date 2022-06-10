@@ -15,6 +15,7 @@ import {
   map,
   Observable,
   take,
+  startWith,
 } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { ISurvey, Survey } from 'src/app/models/survey.model';
@@ -60,18 +61,7 @@ export class PickSurveyDialogComponent implements OnInit {
   }
 
   surveys$ = this.ngrxStore.select(SURVEYS_NOT_IN_MODEL);
-  currentSurveys$ = this.surveys$.pipe(
-    map((surveys) =>
-      surveys.filter((survey) => {
-        return survey.end > new Date();
-      }),
-    ),
-  );
-  pastSurveys$ = this.surveys$.pipe(
-    map((surveys) =>
-      surveys.filter((survey) => !(survey.end > new Date())),
-    ),
-  );
+
   constructor(
     private dialogRef: MatDialogRef<PickSurveyDialogComponent>,
     private dialog: MatDialog,
@@ -90,7 +80,7 @@ export class PickSurveyDialogComponent implements OnInit {
   ngOnInit() {
     this.filteredOptions$ = combineLatest([
       this.surveys$,
-      this.form.get('searchInput').valueChanges,
+      this.form.get('searchInput').valueChanges.pipe(startWith('')),
     ]).pipe(
       map(([surveys, input]) => {
         const filteredSurveys = surveys.filter((survey) => {
