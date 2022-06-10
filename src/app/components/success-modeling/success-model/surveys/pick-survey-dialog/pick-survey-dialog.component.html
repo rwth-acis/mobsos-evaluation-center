@@ -1,30 +1,48 @@
 <mat-dialog-content class="flex flex-col justify-between">
-  <div>
+  <form [formGroup]="form">
     <div class="flex items-center">
       <mat-form-field class="grow">
-        <mat-label>{{
-          'success-modeling.questionnaires.pick-questionnaire-dialog.survey-select'
-            | translate
-        }}</mat-label>
-        <mat-select [(value)]="selectedSurvey">
-          <h5 class="px-3 text-slate-500">Current Surveys</h5>
-          <mat-option
-            *ngFor="let survey of currentSurveys$ | async"
-            [value]="survey"
+        <mat-label
+          >{{
+            'success-modeling.questionnaires.pick-questionnaire-dialog.survey-select'
+              | translate
+          }}
+        </mat-label>
+        <mat-chip-list #chipList [multiple]="false">
+          <mat-chip (removed)="remove($event)" *ngIf="selectedSurvey">
+            {{ selectedSurvey.name }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+          <input
+            #inputRef
+            type="text"
+            matInput
+            formControlName="searchInput"
+            [matChipInputFor]="chipList"
+            required
+            [matAutocomplete]="autoGroup"
+          />
+        </mat-chip-list>
+        <mat-icon matSuffix>search</mat-icon>
+        <mat-autocomplete
+          #autoGroup="matAutocomplete"
+          (optionSelected)="setSelectedSurvey($event)"
+        >
+          <mat-optgroup
+            *ngFor="let group of filteredOptions$ | async"
+            [label]="group.label"
           >
-            {{ survey.name }}
-          </mat-option>
-
-          <h5 class="px-5 text-slate-500">Past Surveys</h5>
-          <mat-option
-            *ngFor="let survey of pastSurveys$ | async"
-            [value]="survey"
-          >
-            {{ survey.name }}
-          </mat-option>
-        </mat-select>
+            <mat-option
+              *ngFor="let survey of group.surveys"
+              [value]="survey.name"
+            >
+              {{ survey.name }}
+            </mat-option>
+          </mat-optgroup>
+        </mat-autocomplete>
       </mat-form-field>
-
       <a
         *ngIf="selectedSurvey"
         mat-icon-button
@@ -37,7 +55,7 @@
     </div>
 
     <mat-checkbox
-      [ngModel]="addMeasures"
+      formControlName="addMeasures"
       (ngModelChange)="onAddMeasuresChange($event)"
       >{{
         'success-modeling.questionnaires.pick-questionnaire-dialog.add-measures'
@@ -45,13 +63,13 @@
       }}</mat-checkbox
     >
     <br />
-    <mat-checkbox [(ngModel)]="assignMeasures">{{
+    <mat-checkbox formControlName="assignMeasures">{{
       'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
         | translate
     }}</mat-checkbox>
-  </div>
+  </form>
   <div>
-    <h5>Don't see your survey?</h5>
+    <h5>Can't find your survey?</h5>
     <button
       mat-button
       type="button"
