@@ -60,6 +60,14 @@ app.get('/responses', async (req, res) => {
   res.send(responses);
 });
 
+app.get('/local/responses', async (req, res) => {
+  if (!req.query.sid) {
+    res.status(400).send({ error: 'No survey id provided' });
+  }
+  const responses = await getSurveyResponses(req.query.sid);
+  res.send(responses);
+});
+
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`);
   const surveys = await service.getSurveyList();
