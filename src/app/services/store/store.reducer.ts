@@ -39,7 +39,7 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import {
-  LimeSurveyResponses,
+  LimeSurveyResponse,
   Survey,
 } from '../../models/survey.model';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
@@ -1254,10 +1254,10 @@ function updateSelectedGroup(
   return selectedGroupId;
 }
 function addLimeSurveyResponsesForSurvey(
-  responseCollection: { [sid: string]: LimeSurveyResponses },
-  responses: LimeSurveyResponses,
+  responseCollection: { [sid: string]: LimeSurveyResponse[] },
+  responses: LimeSurveyResponse[],
   sid: string,
-): { [sid: string]: LimeSurveyResponses } {
+): { [sid: string]: LimeSurveyResponse[] } {
   let copy = cloneDeep(responseCollection);
   if (!copy) copy = {};
   copy[sid] = responses;

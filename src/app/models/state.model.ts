@@ -4,7 +4,7 @@ import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
-import { ISurvey, LimeSurveyResponses } from './survey.model';
+import { ISurvey, LimeSurveyResponse } from './survey.model';
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
@@ -33,7 +33,7 @@ export interface AppState {
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
   surveys: ISurvey[]; // surveys from mobsos surveys
   limeSurveySurveys: ISurvey[]; // surveys from limesurvey
-  limeSurveyResponses: { [sid: string]: LimeSurveyResponses }; // responses from limesurvey per survey referenced by the surveyid
+  limeSurveyResponses: { [sid: string]: LimeSurveyResponse[] }; // responses from limesurvey per survey referenced by the surveyid
 }
 
 export const INITIAL_APP_STATE: AppState = {

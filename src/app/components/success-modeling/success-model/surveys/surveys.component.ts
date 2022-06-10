@@ -15,6 +15,7 @@ import {
   QUESTIONNAIRE,
   MEASURE_CATALOG,
   SURVEYS_FROM_SUCCESS_MODEL,
+  QUESTIONS_FROM_LIMESURVEY,
 } from 'src/app/services/store/store.selectors';
 import { ServiceInformation } from 'src/app/models/service.model';
 
@@ -27,6 +28,7 @@ import {
   Questionnaire,
 } from 'src/app/models/questionnaire.model';
 import {
+  LimeSurveyMeasure,
   Measure,
   MeasureCatalog,
   MeasureMap,
@@ -36,6 +38,7 @@ import {
 import {
   ChartVisualization,
   ValueVisualization,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import {
   joinAbsoluteUrlPath,
@@ -64,7 +67,11 @@ import {
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 
-import { ISurvey, Survey } from 'src/app/models/survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+} from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -128,8 +135,8 @@ export class SurveyComponent implements OnInit {
           assignMeasures,
         }),
       );
-      if (addMeasures) {
-        if (selectedSurvey instanceof Survey) {
+      if (selectedSurvey instanceof Survey) {
+        if (addMeasures) {
           const [
             questionnaire,
             service,
@@ -173,15 +180,74 @@ export class SurveyComponent implements OnInit {
               }),
             );
           }
-        } else {
+        }
+      } else {
+        this.ngrxStore.dispatch(
+          fetchResponsesForSurveyFromLimeSurvey({
+            sid: (selectedSurvey as ISurvey).id as string,
+          }),
+        );
+        if (addMeasures) {
+          const [currentModel, currentCatalog] = await Promise.all([
+            firstValueFrom(
+              this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
+            ),
+            firstValueFrom(
+              this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+            ),
+          ]);
+          const catalog = await this.addMeasuresFromSurveyToCatalog(
+            cloneDeep(currentCatalog),
+            selectedSurvey,
+          );
           this.ngrxStore.dispatch(
-            fetchResponsesForSurveyFromLimeSurvey({
-              sid: (selectedSurvey as ISurvey).id as string,
+            addCatalogToWorkspace({
+              xml: new MeasureCatalog(catalog.measures).toXml()
+                .outerHTML,
             }),
           );
         }
       }
     }
+  }
+
+  async addMeasuresFromSurveyToCatalog(
+    catalog: MeasureCatalog,
+    survey: LimeSurvey,
+  ) {
+    const questions = await firstValueFrom(
+      this.ngrxStore
+        .select(QUESTIONS_FROM_LIMESURVEY({ sid: survey.id }))
+        .pipe(take(1)),
+    );
+    for (const question of questions) {
+      let v: Visualization;
+      switch (question.type) {
+        case '5':
+          v = new ChartVisualization(ChartType.BarChart);
+          break;
+        case 'L':
+          v = new ChartVisualization(ChartType.PieChart);
+          break;
+        case 'Y':
+          v = new ChartVisualization(ChartType.PieChart);
+          break;
+        default:
+          console.error(
+            `Unsupported question type: ${question.type}`,
+          );
+          continue;
+      }
+
+      const m = new LimeSurveyMeasure(
+        `${survey.name}: ${question.statement}`,
+        question.statement,
+        v,
+        ['surveyId=' + survey.id, 'generated'],
+      );
+      catalog.measures[m.name] = m;
+    }
+    return catalog;
   }
 
   async openRemoveQuestionnaireDialog(

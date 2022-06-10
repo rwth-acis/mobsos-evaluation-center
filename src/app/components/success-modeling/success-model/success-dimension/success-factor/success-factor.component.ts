@@ -111,6 +111,8 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     }
   }
 
+  getSuccessMeasures(factor) {}
+
   async onEditClicked(): Promise<void> {
     const dialogRef = this.dialog.open(EditFactorDialogComponent, {
       width: '250px',

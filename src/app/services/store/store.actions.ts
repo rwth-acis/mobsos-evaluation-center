@@ -20,7 +20,7 @@ import { SuccessFactor } from '../../models/success.model';
 import {
   ISurvey,
   LimeSurveyForm,
-  LimeSurveyResponses,
+  LimeSurveyResponse,
   Survey,
 } from '../../models/survey.model';
 import { User } from '../../models/user.model';
@@ -170,7 +170,7 @@ export const storeSurveysFromLimeSurvey = createAction(
 
 export const storeResponsesForSurveyFromLimeSurvey = createAction(
   StoreActions.STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY,
-  props<{ responses: LimeSurveyResponses; sid: string }>(),
+  props<{ responses: LimeSurveyResponse[]; sid: string }>(),
 );
 
 export const storeMessageDescriptions = createAction(

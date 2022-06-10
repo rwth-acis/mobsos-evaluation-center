@@ -118,6 +118,19 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   (group, user) => !!user && group?.member,
 );
 
+export const LIMESURVEY_RESPONSES = (state: StoreState) =>
+  state.Reducer.limeSurveyResponses;
+
+export const QUESTIONS_FROM_LIMESURVEY = (props: { sid: string }) =>
+  createSelector(LIMESURVEY_RESPONSES, (res) =>
+    res
+      ? res[props.sid].map((response) => ({
+          statement: response.question,
+          type: response.type,
+        }))
+      : undefined,
+  );
+
 // WORKSPACE
 export const SELECTED_WORKSPACE_OWNER = (state: StoreState) =>
   state.Reducer.currentWorkSpaceOwner;
