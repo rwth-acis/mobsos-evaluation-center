@@ -50,6 +50,7 @@ import {
   map,
   Observable,
   of,
+  delayWhen,
   take,
   timeout,
 } from 'rxjs';
@@ -218,8 +219,15 @@ export class SurveyComponent implements OnInit {
     const questions = await firstValueFrom(
       this.ngrxStore
         .select(QUESTIONS_FROM_LIMESURVEY({ sid: survey.id }))
-        .pipe(take(1)),
+        .pipe(
+          delayWhen(() => this.effects.fetchLimeSurveyResponses$),
+          take(1),
+        ), // delay until questions are fetched
     );
+    if (!questions) {
+      console.error('No questions found for survey', survey);
+      return catalog;
+    }
     for (const question of questions) {
       let v: Visualization;
       switch (question.type) {

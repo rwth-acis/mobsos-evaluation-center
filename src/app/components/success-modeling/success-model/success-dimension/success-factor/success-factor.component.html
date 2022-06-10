@@ -23,6 +23,15 @@
         [dimensionName]="this.dimensionName"
       ></app-success-measure>
     </ng-container>
+    <ng-container
+      *ngFor="let measure of getLimesurveyMeasures(factor)"
+    >
+      <app-limesurvey-measure
+        [measureName]="measures[measure]?.name"
+        [factorName]="factor.name"
+        [dimensionName]="this.dimensionName"
+      ></app-limesurvey-measure>
+    </ng-container>
   </div>
   <div *ngIf="canEdit$ | async as editMode">
     <button

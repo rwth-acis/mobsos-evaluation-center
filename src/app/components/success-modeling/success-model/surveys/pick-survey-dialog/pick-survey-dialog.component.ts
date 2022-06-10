@@ -23,6 +23,7 @@ import {
   joinAbsoluteUrlPath,
   Las2peerService,
 } from 'src/app/services/las2peer.service';
+import { fetchResponsesForSurveyFromLimeSurvey } from 'src/app/services/store/store.actions';
 import {
   SURVEYS_NOT_IN_MODEL,
   SELECTED_GROUP,
@@ -113,6 +114,11 @@ export class PickSurveyDialogComponent implements OnInit {
       (survey) => survey.name === event.option.value,
     );
     if (selectedSurvey) {
+      this.ngrxStore.dispatch(
+        fetchResponsesForSurveyFromLimeSurvey({
+          sid: (selectedSurvey as ISurvey).id as string,
+        }),
+      );
       this.form.get('selectedSurvey').setValue(selectedSurvey);
       this.form.get('searchInput').setValue('');
       this.inputRef.nativeElement.value = ''; // needed to reset the input (https://github.com/angular/components/issues/10968#issuecomment-545963282)
