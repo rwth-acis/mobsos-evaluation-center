@@ -4,11 +4,7 @@ import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
-import {
-  LimeSurveyForm,
-  LimeSurveyResponses,
-  Survey,
-} from './survey.model';
+import { ISurvey, LimeSurveyResponses } from './survey.model';
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
@@ -35,8 +31,8 @@ export interface AppState {
   currentWorkSpaceOwner: string; // username of the user that created and owns the current work space. This might be different from the user that is logged in.
   requirements: Requirement[]; // requirements for the Requirement Bazaar project that is connected to the current success model
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
-  surveys: Survey[]; // surveys from mobsos surveys
-  limeSurveySurveys: LimeSurveyForm[]; // surveys from limesurvey
+  surveys: ISurvey[]; // surveys from mobsos surveys
+  limeSurveySurveys: ISurvey[]; // surveys from limesurvey
   limeSurveyResponses: { [sid: string]: LimeSurveyResponses }; // responses from limesurvey per survey referenced by the surveyid
 }
 
