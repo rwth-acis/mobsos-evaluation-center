@@ -63,10 +63,14 @@
       }}</mat-checkbox
     >
     <br />
-    <mat-checkbox formControlName="assignMeasures">{{
-      'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
-        | translate
-    }}</mat-checkbox>
+    <mat-checkbox
+      *ngIf="isMobSOSSurvey(selectedSurvey)"
+      formControlName="assignMeasures"
+      >{{
+        'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'
+          | translate
+      }}</mat-checkbox
+    >
   </form>
   <div>
     <h5>Can't find your survey?</h5>

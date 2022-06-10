@@ -60,6 +60,7 @@ import {
   fetchQuestionnaireForm,
   fetchQuestionnaires,
   failureResponse,
+  fetchResponsesForSurveyFromLimeSurvey,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 
@@ -128,8 +129,13 @@ export class SurveyComponent implements OnInit {
         }),
       );
       if (addMeasures) {
-        const [questionnaire, service, currentModel, currentCatalog] =
-          await Promise.all([
+        if (selectedSurvey instanceof Survey) {
+          const [
+            questionnaire,
+            service,
+            currentModel,
+            currentCatalog,
+          ] = await Promise.all([
             firstValueFrom(
               this.ngrxStore
                 .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
@@ -145,25 +151,32 @@ export class SurveyComponent implements OnInit {
               this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
             ),
           ]);
-        const { model, measures } =
-          await this.addMeasuresFromQuestionnaireToModelAndCatalog(
-            questionnaire,
-            selectedSurvey.id as number,
-            addMeasures,
-            service,
-            cloneDeep(currentCatalog.measures),
-            cloneDeep(currentModel),
-          );
-        this.ngrxStore.dispatch(
-          addCatalogToWorkspace({
-            xml: new MeasureCatalog(measures).toXml().outerHTML,
-          }),
-        );
-        if (assignMeasures) {
+          const { model, measures } =
+            await this.addMeasuresFromQuestionnaireToModelAndCatalog(
+              questionnaire,
+              selectedSurvey.id as number,
+              addMeasures,
+              service,
+              cloneDeep(currentCatalog.measures),
+              cloneDeep(currentModel),
+            );
           this.ngrxStore.dispatch(
-            addModelToWorkSpace({
-              xml: SuccessModel.fromPlainObject(model).toXml()
-                .outerHTML,
+            addCatalogToWorkspace({
+              xml: new MeasureCatalog(measures).toXml().outerHTML,
+            }),
+          );
+          if (assignMeasures) {
+            this.ngrxStore.dispatch(
+              addModelToWorkSpace({
+                xml: SuccessModel.fromPlainObject(model).toXml()
+                  .outerHTML,
+              }),
+            );
+          }
+        } else {
+          this.ngrxStore.dispatch(
+            fetchResponsesForSurveyFromLimeSurvey({
+              sid: (selectedSurvey as ISurvey).id as string,
             }),
           );
         }
