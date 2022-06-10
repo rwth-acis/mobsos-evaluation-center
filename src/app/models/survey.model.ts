@@ -67,25 +67,25 @@ export class LimeSurvey implements ISurvey {
     this.start = new Date(form.startdate);
     this.end = new Date(form.expires);
     this.id = form.sid;
-    this.name = form.title;
+    this.name = form.surveyls_title;
   }
   static fromJSON(s: LimeSurvey): LimeSurvey {
     return new LimeSurvey({
-      title: s.name,
+      surveyls_title: s.name,
       sid: s.id,
       startdate: s.start.toISOString(),
       expires: s.end.toISOString(),
     });
   }
   static fromXml(xml: Element): LimeSurvey {
-    const title = xml.getAttribute('title');
+    const surveyls_title = xml.getAttribute('surveyls_title');
     const sid = xml.getAttribute('id');
     const start = new Date(
       xml.getAttribute('startdate'),
     ).toISOString();
     const end = new Date(xml.getAttribute('expires')).toISOString();
     return new LimeSurvey({
-      title,
+      surveyls_title,
       sid,
       startdate: start,
       expires: end,
@@ -94,7 +94,7 @@ export class LimeSurvey implements ISurvey {
   toXml(): Element {
     const doc = document.implementation.createDocument('', '', null);
     const limesurvey = doc.createElement('survey');
-    limesurvey.setAttribute('title', this.name);
+    limesurvey.setAttribute('surveyls_title', this.name);
     limesurvey.setAttribute('sid', this.id);
     return limesurvey;
   }
@@ -118,9 +118,9 @@ interface SurveyForm {
 
 export interface LimeSurveyForm {
   sid: string;
-  title: string;
   startdate: string;
   active?: 'Y' | 'N';
+  surveyls_title: string;
   expires: string;
 }
 
