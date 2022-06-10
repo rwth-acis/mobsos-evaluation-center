@@ -2,14 +2,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, take, tap, timeout } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { GroupMember } from '../models/community.model';
-import { Survey } from '../models/survey.model';
+import { LimeSurveyForm, Survey } from '../models/survey.model';
 import { Questionnaire } from '../models/questionnaire.model';
 interface HttpOptions {
   method?: string;
@@ -1280,7 +1284,9 @@ export class Las2peerService {
     });
   }
 
-  fetchSurveysFromLimeSurvey() {
+  fetchSurveysFromLimeSurvey(): Observable<
+    HttpResponse<LimeSurveyForm[]>
+  > {
     const url = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
       environment.limeSurveyProxyUrl.includes('localhost')
