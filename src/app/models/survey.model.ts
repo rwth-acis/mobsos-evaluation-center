@@ -124,9 +124,9 @@ export interface LimeSurveyForm {
   expires: string;
 }
 
-export interface LimeSurveyResponses {
+export interface LimeSurveyResponse {
   question: string;
   title: string;
-  type: 'L' | '5' | 'S' | 'T';
+  type: 'L' | '5' | 'S' | 'T' | 'Y';
   responses: { [response: string]: number }; // counts how much each response was voted
 }
