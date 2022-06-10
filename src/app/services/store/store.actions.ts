@@ -18,6 +18,7 @@ import {
 } from '../../models/service.model';
 import { SuccessFactor } from '../../models/success.model';
 import {
+  ISurvey,
   LimeSurveyForm,
   LimeSurveyResponses,
   Survey,
@@ -164,7 +165,7 @@ export const fetchSurveys = createAction(HttpActions.FETCH_SURVEYS);
 // storing
 export const storeSurveysFromLimeSurvey = createAction(
   StoreActions.STORE_SURVEYS_FROM_LIMESURVEY,
-  props<{ surveys: LimeSurveyForm[] }>(),
+  props<{ surveys: ISurvey[] }>(),
 );
 
 export const storeResponsesForSurveyFromLimeSurvey = createAction(
