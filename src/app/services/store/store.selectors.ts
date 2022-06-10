@@ -36,7 +36,10 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
 
-export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
+export const SURVEYS = (state: StoreState) =>
+  (state.Reducer.surveys || []).concat(
+    state.Reducer.limeSurveySurveys,
+  );
 
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
