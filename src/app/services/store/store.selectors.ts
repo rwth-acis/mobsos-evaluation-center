@@ -134,14 +134,14 @@ export const RESPONSES_FOR_LIMESURVEY_QUESTION = (props: {
     RESPONSES_FOR_LIMESURVEY({ sid: props.sid }),
     (res) =>
       res
-        ? res.find((q) => q.question === props.statement)
+        ? res.responses.find((q) => q.question === props.statement)
         : undefined,
   );
 
 export const QUESTIONS_FROM_LIMESURVEY = (props: { sid: string }) =>
   createSelector(LIMESURVEY_RESPONSES, (res) =>
     res && props.sid in res
-      ? res[props.sid].map((response) => ({
+      ? res[props.sid].responses.map((response) => ({
           statement: response.question,
           type: response.type,
         }))

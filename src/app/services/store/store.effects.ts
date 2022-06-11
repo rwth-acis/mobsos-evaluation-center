@@ -56,6 +56,7 @@ import {
   SUCCESS_MODEL_XML,
   SELECTED_GROUP,
   SELECTED_WORKSPACE_OWNER,
+  RESPONSES_FOR_LIMESURVEY,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -918,20 +919,38 @@ export class StateEffects {
   fetchLimeSurveyResponses$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
-      mergeMap(({ sid }) =>
-        this.l2p.fetchResponsesForSurveyFromLimeSurvey(sid).pipe(
-          map((res) => {
-            if (res.status === 200) {
-              return Action.storeResponsesForSurveyFromLimeSurvey({
-                responses: res.body,
-                sid,
-              });
-            } else {
-              return Action.failureResponse(null);
-            }
-          }),
-        ),
+      switchMap(({ sid }) =>
+        forkJoin([
+          this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })),
+          of(sid),
+        ]),
       ),
+      mergeMap(([responses, sid]) => {
+        if (
+          !responses?.responses ||
+          Date.now() - responses.fetchDate > REFETCH_INTERVAL
+        ) {
+          return this.l2p
+            .fetchResponsesForSurveyFromLimeSurvey(sid)
+            .pipe(
+              map((res) => {
+                if (res.status === 200) {
+                  return Action.storeResponsesForSurveyFromLimeSurvey(
+                    {
+                      responses: res.body,
+                      sid,
+                      fetchDate: new Date().getTime(),
+                    },
+                  );
+                } else {
+                  return Action.failureResponse(null);
+                }
+              }),
+            );
+        } else {
+          return of(Action.noop());
+        }
+      }),
       catchError((err) =>
         of(Action.failureResponse({ reason: err })),
       ),

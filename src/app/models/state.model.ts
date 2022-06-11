@@ -33,7 +33,12 @@ export interface AppState {
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
   surveys: ISurvey[]; // surveys from mobsos surveys
   limeSurveySurveys: ISurvey[]; // surveys from limesurvey
-  limeSurveyResponses: { [sid: string]: LimeSurveyResponse[] }; // responses from limesurvey per survey referenced by the surveyid
+  limeSurveyResponses: {
+    [sid: string]: {
+      responses: LimeSurveyResponse[];
+      fetchDate: number;
+    };
+  }; // responses from limesurvey per survey referenced by the surveyid
 }
 
 export const INITIAL_APP_STATE: AppState = {
