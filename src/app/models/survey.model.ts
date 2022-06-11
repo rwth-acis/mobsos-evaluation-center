@@ -3,9 +3,16 @@ export interface ISurvey {
   end: Date; // End date of the survey
   id: number | string; // ID of the survey
   name: string; // Name of the survey
+  type: SurveyType; // Type of the survey
+}
+
+export enum SurveyType {
+  LimeSurvey = 'LimeSurvey',
+  MobSOS = 'MobSOS',
 }
 
 export class Survey implements ISurvey {
+  type = SurveyType.MobSOS;
   description?: string; // Description of the survey
   start: Date; // Start date of the survey
   end: Date; // End date of the survey
@@ -59,6 +66,7 @@ export class Survey implements ISurvey {
 }
 
 export class LimeSurvey implements ISurvey {
+  type = SurveyType.LimeSurvey;
   start: Date; // Start date of the survey
   end: Date; // End date of the survey
   id: string; // ID of the survey

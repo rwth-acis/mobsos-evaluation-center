@@ -1,6 +1,11 @@
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
-import { ISurvey, LimeSurvey, Survey } from './survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+  SurveyType,
+} from './survey.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -98,7 +103,7 @@ export class SuccessModel implements SuccessModel {
       }
     }
     const surveys = obj.surveys.map((s: ISurvey) =>
-      s instanceof Survey
+      s.type === SurveyType.MobSOS
         ? Survey.fromPlainObject(s as Survey)
         : LimeSurvey.fromJSON(s as LimeSurvey),
     );
