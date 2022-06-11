@@ -84,6 +84,7 @@ export class LimesurveyMeasureComponent implements OnInit {
       }),
     );
     this.data$ = responseData$.pipe(
+      filter((data) => !!data),
       map(({ responses }) => {
         const table = [];
         const columnLabels = ['answer', 'count'];
