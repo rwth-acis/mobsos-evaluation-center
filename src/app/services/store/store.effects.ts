@@ -55,6 +55,7 @@ import {
   VISUALIZATION_DATA_FROM_QVS,
   SUCCESS_MODEL_XML,
   SELECTED_GROUP,
+  SELECTED_WORKSPACE_OWNER,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -1053,6 +1054,33 @@ export class StateEffects {
             );
         },
       ),
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  resetWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.resetWorkSpace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
+      ),
+      tap(([, service, user, owner]) => {
+        if (user.profile.preferred_username !== owner)
+          console.warn('You are not the owner of this workspace');
+        this.workspaceService.resetWorkspace(
+          user.profile.preferred_username,
+          service,
+          true,
+        );
+      }),
+      switchMap(([, service, user, owner]) => {
+        return of(Action.success());
+      }),
       catchError((err) => {
         return of(Action.failure({ reason: err }));
       }),

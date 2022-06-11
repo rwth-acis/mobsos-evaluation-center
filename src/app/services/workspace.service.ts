@@ -101,6 +101,32 @@ export class WorkspaceService {
     return this.communityWorkspace$.getValue();
   }
 
+  resetWorkspace(
+    owner: string,
+    service: ServiceInformation,
+    resetCatalog: boolean = false,
+  ): void {
+    if (
+      !(
+        owner in this.currentCommunityWorkspaceValue &&
+        service.name in this.currentCommunityWorkspaceValue[owner]
+      )
+    ) {
+      console.error('workspace not found');
+      return;
+    }
+    const copy = cloneDeep(this.currentCommunityWorkspaceValue);
+    const currentApplicationWorkspace = copy[owner][service.name];
+
+    if (resetCatalog) {
+      currentApplicationWorkspace.catalog = new MeasureCatalog({});
+    }
+
+    currentApplicationWorkspace.model =
+      SuccessModel.emptySuccessModel(service);
+    this.communityWorkspace$.next(copy);
+  }
+
   /**
    * Initializes the workspace for a given user and service inside the current community workspace.
    *
