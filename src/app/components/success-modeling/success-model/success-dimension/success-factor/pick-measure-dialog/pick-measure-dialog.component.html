@@ -39,8 +39,7 @@
         *ngFor="let measure of measures; let i = index"
       >
         <mat-expansion-panel-header>
-          <mat-panel-title>
-            {{ measure.name }}
+          <mat-panel-title [innerHTML]="measure.name">
           </mat-panel-title>
           <mat-panel-description>
             <button

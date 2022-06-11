@@ -23,9 +23,7 @@
         </button> -->
       </ng-container>
 
-      <h4 *ngIf="measure && !preview">
-        {{ measure.name }}
-      </h4>
+      <h4 *ngIf="measure && !preview" [innerHTML]="measure.name"></h4>
     </div>
 
     <ng-container>
