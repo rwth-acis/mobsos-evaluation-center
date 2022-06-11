@@ -73,8 +73,9 @@ export class LimeSurvey implements ISurvey {
     return new LimeSurvey({
       surveyls_title: s.name,
       sid: s.id,
-      startdate: s.start?.toISOString(),
-      expires: s.end?.toISOString(),
+      startdate:
+        s.start instanceof Date ? s.start?.toISOString() : s.start,
+      expires: s.end instanceof Date ? s.end?.toISOString() : s.end,
     });
   }
   static fromXml(xml: Element): LimeSurvey {
