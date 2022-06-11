@@ -55,6 +55,7 @@
     </div>
 
     <mat-checkbox
+      *ngIf="expertMode$ | async"
       formControlName="addMeasures"
       (ngModelChange)="onAddMeasuresChange($event)"
       >{{
@@ -64,7 +65,7 @@
     >
     <br />
     <mat-checkbox
-      *ngIf="isMobSOSSurvey(selectedSurvey)"
+      *ngIf="isMobSOSSurvey(selectedSurvey) && expertMode$ | async"
       formControlName="assignMeasures"
       >{{
         'success-modeling.questionnaires.pick-questionnaire-dialog.assign-measures'

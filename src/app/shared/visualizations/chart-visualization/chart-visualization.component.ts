@@ -100,7 +100,7 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     );
     this.subscriptions$.push(sub);
 
-    this.query$ = this.queries$.pipe(
+    this.query$ = this.queries$?.pipe(
       filter((queries) => !!queries),
       map((queries) => queries[0].sql),
     );

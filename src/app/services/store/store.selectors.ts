@@ -126,6 +126,18 @@ export const RESPONSES_FOR_LIMESURVEY = (props: { sid: string }) =>
     res ? res[props.sid] : undefined,
   );
 
+export const RESPONSES_FOR_LIMESURVEY_QUESTION = (props: {
+  sid: string;
+  statement: string;
+}) =>
+  createSelector(
+    RESPONSES_FOR_LIMESURVEY({ sid: props.sid }),
+    (res) =>
+      res
+        ? res.find((q) => q.question === props.statement)
+        : undefined,
+  );
+
 export const QUESTIONS_FROM_LIMESURVEY = (props: { sid: string }) =>
   createSelector(LIMESURVEY_RESPONSES, (res) =>
     res && props.sid in res

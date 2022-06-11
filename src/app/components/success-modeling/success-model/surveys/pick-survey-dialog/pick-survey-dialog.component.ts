@@ -30,6 +30,7 @@ import {
   SELECTED_SERVICE,
   USER,
   QUESTIONNAIRES,
+  EXPERT_MODE,
 } from 'src/app/services/store/store.selectors';
 import { environment } from 'src/environments/environment';
 import { PickQuestionnaireDialogComponent } from '../pick-questionnaire-dialog/pick-questionnaire-dialog.component';
@@ -50,6 +51,7 @@ export class PickSurveyDialogComponent implements OnInit {
   @ViewChild('inputRef', { static: true })
   inputRef: ElementRef<HTMLInputElement>;
 
+  expertMode$ = this.ngrxStore.select(EXPERT_MODE);
   addMeasures = true;
   assignMeasures = true;
   mobsosSurveysUrl = environment.mobsosSurveysUrl;
@@ -251,7 +253,7 @@ export class PickSurveyDialogComponent implements OnInit {
   }
 
   isMobSOSSurvey(selectedSurvey: ISurvey) {
-    return selectedSurvey instanceof Survey;
+    return !!selectedSurvey && 'resource-label' in selectedSurvey;
   }
 }
 
