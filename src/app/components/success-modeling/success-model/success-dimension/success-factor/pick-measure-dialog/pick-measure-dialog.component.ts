@@ -177,6 +177,10 @@ export class PickMeasureDialogComponent implements OnInit, OnDestroy {
     return this.measures$.pipe(map((measures) => measures[index]));
   }
 
+  isLimeSurveyMeasure(measure: IMeasure) {
+    return 'sid' in measure;
+  }
+
   async deleteMeasure(measure: Measure) {
     const message = this.translate.instant(
       'success-factor.remove-measure-prompt',
