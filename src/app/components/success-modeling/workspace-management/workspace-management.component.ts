@@ -60,6 +60,7 @@ import {
   setService,
   enableEdit,
   joinWorkSpace,
+  resetWorkSpace,
 } from 'src/app/services/store/store.actions';
 import { WorkspaceService } from 'src/app/services/workspace.service';
 import { ImportDialogComponent } from '../../../shared/dialogs/import-dialog/import-dialog.component';
@@ -165,6 +166,20 @@ export class WorkspaceManagementComponent
 
     const editMode = await this.editMode$.pipe(take(1)).toPromise();
     if (editMode !== this.checked) this.checked = editMode;
+  }
+
+  async resetWorkSpace() {
+    const message = 'Are you sure you want to reset the workspace?';
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      minWidth: 300,
+      data: message,
+    });
+    const confirmation = await firstValueFrom(
+      dialogRef.afterClosed(),
+    );
+    if (confirmation) {
+      this.ngrxStore.dispatch(resetWorkSpace());
+    }
   }
 
   async onServiceSelected(

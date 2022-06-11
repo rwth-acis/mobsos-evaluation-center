@@ -109,6 +109,7 @@ export enum StoreActions {
 /**
  * Actions which manipulate the state of the application
  */
+
 export enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
@@ -127,6 +128,7 @@ export enum StateActions {
   RESET_FETCH_DATE = 'set the fetch date to null',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
   NOOP = 'No operation',
+  RESET_WORKSPACE = 'Reset the users current workspace to the default state. This deletes the success model, catalog and visualization data',
 }
 
 // fetching
@@ -366,6 +368,10 @@ export const setService = createAction(
 export const setServiceName = createAction(
   StateActions.SET_SERVICE_NAME,
   props<{ serviceName: string }>(),
+);
+
+export const resetWorkSpace = createAction(
+  StateActions.RESET_WORKSPACE,
 );
 
 export const setCommunityWorkspace = createAction(
