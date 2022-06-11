@@ -193,7 +193,7 @@ export class SurveyComponent implements OnInit {
           );
           this.ngrxStore.dispatch(
             addCatalogToWorkspace({
-              xml: MeasureCatalog.fromJSON(catalog).toXml().outerHTML,
+              xml: catalog.toXml().outerHTML,
             }),
           );
         }

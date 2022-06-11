@@ -121,7 +121,7 @@ export class LimeSurveyMeasure implements IMeasure {
         .textContent.trim();
     }
     const title = xml.getAttribute('title');
-
+    const sid = xml.getAttribute('sid');
     const visualizationNode = Array.from(
       xml.getElementsByTagName('visualization'),
     )[0];
@@ -136,6 +136,7 @@ export class LimeSurveyMeasure implements IMeasure {
       title,
       visualization,
       tags,
+      sid,
       description,
     );
   }

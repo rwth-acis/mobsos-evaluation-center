@@ -373,10 +373,7 @@ export const QUESTIONNAIRE = (props: { id: number }) =>
 
 export const WORKSPACE_CATALOG_XML = createSelector(
   WORKSPACE_CATALOG,
-  (catalog) =>
-    catalog
-      ? MeasureCatalog.fromJSON(catalog)?.toXml()?.outerHTML
-      : undefined,
+  (catalog) => (catalog ? catalog.toXml()?.outerHTML : undefined),
 );
 
 // VISUALIZATION_DATA

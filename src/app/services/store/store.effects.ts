@@ -1070,8 +1070,10 @@ export class StateEffects {
         this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
       ),
       tap(([, service, user, owner]) => {
-        if (user.profile.preferred_username !== owner)
+        if (user.profile.preferred_username !== owner) {
           console.warn('You are not the owner of this workspace');
+          return;
+        }
         this.workspaceService.resetWorkspace(
           user.profile.preferred_username,
           service,
