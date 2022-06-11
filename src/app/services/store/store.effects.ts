@@ -321,6 +321,25 @@ export class StateEffects {
     ),
   );
 
+  addSurveyToModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addSurveyToModel),
+      tap(({ survey }) => {
+        if (survey instanceof LimeSurvey)
+          this.ngrxStore.dispatch(
+            Action.fetchResponsesForSurveyFromLimeSurvey({
+              sid: survey.id,
+            }),
+          );
+      }),
+      switchMap(() => of(Action.success())),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   storeUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.storeUser),

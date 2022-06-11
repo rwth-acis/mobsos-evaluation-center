@@ -193,8 +193,7 @@ export class SurveyComponent implements OnInit {
           );
           this.ngrxStore.dispatch(
             addCatalogToWorkspace({
-              xml: new MeasureCatalog(catalog.measures).toXml()
-                .outerHTML,
+              xml: MeasureCatalog.fromJSON(catalog).toXml().outerHTML,
             }),
           );
         }
@@ -239,8 +238,8 @@ export class SurveyComponent implements OnInit {
         question.statement,
         v,
         ['surveyId=' + survey.id, 'generated'],
-        null,
         survey.id,
+        null,
       );
       catalog.measures[m.name] = m;
     }

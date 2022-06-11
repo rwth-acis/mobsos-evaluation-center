@@ -48,17 +48,18 @@ export class LimesurveyMeasureComponent implements OnInit {
       .select(MEASURE({ measureName: this.measureName }))
       .pipe(
         filter((measure) => !!measure),
-        map((measure) =>
-          LimeSurveyMeasure.fromJSON(measure as LimeSurveyMeasure),
-        ),
+        map((measure) => measure as LimeSurveyMeasure),
       );
 
     const responses$ = this.measure$.pipe(
-      switchMap((m) =>
-        this.ngrxStore.select(
+      switchMap((m) => {
+        if (!m.sid) {
+          console.error('No survey id found for measure', m);
+        }
+        return this.ngrxStore.select(
           RESPONSES_FOR_LIMESURVEY({ sid: m.sid }),
-        ),
-      ),
+        );
+      }),
     );
 
     this.data$ = combineLatest([this.measure$, responses$]).pipe(
@@ -66,5 +67,9 @@ export class LimesurveyMeasureComponent implements OnInit {
         let data = [];
       }),
     );
+
+    this.data$.subscribe((data) => {
+      console.log(data);
+    });
   }
 }

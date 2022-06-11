@@ -85,7 +85,7 @@ export class PickSurveyDialogComponent implements OnInit {
     ]).pipe(
       map(([surveys, input]) => {
         const filteredSurveys = surveys.filter((survey) => {
-          return survey.name
+          return survey?.name
             ?.toLowerCase()
             .includes(input?.toLowerCase());
         });

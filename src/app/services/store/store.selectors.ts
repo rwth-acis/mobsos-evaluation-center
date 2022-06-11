@@ -219,8 +219,8 @@ export const USER_HAS_EDIT_RIGHTS = createSelector(
   ROLE_IN_CURRENT_WORKSPACE,
   (editMode, role) =>
     editMode &&
-    (role.toLowerCase() === 'owner' ||
-      role.toLowerCase() === 'editor'),
+    (role?.toLowerCase() === 'owner' ||
+      role?.toLowerCase() === 'editor'),
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(

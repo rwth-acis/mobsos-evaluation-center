@@ -148,6 +148,7 @@ export class LimeSurveyMeasure implements IMeasure {
     description.textContent = this.description;
     measure.appendChild(description);
     measure.setAttribute('title', this.title);
+    measure.setAttribute('sid', this.sid);
     if (this.visualization) {
       measure.appendChild(this.visualization.toXml());
     }
@@ -165,6 +166,7 @@ export class LimeSurveyMeasure implements IMeasure {
       title,
       visualization,
       obj.tags,
+      obj.sid,
       description,
     );
   }
@@ -173,8 +175,8 @@ export class LimeSurveyMeasure implements IMeasure {
     public title: string,
     public visualization: Visualization,
     public tags: string[],
+    public sid: string,
     public description?: string,
-    public sid?: string,
   ) {}
 }
 
