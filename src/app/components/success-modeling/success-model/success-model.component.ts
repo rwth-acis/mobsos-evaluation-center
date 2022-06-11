@@ -36,6 +36,7 @@ import {
   saveModelAndCatalog,
   failureResponse,
   HttpActions,
+  fetchResponsesForSurveyFromLimeSurvey,
 } from 'src/app/services/store/store.actions';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import {
@@ -52,6 +53,11 @@ import {
   SUCCESS_MODEL_XML,
 } from 'src/app/services/store/store.selectors';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  LimeSurvey,
+  Survey,
+  SurveyType,
+} from 'src/app/models/survey.model';
 
 @Component({
   selector: 'app-success-model',
@@ -158,6 +164,18 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
 
     sub = this.successModel$.subscribe((successModel) => {
       this.successModel = successModel;
+      for (const survey of successModel.surveys) {
+        if (survey.type === SurveyType.MobSOS) {
+          // check that survey still exists TODO
+        } else if (survey.type === SurveyType.LimeSurvey) {
+          // check that survey still exists TODO
+          this.ngrxStore.dispatch(
+            fetchResponsesForSurveyFromLimeSurvey({
+              sid: (survey as LimeSurvey).id,
+            }),
+          );
+        }
+      }
     });
     this.subscriptions$.push(sub);
 
