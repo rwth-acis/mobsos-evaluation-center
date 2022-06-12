@@ -327,12 +327,13 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.addSurveyToModel),
       tap(({ survey }) => {
-        if (survey instanceof LimeSurvey)
+        if (survey.type === SurveyType.LimeSurvey) {
           this.ngrxStore.dispatch(
             Action.fetchResponsesForSurveyFromLimeSurvey({
-              sid: survey.id,
+              sid: survey.id.toString(),
             }),
           );
+        }
       }),
       switchMap(() => of(Action.success())),
       catchError((err) => {

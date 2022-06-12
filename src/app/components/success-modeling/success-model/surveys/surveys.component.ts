@@ -72,6 +72,7 @@ import {
   ISurvey,
   LimeSurvey,
   Survey,
+  SurveyType,
 } from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
@@ -136,7 +137,7 @@ export class SurveyComponent implements OnInit {
           assignMeasures,
         }),
       );
-      if (selectedSurvey instanceof Survey) {
+      if (selectedSurvey.type === SurveyType.MobSOS) {
         if (addMeasures) {
           const [
             questionnaire,
@@ -182,7 +183,7 @@ export class SurveyComponent implements OnInit {
             );
           }
         }
-      } else {
+      } else if (selectedSurvey.type === SurveyType.LimeSurvey) {
         if (addMeasures) {
           const currentCatalog = await firstValueFrom(
             this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),

@@ -53,11 +53,7 @@ import {
   SUCCESS_MODEL_XML,
 } from 'src/app/services/store/store.selectors';
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  LimeSurvey,
-  Survey,
-  SurveyType,
-} from 'src/app/models/survey.model';
+import { LimeSurvey, SurveyType } from 'src/app/models/survey.model';
 
 @Component({
   selector: 'app-success-model',
