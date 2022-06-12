@@ -1,4 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  TranslateModule,
+  TranslateLoader,
+} from '@ngx-translate/core';
+import { createTranslateLoader } from 'src/app/app.module';
 
 import { LimesurveyMeasureComponent } from './limesurvey-measure.component';
 
@@ -8,9 +13,16 @@ describe('LimesurveyMeasureComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LimesurveyMeasureComponent ]
-    })
-    .compileComponents();
+      declarations: [LimesurveyMeasureComponent],
+      imports: [
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {
