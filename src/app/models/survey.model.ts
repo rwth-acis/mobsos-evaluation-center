@@ -60,6 +60,7 @@ export class Survey implements ISurvey {
     const questionnaire = doc.createElement('survey');
     questionnaire.setAttribute('name', this.name);
     questionnaire.setAttribute('qid', this.qid.toString());
+    questionnaire.setAttribute('type', 'mobSOS');
     questionnaire.setAttribute('id', this.id.toString());
     return questionnaire;
   }
@@ -104,6 +105,7 @@ export class LimeSurvey implements ISurvey {
     const doc = document.implementation.createDocument('', '', null);
     const limesurvey = doc.createElement('survey');
     limesurvey.setAttribute('surveyls_title', this.name);
+    limesurvey.setAttribute('type', 'limeSurvey');
     limesurvey.setAttribute('sid', this.id);
     return limesurvey;
   }

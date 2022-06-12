@@ -153,14 +153,22 @@ export class SuccessModel implements SuccessModel {
       const surveyCollectionNodes = Array.from(
         xml.getElementsByTagName('surveys'),
       );
-      const surveys: Survey[] = [];
+      const surveys: ISurvey[] = [];
       if (surveyCollectionNodes.length > 0) {
         const collectionNode = surveyCollectionNodes[0];
         const surveyNodes = Array.from(
           collectionNode.getElementsByTagName('survey'),
         );
         for (const surveyNode of surveyNodes) {
-          surveys.push(Survey.fromXml(surveyNode));
+          if (surveyNode.getAttribute('type') === 'mobSOS') {
+            surveys.push(Survey.fromXml(surveyNode));
+          } else if (
+            surveyNode.getAttribute('type') === 'limeSurvey'
+          ) {
+            surveys.push(LimeSurvey.fromXml(surveyNode));
+          } else {
+            surveys.push(Survey.fromXml(surveyNode));
+          }
         }
       }
 
