@@ -1,9 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogModule } from '@angular/material/dialog';
+import { provideMockStore } from '@ngrx/store/testing';
 import {
   TranslateModule,
   TranslateLoader,
 } from '@ngx-translate/core';
 import { createTranslateLoader } from 'src/app/app.module';
+import { initialState } from 'src/app/services/store/store.reducer';
 
 import { LimesurveyMeasureComponent } from './limesurvey-measure.component';
 
@@ -21,7 +24,9 @@ describe('LimesurveyMeasureComponent', () => {
             useFactory: createTranslateLoader,
           },
         }),
+        MatDialogModule,
       ],
+      providers: [provideMockStore({ initialState })],
     }).compileComponents();
   });
 

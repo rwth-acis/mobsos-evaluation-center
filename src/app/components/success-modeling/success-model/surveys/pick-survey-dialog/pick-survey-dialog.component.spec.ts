@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import {
   MatDialogModule,
   MatDialogRef,
@@ -35,6 +37,8 @@ describe('PickSurveyDialogComponent', () => {
       imports: [
         MatDialogModule,
         RouterTestingModule,
+        ReactiveFormsModule,
+        MatAutocompleteModule,
         TranslateModule.forRoot(),
       ],
     }).compileComponents();
