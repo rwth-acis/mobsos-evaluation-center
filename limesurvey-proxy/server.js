@@ -36,7 +36,6 @@ app.get('/surveys', async (req, res) => {
 
 app.get('/local/surveys', async (req, res) => {
   const surveys = await service.getSurveyList(); // list of surveys
-  console.log(surveys);
   res.send(surveys); // send first response to first survey to client
 });
 
