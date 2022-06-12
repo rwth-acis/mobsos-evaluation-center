@@ -19,6 +19,7 @@ import {
   delay,
   distinctUntilKeyChanged,
   timeout,
+  exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
@@ -31,6 +32,9 @@ import {
   LimeSurvey,
   LimeSurveyForm,
   Survey,
+  SurveyForm,
+  SurveyType,
+  LimeSurveyResponse,
 } from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
@@ -918,37 +922,43 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
       switchMap(({ sid }) =>
-        forkJoin([
-          this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })),
-          of(sid),
-        ]),
+        this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
+          map((res) => {
+            return [res, sid];
+          }),
+        ),
       ),
-      mergeMap(([responses, sid]) => {
-        if (
-          !responses?.responses ||
-          Date.now() - responses.fetchDate > REFETCH_INTERVAL
-        ) {
-          return this.l2p
-            .fetchResponsesForSurveyFromLimeSurvey(sid)
-            .pipe(
-              map((res) => {
-                if (res.status === 200) {
-                  return Action.storeResponsesForSurveyFromLimeSurvey(
-                    {
-                      responses: res.body,
-                      sid,
-                      fetchDate: new Date().getTime(),
-                    },
-                  );
-                } else {
-                  return Action.failureResponse(null);
-                }
-              }),
-            );
-        } else {
-          return of(Action.noop());
-        }
-      }),
+      switchMap(
+        ([responses, sid]: [
+          { responses: LimeSurveyResponse[]; fetchDate: number },
+          string,
+        ]) => {
+          if (
+            !responses?.responses ||
+            Date.now() - responses.fetchDate > REFETCH_INTERVAL
+          ) {
+            return this.l2p
+              .fetchResponsesForSurveyFromLimeSurvey(sid)
+              .pipe(
+                map((res) => {
+                  if (res.status === 200) {
+                    return Action.storeResponsesForSurveyFromLimeSurvey(
+                      {
+                        responses: res.body,
+                        sid,
+                        fetchDate: new Date().getTime(),
+                      },
+                    );
+                  } else {
+                    return Action.failureResponse(null);
+                  }
+                }),
+              );
+          } else {
+            return of(Action.noop());
+          }
+        },
+      ),
       catchError((err) =>
         of(Action.failureResponse({ reason: err })),
       ),
