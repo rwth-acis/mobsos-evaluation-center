@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { QueryVisualizationComponent } from './query-visualization.component';
 
@@ -8,9 +9,9 @@ describe('QueryVisualizationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ QueryVisualizationComponent ]
-    })
-    .compileComponents();
+      declarations: [QueryVisualizationComponent],
+      imports: [ReactiveFormsModule],
+    }).compileComponents();
   });
 
   beforeEach(() => {

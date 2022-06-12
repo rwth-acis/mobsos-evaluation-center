@@ -12,38 +12,36 @@ import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
-import { createTranslateLoader } from '../app.module';
+import { createTranslateLoader } from 'src/app/app.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
-import { INITIAL_APP_STATE } from '../models/state.model';
+import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 
 describe('SuccessMeasureComponent', () => {
   let component: SuccessMeasureComponent;
   let fixture: ComponentFixture<SuccessMeasureComponent>;
   const initialState = INITIAL_APP_STATE;
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [SuccessMeasureComponent],
-        imports: [
-          LoggerModule.forRoot({
-            level: NgxLoggerLevel.TRACE,
-            serverLogLevel: NgxLoggerLevel.OFF,
-          }),
-          TranslateModule.forRoot({
-            loader: {
-              provide: TranslateLoader,
-              useFactory: createTranslateLoader,
-            },
-          }),
-          MatDialogModule,
-          MatIconModule,
-          HttpClientTestingModule,
-        ],
-        providers: [provideMockStore({ initialState })],
-      }).compileComponents();
-    }),
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [SuccessMeasureComponent],
+      imports: [
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF,
+        }),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useFactory: createTranslateLoader,
+          },
+        }),
+        MatDialogModule,
+        MatIconModule,
+        HttpClientTestingModule,
+      ],
+      providers: [provideMockStore({ initialState })],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SuccessMeasureComponent);

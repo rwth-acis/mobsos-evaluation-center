@@ -3,24 +3,24 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="standard">
         <mat-label></mat-label>
-        <textarea
+        <!-- <textarea
           matInput
           [formControl]="$any(form.controls.query)"
           placeholder="SELECT..."
-        ></textarea>
+        ></textarea> -->
 
         <mat-hint>SQL</mat-hint>
       </mat-form-field>
       <br />
       <mat-form-field>
         <mat-label>Visualization Type</mat-label>
-        <mat-select [formControl]="$any(form.controls.visualization)">
+        <!-- <mat-select [formControl]="$any(form.controls.visualization)">
           <mat-option
             *ngFor="let type of visualizationChoices"
             [value]="type.value"
             >{{ type.label | translate }}</mat-option
           >
-        </mat-select>
+        </mat-select> -->
       </mat-form-field>
       <br />
 
@@ -28,13 +28,13 @@
         *ngIf="(selectedVisualizationType$ | async) === 'Chart'"
       >
         <mat-label>Chart Type</mat-label>
-        <mat-select [formControl]="$any(form.controls['chartType'])">
+        <!-- <mat-select [formControl]="$any(form.controls['chartType'])">
           <mat-option
             *ngFor="let type of chartTypeChoices | keyvalue"
             [value]="type.key"
             >{{ type.value | translate }}</mat-option
           >
-        </mat-select>
+        </mat-select> -->
       </mat-form-field>
 
       <br />

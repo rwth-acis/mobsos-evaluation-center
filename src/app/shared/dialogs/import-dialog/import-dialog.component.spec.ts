@@ -1,4 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import { provideMockStore } from '@ngrx/store/testing';
+import { initialState } from 'src/app/services/store/store.reducer';
 
 import { ImportDialogComponent } from './import-dialog.component';
 
@@ -8,9 +14,13 @@ describe('ImportDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ImportDialogComponent ]
-    })
-    .compileComponents();
+      declarations: [ImportDialogComponent],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+        { provide: MatDialogRef, useValue: {} },
+        provideMockStore({ initialState }),
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {

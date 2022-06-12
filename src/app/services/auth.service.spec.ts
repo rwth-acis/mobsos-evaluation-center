@@ -1,13 +1,18 @@
 import { TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { AuthService } from 'src/app/services/auth.service';
+import { initialState } from './store/store.reducer';
 
-import { AuthServiceService } from './auth.service';
-
-describe('AuthServiceService', () => {
-  let service: AuthServiceService;
+describe('AuthService', () => {
+  let service: AuthService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(AuthServiceService);
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
+      providers: [provideMockStore({ initialState })],
+    });
+    service = TestBed.inject(AuthService);
   });
 
   it('should be created', () => {

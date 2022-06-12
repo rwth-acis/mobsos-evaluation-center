@@ -7,24 +7,33 @@ import {
 
 import { SqlTableComponent } from './sql-table.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { provideMockStore } from '@ngrx/store/testing';
+import { initialState } from 'src/app/services/store/store.reducer';
+import {
+  MatDialogModule,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 
 describe('SqlTableComponent', () => {
   let component: SqlTableComponent;
   let fixture: ComponentFixture<SqlTableComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [SqlTableComponent],
-        imports: [
-          LoggerModule.forRoot({
-            level: NgxLoggerLevel.TRACE,
-            serverLogLevel: NgxLoggerLevel.OFF,
-          }),
-        ],
-      }).compileComponents();
-    }),
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [SqlTableComponent],
+      imports: [
+        LoggerModule.forRoot({
+          level: NgxLoggerLevel.TRACE,
+          serverLogLevel: NgxLoggerLevel.OFF,
+        }),
+        MatDialogModule,
+      ],
+      providers: [
+        provideMockStore({ initialState }),
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SqlTableComponent);
