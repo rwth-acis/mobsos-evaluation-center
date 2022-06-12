@@ -76,42 +76,48 @@ app.listen(port, async () => {
 });
 
 async function getSurveyResponses(sid) {
-  const questionsFromLimeSurvey = await service.getQuestions(sid); // list of questions for first survey
-  const responsesFromLimeSurvey =
-    await service.getResponsesBySurveyId(sid); // list of responses for first survey
-  const responseList = responsesFromLimeSurvey.map((response) => {
-    let actualResponse = Object.values(response)[0];
-    delete actualResponse.id;
-    delete actualResponse.submitdate;
-    delete actualResponse.lastpage;
-    delete actualResponse.seed;
-    delete actualResponse.q;
-    return actualResponse; // remove unnecessary fields so that only the responses to the questions remain
-  });
-  const responsesToQuestions = questionsFromLimeSurvey.map(
-    (question) => {
-      const groupedResponses = {}; // counts how many times each response appears
-      for (const response of responseList) {
-        const key = Object.keys(response).find(
-          (key) => key === question.title,
-        );
-        if (key) {
-          const statement = response[key]; // response to question
-          if (statement in groupedResponses) {
-            groupedResponses[statement]++;
-          } else {
-            groupedResponses[statement] = 1;
+  constolse.log(sid);
+  try {
+    const questionsFromLimeSurvey = await service.getQuestions(sid); // list of questions for first survey
+    const responsesFromLimeSurvey =
+      await service.getResponsesBySurveyId(sid); // list of responses for first survey
+    const responseList = responsesFromLimeSurvey.map((response) => {
+      let actualResponse = Object.values(response)[0];
+      delete actualResponse.id;
+      delete actualResponse.submitdate;
+      delete actualResponse.lastpage;
+      delete actualResponse.seed;
+      delete actualResponse.q;
+      return actualResponse; // remove unnecessary fields so that only the responses to the questions remain
+    });
+    const responsesToQuestions = questionsFromLimeSurvey.map(
+      (question) => {
+        const groupedResponses = {}; // counts how many times each response appears
+        for (const response of responseList) {
+          const key = Object.keys(response).find(
+            (key) => key === question.title,
+          );
+          if (key) {
+            const statement = response[key]; // response to question
+            if (statement in groupedResponses) {
+              groupedResponses[statement]++;
+            } else {
+              groupedResponses[statement] = 1;
+            }
           }
         }
-      }
-      return {
-        question: question.question,
-        // id: question.qid,
-        title: question.title,
-        type: question.type,
-        responses: groupedResponses,
-      };
-    },
-  );
-  return responsesToQuestions;
+        return {
+          question: question.question,
+          // id: question.qid,
+          title: question.title,
+          type: question.type,
+          responses: groupedResponses,
+        };
+      },
+    );
+    return responsesToQuestions;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
 }
