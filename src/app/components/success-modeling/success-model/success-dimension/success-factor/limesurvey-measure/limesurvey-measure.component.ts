@@ -73,7 +73,7 @@ export class LimesurveyMeasureComponent implements OnInit {
     const responseData$ = this.measure$.pipe(
       switchMap((m) => {
         if (!m.sid) {
-          console.error('No survey id found for measure', m);
+          console.error('No survey id found in measure', m);
         }
         return this.ngrxStore.select(
           RESPONSES_FOR_LIMESURVEY_QUESTION({
@@ -82,6 +82,7 @@ export class LimesurveyMeasureComponent implements OnInit {
           }),
         );
       }),
+      filter((data) => !!data),
     );
     this.data$ = responseData$.pipe(
       filter((data) => !!data),
@@ -118,8 +119,8 @@ export class LimesurveyMeasureComponent implements OnInit {
     );
 
     this.visualzation$ = responseData$.pipe(
-      map(({ type }) => {
-        switch (type) {
+      map((data) => {
+        switch (data?.type) {
           case '5':
             return new ChartVisualization(ChartType.BarChart);
           case 'L':

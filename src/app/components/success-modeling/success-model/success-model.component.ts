@@ -160,16 +160,18 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
 
     sub = this.successModel$.subscribe((successModel) => {
       this.successModel = successModel;
-      for (const survey of successModel.surveys) {
-        if (survey.type === SurveyType.MobSOS) {
-          // check that survey still exists TODO
-        } else if (survey.type === SurveyType.LimeSurvey) {
-          // check that survey still exists TODO
-          this.ngrxStore.dispatch(
-            fetchResponsesForSurveyFromLimeSurvey({
-              sid: (survey as LimeSurvey).id,
-            }),
-          );
+      if (successModel?.surveys) {
+        for (const survey of successModel.surveys) {
+          if (survey.type === SurveyType.MobSOS) {
+            // check that survey still exists TODO
+          } else if (survey.type === SurveyType.LimeSurvey) {
+            // check that survey still exists TODO
+            this.ngrxStore.dispatch(
+              fetchResponsesForSurveyFromLimeSurvey({
+                sid: (survey as LimeSurvey).id,
+              }),
+            );
+          }
         }
       }
     });
