@@ -109,7 +109,7 @@ export class LimeSurvey implements ISurvey {
   }
 }
 
-interface SurveyForm {
+export interface SurveyForm {
   description?: string;
   start?: string;
   end?: string;

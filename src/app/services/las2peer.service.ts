@@ -13,7 +13,11 @@ import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { GroupMember } from '../models/community.model';
-import { LimeSurveyForm, Survey } from '../models/survey.model';
+import {
+  LimeSurveyForm,
+  Survey,
+  SurveyForm,
+} from '../models/survey.model';
 import { Questionnaire } from '../models/questionnaire.model';
 interface HttpOptions {
   method?: string;
@@ -685,11 +689,11 @@ export class Las2peerService {
       environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
-    return this.makeRequestAndObserve(url, {
+    return this.makeRequestAndObserve<SurveyForm[]>(url, {
       observe: 'response',
     }).pipe(
       map((response) => {
-        return response.body?.surveys as Survey[];
+        return response.body?.surveys as SurveyForm[];
       }),
     );
   }
