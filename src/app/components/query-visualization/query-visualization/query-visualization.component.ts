@@ -27,7 +27,7 @@ import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store/store.selec
   templateUrl: './query-visualization.component.html',
   styleUrls: ['./query-visualization.component.scss'],
 })
-export class QueryVisualizationComponent {
+export class QueryVisualizationComponent implements OnInit {
   static initialQuery = 'SELECT ID, REMARKS FROM MESSAGE limit 10';
   visualizationChoices = [
     {
