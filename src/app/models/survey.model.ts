@@ -89,7 +89,7 @@ export class LimeSurvey implements ISurvey {
   }
   static fromXml(xml: Element): LimeSurvey {
     const surveyls_title = xml.getAttribute('surveyls_title');
-    const sid = xml.getAttribute('id');
+    const sid = xml.getAttribute('sid');
     const start = new Date(
       xml.getAttribute('startdate'),
     ).toISOString();

@@ -76,7 +76,7 @@ app.listen(port, async () => {
 });
 
 async function getSurveyResponses(sid) {
-  constolse.log(sid);
+  console.log(sid);
   try {
     const questionsFromLimeSurvey = await service.getQuestions(sid); // list of questions for first survey
     const responsesFromLimeSurvey =
