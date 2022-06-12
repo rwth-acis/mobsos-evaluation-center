@@ -61,7 +61,10 @@ describe('ChartVisualizerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ChartVisualizerComponent);
     component = fixture.componentInstance;
-    component.measure$ = of(null);
+    component.data$ = of(null);
+    component.visualization$ = of(null);
+    component.description$ = of(null);
+    component.queries$ = of(null);
     fixture.detectChanges();
   });
 
