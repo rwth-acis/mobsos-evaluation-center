@@ -239,14 +239,20 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
         let message = this.translate.instant(
           'success-modeling.snackbar-save-failure',
         ) as string;
-        if (result instanceof failureResponse) {
-          message += result.reason.error;
-        }
+
         if (
-          result.reason &&
+          result?.reason &&
           result.reason instanceof HttpErrorResponse
         ) {
           message += result.reason.error.message;
+        } else {
+          try {
+            if (result instanceof failureResponse) {
+              message += result.reason.error;
+            }
+          } catch (error) {
+            console.warn(error);
+          }
         }
         this.snackBar.open(message, 'Ok');
       }
