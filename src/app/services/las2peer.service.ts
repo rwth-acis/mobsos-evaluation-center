@@ -70,6 +70,8 @@ export class Las2peerService {
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
+  LIME_SURVEY_SURVEYS_PATH: string | number = 'surveys';
+  LIME_SURVEY_RESPONSES_PATH: string | number = 'responses';
 
   userCredentials: {
     token: string;
@@ -82,6 +84,7 @@ export class Las2peerService {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
+        'swagger.json',
       ),
       name: 'MobSOS Success Modeling',
       available: true,
@@ -97,6 +100,7 @@ export class Las2peerService {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.CONTACT_SERVICE_PATH,
+        'swagger.json',
       ),
       name: 'Contact Service',
       available: true,
@@ -104,16 +108,30 @@ export class Las2peerService {
     },
     {
       url: joinAbsoluteUrlPath(
-        environment.las2peerWebConnectorUrl,
-        this.QUERY_VISUALIZATION_SERVICE_PATH,
+        environment.limeSurveyProxyUrl,
+        environment.limeSurveyProxyUrl.includes('localhost')
+          ? 'local'
+          : '',
+        this.LIME_SURVEY_SURVEYS_PATH,
+        'swagger.json',
       ),
       name: 'MobSOS Query Visualization Service',
       available: true,
       reason: undefined,
     },
+    {
+      url: joinAbsoluteUrlPath(
+        environment.limeSurveyProxyUrl,
+        environment.limeSurveyProxyUrl.includes('localhost')
+          ? 'local'
+          : '',
+        this.LIME_SURVEY_SURVEYS_PATH,
+      ),
+      name: 'LimeSurvey Proxy',
+      available: true,
+      reason: undefined,
+    },
   ];
-  LIME_SURVEY_SURVEYS_PATH: string | number = 'surveys';
-  LIME_SURVEY_RESPONSES_PATH: string | number = 'responses';
 
   constructor(private http: HttpClient) {}
 
@@ -131,6 +149,12 @@ export class Las2peerService {
 
   get unavailableServices() {
     return this.coreServices.filter((service) => !service.available);
+  }
+
+  get limesurveyProxyIsAvailable(): boolean {
+    return !this.unavailableServices.find(
+      (s) => s.name === 'LimeSurvey Proxy',
+    );
   }
 
   setCredentials(
@@ -398,11 +422,10 @@ export class Las2peerService {
    */
   checkServiceAvailability() {
     const requests = this.coreServices.map((service) => {
-      const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
       return {
         name: service.name,
         request: this.makeRequestAndObserve(
-          url,
+          service.url,
           { observe: 'response' },
           true,
         ).pipe(
@@ -1288,9 +1311,14 @@ export class Las2peerService {
     });
   }
 
-  fetchSurveysFromLimeSurvey(): Observable<
-    HttpResponse<LimeSurveyForm[]>
-  > {
+  fetchSurveysFromLimeSurvey() {
+    if (!this.limesurveyProxyIsAvailable) {
+      return of(
+        new HttpErrorResponse({
+          error: 'Limesurvey proxy is not available',
+        }),
+      );
+    }
     const url = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
       environment.limeSurveyProxyUrl.includes('localhost')
