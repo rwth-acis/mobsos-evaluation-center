@@ -15,6 +15,7 @@ import {
   QUESTIONNAIRE,
   MEASURE_CATALOG,
   SURVEYS_FROM_SUCCESS_MODEL,
+  QUESTIONS_FROM_LIMESURVEY,
 } from 'src/app/services/store/store.selectors';
 import { ServiceInformation } from 'src/app/models/service.model';
 
@@ -27,6 +28,7 @@ import {
   Questionnaire,
 } from 'src/app/models/questionnaire.model';
 import {
+  LimeSurveyMeasure,
   Measure,
   MeasureCatalog,
   MeasureMap,
@@ -36,6 +38,7 @@ import {
 import {
   ChartVisualization,
   ValueVisualization,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import {
   joinAbsoluteUrlPath,
@@ -47,6 +50,7 @@ import {
   map,
   Observable,
   of,
+  delayWhen,
   take,
   timeout,
 } from 'rxjs';
@@ -60,10 +64,16 @@ import {
   fetchQuestionnaireForm,
   fetchQuestionnaires,
   failureResponse,
+  fetchResponsesForSurveyFromLimeSurvey,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 
-import { Survey } from 'src/app/models/survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+  SurveyType,
+} from 'src/app/models/survey.model';
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -127,9 +137,14 @@ export class SurveyComponent implements OnInit {
           assignMeasures,
         }),
       );
-      if (addMeasures) {
-        const [questionnaire, service, currentModel, currentCatalog] =
-          await Promise.all([
+      if (selectedSurvey.type === SurveyType.MobSOS) {
+        if (addMeasures) {
+          const [
+            questionnaire,
+            service,
+            currentModel,
+            currentCatalog,
+          ] = await Promise.all([
             firstValueFrom(
               this.ngrxStore
                 .select(QUESTIONNAIRE({ id: selectedSurvey.qid }))
@@ -145,30 +160,91 @@ export class SurveyComponent implements OnInit {
               this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
             ),
           ]);
-        const { model, measures } =
-          await this.addMeasuresFromQuestionnaireToModelAndCatalog(
-            questionnaire,
-            selectedSurvey.id as number,
-            addMeasures,
-            service,
-            cloneDeep(currentCatalog.measures),
-            cloneDeep(currentModel),
-          );
-        this.ngrxStore.dispatch(
-          addCatalogToWorkspace({
-            xml: new MeasureCatalog(measures).toXml().outerHTML,
-          }),
-        );
-        if (assignMeasures) {
+          const { model, measures } =
+            await this.addMeasuresFromQuestionnaireToModelAndCatalog(
+              questionnaire,
+              selectedSurvey.id as number,
+              addMeasures,
+              service,
+              cloneDeep(currentCatalog.measures),
+              cloneDeep(currentModel),
+            );
           this.ngrxStore.dispatch(
-            addModelToWorkSpace({
-              xml: SuccessModel.fromPlainObject(model).toXml()
-                .outerHTML,
+            addCatalogToWorkspace({
+              xml: new MeasureCatalog(measures).toXml().outerHTML,
+            }),
+          );
+          if (assignMeasures) {
+            this.ngrxStore.dispatch(
+              addModelToWorkSpace({
+                xml: SuccessModel.fromPlainObject(model).toXml()
+                  .outerHTML,
+              }),
+            );
+          }
+        }
+      } else if (selectedSurvey.type === SurveyType.LimeSurvey) {
+        if (addMeasures) {
+          const currentCatalog = await firstValueFrom(
+            this.ngrxStore.select(MEASURE_CATALOG).pipe(take(1)),
+          );
+          const catalog = await this.addMeasuresFromSurveyToCatalog(
+            cloneDeep(currentCatalog),
+            selectedSurvey,
+          );
+          this.ngrxStore.dispatch(
+            addCatalogToWorkspace({
+              xml: MeasureCatalog.fromJSON(catalog).toXml().outerHTML,
             }),
           );
         }
       }
     }
+  }
+
+  async addMeasuresFromSurveyToCatalog(
+    catalog: MeasureCatalog,
+    survey: LimeSurvey,
+  ) {
+    const questions = await firstValueFrom(
+      this.ngrxStore
+        .select(QUESTIONS_FROM_LIMESURVEY({ sid: survey.id }))
+        .pipe(take(1)), // delay until questions are fetched
+    );
+    if (!questions) {
+      console.error('No questions found for survey', survey);
+      return catalog;
+    }
+    for (const question of questions) {
+      let v: Visualization;
+      switch (question.type) {
+        case '5':
+          v = new ChartVisualization(ChartType.BarChart);
+          break;
+        case 'L':
+          v = new ChartVisualization(ChartType.PieChart);
+          break;
+        case 'Y':
+          v = new ChartVisualization(ChartType.PieChart);
+          break;
+        default:
+          console.error(
+            `Unsupported question type: ${question.type}`,
+          );
+          continue;
+      }
+
+      const m = new LimeSurveyMeasure(
+        `${survey.name}: ${question.statement}`,
+        question.statement,
+        v,
+        ['surveyId=' + survey.id, 'generated'],
+        survey.id,
+        null,
+      );
+      catalog.measures[m.name] = m;
+    }
+    return catalog;
   }
 
   async openRemoveQuestionnaireDialog(
@@ -185,7 +261,7 @@ export class SurveyComponent implements OnInit {
       this.ngrxStore.select(SUCCESS_MODEL).pipe(take(1)),
     )) as SuccessModel;
     if (result) {
-      const surveyId = model.surveys[questionnaireIndex].id;
+      const surveyId = model.surveys[questionnaireIndex].id as number;
       this.ngrxStore.dispatch(
         removeSurveyFromModel({
           id: surveyId,
@@ -205,7 +281,7 @@ export class SurveyComponent implements OnInit {
     }
   }
 
-  shareSurveyLink(surveyId: number) {
+  shareSurveyLink(surveyId: number | string) {
     const base = environment.mobsosSurveysUrl;
     const link = joinAbsoluteUrlPath(base, 'surveys', surveyId);
 
@@ -220,13 +296,17 @@ export class SurveyComponent implements OnInit {
     this.ngrxStore.dispatch(fetchSurveys());
     this.ngrxStore.dispatch(fetchQuestionnaires());
   }
-
-  async openInfoDialog(survey: Survey) {
+  /**
+   * @todo workaround. This will not yet work for limesurvey surveys.
+   * @param survey
+   */
+  async openInfoDialog(survey: ISurvey) {
     const questionnaires = await firstValueFrom(
       this.ngrxStore.select(QUESTIONNAIRES).pipe(take(1)),
     );
+    const s = survey as Survey;
     const desiredQuestionnaire = questionnaires.find(
-      (q) => q.id === survey.qid,
+      (q) => q.id === s.qid,
     );
     this.dialog.open(QuestionnaireInfoDialogComponent, {
       data: { ...desiredQuestionnaire, surveyId: survey.id },

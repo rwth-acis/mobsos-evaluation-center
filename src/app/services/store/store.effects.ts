@@ -19,6 +19,7 @@ import {
   delay,
   distinctUntilKeyChanged,
   timeout,
+  exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
@@ -27,7 +28,14 @@ import {
   ServiceInformation,
   ServiceMessageDescriptions,
 } from '../../models/service.model';
-import { Survey } from '../../models/survey.model';
+import {
+  LimeSurvey,
+  LimeSurveyForm,
+  Survey,
+  SurveyForm,
+  SurveyType,
+  LimeSurveyResponse,
+} from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
 import { Las2peerService } from '../las2peer.service';
@@ -51,6 +59,8 @@ import {
   VISUALIZATION_DATA_FROM_QVS,
   SUCCESS_MODEL_XML,
   SELECTED_GROUP,
+  SELECTED_WORKSPACE_OWNER,
+  RESPONSES_FOR_LIMESURVEY,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -312,6 +322,26 @@ export class StateEffects {
       catchError((err) => {
         console.error(err);
         return of(Action.noop());
+      }),
+      share(),
+    ),
+  );
+
+  addSurveyToModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addSurveyToModel),
+      tap(({ survey }) => {
+        if (survey.type === SurveyType.LimeSurvey) {
+          this.ngrxStore.dispatch(
+            Action.fetchResponsesForSurveyFromLimeSurvey({
+              sid: survey.id.toString(),
+            }),
+          );
+        }
+      }),
+      switchMap(() => of(Action.success())),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
       }),
       share(),
     ),
@@ -652,14 +682,11 @@ export class StateEffects {
       ofType(Action.fetchSurveys),
       mergeMap(() =>
         this.l2p.getSurveys().pipe(
-          map((surveys: Survey[]) => {
+          map((surveys: SurveyForm[]) => {
             //transform dates
-            surveys = surveys.map((survey) => {
-              survey.start = new Date(survey.start);
-              survey.end = new Date(survey.end);
-              return survey;
-            });
-            return surveys;
+            return surveys.map(
+              (survey: SurveyForm) => new Survey(survey),
+            );
           }),
           map((surveys: Survey[]) =>
             Action.storeSurveys({
@@ -863,6 +890,82 @@ export class StateEffects {
     ),
   );
 
+  fetchLimeSurveySurveys$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveysFromLimeSurvey),
+      switchMap(() =>
+        this.l2p.fetchSurveysFromLimeSurvey().pipe(
+          map((res) => {
+            if (res.status === 200) {
+              const surveys = res.body.map(
+                (survey: LimeSurveyForm) => {
+                  return new LimeSurvey(survey);
+                },
+              );
+              return Action.storeSurveysFromLimeSurvey({
+                surveys,
+              });
+            } else {
+              return Action.failureResponse(null);
+            }
+          }),
+        ),
+      ),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
+  fetchLimeSurveyResponses$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
+      switchMap(({ sid }) =>
+        this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
+          map((res) => {
+            return [res, sid];
+          }),
+        ),
+      ),
+      switchMap(
+        ([responses, sid]: [
+          { responses: LimeSurveyResponse[]; fetchDate: number },
+          string,
+        ]) => {
+          if (
+            !responses?.responses ||
+            Date.now() - responses.fetchDate > REFETCH_INTERVAL
+          ) {
+            return this.l2p
+              .fetchResponsesForSurveyFromLimeSurvey(sid)
+              .pipe(
+                map((res) => {
+                  if (res.status === 200) {
+                    return Action.storeResponsesForSurveyFromLimeSurvey(
+                      {
+                        responses: res.body,
+                        sid,
+                        fetchDate: new Date().getTime(),
+                      },
+                    );
+                  } else {
+                    return Action.failureResponse(null);
+                  }
+                }),
+              );
+          } else {
+            return of(Action.noop());
+          }
+        },
+      ),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
@@ -978,6 +1081,35 @@ export class StateEffects {
             );
         },
       ),
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  resetWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.resetWorkSpace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
+      ),
+      tap(([, service, user, owner]) => {
+        if (user.profile.preferred_username !== owner) {
+          console.warn('You are not the owner of this workspace');
+          return;
+        }
+        this.workspaceService.resetWorkspace(
+          user.profile.preferred_username,
+          service,
+          true,
+        );
+      }),
+      switchMap(([, service, user, owner]) => {
+        return of(Action.success());
+      }),
       catchError((err) => {
         return of(Action.failure({ reason: err }));
       }),

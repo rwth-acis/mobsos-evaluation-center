@@ -10,7 +10,7 @@
         [columns]="chartData.columnNames"
         [dynamicResize]="true"
         class="w-full"
-        (ready)="chartInitialized = true"
+        (ready)="setChartReady()"
       ></google-chart
     ></ng-container>
   </div>
@@ -40,7 +40,7 @@
         matTooltip="{{
           'success-modeling.visualization.raw' | translate
         }}"
-        (click)="openRawDataDialog(data.data)"
+        (click)="openRawDataDialog(data)"
       >
         <mat-icon>poll</mat-icon>
       </button>
@@ -65,9 +65,9 @@
 <mat-menu #menu="matMenu" yPosition="above">
   <app-visualization-info
     *ngIf="data$ | async as data"
-    [fetchDate]="data.fetchDate"
-    [fetchError]="data.error?.error"
-    [description]="(measure$ | async)?.description"
+    [fetchDate]="fetchDate$ | async"
+    [fetchError]="fetchError$ | async"
+    [description]="description$ | async"
   ></app-visualization-info>
 </mat-menu>
 

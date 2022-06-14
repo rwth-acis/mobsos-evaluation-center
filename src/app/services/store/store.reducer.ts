@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Action, createReducer, on } from '@ngrx/store';
 
-import { Measure, MeasureCatalog } from '../../models/measure.model';
+import {
+  LimeSurveyMeasure,
+  Measure,
+  MeasureCatalog,
+} from '../../models/measure.model';
 import {
   AppState,
   INITIAL_APP_STATE,
@@ -34,7 +38,10 @@ import {
   ServicesFromL2P,
   ServicesFromMobSOS,
 } from '../../models/service.model';
-import { Survey } from '../../models/survey.model';
+import {
+  LimeSurveyResponse,
+  Survey,
+} from '../../models/survey.model';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
@@ -390,6 +397,22 @@ const _Reducer = createReducer(
     ...state,
     currentWorkSpaceOwner: props.owner || state.currentWorkSpaceOwner,
   })),
+  on(Actions.storeSurveysFromLimeSurvey, (state, { surveys }) => ({
+    ...state,
+    limeSurveySurveys: surveys,
+  })),
+  on(
+    Actions.storeResponsesForSurveyFromLimeSurvey,
+    (state, { responses, sid, fetchDate }) => ({
+      ...state,
+      limeSurveyResponses: addLimeSurveyResponsesForSurvey(
+        state.limeSurveyResponses,
+        responses,
+        sid,
+        fetchDate,
+      ),
+    }),
+  ),
 );
 
 export function Reducer(state: AppState, action: Action): any {
@@ -1192,19 +1215,37 @@ function removeSurveyMeasures(
   if (!catalog.measures) return copy;
   const model = appWorkspace.model;
   for (const measureName of Object.keys(catalog.measures)) {
-    const measure = catalog.measures[measureName];
-    if (measure.tags?.includes(measureTag)) {
-      delete catalog.measures[measureName];
-      for (const dimensionName of Object.keys(model.dimensions)) {
-        const factors = model.dimensions[dimensionName];
-        for (const factor of factors) {
-          factor.measures = factor.measures.filter(
-            (m: string) => m !== measureName,
+    let measure = catalog.measures[measureName];
+    if (measure instanceof LimeSurveyMeasure) {
+      if ((measure as LimeSurveyMeasure).tags?.includes(measureTag)) {
+        delete catalog.measures[measureName];
+        for (const dimensionName of Object.keys(model.dimensions)) {
+          const factors = model.dimensions[dimensionName];
+          for (const factor of factors) {
+            factor.measures = factor.measures.filter(
+              (m: string) => m !== measureName,
+            );
+          }
+          model.dimensions[dimensionName] = factors.filter(
+            (f: SuccessFactor) => f.measures?.length > 0,
           );
         }
-        model.dimensions[dimensionName] = factors.filter(
-          (f: SuccessFactor) => f.measures?.length > 0,
-        );
+      }
+    } else {
+      measure = Measure.fromJSON(measure as any);
+      if ((measure as Measure).tags?.includes(measureTag)) {
+        delete catalog.measures[measureName];
+        for (const dimensionName of Object.keys(model.dimensions)) {
+          const factors = model.dimensions[dimensionName];
+          for (const factor of factors) {
+            factor.measures = factor.measures.filter(
+              (m: string) => m !== measureName,
+            );
+          }
+          model.dimensions[dimensionName] = factors.filter(
+            (f: SuccessFactor) => f.measures?.length > 0,
+          );
+        }
       }
     }
   }
@@ -1226,4 +1267,25 @@ function updateSelectedGroup(
   if (!(selectedGroupId in groupsFromContactService))
     return initialState.selectedGroupId;
   return selectedGroupId;
+}
+function addLimeSurveyResponsesForSurvey(
+  responseCollection: {
+    [sid: string]: {
+      responses: LimeSurveyResponse[];
+      fetchDate: number;
+    };
+  },
+  responses: LimeSurveyResponse[],
+  sid: string,
+  date: number,
+): {
+  [sid: string]: {
+    responses: LimeSurveyResponse[];
+    fetchDate: number;
+  };
+} {
+  let copy = cloneDeep(responseCollection);
+  if (!copy) copy = {};
+  copy[sid] = { responses, fetchDate: date };
+  return copy;
 }

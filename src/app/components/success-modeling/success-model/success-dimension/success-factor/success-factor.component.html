@@ -16,12 +16,21 @@
     *ngIf="factor.measures?.length > 0; else noMeasures"
     class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-28 gap-y-10"
   >
-    <ng-container *ngFor="let measure of factor.measures">
+    <ng-container *ngFor="let measure of getSuccessMeasures(factor)">
       <app-success-measure
         [measureName]="measures[measure]?.name"
         [factorName]="factor.name"
         [dimensionName]="this.dimensionName"
       ></app-success-measure>
+    </ng-container>
+    <ng-container
+      *ngFor="let measure of getLimesurveyMeasures(factor)"
+    >
+      <app-limesurvey-measure
+        [measureName]="measures[measure]?.name"
+        [factorName]="factor.name"
+        [dimensionName]="this.dimensionName"
+      ></app-limesurvey-measure>
     </ng-container>
   </div>
   <div *ngIf="canEdit$ | async as editMode">

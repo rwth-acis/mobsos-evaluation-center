@@ -1,4 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 
 import { StaticChartComponent } from './static-chart.component';
 
@@ -8,9 +12,12 @@ describe('StaticChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StaticChartComponent ]
-    })
-    .compileComponents();
+      declarations: [StaticChartComponent],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+        { provide: MatDialogRef, useValue: {} },
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {

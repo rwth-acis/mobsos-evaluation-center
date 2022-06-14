@@ -1,6 +1,11 @@
 import { ReqbazProject } from './reqbaz.model';
 import { ServiceInformation } from './service.model';
-import { Survey } from './survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+  SurveyType,
+} from './survey.model';
 
 export interface DimensionMap {
   'System Quality': SuccessFactor[];
@@ -44,7 +49,7 @@ export class SuccessModel implements SuccessModel {
     public name: string,
     public service: string,
     public dimensions: DimensionMap,
-    public surveys: Survey[],
+    public surveys: ISurvey[],
     public reqBazProject: ReqbazProject,
   ) {}
 
@@ -97,8 +102,10 @@ export class SuccessModel implements SuccessModel {
         );
       }
     }
-    const surveys = obj.surveys.map((s: Survey) =>
-      Survey.fromPlainObject(s),
+    const surveys = obj.surveys.map((s: ISurvey) =>
+      s.type === SurveyType.MobSOS
+        ? Survey.fromPlainObject(s as Survey)
+        : LimeSurvey.fromJSON(s as LimeSurvey),
     );
     let reqBazProject;
     if (obj.reqBazProject) {
@@ -146,14 +153,22 @@ export class SuccessModel implements SuccessModel {
       const surveyCollectionNodes = Array.from(
         xml.getElementsByTagName('surveys'),
       );
-      const surveys: Survey[] = [];
+      const surveys: ISurvey[] = [];
       if (surveyCollectionNodes.length > 0) {
         const collectionNode = surveyCollectionNodes[0];
         const surveyNodes = Array.from(
           collectionNode.getElementsByTagName('survey'),
         );
         for (const surveyNode of surveyNodes) {
-          surveys.push(Survey.fromXml(surveyNode));
+          if (surveyNode.getAttribute('type') === 'mobSOS') {
+            surveys.push(Survey.fromXml(surveyNode));
+          } else if (
+            surveyNode.getAttribute('type') === 'limeSurvey'
+          ) {
+            surveys.push(LimeSurvey.fromXml(surveyNode));
+          } else {
+            surveys.push(Survey.fromXml(surveyNode));
+          }
         }
       }
 
@@ -184,7 +199,13 @@ export class SuccessModel implements SuccessModel {
     successModel.setAttribute('service', this.service);
     const questionnaires = doc.createElement('surveys');
     for (const surveyObj of this.surveys) {
-      questionnaires.appendChild(surveyObj.toXml());
+      if (surveyObj instanceof Survey) {
+        const survey = surveyObj.toXml();
+        questionnaires.appendChild(survey);
+      } else if (surveyObj instanceof LimeSurvey) {
+        const survey = surveyObj.toXml();
+        questionnaires.appendChild(survey);
+      }
     }
     successModel.appendChild(questionnaires);
     if (this.reqBazProject) {
@@ -244,7 +265,7 @@ interface PlainSuccessModel {
   name: string;
   service: string;
   dimensions: DimensionMap;
-  surveys: Survey[];
+  surveys: ISurvey[];
   reqBazProject: ReqbazProject;
 }
 

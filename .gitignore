@@ -48,3 +48,6 @@ Thumbs.db
 .vscode/launch.json
 yjs-websocket/node_modules/
 src/assets/monaco/*
+limesurvey-proxy/node_modules
+limesurvey-proxy/.env
+.vscode/settings.json

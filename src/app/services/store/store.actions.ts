@@ -17,7 +17,12 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import { SuccessFactor } from '../../models/success.model';
-import { Survey } from '../../models/survey.model';
+import {
+  ISurvey,
+  LimeSurveyForm,
+  LimeSurveyResponse,
+  Survey,
+} from '../../models/survey.model';
 import { User } from '../../models/user.model';
 
 import {
@@ -51,6 +56,8 @@ export enum HttpActions {
   REMOVE_MEMBER_FROM_GROUP = 'removes a member from the current group',
   SUCCESS_RESPONSE = 'response was successful',
   FAILURE_RESPONSE = 'response was not successful',
+  FETCH_SURVEYS_FROM_LIMESURVEY = 'Fetches the list of surveys available in LimeSurvey',
+  FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY = 'Fetches the responses for a particular survey from LimeSurvey',
 }
 /**
  * Actions that store data in the state store
@@ -95,11 +102,14 @@ export enum StoreActions {
   ADD_MEASURES_TO_CATALOG = 'Add a list of measures to the catalog',
   UPDATE_GROUP = 'update a group',
   STORE_QUESTIONNAIRE_FORM = 'Store the form for a given questionnaire',
+  STORE_SURVEYS_FROM_LIMESURVEY = 'Store surveys from limesurvey ',
+  STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY = 'store the responses for a given Limesurvey',
 }
 
 /**
  * Actions which manipulate the state of the application
  */
+
 export enum StateActions {
   SET_GROUP = 'set current group',
   TRANSFER_MISSING_GROUPS_TO_MOBSOS = 'transfer groups from the contact service which are not known to mobsos to mobsos',
@@ -118,11 +128,19 @@ export enum StateActions {
   RESET_FETCH_DATE = 'set the fetch date to null',
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
   NOOP = 'No operation',
+  RESET_WORKSPACE = 'Reset the users current workspace to the default state. This deletes the success model, catalog and visualization data',
 }
 
 // fetching
 export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
 export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
+export const fetchSurveysFromLimeSurvey = createAction(
+  HttpActions.FETCH_SURVEYS_FROM_LIMESURVEY,
+);
+export const fetchResponsesForSurveyFromLimeSurvey = createAction(
+  HttpActions.FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY,
+  props<{ sid: string }>(),
+);
 export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
   props<{ query: string; cache?: boolean }>(),
@@ -147,6 +165,20 @@ export const fetchQuestionnaires = createAction(
 export const fetchSurveys = createAction(HttpActions.FETCH_SURVEYS);
 
 // storing
+export const storeSurveysFromLimeSurvey = createAction(
+  StoreActions.STORE_SURVEYS_FROM_LIMESURVEY,
+  props<{ surveys: ISurvey[] }>(),
+);
+
+export const storeResponsesForSurveyFromLimeSurvey = createAction(
+  StoreActions.STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY,
+  props<{
+    responses: LimeSurveyResponse[];
+    sid: string;
+    fetchDate: number;
+  }>(),
+);
+
 export const storeMessageDescriptions = createAction(
   StoreActions.STORE_SERVICE_MESSAGE_DESCRIPTIONS,
   props<{
@@ -340,6 +372,10 @@ export const setService = createAction(
 export const setServiceName = createAction(
   StateActions.SET_SERVICE_NAME,
   props<{ serviceName: string }>(),
+);
+
+export const resetWorkSpace = createAction(
+  StateActions.RESET_WORKSPACE,
 );
 
 export const setCommunityWorkspace = createAction(

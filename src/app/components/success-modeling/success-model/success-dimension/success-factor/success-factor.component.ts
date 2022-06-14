@@ -28,7 +28,11 @@ import {
   removeMeasureFromModel,
 } from 'src/app/services/store/store.actions';
 import { EditFactorDialogComponent } from '../edit-factor-dialog/edit-factor-dialog.component';
-import { MeasureMap } from 'src/app/models/measure.model';
+import {
+  LimeSurveyMeasure,
+  Measure,
+  MeasureMap,
+} from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-success-factor',
@@ -109,6 +113,18 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
         }),
       );
     }
+  }
+
+  getSuccessMeasures(factor) {
+    return factor.measures.filter(
+      (m) => this.measures[m] instanceof Measure,
+    );
+  }
+
+  getLimesurveyMeasures(factor) {
+    return factor.measures.filter(
+      (m) => this.measures[m] instanceof LimeSurveyMeasure,
+    );
   }
 
   async onEditClicked(): Promise<void> {

@@ -35,9 +35,9 @@
 
         <mat-menu #menu="matMenu" yPosition="above">
           <app-visualization-info
-            [fetchDate]="data.fetchDate"
-            [fetchError]="data.error?.error"
-            [description]="(measure$ | async)?.description"
+            [fetchDate]="fetchDate$ | async"
+            [fetchError]="fetchError$ | async"
+            [description]="description$ | async"
           ></app-visualization-info>
         </mat-menu>
       </div>

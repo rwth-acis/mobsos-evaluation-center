@@ -26,6 +26,7 @@ import { CommunityInfoComponent } from './community-info/community-info.componen
 import { PickSurveyDialogComponent } from './success-model/surveys/pick-survey-dialog/pick-survey-dialog.component';
 import { VisualizationsModule } from 'src/app/shared/visualizations/visualizations.module';
 import { MarkdownModule } from 'ngx-markdown';
+import { LimesurveyMeasureComponent } from './success-model/success-dimension/success-factor/limesurvey-measure/limesurvey-measure.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { MarkdownModule } from 'ngx-markdown';
     SuccessModelComponent,
     CommunityInfoComponent,
     PickSurveyDialogComponent,
+    LimesurveyMeasureComponent,
   ],
   imports: [
     CommonModule,
