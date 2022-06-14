@@ -122,7 +122,7 @@ export class Las2peerService {
     {
       url: joinAbsoluteUrlPath(
         environment.limeSurveyProxyUrl,
-        environment.limeSurveyProxyUrl.includes('localhost')
+        environment.limeSurveyProxyUrl?.includes('localhost')
           ? 'local'
           : '',
         this.LIME_SURVEY_SURVEYS_PATH,
