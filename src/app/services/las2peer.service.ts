@@ -1346,9 +1346,10 @@ export function joinAbsoluteUrlPath(
   return args
     .map((pathPart: string | number) => {
       if (typeof pathPart === 'number') {
-        pathPart = pathPart.toString();
+        pathPart = pathPart?.toString();
       }
-      return pathPart.toString()?.replace(/(^\/|\/$)/g, '');
+      return pathPart?.toString()?.replace(/(^\/|\/$)/g, '');
     })
+    .filter((pathPart: string | number) => !!pathPart)
     .join('/');
 }
