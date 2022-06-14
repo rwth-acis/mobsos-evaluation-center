@@ -1330,6 +1330,13 @@ export class Las2peerService {
   }
 
   fetchResponsesForSurveyFromLimeSurvey(sid: string) {
+    if (!this.limesurveyProxyIsAvailable) {
+      return of(
+        new HttpErrorResponse({
+          error: 'Limesurvey proxy is not available',
+        }),
+      );
+    }
     const url = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
       this.LIME_SURVEY_RESPONSES_PATH,
