@@ -122,9 +122,6 @@ export class Las2peerService {
     {
       url: joinAbsoluteUrlPath(
         environment.limeSurveyProxyUrl,
-        environment.limeSurveyProxyUrl?.includes('localhost')
-          ? 'local'
-          : '',
         this.LIME_SURVEY_SURVEYS_PATH,
       ),
       name: 'LimeSurvey Proxy',
@@ -1321,9 +1318,6 @@ export class Las2peerService {
     }
     const url = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
-      environment.limeSurveyProxyUrl.includes('localhost')
-        ? 'local'
-        : '',
       this.LIME_SURVEY_SURVEYS_PATH,
     );
     return this.makeRequestAndObserve(url, { observe: 'response' });

@@ -30,11 +30,7 @@ app.use(
    }[]
  */
 app.get('/surveys', async (req, res) => {
-  const surveys = await service.getSurveyList(); // list of surveys
-  res.send(surveys); // send first response to first survey to client
-});
-
-app.get('/local/surveys', async (req, res) => {
+  console.log('GET /surveys');
   const surveys = await service.getSurveyList(); // list of surveys
   res.send(surveys); // send first response to first survey to client
 });
@@ -55,14 +51,7 @@ app.get('/responses', async (req, res) => {
   if (!req.query.sid) {
     res.status(400).send({ error: 'No survey id provided' });
   }
-  const responses = await getSurveyResponses(req.query.sid);
-  res.send(responses);
-});
-
-app.get('/local/responses', async (req, res) => {
-  if (!req.query.sid) {
-    res.status(400).send({ error: 'No survey id provided' });
-  }
+  console.log('GET /responses', 'sid=' + req.query.sid);
   const responses = await getSurveyResponses(req.query.sid);
   res.send(responses);
 });
@@ -76,7 +65,6 @@ app.listen(port, async () => {
 });
 
 async function getSurveyResponses(sid) {
-  console.log(sid);
   try {
     const questionsFromLimeSurvey = await service.getQuestions(sid); // list of questions for first survey
     const responsesFromLimeSurvey =
