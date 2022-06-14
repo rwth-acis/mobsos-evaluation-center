@@ -91,7 +91,10 @@ export class Las2peerService {
       reason: undefined,
     },
     {
-      url: environment.mobsosSurveysUrl,
+      url: joinAbsoluteUrlPath(
+        environment.mobsosSurveysUrl,
+        'swagger.json',
+      ),
       name: 'MobSOS Surveys',
       available: true,
       reason: undefined,
@@ -108,11 +111,8 @@ export class Las2peerService {
     },
     {
       url: joinAbsoluteUrlPath(
-        environment.limeSurveyProxyUrl,
-        environment.limeSurveyProxyUrl.includes('localhost')
-          ? 'local'
-          : '',
-        this.LIME_SURVEY_SURVEYS_PATH,
+        environment.las2peerWebConnectorUrl,
+        this.QUERY_VISUALIZATION_SERVICE_PATH,
         'swagger.json',
       ),
       name: 'MobSOS Query Visualization Service',
