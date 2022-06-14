@@ -1,4 +1,4 @@
-<div class="flex flex-col">
+<div class="flex flex-col h-full">
   <div class="grow h-full" *ngIf="dataIsReady$ | async; else loading">
     <ng-container *ngIf="chartData?.data?.length > 0; else noData">
       <google-chart

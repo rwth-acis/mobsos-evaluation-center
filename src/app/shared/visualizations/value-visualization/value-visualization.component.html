@@ -1,7 +1,7 @@
 <ng-container *ngIf="dataIsReady$ | async as ready; else loading">
   <ng-container *ngIf="data$ | async as data">
     <div class="flex flex-col h-full">
-      <div id="value-row" class="grow">
+      <div class="grow">
         <ng-container *ngIf="value$ | async as value; else noData">
           <div
             class="value-visualization items-center flex h-full w-full"

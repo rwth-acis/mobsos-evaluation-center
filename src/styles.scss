@@ -44,6 +44,7 @@ $mobsos-evaluation-center-theme:  mat.define-light-theme(
   $mobsos-evaluation-center-warn
 );
 
+
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
@@ -68,4 +69,16 @@ body {
 }
 .mat-list-item-disabled {
   background-color: rgba(160, 160, 160, 0.144) !important;
+}
+
+app-chart-visualization{
+  flex-grow: 1;
+}
+
+app-value-visualization{
+  flex-grow: 1;
+}
+
+app-kpi-visualization{
+  flex-grow: 1;
 }
