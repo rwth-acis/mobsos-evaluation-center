@@ -71,6 +71,11 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('statusbar') l2pStatusbar: ElementRef;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
+  evalcenterProjectLink = joinAbsoluteUrlPath(
+    environment.reqBazFrontendUrl,
+    'projects',
+    '498',
+  );
 
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void; // what is this used for? Do we still need it?
