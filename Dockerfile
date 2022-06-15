@@ -4,7 +4,7 @@ FROM node:16-alpine AS app-build
 WORKDIR /app
 COPY . .
 
-RUN npm ci  && npm run build:prod 
+RUN npm ci --force  && npm run build:prod 
 
 # stage 2
 FROM nginx:alpine
