@@ -27,6 +27,9 @@
       "dom", "ES2021.String"
     ]
   },
+  "exclude": [
+    "node_modules",
+  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
