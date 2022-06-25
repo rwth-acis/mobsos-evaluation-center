@@ -117,13 +117,13 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
 
   getSuccessMeasures(factor) {
     return factor.measures.filter(
-      (m) => this.measures[m] instanceof Measure,
+      (m) => this.measures[m].type === 'success',
     );
   }
 
   getLimesurveyMeasures(factor) {
     return factor.measures.filter(
-      (m) => this.measures[m] instanceof LimeSurveyMeasure,
+      (m) => this.measures[m].type === 'limesurvey',
     );
   }
 
