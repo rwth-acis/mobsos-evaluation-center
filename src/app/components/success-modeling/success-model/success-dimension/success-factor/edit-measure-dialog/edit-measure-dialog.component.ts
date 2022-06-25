@@ -431,7 +431,7 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   private getMeasureFromForm(value: any): Measure {
-    const measure = value as Measure;
+    const measure = Measure.fromJSON(value);
     measure.queries = value.queries.map((q) =>
       SQLQuery.fromJSON({
         ...q,
