@@ -18,9 +18,11 @@ export interface MeasureMap {
 export interface IMeasure {
   name: string;
   visualization: Visualization;
+  type: string;
 }
 
 export class Measure implements IMeasure {
+  type = 'success';
   constructor(
     public name: string,
     public queries: SQLQuery[],
@@ -96,6 +98,7 @@ export class Measure implements IMeasure {
     const measure = doc.createElement('measure');
     measure.setAttribute('name', this.name);
     if (this.tags) measure.setAttribute('tags', this.tags.join(';'));
+    measure.setAttribute('type', this.type);
     const description = doc.createElement('description');
     description.textContent = this.description;
     measure.appendChild(description);
@@ -112,6 +115,7 @@ export class Measure implements IMeasure {
 }
 
 export class LimeSurveyMeasure implements IMeasure {
+  type: string = 'limesurvey';
   static fromXml(xml: Element): LimeSurveyMeasure {
     const measureName = xml.getAttribute('name');
     let description = '';
@@ -150,6 +154,7 @@ export class LimeSurveyMeasure implements IMeasure {
     measure.appendChild(description);
     measure.setAttribute('title', this.title);
     measure.setAttribute('sid', this.sid);
+    measure.setAttribute('type', this.type);
     if (this.visualization) {
       measure.appendChild(this.visualization.toXml());
     }

@@ -75,8 +75,9 @@ export class AppComponent implements OnInit, OnDestroy {
     environment.reqBazFrontendUrl,
     'projects',
     '498',
+    'categories',
+    1569,
   );
-
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void; // what is this used for? Do we still need it?
   environment = environment; // set it so that it can be accessed in the template
