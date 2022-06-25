@@ -91,11 +91,9 @@ export class SuccessMeasureComponent implements OnInit, OnDestroy {
         filter((measure) => !!measure),
         map((measure) => Measure.fromJSON(measure as Measure)),
       );
-    let sub = this.measure$
-      .pipe(distinctUntilChanged())
-      .subscribe((measure) => {
-        this.measure = cloneDeep(measure); // needed for when we want to edit the measure
-      });
+    let sub = this.measure$.subscribe((measure) => {
+      this.measure = cloneDeep(measure); // needed for when we want to edit the measure
+    });
     this.subscriptions$.push(sub);
     sub = this.service$.subscribe(
       (service) => (this.service = service),
