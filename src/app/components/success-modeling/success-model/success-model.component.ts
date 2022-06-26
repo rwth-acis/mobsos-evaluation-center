@@ -249,8 +249,13 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
           message += result.reason.error.message;
         } else {
           try {
-            if (result instanceof failureResponse) {
+            if (
+              typeof result === 'object' &&
+              result instanceof failureResponse
+            ) {
               message += result.reason.error;
+            } else if (typeof result === 'string') {
+              message += result;
             }
           } catch (error) {
             console.warn(error);
