@@ -250,20 +250,14 @@ export class MeasureCatalog implements MeasureCatalog {
     const doc = document.implementation.createDocument('', '', null);
     const catalog = doc.createElement('Catalog');
     for (const measure of Object.values(this.measures)) {
-      if (measure instanceof Measure) {
-        if (typeof measure.toXml === 'undefined') {
-          catalog.appendChild(Measure.fromJSON(measure).toXml());
-        } else {
-          catalog.appendChild(measure.toXml());
-        }
-      } else if (measure instanceof LimeSurveyMeasure) {
-        if (typeof measure.toXml === 'undefined') {
-          catalog.appendChild(
-            LimeSurveyMeasure.fromJSON(measure).toXml(),
-          );
-        } else {
-          catalog.appendChild(measure.toXml());
-        }
+      if (measure.type === 'success') {
+        const m = Measure.fromJSON(measure as Measure);
+        catalog.appendChild(m.toXml());
+      } else if (measure.type === 'limesurvey') {
+        const m = LimeSurveyMeasure.fromJSON(
+          measure as LimeSurveyMeasure,
+        );
+        catalog.appendChild(m.toXml());
       }
     }
     return catalog;
@@ -318,10 +312,25 @@ export class SQLQuery extends Query {
   }
 
   override toXml(): Element {
-    const doc = document.implementation.createDocument('', '', null);
-    const query = doc.createElement('query');
-    query.setAttribute('name', this.name);
-    query.innerHTML = this.sql;
-    return query;
+    try {
+      const doc = document.implementation.createDocument(
+        '',
+        '',
+        null,
+      );
+      const query = doc.createElement('query');
+      query.setAttribute('name', this.name);
+      query.innerHTML = this.sql.replace(
+        /[\u00A0-\u9999<>\&]/g,
+        function (i) {
+          return '&#' + i.charCodeAt(0) + ';';
+        },
+      );
+
+      return query;
+    } catch (e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }
