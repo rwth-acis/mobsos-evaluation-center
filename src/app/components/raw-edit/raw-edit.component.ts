@@ -22,6 +22,8 @@ import {
   failureResponse,
   HttpActions,
   saveModel,
+  fetchMeasureCatalog,
+  fetchSuccessModel,
 } from 'src/app/services/store/store.actions';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import {
@@ -95,6 +97,8 @@ export class RawEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.ngrxStore.dispatch(fetchMeasureCatalog({}));
+    this.ngrxStore.dispatch(fetchSuccessModel({}));
     this.ngrxStore.dispatch(disableEdit());
 
     let sub = this.selectedGroupId$

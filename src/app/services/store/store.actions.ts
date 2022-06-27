@@ -151,11 +151,11 @@ export const fetchMessageDescriptions = createAction(
 );
 export const fetchMeasureCatalog = createAction(
   HttpActions.FETCH_MEASURE_CATALOG_FOR_GROUP,
-  props<{ groupId: string }>(),
+  props<{ groupId?: string }>(),
 );
 export const fetchSuccessModel = createAction(
   HttpActions.FETCH_SUCCESS_MODEL_FOR_GROUP_AND_SERVICE,
-  props<{ groupId: string; serviceName?: string }>(),
+  props<{ groupId?: string; serviceName?: string }>(),
 );
 
 export const fetchQuestionnaires = createAction(

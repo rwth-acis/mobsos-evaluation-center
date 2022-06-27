@@ -368,8 +368,9 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
-      switchMap(({ groupId }) =>
-        this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ groupId }, id]) =>
+        this.l2p.fetchMeasureCatalogAsObservable(groupId || id).pipe(
           map((xml) =>
             Action.storeCatalog({
               xml,
@@ -630,11 +631,14 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      withLatestFrom(this.ngrxStore.select(SELECTED_SERVICE)),
-      mergeMap(([{ groupId, serviceName }, service]) =>
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+      ),
+      mergeMap(([{ groupId, serviceName }, service, id]) =>
         this.l2p
           .fetchSuccessModelAsObservable(
-            groupId,
+            groupId || id,
             serviceName ? serviceName : service?.name,
           )
           .pipe(
