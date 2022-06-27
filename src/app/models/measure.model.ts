@@ -298,9 +298,8 @@ export class SQLQuery extends Query {
 
   static override fromXml(xml: Element): SQLQuery {
     const queryName = xml.getAttribute('name');
-    const sql = xml.innerHTML
-      .replaceAll('&lt;', '<')
-      .replaceAll('&gt;', '>');
+
+    const sql = htmlDecode(xml.innerHTML);
     return new SQLQuery(queryName, sql);
   }
 
@@ -320,12 +319,7 @@ export class SQLQuery extends Query {
       );
       const query = doc.createElement('query');
       query.setAttribute('name', this.name);
-      query.innerHTML = this.sql.replace(
-        /[\u00A0-\u9999<>\&]/g,
-        function (i) {
-          return '&#' + i.charCodeAt(0) + ';';
-        },
-      );
+      query.innerHTML = htmlEncode(this.sql);
 
       return query;
     } catch (e) {
@@ -333,4 +327,32 @@ export class SQLQuery extends Query {
       return null;
     }
   }
+}
+
+function htmlDecode(str) {
+  return (
+    str
+      // .replace(/&#([0-9]{1,3});/gi, function (match, numStr) {
+      //   var num = parseInt(numStr, 10); // read num as normal number
+      //   let replacement = String.fromCharCode(num);
+
+      //   return replacement;
+      // })
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+  );
+}
+
+function htmlEncode(str) {
+  return (
+    str
+      // .replace(/[\u00A0-\u9999<>\&]/g, (s) =>
+      //   str.replace(
+      //     /[\u00A0-\u9999<>\&]/g,
+      //     (s) => '&#' + s.charCodeAt(0) + ';',
+      //   ),
+      // )
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+  );
 }
