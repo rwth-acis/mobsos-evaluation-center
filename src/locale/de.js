@@ -3,7 +3,7 @@ export const translations = {
     pages: {
       dashboard: 'Dashboard',
       'manage-questionnaires': 'Fragebögen verwalten',
-      'manage-requirements': 'Anforderungen verwalten',
+      'manage-requirements': 'Requirements Bazaar öffnen',
       'success-modeling': 'Erfolgsmodellierung',
       'raw-edit': 'Direktbearbeitung',
       'add-community': 'Community hinzufügen',
