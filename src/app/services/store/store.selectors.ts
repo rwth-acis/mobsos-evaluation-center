@@ -41,6 +41,9 @@ export const SURVEYS = (state: StoreState) =>
     state.Reducer.limeSurveySurveys,
   );
 
+export const LIMESURVEY_CREDENTIALS = (state: StoreState) =>
+  state.Reducer.limeSurveyCredentials;
+
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
 

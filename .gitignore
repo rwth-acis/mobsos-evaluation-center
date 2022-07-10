@@ -51,3 +51,4 @@ src/assets/monaco/*
 limesurvey-proxy/node_modules
 limesurvey-proxy/.env
 .vscode/settings.json
+src/app/models/.env.ts

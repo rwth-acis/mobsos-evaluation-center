@@ -72,6 +72,7 @@ export class LimeSurvey implements ISurvey {
   end: Date; // End date of the survey
   id: string; // ID of the survey
   name: string; // Name of the survey
+  credentials: LimeSurveyCredentials;
   constructor(form: LimeSurveyForm) {
     this.start = new Date(form.startdate);
     this.end = new Date(form.expires);
@@ -140,4 +141,10 @@ export interface LimeSurveyResponse {
   title: string;
   type: 'L' | '5' | 'S' | 'T' | 'Y';
   responses: { [response: string]: number }; // counts how much each response was voted
+}
+
+export interface LimeSurveyCredentials {
+  limeSurveyUrl: string;
+  loginName: string;
+  loginPassword: string;
 }

@@ -7,25 +7,25 @@
     <mat-card-subtitle>{{
       'success-modeling.questionnaires.subtitle' | translate
     }}</mat-card-subtitle>
-
-    <button
-      *ngIf="canEdit$ | async"
-      mat-icon-button
-      class="ml-auto"
-      matTooltipShowDelay="0"
-      matTooltip="{{
-        'success-modeling.questionnaires.add-questionnaire-tooltip'
-          | translate
-      }}"
-      (click)="openPickSurveyDialog()"
-    >
-      <mat-icon
-        color="primary"
-        id="add-questionnaire-icon"
-        class="text-2xl"
-        >add</mat-icon
+    <div class="ml-auto">
+      <button
+        *ngIf="canEdit$ | async"
+        mat-icon-button
+        matTooltipShowDelay="0"
+        matTooltip="{{
+          'success-modeling.questionnaires.add-questionnaire-tooltip'
+            | translate
+        }}"
+        (click)="openPickSurveyDialog()"
       >
-    </button>
+        <mat-icon
+          color="primary"
+          id="add-questionnaire-icon"
+          class="text-2xl"
+          >add</mat-icon
+        >
+      </button>
+    </div>
   </mat-card-header>
   <mat-card-content *ngIf="surveys$ | async as surveys">
     <ng-container *ngIf="surveys?.length > 0; else noSurveys">
