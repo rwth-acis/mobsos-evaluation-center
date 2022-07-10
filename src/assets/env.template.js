@@ -6,4 +6,7 @@
   window['env']['openIdClientId'] = '${OIDC_CLIENT_ID}';
   window['env']['production'] = '${PRODUCTION}';
   window['env']['mobsosSurveysUrl'] = '${SURVEYS_URL}';
+  window['env']['limesurveyUrl'] = '${LIMESURVEY_URL}';
+  window['env']['limesurveyLoginName'] = '${LIMESURVEY_LOGIN_NAME}';
+  window['env']['limesurveyPassword'] = '${LIMESURVEY_PASSWORD}';
 })(this);
