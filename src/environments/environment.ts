@@ -12,6 +12,9 @@ declare global {
       openIdClientId: string;
       production: string;
       mobsosSurveysUrl?: string;
+      limesurveyUrl?: string;
+      loginName?: string;
+      loginPassword?: string;
     };
   }
 }
