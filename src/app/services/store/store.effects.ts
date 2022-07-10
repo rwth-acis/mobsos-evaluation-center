@@ -909,7 +909,7 @@ export class StateEffects {
           .pipe(
             map((res) => {
               if (res.status === 200) {
-                const surveys = res.body.map(
+                const surveys = res.body.result.map(
                   (survey: LimeSurveyForm) => {
                     return new LimeSurvey(survey);
                   },
@@ -958,7 +958,7 @@ export class StateEffects {
                   if (res.status === 200) {
                     return Action.storeResponsesForSurveyFromLimeSurvey(
                       {
-                        responses: res.body,
+                        responses: res.body.text,
                         sid,
                         fetchDate: new Date().getTime(),
                       },

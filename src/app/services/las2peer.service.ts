@@ -1352,10 +1352,16 @@ export class Las2peerService {
       this.LIME_SURVEY_RESPONSES_PATH,
       `?sid=${sid}`,
     );
+    const body = {
+      url: cred.limeSurveyUrl,
+      loginName: cred.loginName,
+      loginPassword: cred.loginPassword,
+      surveyID: sid,
+    };
     return this.makeRequestAndObserve(url, {
       observe: 'response',
       method: 'POST',
-      body: JSON.stringify(cred),
+      body: JSON.stringify(body),
     });
   }
 }
