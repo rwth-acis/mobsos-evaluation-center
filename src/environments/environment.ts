@@ -13,8 +13,8 @@ declare global {
       production: string;
       mobsosSurveysUrl?: string;
       limesurveyUrl?: string;
-      loginName?: string;
-      loginPassword?: string;
+      limesurveyLoginName?: string;
+      limesurveyPassword?: string;
     };
   }
 }

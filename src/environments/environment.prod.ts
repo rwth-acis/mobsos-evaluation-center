@@ -10,8 +10,8 @@ declare global {
       production: string;
       mobsosSurveysUrl?: string;
       limesurveyUrl?: string;
-      loginName?: string;
-      loginPassword?: string;
+      limesurveyLoginName?: string;
+      limesurveyPassword?: string;
     };
   }
 }
@@ -47,7 +47,7 @@ export const environment: Environment = {
     limeSurveyUrl:
       window.env.limesurveyUrl ||
       'https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/admin/remotecontrol',
-    loginName: window.env.loginName,
-    loginPassword: window.env.loginPassword,
+    loginName: window.env.limesurveyLoginName,
+    loginPassword: window.env.limesurveyPassword,
   },
 };
