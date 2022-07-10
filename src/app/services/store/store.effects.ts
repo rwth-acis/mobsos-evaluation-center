@@ -34,6 +34,7 @@ import {
   SurveyForm,
   SurveyType,
   LimeSurveyResponse,
+  LimeSurveyCredentials,
 } from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
@@ -936,14 +937,15 @@ export class StateEffects {
       switchMap(([{ sid }, cred]) =>
         this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
           map((res) => {
-            return [res, sid];
+            return [res, sid, cred];
           }),
         ),
       ),
       switchMap(
-        ([responses, sid]: [
+        ([responses, sid, cred]: [
           { responses: LimeSurveyResponse[]; fetchDate: number },
           string,
+          LimeSurveyCredentials,
         ]) => {
           if (
             !responses?.responses ||
