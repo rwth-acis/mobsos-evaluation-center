@@ -50,6 +50,7 @@ export class Las2peerService {
   SUCCESS_MODELING_SERVICE_PATH = 'mobsos-success-modeling/apiv2';
   QUERY_VISUALIZATION_SERVICE_PATH = 'QVS';
   SURVEYS_SURVEY_PATH = 'surveys';
+  SURVEY_HANDLER_SERVICE_PATH = 'SurveyHandler';
 
   SERVICES_PATH = 'las2peer/services/services';
   CONTACT_GROUPS_PATH = 'groups';
@@ -121,7 +122,8 @@ export class Las2peerService {
     },
     {
       url: joinAbsoluteUrlPath(
-        environment.limeSurveyProxyUrl,
+        environment.las2peerWebConnectorUrl,
+        this.SURVEY_HANDLER_SERVICE_PATH,
         'swagger.json',
       ),
       name: 'LimeSurvey Proxy',
@@ -1321,7 +1323,8 @@ export class Las2peerService {
       );
     }
     const URL = joinAbsoluteUrlPath(
-      environment.limeSurveyProxyUrl,
+      environment.las2peerWebConnectorUrl,
+      this.SURVEY_HANDLER_SERVICE_PATH,
       this.LIME_SURVEY_SURVEYS_PATH,
     );
     const body = { url, loginName, loginPassword };
@@ -1348,7 +1351,8 @@ export class Las2peerService {
       );
     }
     const url = joinAbsoluteUrlPath(
-      environment.limeSurveyProxyUrl,
+      environment.las2peerWebConnectorUrl,
+      this.SURVEY_HANDLER_SERVICE_PATH,
       this.LIME_SURVEY_RESPONSES_PATH,
       `?sid=${sid}`,
     );
