@@ -19,7 +19,6 @@ import {
   delay,
   distinctUntilKeyChanged,
   timeout,
-  exhaustMap,
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
@@ -35,6 +34,7 @@ import {
   SurveyForm,
   SurveyType,
   LimeSurveyResponse,
+  LimeSurveyCredentials,
 } from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
@@ -52,6 +52,7 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   USER,
+  LIMESURVEY_CREDENTIALS,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   SUCCESS_MODEL_FROM_NETWORK,
@@ -897,23 +898,30 @@ export class StateEffects {
   fetchLimeSurveySurveys$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSurveysFromLimeSurvey),
-      switchMap(() =>
-        this.l2p.fetchSurveysFromLimeSurvey().pipe(
-          map((res) => {
-            if (res.status === 200) {
-              const surveys = res.body.map(
-                (survey: LimeSurveyForm) => {
-                  return new LimeSurvey(survey);
-                },
-              );
-              return Action.storeSurveysFromLimeSurvey({
-                surveys,
-              });
-            } else {
-              return Action.failureResponse(null);
-            }
-          }),
-        ),
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
+      switchMap(([action, cred]) =>
+        this.l2p
+          .fetchSurveysFromLimeSurvey(
+            cred.limeSurveyUrl,
+            cred.loginName,
+            cred.loginPassword,
+          )
+          .pipe(
+            map((res) => {
+              if (res.status === 200) {
+                const surveys = res.body.result.map(
+                  (survey: LimeSurveyForm) => {
+                    return new LimeSurvey(survey);
+                  },
+                );
+                return Action.storeSurveysFromLimeSurvey({
+                  surveys,
+                });
+              } else {
+                return Action.failureResponse(null);
+              }
+            }),
+          ),
       ),
       catchError((err) =>
         of(Action.failureResponse({ reason: err })),
@@ -925,30 +933,32 @@ export class StateEffects {
   fetchLimeSurveyResponses$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
-      switchMap(({ sid }) =>
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
+      switchMap(([{ sid }, cred]) =>
         this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
           map((res) => {
-            return [res, sid];
+            return [res, sid, cred];
           }),
         ),
       ),
       switchMap(
-        ([responses, sid]: [
+        ([responses, sid, cred]: [
           { responses: LimeSurveyResponse[]; fetchDate: number },
           string,
+          LimeSurveyCredentials,
         ]) => {
           if (
             !responses?.responses ||
             Date.now() - responses.fetchDate > REFETCH_INTERVAL
           ) {
             return this.l2p
-              .fetchResponsesForSurveyFromLimeSurvey(sid)
+              .fetchResponsesForSurveyFromLimeSurvey(sid, cred)
               .pipe(
                 map((res) => {
                   if (res.status === 200) {
                     return Action.storeResponsesForSurveyFromLimeSurvey(
                       {
-                        responses: res.body,
+                        responses: res.body.text,
                         sid,
                         fetchDate: new Date().getTime(),
                       },

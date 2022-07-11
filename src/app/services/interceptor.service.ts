@@ -31,7 +31,7 @@ interface RequestCache {
 export class Interceptor implements HttpInterceptor {
   cachedRequests: RequestCache = {};
   unreachableServices = {};
-  constructor(public ngrxStore: Store) {}
+  constructor() {}
 
   intercept(
     req: HttpRequest<any>,
@@ -45,7 +45,6 @@ export class Interceptor implements HttpInterceptor {
       // this.cachedRequests[req.url].subscribe(() => {});
       return this.cachedRequests[req.url]; // return an observable of the initial request instead of making a new call
     } else {
-      this.ngrxStore.dispatch(incrementLoading());
       // make a new request, handle any errors
       const observableRequest = next.handle(req).pipe(
         filter(
@@ -62,8 +61,6 @@ export class Interceptor implements HttpInterceptor {
           }
         }),
         catchError((err) => {
-          this.ngrxStore.dispatch(decrementLoading());
-
           delete this.cachedRequests[req.url];
 
           if (err.status >= 500) {
@@ -83,7 +80,6 @@ export class Interceptor implements HttpInterceptor {
   }
 
   handleResponse(res: HttpResponse<any>, req: HttpRequest<any>) {
-    this.ngrxStore.dispatch(decrementLoading());
     setTimeout(() => {
       delete this.cachedRequests[req.url];
     }, 2 * ONE_MINUTE_IN_MS);

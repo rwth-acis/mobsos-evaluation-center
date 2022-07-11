@@ -15,6 +15,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { of } from 'rxjs';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('KpiVisualizationComponent', () => {
   let component: KpiVisualizationComponent;
@@ -26,6 +27,7 @@ describe('KpiVisualizationComponent', () => {
       imports: [
         MatProgressSpinnerModule,
         MatIconModule,
+        MatMenuModule,
         LoggerModule.forRoot({
           level: NgxLoggerLevel.TRACE,
           serverLogLevel: NgxLoggerLevel.OFF,

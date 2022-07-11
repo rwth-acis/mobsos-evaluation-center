@@ -12,6 +12,9 @@ declare global {
       openIdClientId: string;
       production: string;
       mobsosSurveysUrl?: string;
+      limesurveyUrl?: string;
+      limesurveyLoginName?: string;
+      limesurveyPassword?: string;
     };
   }
 }
@@ -33,7 +36,8 @@ export const environment: Environment = {
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
   version: packageInfo.version,
-  limeSurveyProxyUrl: 'http://localhost:3000',
+  limeSurveyProxyUrl:
+    'https://las2peer.tech4comp.dbis.rwth-aachen.de/SurveyHandler',
 };
 
 /*

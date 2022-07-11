@@ -122,7 +122,7 @@ export class Las2peerService {
     {
       url: joinAbsoluteUrlPath(
         environment.limeSurveyProxyUrl,
-        this.LIME_SURVEY_SURVEYS_PATH,
+        'swagger.json',
       ),
       name: 'LimeSurvey Proxy',
       available: true,
@@ -1308,7 +1308,11 @@ export class Las2peerService {
     });
   }
 
-  fetchSurveysFromLimeSurvey() {
+  fetchSurveysFromLimeSurvey(
+    url: string,
+    loginName: string,
+    loginPassword: string,
+  ) {
     if (!this.limesurveyProxyIsAvailable) {
       return of(
         new HttpErrorResponse({
@@ -1316,14 +1320,26 @@ export class Las2peerService {
         }),
       );
     }
-    const url = joinAbsoluteUrlPath(
+    const URL = joinAbsoluteUrlPath(
       environment.limeSurveyProxyUrl,
       this.LIME_SURVEY_SURVEYS_PATH,
     );
-    return this.makeRequestAndObserve(url, { observe: 'response' });
+    const body = { url, loginName, loginPassword };
+    return this.makeRequestAndObserve(URL, {
+      observe: 'response',
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 
-  fetchResponsesForSurveyFromLimeSurvey(sid: string) {
+  fetchResponsesForSurveyFromLimeSurvey(
+    sid: string,
+    cred: {
+      limeSurveyUrl: string;
+      loginName: string;
+      loginPassword: string;
+    },
+  ) {
     if (!this.limesurveyProxyIsAvailable) {
       return of(
         new HttpErrorResponse({
@@ -1336,7 +1352,17 @@ export class Las2peerService {
       this.LIME_SURVEY_RESPONSES_PATH,
       `?sid=${sid}`,
     );
-    return this.makeRequestAndObserve(url, { observe: 'response' });
+    const body = {
+      url: cred.limeSurveyUrl,
+      loginName: cred.loginName,
+      loginPassword: cred.loginPassword,
+      surveyID: sid,
+    };
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 }
 
