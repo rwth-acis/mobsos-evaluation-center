@@ -58,14 +58,18 @@ The following variables need to be configured:
 
 ### LimeSurvey credentials
 
-The SurveyHanlder service requires you to provide the credentials for connecting to the limesurvey instance. As these credentials should not be exposed on Github, you have to add them yourself. To do this, navigate to the `src\app\models` folder. In there, there should be a file called `state.model`. You need to adjust the `limeSurveyCredentials` property in the `INITIAL_STATE` object. The following credentials need to be provided
+The SurveyHanlder service requires you to provide the credentials for connecting to the limesurvey instance. As these credentials should not be exposed on Github, you have to adjust them yourself. To do this, navigate to the `src\assets\` folder. In there, there is a file called `env.template.js`. Copy this file and rename it as `env.js`. The following credentials need to be adjusted.
 
-```ts
-export const cred = {
-  limeSurveyUrl: '<url of the limesurvey remote control api>',
-  loginName: '<limesurvey login name>',
-  loginPassword: '<limesurvey login password>',
-};
+```js
+(function (window) {
+  window['env'] = window['env'] || {};
+  // Environment variables
+  ...
+    window['env']['limesurveyUrl'] =
+      '<url of the limesurvey remote control api. Usually ends in /index.php/admin/remotecontrol>';
+    window['env']['limesurveyLoginName'] = '<your limesurvey login name>';
+    window['env']['limesurveyPassword'] = '<your limesurvey password>';
+})(this);
 ```
 
 Adjust the properties accordingly.
@@ -73,6 +77,7 @@ Adjust the properties accordingly.
 # Working with Angular
 
 ## Development server
+
 Run `npm install` to fetch the dependencies.
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
