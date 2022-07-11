@@ -91,7 +91,7 @@
   </table>
 
   <mat-form-field *ngIf="selectedQuestionnaire">
-    <mat-label>How long should the survey be available?</mat-label>
+    <mat-label>Click on the calendar</mat-label>
     <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
       <input
         matStartDate
@@ -108,7 +108,10 @@
       matSuffix
       [for]="picker"
     ></mat-datepicker-toggle>
-    <mat-date-range-picker #picker></mat-date-range-picker>
+    <mat-date-range-picker
+      [disabled]="false"
+      #picker
+    ></mat-date-range-picker>
 
     <mat-error
       *ngIf="range.controls.start.hasError('matStartDateInvalid')"
@@ -136,11 +139,14 @@
     }}</mat-checkbox>
   </p>
 </div>
+
 <div mat-dialog-actions>
   <button
     mat-button
     (click)="onSubmit()"
-    [disabled]="!selectedQuestionnaire || !range.valid"
+    [disabled]="
+      !selectedQuestionnaire || !range.value.start || !range.value.end
+    "
   >
     {{ 'shared.elements.ok-label' | translate }}
   </button>

@@ -18,6 +18,7 @@ import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
   fetchGroups,
+  fetchSurveysFromLimeSurvey,
   logout,
   setGroup,
   storeUser,
@@ -70,7 +71,11 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('statusbar') l2pStatusbar: ElementRef;
   selectedGroupForm = new FormControl('');
   title = 'MobSOS Evaluation Center';
-
+  evalcenterProjectLink = joinAbsoluteUrlPath(
+    environment.reqBazFrontendUrl,
+    'projects',
+    '498',
+  );
   mobileQuery: MediaQueryList;
   mobileQueryListener: () => void; // what is this used for? Do we still need it?
   environment = environment; // set it so that it can be accessed in the template
@@ -126,6 +131,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.silentSignin();
+
+    this.ngrxStore.dispatch(fetchSurveysFromLimeSurvey());
 
     let sub = this.ngrxStore
       .select(storeSelectors._SELECTED_GROUP_ID)

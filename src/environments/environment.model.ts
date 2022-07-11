@@ -1,4 +1,7 @@
+import { LimeSurveyCredentials } from 'src/app/models/survey.model';
+
 export interface Environment {
+  limeSurveyProxyUrl: string;
   production: boolean; // set to true if the timestamps coming from the MobSOS database are in local time and not UTC
   correctTimestamps: boolean; // true if the timestamps coming from the MobSOS surveys database are in local time and not UTC
   openIdAuthorityUrl: string; // URL of the OpenID Connect server
@@ -13,4 +16,5 @@ export interface Environment {
   reqBazUrl: string; // URL of the Requirements Bazaar API
   reqBazFrontendUrl: string; // URL of the Requirements Bazaar frontend
   version?: string; // version of the application
+  limesurveyCredentials?: LimeSurveyCredentials;
 }

@@ -1,4 +1,18 @@
-export interface Survey {
+export interface ISurvey {
+  start: Date; // Start date of the survey
+  end: Date; // End date of the survey
+  id: number | string; // ID of the survey
+  name: string; // Name of the survey
+  type: SurveyType; // Type of the survey
+}
+
+export enum SurveyType {
+  LimeSurvey = 'LimeSurvey',
+  MobSOS = 'MobSOS',
+}
+
+export class Survey implements ISurvey {
+  type = SurveyType.MobSOS;
   description?: string; // Description of the survey
   start: Date; // Start date of the survey
   end: Date; // End date of the survey
@@ -12,9 +26,6 @@ export interface Survey {
   qid: number; // ID of the questionnaire
   resource: string; // Resource on which the survey is based (e.g. a service)
   'resource-label'?: string; // Resource label of the survey
-}
-
-export class Survey implements Survey {
   constructor(form: SurveyForm) {
     this.description = form?.description;
     this.start = new Date(form.start);
@@ -49,12 +60,59 @@ export class Survey implements Survey {
     const questionnaire = doc.createElement('survey');
     questionnaire.setAttribute('name', this.name);
     questionnaire.setAttribute('qid', this.qid.toString());
+    questionnaire.setAttribute('type', 'mobSOS');
     questionnaire.setAttribute('id', this.id.toString());
     return questionnaire;
   }
 }
 
-interface SurveyForm {
+export class LimeSurvey implements ISurvey {
+  type = SurveyType.LimeSurvey;
+  start: Date; // Start date of the survey
+  end: Date; // End date of the survey
+  id: string; // ID of the survey
+  name: string; // Name of the survey
+  credentials: LimeSurveyCredentials;
+  constructor(form: LimeSurveyForm) {
+    this.start = new Date(form.startdate);
+    this.end = new Date(form.expires);
+    this.id = form.sid;
+    this.name = form.surveyls_title;
+  }
+  static fromJSON(s: LimeSurvey): LimeSurvey {
+    return new LimeSurvey({
+      surveyls_title: s.name,
+      sid: s.id,
+      startdate:
+        s.start instanceof Date ? s.start?.toISOString() : s.start,
+      expires: s.end instanceof Date ? s.end?.toISOString() : s.end,
+    });
+  }
+  static fromXml(xml: Element): LimeSurvey {
+    const surveyls_title = xml.getAttribute('surveyls_title');
+    const sid = xml.getAttribute('sid');
+    const start = new Date(
+      xml.getAttribute('startdate'),
+    ).toISOString();
+    const end = new Date(xml.getAttribute('expires')).toISOString();
+    return new LimeSurvey({
+      surveyls_title,
+      sid,
+      startdate: start,
+      expires: end,
+    });
+  }
+  toXml(): Element {
+    const doc = document.implementation.createDocument('', '', null);
+    const limesurvey = doc.createElement('survey');
+    limesurvey.setAttribute('surveyls_title', this.name);
+    limesurvey.setAttribute('type', 'limeSurvey');
+    limesurvey.setAttribute('sid', this.id);
+    return limesurvey;
+  }
+}
+
+export interface SurveyForm {
   description?: string;
   start?: string;
   end?: string;
@@ -68,4 +126,25 @@ interface SurveyForm {
   qid?: number;
   resource?: string;
   'resource-label'?: string;
+}
+
+export interface LimeSurveyForm {
+  sid: string;
+  startdate: string;
+  active?: 'Y' | 'N';
+  surveyls_title: string;
+  expires: string;
+}
+
+export interface LimeSurveyResponse {
+  question: string;
+  title: string;
+  type: 'L' | '5' | 'S' | 'T' | 'Y';
+  responses: { [response: string]: number }; // counts how much each response was voted
+}
+
+export interface LimeSurveyCredentials {
+  limeSurveyUrl: string;
+  loginName: string;
+  loginPassword: string;
 }

@@ -23,8 +23,19 @@ import {
 import { environment } from 'src/environments/environment';
 import { GroupMember } from '../../models/community.model';
 import { Questionnaire } from '../../models/questionnaire.model';
-import { ServiceMessageDescriptions } from '../../models/service.model';
-import { Survey } from '../../models/survey.model';
+import {
+  ServiceInformation,
+  ServiceMessageDescriptions,
+} from '../../models/service.model';
+import {
+  LimeSurvey,
+  LimeSurveyForm,
+  Survey,
+  SurveyForm,
+  SurveyType,
+  LimeSurveyResponse,
+  LimeSurveyCredentials,
+} from '../../models/survey.model';
 
 import { VisualizationData } from '../../models/visualization.model';
 import { Las2peerService } from '../las2peer.service';
@@ -41,6 +52,7 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   USER,
+  LIMESURVEY_CREDENTIALS,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   SUCCESS_MODEL_FROM_NETWORK,
@@ -48,6 +60,8 @@ import {
   VISUALIZATION_DATA_FROM_QVS,
   SUCCESS_MODEL_XML,
   SELECTED_GROUP,
+  SELECTED_WORKSPACE_OWNER,
+  RESPONSES_FOR_LIMESURVEY,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -314,6 +328,26 @@ export class StateEffects {
     ),
   );
 
+  addSurveyToModel$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.addSurveyToModel),
+      tap(({ survey }) => {
+        if (survey.type === SurveyType.LimeSurvey) {
+          this.ngrxStore.dispatch(
+            Action.fetchResponsesForSurveyFromLimeSurvey({
+              sid: survey.id.toString(),
+            }),
+          );
+        }
+      }),
+      switchMap(() => of(Action.success())),
+      catchError((err) => {
+        return of(Action.failureResponse({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
   storeUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.storeUser),
@@ -335,8 +369,9 @@ export class StateEffects {
   fetchMeasureCatalog$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchMeasureCatalog),
-      switchMap(({ groupId }) =>
-        this.l2p.fetchMeasureCatalogAsObservable(groupId).pipe(
+      withLatestFrom(this.ngrxStore.select(_SELECTED_GROUP_ID)),
+      switchMap(([{ groupId }, id]) =>
+        this.l2p.fetchMeasureCatalogAsObservable(groupId || id).pipe(
           map((xml) =>
             Action.storeCatalog({
               xml,
@@ -497,10 +532,13 @@ export class StateEffects {
   fetchVisualizationData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchVisualizationData),
-      withLatestFrom(this.ngrxStore.select(VISUALIZATION_DATA)),
-      mergeMap(([props, data]) => {
-        const query = props.query;
-        const queryParams = props.queryParams;
+      withLatestFrom(
+        this.ngrxStore.select(VISUALIZATION_DATA),
+        this.ngrxStore.select(SELECTED_SERVICE),
+      ),
+      mergeMap(([props, data, service]) => {
+        const query = applyVariableReplacements(props.query, service);
+        const queryParams = getParamsForQuery(props.query, service);
         const dataForQuery = data[query];
         if (!query) {
           return of(Action.failure({ reason: 'No query provided' }));
@@ -575,11 +613,11 @@ export class StateEffects {
         this.ngrxStore.dispatch(resetFetchDate({ query }));
       }),
       delay(100),
-      mergeMap(({ query, queryParams }) =>
+      mergeMap(({ query }) =>
         of(
           Action.fetchVisualizationData({
             query,
-            queryParams,
+
             cache: false,
           }),
         ),
@@ -594,11 +632,14 @@ export class StateEffects {
   fetchSuccessModel$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSuccessModel),
-      withLatestFrom(this.ngrxStore.select(SELECTED_SERVICE)),
-      mergeMap(([{ groupId, serviceName }, service]) =>
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+      ),
+      mergeMap(([{ groupId, serviceName }, service, id]) =>
         this.l2p
           .fetchSuccessModelAsObservable(
-            groupId,
+            groupId || id,
             serviceName ? serviceName : service?.name,
           )
           .pipe(
@@ -646,6 +687,12 @@ export class StateEffects {
       ofType(Action.fetchSurveys),
       mergeMap(() =>
         this.l2p.getSurveys().pipe(
+          map((surveys: SurveyForm[]) => {
+            //transform dates
+            return surveys.map(
+              (survey: SurveyForm) => new Survey(survey),
+            );
+          }),
           map((surveys: Survey[]) =>
             Action.storeSurveys({
               surveys,
@@ -848,6 +895,91 @@ export class StateEffects {
     ),
   );
 
+  fetchLimeSurveySurveys$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveysFromLimeSurvey),
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
+      switchMap(([action, cred]) =>
+        this.l2p
+          .fetchSurveysFromLimeSurvey(
+            cred.limeSurveyUrl,
+            cred.loginName,
+            cred.loginPassword,
+          )
+          .pipe(
+            map((res) => {
+              if (res.status === 200) {
+                const surveys = res.body.result.map(
+                  (survey: LimeSurveyForm) => {
+                    return new LimeSurvey(survey);
+                  },
+                );
+                return Action.storeSurveysFromLimeSurvey({
+                  surveys,
+                });
+              } else {
+                return Action.failureResponse(null);
+              }
+            }),
+          ),
+      ),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
+  fetchLimeSurveyResponses$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
+      switchMap(([{ sid }, cred]) =>
+        this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
+          map((res) => {
+            return [res, sid, cred];
+          }),
+        ),
+      ),
+      switchMap(
+        ([responses, sid, cred]: [
+          { responses: LimeSurveyResponse[]; fetchDate: number },
+          string,
+          LimeSurveyCredentials,
+        ]) => {
+          if (
+            !responses?.responses ||
+            Date.now() - responses.fetchDate > REFETCH_INTERVAL
+          ) {
+            return this.l2p
+              .fetchResponsesForSurveyFromLimeSurvey(sid, cred)
+              .pipe(
+                map((res) => {
+                  if (res.status === 200) {
+                    return Action.storeResponsesForSurveyFromLimeSurvey(
+                      {
+                        responses: res.body.text,
+                        sid,
+                        fetchDate: new Date().getTime(),
+                      },
+                    );
+                  } else {
+                    return Action.failureResponse(null);
+                  }
+                }),
+              );
+          } else {
+            return of(Action.noop());
+          }
+        },
+      ),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
   joinCommunityWorkSpace$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.joinWorkSpace),
@@ -963,6 +1095,35 @@ export class StateEffects {
             );
         },
       ),
+      catchError((err) => {
+        return of(Action.failure({ reason: err }));
+      }),
+      share(),
+    ),
+  );
+
+  resetWorkspace$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.resetWorkSpace),
+      withLatestFrom(
+        this.ngrxStore.select(SELECTED_SERVICE),
+        this.ngrxStore.select(USER),
+        this.ngrxStore.select(SELECTED_WORKSPACE_OWNER),
+      ),
+      tap(([, service, user, owner]) => {
+        if (user.profile.preferred_username !== owner) {
+          console.warn('You are not the owner of this workspace');
+          return;
+        }
+        this.workspaceService.resetWorkspace(
+          user.profile.preferred_username,
+          service,
+          true,
+        );
+      }),
+      switchMap(([, service, user, owner]) => {
+        return of(Action.success());
+      }),
       catchError((err) => {
         return of(Action.failure({ reason: err }));
       }),
@@ -1106,4 +1267,72 @@ function handleResponse(response: any, query: string) {
       'Unknown errror for fetching Visualization data',
     ),
   }); // should not be reached
+}
+
+function applyVariableReplacements(
+  query: string,
+  service: ServiceInformation,
+): string {
+  if (query?.includes('$SERVICES$')) {
+    let servicesString = '(';
+    const services = [];
+
+    if (!service?.mobsosIDs) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    for (const mobsosID of Object.keys(service.mobsosIDs)) {
+      services.push(`"${mobsosID}"`);
+    }
+    servicesString += services.join(',') + ')';
+    return query?.replace('$SERVICES$', servicesString);
+  } else if (query?.includes('$SERVICE$')) {
+    if (!(Object.keys(service.mobsosIDs).length > 0)) {
+      console.error('Service agent id cannot be null');
+      return query;
+    }
+    // for now we use the id which has the greatest registrationTime as this is the agent ID
+    // of the most recent service agent started in las2peer
+    const maxIndex = Object.values(service.mobsosIDs).reduce(
+      (max, time, index) => {
+        return time > max ? index : max;
+      },
+      0,
+    );
+
+    return query?.replace(
+      '$SERVICE$',
+      ` ${Object.keys(service.mobsosIDs)[maxIndex]} `,
+    );
+  } else return query;
+}
+
+function getParamsForQuery(
+  query: string,
+  service: ServiceInformation,
+): string[] {
+  if (!(service?.mobsosIDs?.length > 0)) {
+    // just for robustness
+    // should not be called when there are no service IDs stored in MobSOS anyway
+    return [];
+  }
+  const serviceRegex = /\$SERVICE\$/g;
+  const matches = query?.match(serviceRegex);
+  const params = [];
+  if (matches) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const match of matches) {
+      // for now we use the id which has the greatest registrationTime as this is the agent ID
+      // of the most recent service agent started in las2peer
+      const maxIndex = Object.values(service.mobsosIDs).reduce(
+        (max, time, index) => {
+          return time > max ? index : max;
+        },
+        0,
+      );
+
+      params.push(Object.keys(service.mobsosIDs)[maxIndex]);
+    }
+  }
+  return params as string[];
 }

@@ -3,14 +3,17 @@
     <app-kpi-visualization
       *ngSwitchCase="'KPI'"
       [measure$]="measure$"
+      (isLoading)="setLoading($event)"
     ></app-kpi-visualization>
     <app-value-visualization
       *ngSwitchCase="'Value'"
       [measure$]="measure$"
+      (isLoading)="setLoading($event)"
     ></app-value-visualization>
     <app-chart-visualization
       *ngSwitchCase="'Chart'"
       [measure$]="measure$"
+      (isLoading)="setLoading($event)"
     ></app-chart-visualization>
     <div *ngSwitchDefault>Unknown chartType: {{ type }}</div>
   </ng-container>

@@ -39,8 +39,7 @@
         *ngFor="let measure of measures; let i = index"
       >
         <mat-expansion-panel-header>
-          <mat-panel-title>
-            {{ measure.name }}
+          <mat-panel-title [innerHTML]="measure.name">
           </mat-panel-title>
           <mat-panel-description>
             <button
@@ -57,40 +56,24 @@
         </mat-expansion-panel-header>
 
         <ng-template matExpansionPanelContent>
-          <div [ngSwitch]="measure.visualization.type">
-            <app-kpi-visualization
-              [measure]="measure"
-              [service]="service"
-              *ngSwitchCase="'KPI'"
-            ></app-kpi-visualization>
-            <app-value-visualization
-              [measure$]="getMeasureObservableByIndex(i)"
-              [service]="service"
-              *ngSwitchCase="'Value'"
-            ></app-value-visualization>
-            <app-chart-visualization
-              *ngSwitchCase="'Chart'"
-              [measure$]="getMeasureObservableByIndex(i)"
-              [service]="service"
-            ></app-chart-visualization>
-            <div *ngSwitchDefault>
-              Unknown chartType: {{ measure.visualization.type }}
-            </div>
-          </div>
+          <!-- use measure component here -->
+          <app-success-measure
+            *ngIf="!isLimeSurveyMeasure(measure)"
+            [preview]="true"
+            [measureName]="measure.name"
+          ></app-success-measure>
+
+          <app-limesurvey-measure
+            *ngIf="isLimeSurveyMeasure(measure)"
+            [preview]="true"
+            [measureName]="measure.name"
+          ></app-limesurvey-measure>
 
           <div id="edit-controls">
-            <!-- <button
-              mat-icon-button
-              color="primary"
-              [matTooltip]="
-                'success-factor.add-measure-button' | translate
-              "
-              (click)="onMeasureClicked(measure)"
-            >
-              <mat-icon> playlist_add </mat-icon>
-            </button> -->
             <button
-              *ngIf="canEdit$ | async"
+              *ngIf="
+                (canEdit$ | async) && !isLimeSurveyMeasure(measure)
+              "
               mat-icon-button
               color="primary"
               [matTooltip]="

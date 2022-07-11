@@ -1,0 +1,38 @@
+<div class="flex flex-col h-full">
+  <ng-container *ngIf="measure$ | async as measure">
+    <div id="measure-header">
+      <ng-container *ngIf="!preview && (canEdit$ | async)">
+        <button
+          mat-icon-button
+          matTooltipShowDelay="0"
+          matTooltip="{{
+            'success-factor.remove-measure-tooltip' | translate
+          }}"
+          (click)="onDeleteClicked(measure, $event)"
+        >
+          <mat-icon color="warn">remove_circle_outline</mat-icon>
+        </button>
+        <!-- cannot edit generated measure for limesurvey for now. Could there be a use case for this? -->
+        <!-- <button
+          mat-icon-button
+          color="primary"
+          (click)="onEditClicked($event)"
+          id="edit-button"
+        >
+          <mat-icon>edit</mat-icon>
+        </button> -->
+      </ng-container>
+
+      <h4 *ngIf="measure && !preview" [innerHTML]="measure.name"></h4>
+    </div>
+
+    <ng-container>
+      <app-chart-visualization
+        [data$]="data$"
+        [description$]="description$"
+        [visualization$]="visualzation$"
+        [queries$]="queries$"
+      ></app-chart-visualization>
+    </ng-container>
+  </ng-container>
+</div>

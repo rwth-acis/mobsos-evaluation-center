@@ -2,14 +2,22 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
 
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, take, tap, timeout } from 'rxjs/operators';
 import { merge, cloneDeep } from 'lodash-es';
 import { environment } from 'src/environments/environment';
 import { SuccessModel } from '../models/success.model';
 import { GroupMember } from '../models/community.model';
-import { Survey } from '../models/survey.model';
+import {
+  LimeSurveyForm,
+  Survey,
+  SurveyForm,
+} from '../models/survey.model';
 import { Questionnaire } from '../models/questionnaire.model';
 interface HttpOptions {
   method?: string;
@@ -62,6 +70,8 @@ export class Las2peerService {
   SURVEYS_QUESTIONNAIRES_PATH = 'questionnaires';
   SURVEYS_SURVEY_QUESTIONNAIRE_SUFFIX = 'questionnaire';
   SURVEYS_QUESTIONNAIRE_FORM_SUFFIX = 'form';
+  LIME_SURVEY_SURVEYS_PATH: string | number = 'surveys';
+  LIME_SURVEY_RESPONSES_PATH: string | number = 'responses';
 
   userCredentials: {
     token: string;
@@ -74,13 +84,17 @@ export class Las2peerService {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.SUCCESS_MODELING_SERVICE_PATH,
+        'swagger.json',
       ),
       name: 'MobSOS Success Modeling',
       available: true,
       reason: undefined,
     },
     {
-      url: environment.mobsosSurveysUrl,
+      url: joinAbsoluteUrlPath(
+        environment.mobsosSurveysUrl,
+        'swagger.json',
+      ),
       name: 'MobSOS Surveys',
       available: true,
       reason: undefined,
@@ -89,6 +103,7 @@ export class Las2peerService {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.CONTACT_SERVICE_PATH,
+        'swagger.json',
       ),
       name: 'Contact Service',
       available: true,
@@ -98,8 +113,18 @@ export class Las2peerService {
       url: joinAbsoluteUrlPath(
         environment.las2peerWebConnectorUrl,
         this.QUERY_VISUALIZATION_SERVICE_PATH,
+        'swagger.json',
       ),
       name: 'MobSOS Query Visualization Service',
+      available: true,
+      reason: undefined,
+    },
+    {
+      url: joinAbsoluteUrlPath(
+        environment.limeSurveyProxyUrl,
+        'swagger.json',
+      ),
+      name: 'LimeSurvey Proxy',
       available: true,
       reason: undefined,
     },
@@ -121,6 +146,12 @@ export class Las2peerService {
 
   get unavailableServices() {
     return this.coreServices.filter((service) => !service.available);
+  }
+
+  get limesurveyProxyIsAvailable(): boolean {
+    return !this.unavailableServices.find(
+      (s) => s.name === 'LimeSurvey Proxy',
+    );
   }
 
   setCredentials(
@@ -388,11 +419,10 @@ export class Las2peerService {
    */
   checkServiceAvailability() {
     const requests = this.coreServices.map((service) => {
-      const url = joinAbsoluteUrlPath(service.url, 'swagger.json');
       return {
         name: service.name,
         request: this.makeRequestAndObserve(
-          url,
+          service.url,
           { observe: 'response' },
           true,
         ).pipe(
@@ -679,11 +709,11 @@ export class Las2peerService {
       environment.mobsosSurveysUrl,
       this.SURVEYS_SURVEY_PATH,
     );
-    return this.makeRequestAndObserve(url, {
+    return this.makeRequestAndObserve<SurveyForm[]>(url, {
       observe: 'response',
     }).pipe(
       map((response) => {
-        return response.body?.surveys as Survey[];
+        return response.body?.surveys as SurveyForm[];
       }),
     );
   }
@@ -1277,15 +1307,73 @@ export class Las2peerService {
       responseType: 'text',
     });
   }
+
+  fetchSurveysFromLimeSurvey(
+    url: string,
+    loginName: string,
+    loginPassword: string,
+  ) {
+    if (!this.limesurveyProxyIsAvailable) {
+      return of(
+        new HttpErrorResponse({
+          error: 'Limesurvey proxy is not available',
+        }),
+      );
+    }
+    const URL = joinAbsoluteUrlPath(
+      environment.limeSurveyProxyUrl,
+      this.LIME_SURVEY_SURVEYS_PATH,
+    );
+    const body = { url, loginName, loginPassword };
+    return this.makeRequestAndObserve(URL, {
+      observe: 'response',
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  fetchResponsesForSurveyFromLimeSurvey(
+    sid: string,
+    cred: {
+      limeSurveyUrl: string;
+      loginName: string;
+      loginPassword: string;
+    },
+  ) {
+    if (!this.limesurveyProxyIsAvailable) {
+      return of(
+        new HttpErrorResponse({
+          error: 'Limesurvey proxy is not available',
+        }),
+      );
+    }
+    const url = joinAbsoluteUrlPath(
+      environment.limeSurveyProxyUrl,
+      this.LIME_SURVEY_RESPONSES_PATH,
+      `?sid=${sid}`,
+    );
+    const body = {
+      url: cred.limeSurveyUrl,
+      loginName: cred.loginName,
+      loginPassword: cred.loginPassword,
+      surveyID: sid,
+    };
+    return this.makeRequestAndObserve(url, {
+      observe: 'response',
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
 }
 
 export function joinAbsoluteUrlPath(
   ...args: (string | number)[]
 ): string {
   return args
+    .filter((pathPart: string | number) => !!pathPart)
     .map((pathPart: string | number) => {
       if (typeof pathPart === 'number') {
-        pathPart = pathPart.toString();
+        pathPart = pathPart?.toString();
       }
       return pathPart.toString()?.replace(/(^\/|\/$)/g, '');
     })

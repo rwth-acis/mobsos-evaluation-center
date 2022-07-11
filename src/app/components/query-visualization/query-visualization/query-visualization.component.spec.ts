@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { provideMockStore } from '@ngrx/store/testing';
+import { initialState } from 'src/app/services/store/store.reducer';
 
 import { QueryVisualizationComponent } from './query-visualization.component';
 
@@ -11,6 +13,7 @@ describe('QueryVisualizationComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [QueryVisualizationComponent],
       imports: [ReactiveFormsModule],
+      providers: [provideMockStore({ initialState })],
     }).compileComponents();
   });
 

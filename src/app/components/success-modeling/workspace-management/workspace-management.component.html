@@ -96,6 +96,15 @@
       >
         <mat-icon color="primary"> share </mat-icon>
       </button>
+      <button
+        *ngIf="userIsOwner$ | async"
+        mat-icon-button
+        aria-label="Workspace reset"
+        (click)="resetWorkSpace()"
+        matTooltip="reset"
+      >
+        <mat-icon color="warn"> refresh </mat-icon>
+      </button>
     </div>
 
     <div class="flex ml-auto">

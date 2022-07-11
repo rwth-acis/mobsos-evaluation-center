@@ -9,8 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Install node-modules 
+      run:  npm i --force 
     - name: Lint 
-      run:  npm i && npm run lint
+      run: npm run lint
   run-tests:
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +22,7 @@ jobs:
       with:
         node-version: 16.x
     - name: Setup
-      run: npm i
+      run: npm i --force
     - name: Test
       run: |
           npm run test-headless

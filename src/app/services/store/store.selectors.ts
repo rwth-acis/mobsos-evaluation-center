@@ -36,7 +36,13 @@ export const HTTP_CALL_IS_LOADING = (state: StoreState) =>
 export const QUESTIONNAIRES = (state: StoreState) =>
   state.Reducer.questionnaires;
 
-export const SURVEYS = (state: StoreState) => state.Reducer.surveys;
+export const SURVEYS = (state: StoreState) =>
+  (state.Reducer.surveys || []).concat(
+    state.Reducer.limeSurveySurveys,
+  );
+
+export const LIMESURVEY_CREDENTIALS = (state: StoreState) =>
+  state.Reducer.limeSurveyCredentials;
 
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
@@ -114,6 +120,36 @@ export const IS_MEMBER_OF_SELECTED_GROUP = createSelector(
   USER,
   (group, user) => !!user && group?.member,
 );
+
+export const LIMESURVEY_RESPONSES = (state: StoreState) =>
+  state.Reducer.limeSurveyResponses;
+
+export const RESPONSES_FOR_LIMESURVEY = (props: { sid: string }) =>
+  createSelector(LIMESURVEY_RESPONSES, (res) =>
+    res ? res[props.sid] : undefined,
+  );
+
+export const RESPONSES_FOR_LIMESURVEY_QUESTION = (props: {
+  sid: string;
+  statement: string;
+}) =>
+  createSelector(
+    RESPONSES_FOR_LIMESURVEY({ sid: props.sid }),
+    (res) =>
+      res
+        ? res.responses.find((q) => q.question === props.statement)
+        : undefined,
+  );
+
+export const QUESTIONS_FROM_LIMESURVEY = (props: { sid: string }) =>
+  createSelector(LIMESURVEY_RESPONSES, (res) =>
+    res && props.sid in res
+      ? res[props.sid].responses.map((response) => ({
+          statement: response.question,
+          type: response.type,
+        }))
+      : undefined,
+  );
 
 // WORKSPACE
 export const SELECTED_WORKSPACE_OWNER = (state: StoreState) =>
@@ -198,8 +234,8 @@ export const USER_HAS_EDIT_RIGHTS = createSelector(
   ROLE_IN_CURRENT_WORKSPACE,
   (editMode, role) =>
     editMode &&
-    (role.toLowerCase() === 'owner' ||
-      role.toLowerCase() === 'editor'),
+    (role?.toLowerCase() === 'owner' ||
+      role?.toLowerCase() === 'editor'),
 );
 
 export const USER_IS_OWNER_IN_CURRENT_WORKSPACE = createSelector(
@@ -267,12 +303,14 @@ export const SURVEYS_NOT_IN_MODEL = createSelector(
   SURVEYS_FROM_SUCCESS_MODEL,
   SURVEYS,
   (surveysInModels, surveys) =>
-    surveys?.filter(
-      (survey) =>
-        !surveysInModels.find(
-          (surveyInModel) => surveyInModel.id === survey.id,
-        ),
-    ),
+    surveysInModels
+      ? surveys?.filter(
+          (survey) =>
+            !surveysInModels.find(
+              (surveyInModel) => surveyInModel?.id === survey?.id,
+            ),
+        )
+      : surveys,
 );
 
 export const RESTRICTED_MODE = (state: StoreState) =>
@@ -295,7 +333,7 @@ export const WORKSPACE_MODEL_XML = createSelector(
   WORKSPACE_MODEL,
   (model) =>
     model
-      ? SuccessModel.fromPlainObject(model)?.toXml()?.outerHTML
+      ? SuccessModel.fromPlainObject(model as any)?.toXml()?.outerHTML
       : undefined,
 );
 
@@ -352,7 +390,7 @@ export const WORKSPACE_CATALOG_XML = createSelector(
   WORKSPACE_CATALOG,
   (catalog) =>
     catalog
-      ? MeasureCatalog.fromJSON(catalog)?.toXml()?.outerHTML
+      ? MeasureCatalog.fromJSON(catalog).toXml()?.outerHTML
       : undefined,
 );
 

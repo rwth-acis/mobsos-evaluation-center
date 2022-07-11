@@ -12,31 +12,26 @@ import { Store } from '@ngrx/store';
 import {
   RESTRICTED_MODE,
   SELECTED_SERVICE,
-  VISUALIZATION_DATA_FOR_QUERY,
 } from 'src/app/services/store/store.selectors';
 import { Observable, Subscription } from 'rxjs';
 import {
   VisualizationData,
   ValueVisualization,
+  Visualization,
 } from 'src/app/models/visualization.model';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
-  first,
   map,
-  mergeMap,
-  startWith,
+  shareReplay,
   tap,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { ServiceInformation } from 'src/app/models/service.model';
-import { Measure } from 'src/app/models/measure.model';
 import { refreshVisualization } from 'src/app/services/store/store.actions';
-import {
-  applyCompatibilityFixForVisualizationService,
-  VisualizationComponent,
-} from '../visualization.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { SQLQuery } from 'src/app/models/measure.model';
 
 @Component({
   selector: 'app-value-visualization',
@@ -44,13 +39,14 @@ import {
   styleUrls: ['./value-visualization.component.scss'],
 })
 export class ValueVisualizationComponent
-  extends VisualizationComponent
   implements OnInit, OnDestroy
 {
-  @Input() override measure$: Observable<Measure>;
+  // @Input() override measure$: Observable<Measure>;
 
-  data$: Observable<VisualizationData>;
-
+  @Input() data$: Observable<VisualizationData | VisualizationData[]>;
+  @Input() visualization$: Observable<Visualization>;
+  @Input() description$: Observable<string>;
+  @Input() queries$: Observable<SQLQuery[]>;
   query$: Observable<string>;
   value$: Observable<string>;
   restricted$ = this.ngrxStore.select(RESTRICTED_MODE);
@@ -64,13 +60,14 @@ export class ValueVisualizationComponent
   dataIsReady$: Observable<boolean>;
   private subscriptions$: Subscription[] = [];
   unit$: Observable<string>;
+  error$: Observable<HttpErrorResponse>;
+  fetchDate$: Observable<string>;
+  fetchError$: Observable<any>;
   constructor(
-    protected override dialog: MatDialog,
+    private dialog: MatDialog,
     private ngrxStore: Store,
     private cdref: ChangeDetectorRef,
-  ) {
-    super(dialog);
-  }
+  ) {}
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) =>
@@ -78,43 +75,20 @@ export class ValueVisualizationComponent
     );
   }
 
-  override ngOnInit(): void {
-    this.unit$ = this.measure$.pipe(
-      map(
-        (measure) =>
-          (measure.visualization as ValueVisualization)?.unit,
-      ),
+  ngOnInit(): void {
+    this.unit$ = this.visualization$.pipe(
+      map((viz) => (viz as ValueVisualization)?.unit),
     );
-    // gets the query string from the measure and applies variable replacements
-    this.query$ = this.measure$.pipe(
-      withLatestFrom(this.service$),
-      map(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        query = super.applyVariableReplacements(query, service);
-        query = applyCompatibilityFixForVisualizationService(query);
-        return query;
-      }),
-      distinctUntilChanged(),
+    this.error$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.error),
     );
-    // selects the query data for the query from the store
-    this.data$ = this.query$.pipe(
-      filter((query) => !!query),
-      mergeMap((queryString) =>
-        this.ngrxStore
-          .select(VISUALIZATION_DATA_FOR_QUERY({ queryString }))
-          .pipe(
-            filter((data) => !!data),
-            distinctUntilKeyChanged('fetchDate'),
-          ),
-      ),
-    );
-
-    this.error$ = this.data$.pipe(map((data) => data?.error));
     this.dataIsReady$ = this.data$.pipe(
-      startWith({ loading: false }),
-      map((data) => !data?.loading),
       distinctUntilChanged(),
-      tap(() => this.cdref.detectChanges()),
+      tap(() => {
+        this.cdref.detectChanges();
+      }),
+      map((data) => !(data as VisualizationData)?.loading),
+      shareReplay(1),
     );
     this.value$ = this.data$.pipe(
       map(
@@ -127,33 +101,60 @@ export class ValueVisualizationComponent
           ? '0'
           : (data.slice(-1)[0][0] as string),
       ),
+      distinctUntilChanged(),
       map((value: string | number | boolean) =>
         typeof value === 'string' ? value : value.toString(),
       ),
+      shareReplay(1),
+    );
+    this.query$ = this.queries$.pipe(
+      filter((queries) => !!queries),
+      map((queries) => queries[0].sql),
+    );
+    this.fetchDate$ = this.data$.pipe(
+      map((data) => (data as VisualizationData)?.fetchDate),
+      distinctUntilChanged(),
+      shareReplay(1),
     );
 
-    const sub = this.measure$
-      .pipe(withLatestFrom(this.service$), first())
-      .subscribe(([measure, service]) => {
-        let query = measure.queries[0].sql;
-        const queryParams = super.getParamsForQuery(query);
-        query = super.applyVariableReplacements(query, service);
-        query = applyCompatibilityFixForVisualizationService(query);
-        super.fetchVisualizationData(
-          query,
-          queryParams,
-          this.ngrxStore,
-        );
-      });
-    this.subscriptions$.push(sub);
+    this.fetchError$ = this.data$.pipe(
+      filter((data) => !!data),
+      map((data) => (data as VisualizationData)?.error?.error),
+      distinctUntilChanged(),
+      shareReplay(1),
+    );
   }
 
   onRefreshClicked(query: string): void {
     this.ngrxStore.dispatch(
       refreshVisualization({
         query,
-        queryParams: super.getParamsForQuery(query),
       }),
     );
+  }
+  openErrorDialog(
+    error?: HttpErrorResponse | { error: SyntaxError } | string,
+  ): void {
+    let errorText = 'Unknown error';
+    if (error instanceof HttpErrorResponse) {
+      errorText =
+        'Http status code: ' + error.status?.toString() + '\n';
+      errorText += error.statusText;
+      if (typeof error.error === 'string') {
+        errorText += ': ' + error.error;
+      }
+    } else if (
+      typeof error === 'object' &&
+      Object.keys(error).includes('error')
+    ) {
+      errorText = (error as { error: SyntaxError }).error.message;
+    } else if (typeof error === 'string') {
+      errorText = error;
+    }
+    errorText = errorText?.trim();
+    this.dialog.open(ErrorDialogComponent, {
+      width: '80%',
+      data: { error: errorText },
+    });
   }
 }

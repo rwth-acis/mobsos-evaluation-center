@@ -13,6 +13,7 @@ import {
   MatDialogModule,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { of } from 'rxjs';
 
 describe('SqlTableComponent', () => {
   let component: SqlTableComponent;
@@ -38,7 +39,7 @@ describe('SqlTableComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SqlTableComponent);
     component = fixture.componentInstance;
-    component.query = 'SELECT * FROM messages';
+    component.query$ = of('SELECT * FROM messages');
     component.service = {
       name: 'TestName',
       alias: 'TestAlias',

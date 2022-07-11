@@ -4,11 +4,16 @@ import { Questionnaire } from './questionnaire.model';
 import { Requirement } from './reqbaz.model';
 import { ServiceCollection } from './service.model';
 import { SuccessModel } from './success.model';
-import { Survey } from './survey.model';
+import {
+  ISurvey,
+  LimeSurveyCredentials,
+  LimeSurveyResponse,
+} from './survey.model';
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
-
+import { cred } from './.env';
+import { environment } from 'src/environments/environment';
 /**
  * state of the app
  */
@@ -31,7 +36,15 @@ export interface AppState {
   currentWorkSpaceOwner: string; // username of the user that created and owns the current work space. This might be different from the user that is logged in.
   requirements: Requirement[]; // requirements for the Requirement Bazaar project that is connected to the current success model
   questionnaires: Questionnaire[]; // questionnaires from mobsos surveys
-  surveys: Survey[]; // surveys from mobsos surveys
+  surveys: ISurvey[]; // surveys from mobsos surveys
+  limeSurveySurveys: ISurvey[]; // surveys from limesurvey
+  limeSurveyResponses: {
+    [sid: string]: {
+      responses: LimeSurveyResponse[];
+      fetchDate: number;
+    };
+  }; // responses from limesurvey per survey referenced by the surveyid
+  limeSurveyCredentials: LimeSurveyCredentials;
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -54,6 +67,15 @@ export const INITIAL_APP_STATE: AppState = {
   requirements: undefined,
   questionnaires: undefined,
   surveys: undefined,
+  limeSurveySurveys: undefined,
+  limeSurveyResponses: undefined,
+  limeSurveyCredentials: environment.production
+    ? environment.limesurveyCredentials
+    : {
+        limeSurveyUrl: cred.limeSurveyUrl,
+        loginName: cred.loginName,
+        loginPassword: cred.loginPassword,
+      },
 };
 /**
  * What the store looks like

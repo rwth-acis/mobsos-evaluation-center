@@ -29,7 +29,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
@@ -90,17 +90,21 @@ export class EditMeasureDialogComponent implements OnInit {
   };
 
   measureOptions$ = this.ngrxStore.select(MEASURES).pipe(
-    // all measures which are not the measure itself
     filter(
       (measures) => !!measures && Object.keys(measures).length > 1,
     ),
     map((measures) =>
       Object.values(measures).filter(
         (m) =>
-          m.name !== this.data.measure.name &&
-          (m.visualization.type === 'Value' ||
+          m.name !== this.data.measure.name && // all measures which are not the measure itself
+          (m.visualization.type === 'Value' || // only interested in queries that retrun a single value
             m.visualization.type === 'KPI'),
       ),
+    ),
+    map((measures) =>
+      measures
+        .filter((m) => !(m instanceof Measure))
+        .map((m) => m as Measure),
     ),
   );
 
@@ -343,50 +347,11 @@ export class EditMeasureDialogComponent implements OnInit {
     // this.data.measure.queries.pop();
   }
 
-  // onKpiOperandChange(operandName: string, index: number): void {
-  //   (
-  //     this.data.measure.visualization as KpiVisualization
-  //   ).operationsElements[index] = new KpiVisualizationOperand(
-  //     operandName,
-  //     index,
-  //   );
-  // }
-
-  // onKpiOperatorChange(operatorName: string, index: number): void {
-  //   (
-  //     this.data.measure.visualization as KpiVisualization
-  //   ).operationsElements[index] = new KpiVisualizationOperator(
-  //     operatorName,
-  //     index,
-  //   );
-  //   this.formVisualizationParameters.push(new FormControl(''));
-  // }
-
-  // onAddOperationClicked(): void {
-  //   this.formVisualizationParameters.push(new FormControl(''));
-
-  //   if (this.formVisualizationParameters.controls.length === 1) {
-  //     this.formVisualizationParameters.push(new FormControl(''));
-  //   }
-  // }
-
-  // onRemoveOperationClicked(): void {
-  //   const kpiVisualization = this.data.measure
-  //     .visualization as KpiVisualization;
-  //   if (kpiVisualization.operationsElements.length >= 3) {
-  //     kpiVisualization.operationsElements.pop();
-  //     kpiVisualization.operationsElements.pop();
-  //   }
-
-  //   if (this.formVisualizationParameters.controls.length > 2) {
-  //     this.formVisualizationParameters.removeAt(
-  //       this.formVisualizationParameters.length - 1,
-  //     );
-  //     this.formVisualizationParameters.removeAt(
-  //       this.formVisualizationParameters.length - 1,
-  //     );
-  //   }
-  // }
+  getExampleDataQuery(key: string) {
+    return of(
+      `SELECT REMARKS,TIME_STAMP,SOURCE_NODE,SOURCE_AGENT FROM MESSAGE WHERE EVENT="${key}" AND SOURCE_AGENT IN $SERVICES$ ORDER BY ID DESC LIMIT 5`,
+    );
+  }
 
   onQueryChanged(i: number): void {
     const sql = this.formQueries.controls[i].get('sql')
@@ -394,7 +359,6 @@ export class EditMeasureDialogComponent implements OnInit {
     this.ngrxStore.dispatch(
       fetchVisualizationData({
         query: sql,
-        queryParams: this.getParamsForQuery(sql),
       }),
     );
   }
@@ -444,8 +408,10 @@ export class EditMeasureDialogComponent implements OnInit {
         .select(MEASURE({ measureName: selectedOption }))
         .pipe(take(1)),
     );
-    this.addQueriesToForm(measure.queries);
-    this.autoCompleteField.setValue('', { emitEvent: false });
+    if (measure instanceof Measure) {
+      this.addQueriesToForm(measure.queries);
+      this.autoCompleteField.setValue('', { emitEvent: false });
+    }
   }
 
   /**
@@ -465,7 +431,7 @@ export class EditMeasureDialogComponent implements OnInit {
   }
 
   private getMeasureFromForm(value: any): Measure {
-    const measure = value as Measure;
+    const measure = Measure.fromJSON(value);
     measure.queries = value.queries.map((q) =>
       SQLQuery.fromJSON({
         ...q,

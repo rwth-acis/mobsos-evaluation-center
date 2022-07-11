@@ -45,12 +45,40 @@
     </form>
   </mat-card>
   <br />
-  <ng-container [ngSwitch]="selectedVisualizationType$ | async">
-    <div class="w-fit mx-auto" *ngSwitchCase="'Table'">
-      <app-sql-table [query$]="queryInput$"></app-sql-table>
-    </div>
-    <mat-card class="w-1/2 mx-auto" *ngSwitchDefault>
-      <app-visualization [measure$]="measure$"> </app-visualization>
-    </mat-card>
+  <ng-container *ngIf="selectedVisualizationType$ | async as type">
+    <ng-container [ngSwitch]="type">
+      <div class="w-fit mx-auto" *ngSwitchCase="'Table'">
+        <app-sql-table
+          [query$]="queryInput$"
+          (isLoading)="setLoading($event)"
+        ></app-sql-table>
+      </div>
+      <div class="w-1/2 mx-auto" *ngSwitchCase="'Chart'">
+        <app-chart-visualization
+          [data$]="data$"
+          [description$]="description$"
+          [visualization$]="visualzation$"
+        ></app-chart-visualization>
+      </div>
+      <div class="w-fit mx-auto" *ngSwitchCase="'KPI'">
+        <app-kpi-visualization
+          [data$]="data$"
+          [visualization$]="visualzation$"
+          [queries$]="queries$"
+          [description$]="description$"
+        ></app-kpi-visualization>
+      </div>
+      <div class="w-fit mx-auto" *ngSwitchCase="'Value'">
+        <app-value-visualization
+          [visualization$]="visualzation$"
+          [description$]="description$"
+          [data$]="data$"
+        ></app-value-visualization>
+      </div>
+      <ng-container *ngSwitchDefault>
+        Unknown visualization type {{ type }}
+      </ng-container>
+    </ng-container>
+    <mat-spinner *ngIf="dataIsLoading" class="mx-auto"></mat-spinner>
   </ng-container>
 </div>

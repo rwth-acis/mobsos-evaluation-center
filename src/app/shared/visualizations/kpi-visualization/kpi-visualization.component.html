@@ -1,38 +1,49 @@
 <ng-container
   *ngIf="(dataIsLoading$ | async) === false; else loading"
 >
-  <ng-container *ngIf="expression$ | async as kpi; else noData">
-    <div>{{ kpi }} =</div>
-    <div class="value-visualization" *ngIf="scope$ | async as scope">
-      {{ kpi | evaluate: scope }}
-    </div>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon> info_outline </mat-icon>
-    </button>
-    <ng-container *ngIf="(restricted$ | async) === false">
-      <button
-        *ngIf="queries$ | async as queries"
-        mat-icon-button
-        matTooltipShowDelay="0"
-        matTooltip="{{
-          'success-modeling.visualization.refresh-data' | translate
-        }}"
-        (click)="onRefreshClicked(queries)"
+  <div
+    *ngIf="expression$ | async as kpi; else noData"
+    class="flex flex-col h-full"
+  >
+    <div class="grow flex items-center">
+      <div>{{ kpi }} =</div>
+      <div
+        class="value-visualization"
+        *ngIf="scope$ | async as scope"
       >
-        <mat-icon color="primary">sync</mat-icon>
-      </button></ng-container
-    >
-    <mat-menu #menu="matMenu" yPosition="above">
-      <div id="chart-info">
-        <app-visualization-info
-          [fetchError]="(error$ | async)?.error"
-          [fetchDate]="fetchDate$ | async"
-          [description]="(measure$ | async)?.description"
-        ></app-visualization-info>
+        {{ kpi | evaluate: scope }}
       </div>
-    </mat-menu>
-  </ng-container>
+    </div>
+    <div class="flex">
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon> info_outline </mat-icon>
+      </button>
+      <ng-container *ngIf="(restricted$ | async) === false">
+        <button
+          *ngIf="queries$ | async as queries"
+          mat-icon-button
+          matTooltipShowDelay="0"
+          matTooltip="{{
+            'success-modeling.visualization.refresh-data' | translate
+          }}"
+          (click)="onRefreshClicked(queries)"
+        >
+          <mat-icon color="primary">sync</mat-icon>
+        </button></ng-container
+      >
+    </div>
+  </div>
 </ng-container>
+
+<mat-menu #menu="matMenu" yPosition="above">
+  <div id="chart-info">
+    <app-visualization-info
+      [fetchError]="(error$ | async)?.error"
+      [fetchDate]="fetchDate$ | async"
+      [description]="description$ | async"
+    ></app-visualization-info>
+  </div>
+</mat-menu>
 
 <ng-template #noData>
   <span

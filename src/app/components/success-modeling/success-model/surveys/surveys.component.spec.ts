@@ -15,15 +15,30 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
+
+import { SuccessModel } from 'src/app/models/success.model';
+import { of } from 'rxjs';
+import { Survey } from 'src/app/models/survey.model';
+
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { of } from 'rxjs';
 
 describe('SruveysComponent', () => {
   let component: SurveyComponent;
   let fixture: ComponentFixture<SurveyComponent>;
+  let testSurvey = new Survey({
+    description: 'Test Survey',
+    start: new Date().toISOString(),
+    end: new Date(Date.now() + 2000000).toISOString(),
+    id: 0,
+    name: `Test (${new Date().toISOString()})`,
+    organization: 'Test Organization',
+    owner: 'Test Owner',
+    resource: 'Test Resource',
+    'resource-label': 'Test Resource Label',
+  });
   let actions: Actions;
   const initialState = INITIAL_APP_STATE;
   beforeEach(() => {
