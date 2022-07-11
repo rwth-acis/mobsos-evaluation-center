@@ -56,15 +56,15 @@ The following variables need to be configured:
 | reqBazFrontendUrl | Url a which the Requirements Bazar frontend is accessible |
 | production | Set this to true for the production build. If this is set to false then experimental features are enabled |
 
-### env.ts
+### LimeSurvey credentials
 
-The SurveyHanlder service requires you to provide the credentials for connecting to the limesurvey instance. As these credentials should not be exposed on Github, you have to add them yourself. To do this, navigate to the `src\app\models` folder. In there, there should be a file called `env.ts.template`. Copy this file and rename it as ``env.ts``. The file should look like this:
+The SurveyHanlder service requires you to provide the credentials for connecting to the limesurvey instance. As these credentials should not be exposed on Github, you have to add them yourself. To do this, navigate to the `src\app\models` folder. In there, there should be a file called `state.model`. You need to adjust the `limeSurveyCredentials` property in the `INITIAL_STATE` object. The following credentials need to be provided
 
 ```ts
 export const cred = {
-  limeSurveyUrl: '',
-  loginName: '',
-  loginPassword: '',
+  limeSurveyUrl: '<url of the limesurvey remote control api>',
+  loginName: '<limesurvey login name>',
+  loginPassword: '<limesurvey login password>',
 };
 ```
 

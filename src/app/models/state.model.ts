@@ -12,7 +12,6 @@ import {
 import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
-import { cred } from './.env';
 import { environment } from 'src/environments/environment';
 /**
  * state of the app
@@ -69,13 +68,7 @@ export const INITIAL_APP_STATE: AppState = {
   surveys: undefined,
   limeSurveySurveys: undefined,
   limeSurveyResponses: undefined,
-  limeSurveyCredentials: environment.production
-    ? environment.limesurveyCredentials
-    : {
-        limeSurveyUrl: cred.limeSurveyUrl,
-        loginName: cred.loginName,
-        loginPassword: cred.loginPassword,
-      },
+  limeSurveyCredentials: environment.limesurveyCredentials,
 };
 /**
  * What the store looks like
