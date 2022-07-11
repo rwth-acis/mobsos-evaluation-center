@@ -41,8 +41,6 @@ export const environment: Environment = {
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
   version: packageInfo.version,
-  limeSurveyProxyUrl:
-    'https://las2peer.tech4comp.dbis.rwth-aachen.de/SurveyHandler',
   limesurveyCredentials: {
     limeSurveyUrl:
       window.env.limesurveyUrl ||
