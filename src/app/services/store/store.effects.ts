@@ -62,6 +62,7 @@ import {
   SELECTED_GROUP,
   SELECTED_WORKSPACE_OWNER,
   RESPONSES_FOR_LIMESURVEY,
+  GROUPS,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -166,7 +167,11 @@ export class StateEffects {
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
-      mergeMap(() =>
+      withLatestFrom(
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(GROUPS),
+      ),
+      mergeMap(([action, groupId, groups]) =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
           timeout(30000),
           map((response) => {
@@ -176,6 +181,23 @@ export class StateEffects {
               });
             }
             if (response instanceof HttpResponse) {
+              if (response.body) {
+                if (groupId && !(groupId in response.body)) {
+                  alert(
+                    'You are no langer a part of the current group',
+                  );
+                }
+                const removedGroups = groups?.filter(
+                  (group) => !(group.id in response.body),
+                );
+                if (removedGroups?.length > 0) {
+                  alert(
+                    `You are no longer a part of the following groups: ${removedGroups
+                      .map((group) => group?.name)
+                      .join(', ')}`,
+                  );
+                }
+              }
               return Action.storeGroups({
                 groupsFromContactService: response.body,
               });
