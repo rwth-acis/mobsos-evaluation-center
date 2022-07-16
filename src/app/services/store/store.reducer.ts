@@ -43,6 +43,7 @@ import {
   Survey,
 } from '../../models/survey.model';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
+import { state } from '@angular/animations';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -78,11 +79,26 @@ const _Reducer = createReducer(
       groupsFromContactService,
     ),
   })),
-
+  on(Actions.resetGroups, (state) => ({
+    ...state,
+    groups: initialState.groups,
+  })),
   on(Actions.resetSuccessModel, (state) => ({
     ...state,
     successModel: initialState.successModel,
   })),
+  on(Actions.removeGroups, (state, { groupIds }) => {
+    const groups = cloneDeep(state.groups);
+    for (const groupId of Object.keys(groups)) {
+      if (groupIds.includes(groupId)) {
+        delete groups[groupId];
+      }
+    }
+    return {
+      ...state,
+      groups,
+    };
+  }),
 
   on(
     Actions.storeMessageDescriptions,
@@ -96,24 +112,16 @@ const _Reducer = createReducer(
     }),
   ),
 
-  on(Actions.setGroup, (state, { groupId }) =>
-    groupId
-      ? {
-          ...state,
-          selectedGroupId: groupId,
-          measureCatalogInitialized: false,
-        }
-      : state,
-  ),
-  on(Actions.setService, (state, { service }) =>
-    service
-      ? {
-          ...state,
-          selectedServiceName: service?.name,
-          successModelInitialized: false,
-        }
-      : state,
-  ),
+  on(Actions.setGroup, (state, { groupId }) => ({
+    ...state,
+    selectedGroupId: groupId,
+    measureCatalogInitialized: false,
+  })),
+  on(Actions.setService, (state, { service }) => ({
+    ...state,
+    selectedServiceName: service?.name,
+    successModelInitialized: false,
+  })),
   on(Actions.toggleEdit, (state) => ({
     ...state,
     editMode: !state.editMode,

@@ -104,6 +104,8 @@ export enum StoreActions {
   STORE_QUESTIONNAIRE_FORM = 'Store the form for a given questionnaire',
   STORE_SURVEYS_FROM_LIMESURVEY = 'Store surveys from limesurvey ',
   STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY = 'store the responses for a given Limesurvey',
+  RESET_GROUPS = 'reset the groups, sets the group to undefined',
+  REMOVE_GROUPS = 'removes a list of groups from the current group collection',
 }
 
 /**
@@ -317,6 +319,14 @@ export const storeGroups = createAction(
     };
   }>(),
 );
+export const removeGroups = createAction(
+  StoreActions.REMOVE_GROUPS,
+  props<{
+    groupIds: string[];
+  }>(),
+);
+
+export const resetGroups = createAction(StoreActions.RESET_GROUPS);
 
 export const removeFactor = createAction(
   StoreActions.REMOVE_FACTOR_FROM_DIMENSION,

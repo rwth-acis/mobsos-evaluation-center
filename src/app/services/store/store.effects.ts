@@ -171,7 +171,12 @@ export class StateEffects {
         this.ngrxStore.select(_SELECTED_GROUP_ID),
         this.ngrxStore.select(GROUPS),
       ),
-      mergeMap(([action, groupId, groups]) =>
+      tap(([, , groups]) => {
+        if (groups === null || groups.length === 0) {
+          this.ngrxStore.dispatch(Action.resetGroups());
+        }
+      }),
+      mergeMap(([, groupId, groups]) =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
           timeout(30000),
           map((response) => {
@@ -185,6 +190,9 @@ export class StateEffects {
                 if (groupId && !(groupId in response.body)) {
                   alert(
                     'You are no langer a part of the current group',
+                  );
+                  this.ngrxStore.dispatch(
+                    Action.setGroup({ groupId: undefined }),
                   );
                 }
                 const removedGroups = groups?.filter(
@@ -306,6 +314,11 @@ export class StateEffects {
             }),
           ),
           catchError((err) => {
+            this.ngrxStore.dispatch(
+              Action.removeGroups({
+                groupIds: [groupId],
+              }),
+            );
             return of(Action.failureResponse({ reason: err }));
           }),
         ),

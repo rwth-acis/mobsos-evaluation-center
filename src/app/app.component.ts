@@ -149,7 +149,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .select(storeSelectors.AUTHENTICATED)
       .pipe(distinctUntilChanged())
       .subscribe((auth) => {
-        if (!auth) this.l2pStatusbar.nativeElement.handleLogout();
+        if (!auth && this.l2pStatusbar)
+          this.l2pStatusbar.nativeElement.handleLogout();
       });
     this.subscriptions$.push(sub);
 

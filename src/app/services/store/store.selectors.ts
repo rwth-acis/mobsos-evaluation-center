@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
 import { createSelector } from '@ngrx/store';
-import { User } from 'src/app/models/user.model';
 import { GroupInformation } from '../../models/community.model';
 import {
   MeasureCatalog,
