@@ -18,7 +18,11 @@ import {
   startWith,
 } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
-import { ISurvey, Survey } from 'src/app/models/survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+} from 'src/app/models/survey.model';
 import {
   joinAbsoluteUrlPath,
   Las2peerService,
@@ -119,6 +123,7 @@ export class PickSurveyDialogComponent implements OnInit {
       this.ngrxStore.dispatch(
         fetchResponsesForSurveyFromLimeSurvey({
           sid: (selectedSurvey as ISurvey).id as string,
+          cred: (selectedSurvey as unknown as LimeSurvey).credentials,
         }),
       );
       this.form.get('selectedSurvey').setValue(selectedSurvey);

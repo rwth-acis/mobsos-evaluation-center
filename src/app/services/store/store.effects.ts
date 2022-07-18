@@ -52,7 +52,6 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   USER,
-  LIMESURVEY_CREDENTIALS,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   SUCCESS_MODEL_FROM_NETWORK,
@@ -63,6 +62,7 @@ import {
   SELECTED_WORKSPACE_OWNER,
   RESPONSES_FOR_LIMESURVEY,
   GROUPS,
+  LIMESURVEY_INSTANCES,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
@@ -371,6 +371,7 @@ export class StateEffects {
           this.ngrxStore.dispatch(
             Action.fetchResponsesForSurveyFromLimeSurvey({
               sid: survey.id.toString(),
+              cred: (survey as unknown as LimeSurvey).credentials,
             }),
           );
         }
@@ -933,13 +934,12 @@ export class StateEffects {
   fetchLimeSurveySurveys$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSurveysFromLimeSurvey),
-      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
-      switchMap(([action, cred]) =>
+      switchMap((action) =>
         this.l2p
           .fetchSurveysFromLimeSurvey(
-            cred.limeSurveyUrl,
-            cred.loginName,
-            cred.loginPassword,
+            action.limeSurveyUrl,
+            action.loginName,
+            action.loginPassword,
           )
           .pipe(
             map((res) => {
@@ -965,11 +965,60 @@ export class StateEffects {
     ),
   );
 
+  fetchSurveysFromAllLimeSurveyInstances$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveysFromAllLimeSurveyInstances),
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_INSTANCES)),
+      switchMap(([, instances]) => {
+        const requests = forkJoin(
+          instances.map((credentials) =>
+            this.l2p
+              .fetchSurveysFromLimeSurvey(
+                credentials.limeSurveyUrl,
+                credentials.loginName,
+                credentials.loginPassword,
+              )
+              .pipe(
+                map((res) => {
+                  if (res.status === 200) {
+                    const surveys = res.body.result.map(
+                      (survey: LimeSurveyForm) => {
+                        return new LimeSurvey({
+                          ...survey,
+                          credentials,
+                        });
+                      },
+                    );
+                    return surveys;
+                  } else {
+                    return [];
+                  }
+                }),
+              ),
+          ),
+        );
+        return requests.pipe(
+          map((res) => {
+            const surveys = res.reduce((acc, curr) => {
+              return [...acc, ...curr];
+            }, []);
+            return Action.storeSurveysFromLimeSurvey({
+              surveys,
+            });
+          }),
+        );
+      }),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
   fetchLimeSurveyResponses$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
-      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
-      switchMap(([{ sid }, cred]) =>
+      switchMap(({ sid, cred }) =>
         this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
           map((res) => {
             return [res, sid, cred];
@@ -1156,7 +1205,7 @@ export class StateEffects {
           true,
         );
       }),
-      switchMap(([, service, user, owner]) => {
+      switchMap(([, ,]) => {
         return of(Action.success());
       }),
       catchError((err) => {
@@ -1356,7 +1405,7 @@ function getParamsForQuery(
   const params = [];
   if (matches) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const match of matches) {
+    for (const {} of matches) {
       // for now we use the id which has the greatest registrationTime as this is the agent ID
       // of the most recent service agent started in las2peer
       const maxIndex = Object.values(service.mobsosIDs).reduce(

@@ -18,6 +18,7 @@ import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
   fetchGroups,
+  fetchSurveysFromAllLimeSurveyInstances,
   fetchSurveysFromLimeSurvey,
   logout,
   setGroup,
@@ -132,7 +133,7 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.silentSignin();
 
-    this.ngrxStore.dispatch(fetchSurveysFromLimeSurvey());
+    this.ngrxStore.dispatch(fetchSurveysFromAllLimeSurveyInstances());
 
     let sub = this.ngrxStore
       .select(storeSelectors._SELECTED_GROUP_ID)

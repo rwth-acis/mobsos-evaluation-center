@@ -421,6 +421,16 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+  on(Actions.addLimeSurveyInstance, (state, { credentials }) => ({
+    ...state,
+    limeSurveyInstances: [...state.limeSurveyInstances, credentials],
+  })),
+  on(Actions.removeLimeSurveyInstance, (state, { index }) => ({
+    ...state,
+    limeSurveyInstances: state.limeSurveyInstances.filter(
+      (_instance, i) => i !== index,
+    ),
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {
