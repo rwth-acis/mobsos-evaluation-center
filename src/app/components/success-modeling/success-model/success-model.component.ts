@@ -163,12 +163,13 @@ export class SuccessModelComponent implements OnInit, OnDestroy {
       if (successModel?.surveys) {
         for (const survey of successModel.surveys) {
           if (survey.type === SurveyType.MobSOS) {
-            // check that survey still exists TODO
+            // check that survey still exists TODO create a notification if not
           } else if (survey.type === SurveyType.LimeSurvey) {
             // check that survey still exists TODO
             this.ngrxStore.dispatch(
               fetchResponsesForSurveyFromLimeSurvey({
                 sid: (survey as LimeSurvey).id,
+                cred: (survey as LimeSurvey).credentials,
               }),
             );
           }

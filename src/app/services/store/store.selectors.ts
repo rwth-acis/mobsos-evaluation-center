@@ -39,10 +39,8 @@ export const SURVEYS = (state: StoreState) =>
   (state.Reducer.surveys || []).concat(
     state.Reducer.limeSurveySurveys,
   );
-
-export const LIMESURVEY_CREDENTIALS = (state: StoreState) =>
-  state.Reducer.limeSurveyCredentials;
-
+export const LIMESURVEY_INSTANCES = (state: StoreState) =>
+  state.Reducer.limeSurveyInstances;
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
 

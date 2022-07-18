@@ -15,5 +15,4 @@ export interface Environment {
   reqBazUrl: string; // URL of the Requirements Bazaar API
   reqBazFrontendUrl: string; // URL of the Requirements Bazaar frontend
   version?: string; // version of the application
-  limesurveyCredentials?: LimeSurveyCredentials;
 }

@@ -39,6 +39,7 @@ import {
   ServicesFromMobSOS,
 } from '../../models/service.model';
 import {
+  LimeSurveyCredentials,
   LimeSurveyResponse,
   Survey,
 } from '../../models/survey.model';
@@ -421,6 +422,16 @@ const _Reducer = createReducer(
       ),
     }),
   ),
+  on(Actions.addLimeSurveyInstance, (state, { credentials }) => ({
+    ...state,
+    limeSurveyInstances: _addLimeSurveyInstance(state, credentials),
+  })),
+  on(Actions.removeLimeSurveyInstance, (state, { index }) => ({
+    ...state,
+    limeSurveyInstances: state.limeSurveyInstances.filter(
+      (_instance, i) => i !== index,
+    ),
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {
@@ -1296,4 +1307,17 @@ function addLimeSurveyResponsesForSurvey(
   if (!copy) copy = {};
   copy[sid] = { responses, fetchDate: date };
   return copy;
+}
+function _addLimeSurveyInstance(
+  state: AppState,
+  credentials: LimeSurveyCredentials,
+): LimeSurveyCredentials[] {
+  const instances = cloneDeep(state.limeSurveyInstances);
+  const alreadyIncludes = instances.some(
+    (instance) =>
+      instance.limeSurveyUrl === credentials.limeSurveyUrl &&
+      instance.loginName === credentials.loginName,
+  );
+  if (alreadyIncludes) return instances;
+  else return [...state.limeSurveyInstances, credentials];
 }
