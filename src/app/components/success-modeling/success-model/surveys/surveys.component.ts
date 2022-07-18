@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { RemoveSurveyDialogComponent } from './remove-survey-dialog/remove-survey-dialog.component';
 import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
@@ -44,7 +44,16 @@ import {
   joinAbsoluteUrlPath,
   Las2peerService,
 } from 'src/app/services/las2peer.service';
-import { catchError, firstValueFrom, of, take, timeout } from 'rxjs';
+import {
+  catchError,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  delayWhen,
+  take,
+  timeout,
+} from 'rxjs';
 import {
   addSurveyToModel,
   addModelToWorkSpace,
@@ -55,6 +64,7 @@ import {
   fetchQuestionnaireForm,
   fetchQuestionnaires,
   failureResponse,
+  fetchResponsesForSurveyFromLimeSurvey,
 } from 'src/app/services/store/store.actions';
 import { environment } from 'src/environments/environment';
 
@@ -202,9 +212,7 @@ export class SurveyComponent implements OnInit {
         .pipe(take(1)), // delay until questions are fetched
     );
     if (!questions) {
-      alert(
-        'This survey has no questions which can be visualized as charts. Please choose another survey',
-      );
+      console.error('No questions found for survey', survey);
       return catalog;
     }
     for (const question of questions) {

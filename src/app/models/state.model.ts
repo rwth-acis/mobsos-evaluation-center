@@ -43,7 +43,7 @@ export interface AppState {
       fetchDate: number;
     };
   }; // responses from limesurvey per survey referenced by the surveyid
-  limeSurveyInstances: LimeSurveyCredentials[]; // instances of limesurvey
+  limeSurveyCredentials: LimeSurveyCredentials;
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -68,14 +68,7 @@ export const INITIAL_APP_STATE: AppState = {
   surveys: undefined,
   limeSurveySurveys: undefined,
   limeSurveyResponses: undefined,
-  limeSurveyInstances: [
-    {
-      limeSurveyUrl:
-        'https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/admin/remotecontrol',
-      loginName: 'acis-student',
-      loginPassword: 'IqcQNV3iLOKs',
-    },
-  ],
+  limeSurveyCredentials: environment.limesurveyCredentials,
 };
 /**
  * What the store looks like

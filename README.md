@@ -56,6 +56,23 @@ The following variables need to be configured:
 | reqBazFrontendUrl | Url a which the Requirements Bazar frontend is accessible |
 | production | Set this to true for the production build. If this is set to false then experimental features are enabled |
 
+### LimeSurvey credentials
+
+The SurveyHanlder service requires you to provide the credentials for connecting to the limesurvey instance. As these credentials should not be exposed on Github, you have to adjust them yourself. To do this, navigate to the `src\assets\` folder. In there, there is a file called `env.template.js`. Copy this file and rename it as `env.js`. The following credentials need to be adjusted.
+
+```js
+(function (window) {
+  window['env'] = window['env'] || {};
+  // Environment variables
+  ...
+    window['env']['limesurveyUrl'] =
+      '<url of the limesurvey remote control api. Usually ends in /index.php/admin/remotecontrol>';
+    window['env']['limesurveyLoginName'] = '<your limesurvey login name>';
+    window['env']['limesurveyPassword'] = '<your limesurvey password>';
+})(this);
+```
+
+Adjust the properties accordingly.
 
 # Working with Angular
 

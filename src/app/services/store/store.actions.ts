@@ -19,7 +19,6 @@ import {
 import { SuccessFactor } from '../../models/success.model';
 import {
   ISurvey,
-  LimeSurveyCredentials,
   LimeSurveyForm,
   LimeSurveyResponse,
   Survey,
@@ -59,7 +58,6 @@ export enum HttpActions {
   FAILURE_RESPONSE = 'response was not successful',
   FETCH_SURVEYS_FROM_LIMESURVEY = 'Fetches the list of surveys available in LimeSurvey',
   FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY = 'Fetches the responses for a particular survey from LimeSurvey',
-  FETCH_SURVEYS_FROM_ALL_LIMESURVEY_INSTANCES = 'fetches a list of all surveys curated from all LimeSurvey instances',
 }
 /**
  * Actions that store data in the state store
@@ -108,8 +106,6 @@ export enum StoreActions {
   STORE_RESPONSES_FOR_SURVEY_FROM_LIMESURVEY = 'store the responses for a given Limesurvey',
   RESET_GROUPS = 'reset the groups, sets the group to undefined',
   REMOVE_GROUPS = 'removes a list of groups from the current group collection',
-  ADD_LIMESURVEY_INSTANCE = 'adds a limesurvey instance',
-  REMOVE_LIMESURVEY_INSTANCE = 'remove a limesurvey instance',
 }
 
 /**
@@ -142,25 +138,10 @@ export const fetchServices = createAction(HttpActions.FETCH_SERVICES);
 export const fetchGroups = createAction(HttpActions.FETCH_GROUPS);
 export const fetchSurveysFromLimeSurvey = createAction(
   HttpActions.FETCH_SURVEYS_FROM_LIMESURVEY,
-  props<{
-    limeSurveyUrl: string;
-    loginName: string;
-    loginPassword: string;
-  }>(),
 );
 export const fetchResponsesForSurveyFromLimeSurvey = createAction(
   HttpActions.FETCH_SURVEY_RESPONSE_FOR_SURVEY_FROM_LIMESURVEY,
-  props<{
-    sid: string;
-    cred: {
-      limeSurveyUrl: string;
-      loginName: string;
-      loginPassword: string;
-    };
-  }>(),
-);
-export const fetchSurveysFromAllLimeSurveyInstances = createAction(
-  HttpActions.FETCH_SURVEYS_FROM_ALL_LIMESURVEY_INSTANCES,
+  props<{ sid: string }>(),
 );
 export const fetchVisualizationData = createAction(
   HttpActions.FETCH_VISUALIZATION_DATA,
@@ -293,17 +274,6 @@ export const setNumberOfRequirements = createAction(
   props<{
     n: number;
   }>(),
-);
-
-export const addLimeSurveyInstance = createAction(
-  StoreActions.ADD_LIMESURVEY_INSTANCE,
-  props<{
-    credentials: LimeSurveyCredentials;
-  }>(),
-);
-export const removeLimeSurveyInstance = createAction(
-  StoreActions.REMOVE_LIMESURVEY_INSTANCE,
-  props<{ index: number }>(),
 );
 
 export const addMeasureToCatalog = createAction(
