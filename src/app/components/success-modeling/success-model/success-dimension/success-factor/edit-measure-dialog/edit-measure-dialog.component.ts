@@ -23,10 +23,10 @@ import {
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
 import { Store } from '@ngrx/store';
 import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators,
 } from '@angular/forms';
 import { firstValueFrom, Observable, of } from 'rxjs';
@@ -108,21 +108,21 @@ export class EditMeasureDialogComponent implements OnInit {
     ),
   );
 
-  autoCompleteField = new FormControl();
+  autoCompleteField = new UntypedFormControl();
   filteredOptions$ = this.autoCompleteField.valueChanges.pipe(
     startWith(''),
     withLatestFrom(this.measureOptions$),
     map(([value, measures]) => _filter(value as string, measures)),
   );
 
-  measureForm: FormGroup;
+  measureForm: UntypedFormGroup;
   measure$: Observable<Measure>;
 
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private ngrxStore: Store,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
   ) {
     const measure = this.data.measure;
     this.measureForm = this.fb.group(
@@ -168,14 +168,14 @@ export class EditMeasureDialogComponent implements OnInit {
     }
   }
 
-  get formVisualizationParameters(): FormArray {
+  get formVisualizationParameters(): UntypedFormArray {
     return this.measureForm.get(
       'visualization.parameters',
-    ) as FormArray;
+    ) as UntypedFormArray;
   }
 
-  get formQueries(): FormArray {
-    return this.measureForm.get('queries') as FormArray;
+  get formQueries(): UntypedFormArray {
+    return this.measureForm.get('queries') as UntypedFormArray;
   }
 
   get queryNames(): string[] {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { startWith, throttleTime } from 'rxjs/operators';
 import { Category, ReqbazProject } from 'src/app/models/reqbaz.model';
@@ -11,8 +11,8 @@ import { Las2peerService } from 'src/app/services/las2peer.service';
   styleUrls: ['./pick-reqbaz-project.component.scss'],
 })
 export class PickReqbazProjectComponent implements OnInit {
-  selectedProjectControl = new FormControl();
-  selectedCategoryControl = new FormControl();
+  selectedProjectControl = new UntypedFormControl();
+  selectedCategoryControl = new UntypedFormControl();
   selectedProject: ReqbazProject;
   selectedCategory: Category;
   private availableCategories$ = new BehaviorSubject<Category[]>([]);

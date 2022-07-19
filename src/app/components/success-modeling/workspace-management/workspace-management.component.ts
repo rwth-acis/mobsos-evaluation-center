@@ -51,7 +51,7 @@ import {
   _SELECTED_SERVICE_NAME,
   _SERVICES,
 } from 'src/app/services/store/store.selectors';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { joinAbsoluteUrlPath } from 'src/app/services/las2peer.service';
@@ -123,9 +123,9 @@ export class WorkspaceManagementComponent
   selectedService: ServiceInformation;
   selectedGroupId: string;
   editMode: boolean;
-  selections = new FormControl();
+  selections = new UntypedFormControl();
   options = ['Success Model', 'Measure Catalog'];
-  service = new FormControl();
+  service = new UntypedFormControl();
 
   constructor(
     private _snackBar: MatSnackBar,

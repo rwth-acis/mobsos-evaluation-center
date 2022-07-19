@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { LimeSurveyCredentials } from 'src/app/models/survey.model';
@@ -19,9 +19,9 @@ const URL_REGEXP =
 export class LimesurveyManagementComponent {
   currentInstances$: Observable<LimeSurveyCredentials[]> =
     this.ngrxStore.select(LIMESURVEY_INSTANCES);
-  form: FormGroup;
+  form: UntypedFormGroup;
   showCreds: boolean = false;
-  constructor(private fb: FormBuilder, private ngrxStore: Store) {
+  constructor(private fb: UntypedFormBuilder, private ngrxStore: Store) {
     this.form = this.fb.group({
       limeSurveyUrl: ['', Validators.required],
       loginName: ['', Validators.required],

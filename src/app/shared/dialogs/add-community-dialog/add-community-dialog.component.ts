@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormControl,
+  UntypedFormControl,
   ValidationErrors,
   ValidatorFn,
   Validators,
@@ -40,7 +40,7 @@ import {
 export class AddCommunityDialogComponent
   implements OnInit, OnDestroy
 {
-  form = new FormControl('', [
+  form = new UntypedFormControl('', [
     // eslint-disable-next-line @typescript-eslint/unbound-method
     Validators.required,
     this.forbiddenNameValidator(),
