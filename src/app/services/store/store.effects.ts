@@ -1001,7 +1001,7 @@ export class StateEffects {
                 credentials.loginPassword,
               )
               .pipe(
-                map((res) => {
+                map((res: HttpResponse<any>) => {
                   if (res.status === 200) {
                     const surveys = res.body.result.map(
                       (survey: LimeSurveyForm) => {
@@ -1013,6 +1013,13 @@ export class StateEffects {
                     );
                     return surveys;
                   } else {
+                    alert(
+                      'Error fetching surveys (Error code: ' +
+                        res.status +
+                        ') please check your credentials for ' +
+                        credentials.limeSurveyUrl +
+                        'and make sure the LimeSurvey instance is running',
+                    );
                     return [];
                   }
                 }),
