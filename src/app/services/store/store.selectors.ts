@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
 import { createSelector } from '@ngrx/store';
-import { User } from 'src/app/models/user.model';
 import { GroupInformation } from '../../models/community.model';
 import {
   MeasureCatalog,
@@ -40,10 +39,8 @@ export const SURVEYS = (state: StoreState) =>
   (state.Reducer.surveys || []).concat(
     state.Reducer.limeSurveySurveys,
   );
-
-export const LIMESURVEY_CREDENTIALS = (state: StoreState) =>
-  state.Reducer.limeSurveyCredentials;
-
+export const LIMESURVEY_INSTANCES = (state: StoreState) =>
+  state.Reducer.limeSurveyInstances;
 export const REQUIREMENTS = (state: StoreState) =>
   state.Reducer.requirements;
 

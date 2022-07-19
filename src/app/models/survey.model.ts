@@ -78,6 +78,7 @@ export class LimeSurvey implements ISurvey {
     this.end = new Date(form.expires);
     this.id = form.sid;
     this.name = form.surveyls_title;
+    this.credentials = form.credentials;
   }
   static fromJSON(s: LimeSurvey): LimeSurvey {
     return new LimeSurvey({
@@ -86,6 +87,7 @@ export class LimeSurvey implements ISurvey {
       startdate:
         s.start instanceof Date ? s.start?.toISOString() : s.start,
       expires: s.end instanceof Date ? s.end?.toISOString() : s.end,
+      credentials: s.credentials,
     });
   }
   static fromXml(xml: Element): LimeSurvey {
@@ -95,11 +97,13 @@ export class LimeSurvey implements ISurvey {
       xml.getAttribute('startdate'),
     ).toISOString();
     const end = new Date(xml.getAttribute('expires')).toISOString();
+    const credentials = JSON.parse(xml.getAttribute('credentials'));
     return new LimeSurvey({
       surveyls_title,
       sid,
       startdate: start,
       expires: end,
+      credentials,
     });
   }
   toXml(): Element {
@@ -108,6 +112,10 @@ export class LimeSurvey implements ISurvey {
     limesurvey.setAttribute('surveyls_title', this.name);
     limesurvey.setAttribute('type', 'limeSurvey');
     limesurvey.setAttribute('sid', this.id);
+    limesurvey.setAttribute(
+      'credentials',
+      JSON.stringify(this.credentials),
+    );
     return limesurvey;
   }
 }
@@ -134,6 +142,7 @@ export interface LimeSurveyForm {
   active?: 'Y' | 'N';
   surveyls_title: string;
   expires: string;
+  credentials: LimeSurveyCredentials;
 }
 
 export interface LimeSurveyResponse {

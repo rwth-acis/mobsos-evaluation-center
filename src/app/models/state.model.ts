@@ -43,7 +43,7 @@ export interface AppState {
       fetchDate: number;
     };
   }; // responses from limesurvey per survey referenced by the surveyid
-  limeSurveyCredentials: LimeSurveyCredentials;
+  limeSurveyInstances: LimeSurveyCredentials[]; // instances of limesurvey
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -68,7 +68,7 @@ export const INITIAL_APP_STATE: AppState = {
   surveys: undefined,
   limeSurveySurveys: undefined,
   limeSurveyResponses: undefined,
-  limeSurveyCredentials: environment.limesurveyCredentials,
+  limeSurveyInstances: [],
 };
 /**
  * What the store looks like

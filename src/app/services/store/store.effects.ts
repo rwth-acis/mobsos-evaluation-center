@@ -52,7 +52,6 @@ import {
   SELECTED_SERVICE,
   _SELECTED_SERVICE_NAME,
   USER,
-  LIMESURVEY_CREDENTIALS,
   VISUALIZATION_DATA,
   WORKSPACE_CATALOG_XML,
   SUCCESS_MODEL_FROM_NETWORK,
@@ -62,10 +61,13 @@ import {
   SELECTED_GROUP,
   SELECTED_WORKSPACE_OWNER,
   RESPONSES_FOR_LIMESURVEY,
+  GROUPS,
+  LIMESURVEY_INSTANCES,
 } from './store.selectors';
 import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
 import { UserRole } from 'src/app/models/workspace.model';
+import { SuccessModel } from 'src/app/models/success.model';
 /**
  * The effects handle complex interactions between components, the backend and the ngrxStore
  */
@@ -166,7 +168,16 @@ export class StateEffects {
   fetchGroups$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchGroups),
-      mergeMap(() =>
+      withLatestFrom(
+        this.ngrxStore.select(_SELECTED_GROUP_ID),
+        this.ngrxStore.select(GROUPS),
+      ),
+      tap(([, , groups]) => {
+        if (groups === null || groups.length === 0) {
+          this.ngrxStore.dispatch(Action.resetGroups());
+        }
+      }),
+      mergeMap(([, groupId, groups]) =>
         this.l2p.fetchContactServiceGroupsAndObserve().pipe(
           timeout(30000),
           map((response) => {
@@ -176,6 +187,26 @@ export class StateEffects {
               });
             }
             if (response instanceof HttpResponse) {
+              if (response.body) {
+                if (groupId && !(groupId in response.body)) {
+                  alert(
+                    'You are no langer a part of the current group',
+                  );
+                  this.ngrxStore.dispatch(
+                    Action.setGroup({ groupId: undefined }),
+                  );
+                }
+                const removedGroups = groups?.filter(
+                  (group) => !(group.id in response.body),
+                );
+                if (removedGroups?.length > 0) {
+                  alert(
+                    `You are no longer a part of the following groups: ${removedGroups
+                      .map((group) => group?.name)
+                      .join(', ')}`,
+                  );
+                }
+              }
               return Action.storeGroups({
                 groupsFromContactService: response.body,
               });
@@ -284,6 +315,11 @@ export class StateEffects {
             }),
           ),
           catchError((err) => {
+            this.ngrxStore.dispatch(
+              Action.removeGroups({
+                groupIds: [groupId],
+              }),
+            );
             return of(Action.failureResponse({ reason: err }));
           }),
         ),
@@ -336,6 +372,7 @@ export class StateEffects {
           this.ngrxStore.dispatch(
             Action.fetchResponsesForSurveyFromLimeSurvey({
               sid: survey.id.toString(),
+              cred: (survey as unknown as LimeSurvey).credentials,
             }),
           );
         }
@@ -643,6 +680,27 @@ export class StateEffects {
             serviceName ? serviceName : service?.name,
           )
           .pipe(
+            tap((xml) => {
+              if (xml) {
+                const instances = extractLimesurveyInstances(xml);
+                if (instances.length > 0) {
+                  instances.forEach(
+                    ({ limeSurveyUrl, loginName, loginPassword }) => {
+                      const credentials = {
+                        limeSurveyUrl,
+                        loginName,
+                        loginPassword,
+                      };
+                      this.ngrxStore.dispatch(
+                        Action.addLimeSurveyInstance({
+                          credentials,
+                        }),
+                      );
+                    },
+                  );
+                }
+              }
+            }),
             map((xml) =>
               Action.storeSuccessModel({
                 xml: xml || null,
@@ -898,13 +956,12 @@ export class StateEffects {
   fetchLimeSurveySurveys$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchSurveysFromLimeSurvey),
-      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
-      switchMap(([action, cred]) =>
+      switchMap((action) =>
         this.l2p
           .fetchSurveysFromLimeSurvey(
-            cred.limeSurveyUrl,
-            cred.loginName,
-            cred.loginPassword,
+            action.limeSurveyUrl,
+            action.loginName,
+            action.loginPassword,
           )
           .pipe(
             map((res) => {
@@ -930,11 +987,67 @@ export class StateEffects {
     ),
   );
 
+  fetchSurveysFromAllLimeSurveyInstances$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(Action.fetchSurveysFromAllLimeSurveyInstances),
+      withLatestFrom(this.ngrxStore.select(LIMESURVEY_INSTANCES)),
+      switchMap(([, instances]) => {
+        const requests = forkJoin(
+          instances.map((credentials) =>
+            this.l2p
+              .fetchSurveysFromLimeSurvey(
+                credentials.limeSurveyUrl,
+                credentials.loginName,
+                credentials.loginPassword,
+              )
+              .pipe(
+                map((res: HttpResponse<any>) => {
+                  if (res.status === 200 && res.body.result) {
+                    const surveys = res.body.result.map(
+                      (survey: LimeSurveyForm) => {
+                        return new LimeSurvey({
+                          ...survey,
+                          credentials,
+                        });
+                      },
+                    );
+                    return surveys;
+                  } else {
+                    alert(
+                      'Error fetching surveys (Error code: ' +
+                        res.status +
+                        ') please check your credentials for ' +
+                        credentials.limeSurveyUrl +
+                        'and make sure the LimeSurvey instance is running',
+                    );
+                    return [];
+                  }
+                }),
+              ),
+          ),
+        );
+        return requests.pipe(
+          map((res) => {
+            const surveys = res.reduce((acc, curr) => {
+              return [...acc, ...curr];
+            }, []);
+            return Action.storeSurveysFromLimeSurvey({
+              surveys,
+            });
+          }),
+        );
+      }),
+      catchError((err) =>
+        of(Action.failureResponse({ reason: err })),
+      ),
+      share(),
+    ),
+  );
+
   fetchLimeSurveyResponses$ = createEffect(() =>
     this.actions$.pipe(
       ofType(Action.fetchResponsesForSurveyFromLimeSurvey),
-      withLatestFrom(this.ngrxStore.select(LIMESURVEY_CREDENTIALS)),
-      switchMap(([{ sid }, cred]) =>
+      switchMap(({ sid, cred }) =>
         this.ngrxStore.select(RESPONSES_FOR_LIMESURVEY({ sid })).pipe(
           map((res) => {
             return [res, sid, cred];
@@ -1121,7 +1234,7 @@ export class StateEffects {
           true,
         );
       }),
-      switchMap(([, service, user, owner]) => {
+      switchMap(([, ,]) => {
         return of(Action.success());
       }),
       catchError((err) => {
@@ -1321,7 +1434,7 @@ function getParamsForQuery(
   const params = [];
   if (matches) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const match of matches) {
+    for (const {} of matches) {
       // for now we use the id which has the greatest registrationTime as this is the agent ID
       // of the most recent service agent started in las2peer
       const maxIndex = Object.values(service.mobsosIDs).reduce(
@@ -1335,4 +1448,17 @@ function getParamsForQuery(
     }
   }
   return params as string[];
+}
+function extractLimesurveyInstances(xml: string) {
+  const parser = new DOMParser();
+  const elem = parser.parseFromString(xml, 'text/xml');
+  const model = SuccessModel.fromXml(elem.documentElement);
+  const instances = model.surveys
+    .map((survey) =>
+      survey.type === SurveyType.LimeSurvey
+        ? (survey as LimeSurvey).credentials
+        : null,
+    )
+    .filter((credentials) => credentials !== null);
+  return instances;
 }
