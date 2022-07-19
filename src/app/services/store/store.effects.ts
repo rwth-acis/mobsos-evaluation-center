@@ -1002,7 +1002,7 @@ export class StateEffects {
               )
               .pipe(
                 map((res: HttpResponse<any>) => {
-                  if (res.status === 200) {
+                  if (res.status === 200 && res.body.result) {
                     const surveys = res.body.result.map(
                       (survey: LimeSurveyForm) => {
                         return new LimeSurvey({
