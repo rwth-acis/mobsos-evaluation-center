@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { LimeSurveyCredentials } from 'src/app/models/survey.model';
 import {
   addLimeSurveyInstance,
+  fetchSurveysFromAllLimeSurveyInstances,
   removeLimeSurveyInstance,
 } from 'src/app/services/store/store.actions';
 import { LIMESURVEY_INSTANCES } from 'src/app/services/store/store.selectors';
@@ -15,7 +16,7 @@ const URL_REGEXP =
   templateUrl: './limesurvey-management.component.html',
   styleUrls: ['./limesurvey-management.component.scss'],
 })
-export class LimesurveyManagementComponent implements OnInit {
+export class LimesurveyManagementComponent {
   currentInstances$: Observable<LimeSurveyCredentials[]> =
     this.ngrxStore.select(LIMESURVEY_INSTANCES);
   form: FormGroup;
@@ -27,8 +28,6 @@ export class LimesurveyManagementComponent implements OnInit {
       loginPassword: ['', Validators.required],
     });
   }
-
-  ngOnInit(): void {}
 
   addInstance() {
     if (!URL_REGEXP.test(this.form.get('limeSurveyUrl').value)) {
@@ -44,6 +43,7 @@ export class LimesurveyManagementComponent implements OnInit {
       }),
     );
     this.form.reset();
+    this.ngrxStore.dispatch(fetchSurveysFromAllLimeSurveyInstances());
   }
 
   deleteInstance(i: number) {

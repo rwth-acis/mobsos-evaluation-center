@@ -19,7 +19,6 @@ import {
   fetchGroupMembers,
   fetchGroups,
   fetchSurveysFromAllLimeSurveyInstances,
-  fetchSurveysFromLimeSurvey,
   logout,
   setGroup,
   storeUser,
