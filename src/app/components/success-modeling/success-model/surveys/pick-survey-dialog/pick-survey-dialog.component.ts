@@ -4,7 +4,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -74,7 +74,7 @@ export class PickSurveyDialogComponent implements OnInit {
     private dialog: MatDialog,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
   ) {}
 
   form = this.fb.group({
