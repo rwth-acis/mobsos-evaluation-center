@@ -95,15 +95,12 @@ export class EditMeasureDialogComponent implements OnInit {
     ),
     map((measures) =>
       Object.values(measures).filter(
-        (m) =>
-          m.name !== this.data.measure.name && // all measures which are not the measure itself
-          (m.visualization.type === 'Value' || // only interested in queries that retrun a single value
-            m.visualization.type === 'KPI'),
+        (m) => m.name !== this.data.measure.name, // all measures which are not the measure itself
       ),
     ),
     map((measures) =>
       measures
-        .filter((m) => !(m instanceof Measure))
+        .filter((m) => m.type === 'success')
         .map((m) => m as Measure),
     ),
   );
@@ -166,6 +163,8 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
     }
+
+    this.measureOptions$.subscribe();
   }
 
   get formVisualizationParameters(): FormArray {
@@ -408,8 +407,8 @@ export class EditMeasureDialogComponent implements OnInit {
         .select(MEASURE({ measureName: selectedOption }))
         .pipe(take(1)),
     );
-    if (measure instanceof Measure) {
-      this.addQueriesToForm(measure.queries);
+    if (measure.type === 'success') {
+      this.addQueriesToForm((measure as Measure).queries);
       this.autoCompleteField.setValue('', { emitEvent: false });
     }
   }
@@ -421,12 +420,25 @@ export class EditMeasureDialogComponent implements OnInit {
    */
   addQueriesToForm(queries: Query[]) {
     queries.forEach((query) => {
-      this.formQueries.push(
-        this.fb.group({
-          name: [query.name || ''],
-          sql: [(query as SQLQuery).sql?.trim() || ''],
-        }),
-      );
+      if (
+        this.measureForm.get('visualization.type').value === 'KPI'
+      ) {
+        this.formQueries.push(
+          this.fb.group({
+            name: [query.name || ''],
+            sql: [(query as SQLQuery).sql?.trim() || ''],
+          }),
+        );
+      } else {
+        this.formQueries
+          .get('0')
+          .get('sql')
+          .setValue((query as SQLQuery).sql?.trim());
+        this.formQueries
+          .get('0')
+          .get('name')
+          .setValue(query.name || '');
+      }
     });
   }
 
