@@ -1023,6 +1023,17 @@ export class StateEffects {
                     return [];
                   }
                 }),
+                catchError((err) => {
+                  alert(
+                    'Error fetching surveys (Error code: ' +
+                      err.status +
+                      ') please check your credentials for ' +
+                      credentials.limeSurveyUrl +
+                      'and make sure the LimeSurvey instance is running',
+                  );
+                  console.error(err);
+                  return of([]);
+                }),
               ),
           ),
         );
