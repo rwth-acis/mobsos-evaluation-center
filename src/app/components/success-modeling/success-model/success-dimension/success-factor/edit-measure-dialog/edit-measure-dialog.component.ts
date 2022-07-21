@@ -423,6 +423,7 @@ export class EditMeasureDialogComponent implements OnInit {
       if (
         this.measureForm.get('visualization.type').value === 'KPI'
       ) {
+        // for kpi we add them
         this.formQueries.push(
           this.fb.group({
             name: [query.name || ''],
@@ -430,6 +431,7 @@ export class EditMeasureDialogComponent implements OnInit {
           }),
         );
       } else {
+        // for value and chart we replace the current query
         this.formQueries
           .get('0')
           .get('sql')
