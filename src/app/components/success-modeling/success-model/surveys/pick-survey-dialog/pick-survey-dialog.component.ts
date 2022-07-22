@@ -4,7 +4,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -18,7 +18,11 @@ import {
   startWith,
 } from 'rxjs';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
-import { ISurvey, Survey } from 'src/app/models/survey.model';
+import {
+  ISurvey,
+  LimeSurvey,
+  Survey,
+} from 'src/app/models/survey.model';
 import {
   joinAbsoluteUrlPath,
   Las2peerService,
@@ -70,7 +74,7 @@ export class PickSurveyDialogComponent implements OnInit {
     private dialog: MatDialog,
     private l2p: Las2peerService,
     private ngrxStore: Store,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
   ) {}
 
   form = this.fb.group({
@@ -119,6 +123,7 @@ export class PickSurveyDialogComponent implements OnInit {
       this.ngrxStore.dispatch(
         fetchResponsesForSurveyFromLimeSurvey({
           sid: (selectedSurvey as ISurvey).id as string,
+          cred: (selectedSurvey as unknown as LimeSurvey).credentials,
         }),
       );
       this.form.get('selectedSurvey').setValue(selectedSurvey);

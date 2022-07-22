@@ -41,11 +41,4 @@ export const environment: Environment = {
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
   version: packageInfo.version,
-  limesurveyCredentials: {
-    limeSurveyUrl:
-      window.env.limesurveyUrl ||
-      'https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/admin/remotecontrol',
-    loginName: window.env.limesurveyLoginName,
-    loginPassword: window.env.limesurveyPassword,
-  },
 };

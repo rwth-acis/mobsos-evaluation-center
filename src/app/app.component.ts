@@ -13,12 +13,12 @@ import { environment } from '../environments/environment';
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
 
 import { DomSanitizer } from '@angular/platform-browser';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
   fetchGroups,
-  fetchSurveysFromLimeSurvey,
+  fetchSurveysFromAllLimeSurveyInstances,
   logout,
   setGroup,
   storeUser,
@@ -69,7 +69,7 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   @ViewChild('statusbar') l2pStatusbar: ElementRef;
-  selectedGroupForm = new FormControl('');
+  selectedGroupForm = new UntypedFormControl('');
   title = 'MobSOS Evaluation Center';
   evalcenterProjectLink = joinAbsoluteUrlPath(
     environment.reqBazFrontendUrl,
@@ -97,7 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
     .pipe(filter((user) => !!user));
 
   selectedGroupId: string; // used to show the selected group in the form field
-  group = new FormControl();
+  group = new UntypedFormControl();
 
   version = environment.version;
 
@@ -132,7 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.silentSignin();
 
-    this.ngrxStore.dispatch(fetchSurveysFromLimeSurvey());
+    this.ngrxStore.dispatch(fetchSurveysFromAllLimeSurveyInstances());
 
     let sub = this.ngrxStore
       .select(storeSelectors._SELECTED_GROUP_ID)
@@ -149,7 +149,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .select(storeSelectors.AUTHENTICATED)
       .pipe(distinctUntilChanged())
       .subscribe((auth) => {
-        if (!auth) this.l2pStatusbar.nativeElement.handleLogout();
+        if (!auth && this.l2pStatusbar)
+          this.l2pStatusbar.nativeElement.handleLogout();
       });
     this.subscriptions$.push(sub);
 

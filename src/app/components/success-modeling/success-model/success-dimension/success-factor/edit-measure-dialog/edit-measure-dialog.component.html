@@ -190,6 +190,7 @@
         <!-- query hints based on message description from the service -->
 
         <section class="flex-grow">
+          <!-- general information about how to write a query -->
           <mat-expansion-panel class="mb-2">
             <mat-expansion-panel-header>
               <mat-panel-title
@@ -253,11 +254,7 @@
               </div>
             </ng-template>
           </mat-expansion-panel>
-          <ng-container
-            *ngIf="
-              (measureOptions$ | async) && visualizationType === 'KPI'
-            "
-          >
+          <ng-container *ngIf="measureOptions$ | async">
             <mat-form-field>
               <mat-label>Import from other Measure</mat-label>
 

@@ -39,7 +39,7 @@ import {
 import { ConfirmationDialogComponent } from 'src/app/shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import {
   combineLatest,
   firstValueFrom,
@@ -61,7 +61,7 @@ export interface DialogData {
 })
 export class PickMeasureDialogComponent implements OnInit, OnDestroy {
   @ViewChild(MatAccordion) accordion: MatAccordion;
-  input = new FormControl('');
+  input = new UntypedFormControl('');
 
   measuresChanged = new EventEmitter<Measure[]>();
   canEdit$ = this.ngrxStore.select(USER_HAS_EDIT_RIGHTS);

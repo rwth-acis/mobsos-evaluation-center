@@ -23,10 +23,10 @@ import {
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
 import { Store } from '@ngrx/store';
 import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators,
 } from '@angular/forms';
 import { firstValueFrom, Observable, of } from 'rxjs';
@@ -95,34 +95,31 @@ export class EditMeasureDialogComponent implements OnInit {
     ),
     map((measures) =>
       Object.values(measures).filter(
-        (m) =>
-          m.name !== this.data.measure.name && // all measures which are not the measure itself
-          (m.visualization.type === 'Value' || // only interested in queries that retrun a single value
-            m.visualization.type === 'KPI'),
+        (m) => m.name !== this.data.measure.name, // all measures which are not the measure itself
       ),
     ),
     map((measures) =>
       measures
-        .filter((m) => !(m instanceof Measure))
+        .filter((m) => m.type === 'success')
         .map((m) => m as Measure),
     ),
   );
 
-  autoCompleteField = new FormControl();
+  autoCompleteField = new UntypedFormControl();
   filteredOptions$ = this.autoCompleteField.valueChanges.pipe(
     startWith(''),
     withLatestFrom(this.measureOptions$),
     map(([value, measures]) => _filter(value as string, measures)),
   );
 
-  measureForm: FormGroup;
+  measureForm: UntypedFormGroup;
   measure$: Observable<Measure>;
 
   constructor(
     private dialogRef: MatDialogRef<EditMeasureDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private ngrxStore: Store,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
   ) {
     const measure = this.data.measure;
     this.measureForm = this.fb.group(
@@ -166,16 +163,18 @@ export class EditMeasureDialogComponent implements OnInit {
         );
         break;
     }
+
+    this.measureOptions$.subscribe();
   }
 
-  get formVisualizationParameters(): FormArray {
+  get formVisualizationParameters(): UntypedFormArray {
     return this.measureForm.get(
       'visualization.parameters',
-    ) as FormArray;
+    ) as UntypedFormArray;
   }
 
-  get formQueries(): FormArray {
-    return this.measureForm.get('queries') as FormArray;
+  get formQueries(): UntypedFormArray {
+    return this.measureForm.get('queries') as UntypedFormArray;
   }
 
   get queryNames(): string[] {
@@ -408,8 +407,8 @@ export class EditMeasureDialogComponent implements OnInit {
         .select(MEASURE({ measureName: selectedOption }))
         .pipe(take(1)),
     );
-    if (measure instanceof Measure) {
-      this.addQueriesToForm(measure.queries);
+    if (measure.type === 'success') {
+      this.addQueriesToForm((measure as Measure).queries);
       this.autoCompleteField.setValue('', { emitEvent: false });
     }
   }
@@ -421,12 +420,27 @@ export class EditMeasureDialogComponent implements OnInit {
    */
   addQueriesToForm(queries: Query[]) {
     queries.forEach((query) => {
-      this.formQueries.push(
-        this.fb.group({
-          name: [query.name || ''],
-          sql: [(query as SQLQuery).sql?.trim() || ''],
-        }),
-      );
+      if (
+        this.measureForm.get('visualization.type').value === 'KPI'
+      ) {
+        // for kpi we add them
+        this.formQueries.push(
+          this.fb.group({
+            name: [query.name || ''],
+            sql: [(query as SQLQuery).sql?.trim() || ''],
+          }),
+        );
+      } else {
+        // for value and chart we replace the current query
+        this.formQueries
+          .get('0')
+          .get('sql')
+          .setValue((query as SQLQuery).sql?.trim());
+        this.formQueries
+          .get('0')
+          .get('name')
+          .setValue(query.name || '');
+      }
     });
   }
 
