@@ -46,6 +46,7 @@ import { SuccessModelingModule } from './components/success-modeling/success-mod
 import { SharedModule } from './shared/shared.module';
 import { WelcomeModule } from './components/welcome/welcome.module';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { OAuthModule } from 'angular-oauth2-oidc';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -115,6 +116,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     }),
     MonacoEditorModule.forRoot(),
     MarkdownModule.forRoot(),
+    OAuthModule.forRoot(),
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
     MatSidenavModule,

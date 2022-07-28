@@ -31,6 +31,7 @@ import {
   filter,
   map,
   take,
+  tap,
 } from 'rxjs/operators';
 
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
@@ -45,6 +46,8 @@ import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dial
 import { StoreState } from './models/state.model';
 import { joinAbsoluteUrlPath } from './services/las2peer.service';
 import { Router } from '@angular/router';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { authCodeFlowConfig } from './auth.config';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -112,6 +115,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
     private router: Router,
+    private oauthService: OAuthService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -127,6 +131,21 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileQueryListener,
       false,
     );
+
+    this.oauthService.configure(authCodeFlowConfig);
+    this.oauthService.loadDiscoveryDocumentAndLogin();
+
+    //this.oauthService.setupAutomaticSilentRefresh();
+
+    // Automatically load user profile
+    this.oauthService.events
+      .pipe(
+        tap((e) => {
+          console.log(e);
+        }),
+        filter((e) => e.type === 'token_received'),
+      )
+      .subscribe((_) => this.oauthService.loadUserProfile());
   }
 
   async ngOnInit() {

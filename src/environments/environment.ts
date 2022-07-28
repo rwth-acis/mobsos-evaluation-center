@@ -22,7 +22,7 @@ declare global {
 export const environment: Environment = {
   production: false,
   correctTimestamps: false,
-  openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
+  openIdAuthorityUrl: 'https://auth.las2peer.org/auth/realms/main',
   openIdClientId: 'localtestclient',
   openIdSilentLoginInterval: 60,
   las2peerWebConnectorUrl:
