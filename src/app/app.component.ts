@@ -189,17 +189,22 @@ export class AppComponent implements OnInit, OnDestroy {
       console.error(err);
     });
 
-    this.oauthService.tryLogin({
-      onTokenReceived: (context) => {
-        //
-        // Output just for purpose of demonstration
-        // Don't try this at home ... ;-)
-        //
-        console.debug('logged in');
-        console.debug(context);
-      },
-    });
-    if (true) {
+    const loggedIn = this.oauthService
+      .tryLogin({
+        onTokenReceived: (context) => {
+          //
+          // Output just for purpose of demonstration
+          // Don't try this at home ... ;-)
+          //
+          console.debug('logged in');
+          console.debug(context);
+        },
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    // tryLogin returns true even though no token is received
+    if (loggedIn) {
       this.ngrxStore.dispatch(fetchGroups());
       try {
         let profile = this.oauthService.loadUserProfile();
@@ -251,8 +256,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   oidcButtonClicked() {
-    const user = null;
-    if (user) {
+    const loggedIn = this.oauthService.hasValidAccessToken();
+    if (loggedIn) {
       confirm('Are you sure you sure you want to logout?');
       this.oauthService.logOut();
       this.ngrxStore.dispatch(logout());
