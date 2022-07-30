@@ -9,4 +9,5 @@ export const authCodeFlowConfig: AuthConfig = {
   scope: 'openid profile email',
   showDebugInformation: true,
   timeoutFactor: 0.01,
+  requestAccessToken: true,
 };

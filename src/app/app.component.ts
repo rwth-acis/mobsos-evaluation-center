@@ -185,12 +185,8 @@ export class AppComponent implements OnInit, OnDestroy {
       )
       .subscribe((_) => this.oauthService.loadUserProfile());
 
-    await this.oauthService.loadDiscoveryDocument().catch((err) => {
-      console.error(err);
-    });
-
-    const loggedIn = this.oauthService
-      .tryLogin({
+    const loggedIn = await this.oauthService
+      .loadDiscoveryDocumentAndTryLogin({
         onTokenReceived: (context) => {
           //
           // Output just for purpose of demonstration
@@ -199,15 +195,34 @@ export class AppComponent implements OnInit, OnDestroy {
           console.debug('logged in');
           console.debug(context);
         },
+        onLoginError: (context) => {
+          console.debug('login error');
+          console.debug(context);
+        },
       })
       .catch((err) => {
         console.error(err);
       });
+
+    //  this.oauthService
+    //   .tryLogin({
+    //     onTokenReceived: (context) => {
+    //       //
+    //       // Output just for purpose of demonstration
+    //       // Don't try this at home ... ;-)
+    //       //
+    //       console.debug('logged in');
+    //       console.debug(context);
+    //     },
+    //   })
+    //   .catch((err) => {
+    //     console.error(err);
+    //   });
     // tryLogin returns true even though no token is received
     if (loggedIn) {
       this.ngrxStore.dispatch(fetchGroups());
       try {
-        let profile = this.oauthService.loadUserProfile();
+        let profile = await this.oauthService.loadUserProfile();
         console.log(profile);
         this.oauthService.setupAutomaticSilentRefresh();
       } catch (error) {
