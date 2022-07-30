@@ -173,7 +173,7 @@ export class StateEffects {
         this.ngrxStore.select(GROUPS),
       ),
       tap(([, , groups]) => {
-        if (groups === null || groups.length === 0) {
+        if (groups === null || groups?.length === 0) {
           this.ngrxStore.dispatch(Action.resetGroups());
         }
       }),
@@ -229,7 +229,10 @@ export class StateEffects {
           }),
         ),
       ),
-      catchError(() => of(Action.failure({}))),
+      catchError((reason) => {
+        console.log(reason);
+        return of(Action.failure({}));
+      }),
       share(),
     ),
   );

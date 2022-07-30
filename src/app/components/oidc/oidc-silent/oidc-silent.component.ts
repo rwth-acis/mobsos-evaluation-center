@@ -11,13 +11,5 @@ import { userManagerSettings } from '../oidc-signin/user.manager.settings';
   styleUrls: ['./oidc-silent.component.scss'],
 })
 export class OidcSilentComponent {
-  constructor(private router: Router, private ngrxStore: Store) {
-    void new UserManager(userManagerSettings)
-      .signinSilentCallback()
-      .catch((err) => {
-        console.error(err);
-        this.ngrxStore.dispatch(storeUser({ user: null }));
-        void this.router.navigate(['/']);
-      });
-  }
+  constructor() {}
 }

@@ -27,7 +27,6 @@ import {
 import * as storeSelectors from './services/store/store.selectors';
 import {
   distinctUntilChanged,
-  distinctUntilKeyChanged,
   filter,
   map,
   take,
@@ -133,24 +132,9 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
     this.oauthService.configure(authCodeFlowConfig);
-    this.oauthService.loadDiscoveryDocumentAndLogin();
-
-    //this.oauthService.setupAutomaticSilentRefresh();
-
-    // Automatically load user profile
-    this.oauthService.events
-      .pipe(
-        tap((e) => {
-          console.log(e);
-        }),
-        filter((e) => e.type === 'token_received'),
-      )
-      .subscribe((_) => this.oauthService.loadUserProfile());
   }
 
   async ngOnInit() {
-    this.silentSignin();
-
     this.ngrxStore.dispatch(fetchSurveysFromAllLimeSurveyInstances());
 
     let sub = this.ngrxStore
@@ -191,14 +175,40 @@ export class AppComponent implements OnInit, OnDestroy {
       this.title = `MobSOS Evaluation Center v${environment.version}`;
     }
 
-    await firstValueFrom(
-      this.user$.pipe(
-        filter((u) => !!u?.signedIn),
-        distinctUntilKeyChanged('signedIn'),
-        take(1),
-      ),
-    );
-    this.ngrxStore.dispatch(fetchGroups());
+    // Automatically load user profile
+    this.oauthService.events
+      .pipe(
+        tap((e) => {
+          console.log(e);
+        }),
+        filter((e) => e.type === 'token_received'),
+      )
+      .subscribe((_) => this.oauthService.loadUserProfile());
+
+    await this.oauthService.loadDiscoveryDocument().catch((err) => {
+      console.error(err);
+    });
+
+    this.oauthService.tryLogin({
+      onTokenReceived: (context) => {
+        //
+        // Output just for purpose of demonstration
+        // Don't try this at home ... ;-)
+        //
+        console.debug('logged in');
+        console.debug(context);
+      },
+    });
+    if (true) {
+      this.ngrxStore.dispatch(fetchGroups());
+      try {
+        let profile = this.oauthService.loadUserProfile();
+        console.log(profile);
+        this.oauthService.setupAutomaticSilentRefresh();
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -226,6 +236,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (!user) {
+      this.oauthService.logOut();
       this.ngrxStore.dispatch(logout());
       this.l2pStatusbar.nativeElement.handleClick();
     }
@@ -236,6 +247,17 @@ export class AppComponent implements OnInit, OnDestroy {
   onGroupSelected(groupId: string): void {
     if (groupId) {
       this.ngrxStore.dispatch(setGroup({ groupId }));
+    }
+  }
+
+  oidcButtonClicked() {
+    const user = null;
+    if (user) {
+      confirm('Are you sure you sure you want to logout?');
+      this.oauthService.logOut();
+      this.ngrxStore.dispatch(logout());
+    } else {
+      this.oauthService.initImplicitFlow();
     }
   }
 
@@ -262,40 +284,5 @@ export class AppComponent implements OnInit, OnDestroy {
       this.setUser(null);
       void this.router.navigate(['/welcome']);
     }
-  }
-
-  silentSignin(
-    user$: Observable<User> = this.ngrxStore.select(
-      storeSelectors.USER,
-    ),
-  ) {
-    const silentLoginFunc = () =>
-      AppComponent.userManager
-        .signinSilentCallback()
-        .then(() => {})
-        .catch(() => {
-          this.setUser(null);
-          console.error('Silent login failed');
-        });
-    void silentLoginFunc();
-
-    const sub = user$
-      .pipe(
-        filter((u) => !!u?.signedIn),
-        distinctUntilKeyChanged('signedIn'),
-      )
-      .subscribe((user) => {
-        // callback only called when signedIn state changes
-        clearInterval(this.silentSigninIntervalHandle); // clear old interval
-        if (user?.signedIn) {
-          // if signed in, create a new interval
-          this.silentSigninIntervalHandle = setInterval(
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            silentLoginFunc,
-            environment.openIdSilentLoginInterval * 1000,
-          );
-        }
-      });
-    this.subscriptions$.push(sub);
   }
 }

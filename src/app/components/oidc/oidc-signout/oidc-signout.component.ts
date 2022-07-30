@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { storeUser } from 'src/app/services/store/store.actions';
 import { User } from 'src/app/models/user.model';
 import { userManagerSettings } from '../oidc-signin/user.manager.settings';
+import { OAuthService } from 'angular-oauth2-oidc';
 
 @Component({
   selector: 'app-oidc-signout',
@@ -12,16 +13,7 @@ import { userManagerSettings } from '../oidc-signin/user.manager.settings';
   styleUrls: ['./oidc-signout.component.scss'],
 })
 export class OidcSignoutComponent {
-  constructor(private ngrxStore: Store, private router: Router) {
-    void new UserManager(userManagerSettings)
-      .signoutRedirectCallback()
-      .then(() => {
-        this.ngrxStore.dispatch(storeUser({ user: null }));
-        void this.router.navigate(['/']);
-      })
-      .catch((err) => {
-        console.error(err);
-        void this.router.navigate(['/']);
-      });
+  constructor(private oauthService: OAuthService) {
+    this.oauthService.logOut();
   }
 }

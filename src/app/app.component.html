@@ -137,34 +137,22 @@
     </footer>
   </mat-sidenav>
   <mat-sidenav-content>
-    <las2peer-frontend-statusbar
-      #statusbar
-      id="las2peer-statusbar"
-      service="{{ title }}"
-      [attr.oidcAuthority]="environment.openIdAuthorityUrl"
-      [attr.oidcclientid]="environment.openIdClientId"
-      [attr.baseurl]="environment.las2peerWebConnectorUrl"
-      oidcpopupsigninurl="oidc-signin"
-      oidcpopupsignouturl="oidc-signout"
-      oidcSilentSigninUrl="oidc-silent"
-      [attr.useRedirect]="true"
-      autoAppendWidget="true"
-      (signed-in)="setUser($event)"
-      (signed-out)="logout()"
-    >
+    <mat-toolbar color="primary" class="flex justify-between">
+      <span class="font-semibold">{{ title }}</span>
       <button
-        mat-icon-button
-        id="menu-button"
-        *ngIf="mobileQuery.matches"
-        slot="left"
-        (click)="snav.toggle()"
+        mat-flat-button
+        color="primary"
+        id="login-button"
+        (click)="oidcButtonClicked()"
       >
-        <mat-icon>menu</mat-icon>
+        <div
+          id="learning-layers-logo"
+          class="rounded-full w-10 h-10 mr-2"
+        ></div>
+        <div class="text-lg font-bold">SSO Login</div>
       </button>
-      <h2 slot="title">
-        {{ mobileQuery.matches ? 'MobSOS EC' : title }}
-      </h2>
-    </las2peer-frontend-statusbar>
+    </mat-toolbar>
+
     <!-- <mat-progress-bar
       mode="indeterminate"
       *ngIf="isLoading"

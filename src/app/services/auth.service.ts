@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { OAuthService } from 'angular-oauth2-oidc';
 import { firstValueFrom, take } from 'rxjs';
 import { AUTHENTICATED } from './store/store.selectors';
 
@@ -8,7 +9,11 @@ import { AUTHENTICATED } from './store/store.selectors';
   providedIn: 'root',
 })
 export class AuthService implements CanActivate {
-  constructor(private router: Router, private store: Store) {}
+  constructor(
+    private router: Router,
+    private store: Store,
+    private oauthService: OAuthService,
+  ) {}
   /**
    * This method checks if the user is authenticated.
    *
@@ -22,6 +27,9 @@ export class AuthService implements CanActivate {
       void this.router.navigate(['welcome']);
       return false;
     }
-    return true;
+    const hasIdToken = this.oauthService.hasValidIdToken();
+    const hasAccessToken = this.oauthService.hasValidAccessToken();
+
+    return hasIdToken && hasAccessToken;
   }
 }

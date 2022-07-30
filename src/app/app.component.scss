@@ -55,6 +55,22 @@ mat-sidenav-container {
 
   mat-sidenav-content {
     height: 100vh;
+    #learning-layers-logo{
+        background-color: white;
+        background-image: url("https://raw.githubusercontent.com/rwth-acis/las2peer-frontend-user-widget/master/learning-layers.svg");
+      background-size: 100% 100%;
+      }
+    #login-button{
+      padding: 6px;
+    }
+    ::ng-deep .mat-button-wrapper{
+      display: flex;
+      align-items: center;
+    }
+    #login-button:hover {
+      background-color: mat-color($primary, darker);
+      transition: background-color 0.2s ease-in-out;
+    }
   
     
     mat-progress-bar {
