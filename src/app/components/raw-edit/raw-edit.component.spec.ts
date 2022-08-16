@@ -12,7 +12,7 @@ import {
   TranslateModule,
 } from '@ngx-translate/core';
 
-import { MonacoEditorModule } from 'ngx-monaco-editor';
+
 import { FormsModule } from '@angular/forms';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -33,6 +33,7 @@ import {
 import { createTranslateLoader } from 'src/app/app.module';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { RouterTestingModule } from '@angular/router/testing';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 
 describe('RawEditComponent', () => {
   let component: RawEditComponent;
@@ -53,7 +54,7 @@ describe('RawEditComponent', () => {
             useFactory: createTranslateLoader,
           },
         }),
-        MonacoEditorModule.forRoot(),
+        MonacoEditorModule,
         FormsModule,
         MatProgressSpinnerModule,
         MatSelectModule,

@@ -19,6 +19,7 @@ import { LatexPipe } from '../latex.pipe';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgxPrintModule } from 'ngx-print';
 @NgModule({
   declarations: [
     ErrorDialogComponent,
@@ -35,6 +36,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonModule,
     GoogleChartsModule,
     MatMenuModule,
+    NgxPrintModule,
     MatProgressSpinnerModule,
     TranslateModule,
     MatPaginatorModule,

@@ -2,12 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule, PlatformLocation } from '@angular/common';
 import { RawEditComponent } from './raw-edit.component';
 import { SharedModule } from '../../shared/shared.module';
-import {
-  MonacoEditorModule,
-  NgxMonacoEditorConfig,
-  NGX_MONACO_EDITOR_CONFIG,
-} from 'ngx-monaco-editor';
-import { Location } from '@angular/common';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
+import { MatButtonModule } from '@angular/material/button';
 import { RawEditRoutingModule } from './raw-edit-routing.module';
 @NgModule({
   declarations: [RawEditComponent],
@@ -16,23 +12,8 @@ import { RawEditRoutingModule } from './raw-edit-routing.module';
     SharedModule,
     MonacoEditorModule,
     RawEditRoutingModule,
+    MatButtonModule,
   ],
-  providers: [
-    {
-      provide: NGX_MONACO_EDITOR_CONFIG,
-      useFactory: getMonacoConfig,
-      deps: [PlatformLocation],
-    },
-  ],
+  providers: [],
 })
 export class RawEditModule {}
-
-function getMonacoConfig(
-  platformLocation: PlatformLocation,
-): NgxMonacoEditorConfig {
-  const baseHref = platformLocation.getBaseHrefFromDOM();
-
-  return {
-    baseUrl: Location.joinWithSlash(baseHref, '/assets'),
-  };
-}
