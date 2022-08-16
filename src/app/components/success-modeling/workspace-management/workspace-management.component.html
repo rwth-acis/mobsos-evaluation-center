@@ -112,7 +112,7 @@
         *ngIf="selectedService$ | async as selectedService"
       >
         <button
-          *ngIf="!(successModelEmpty$ | async)"
+          *ngIf="(successModelEmpty$ | async) !== true"
           mat-icon-button
           matTooltip="Export as PDF"
           printSectionId="dimensions"
