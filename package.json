@@ -41,7 +41,6 @@
     "core-js": "^3.17.3",
     "document-register-element": "^1.14.10",
     "hammerjs": "^2.0.8",
-    "jspdf": "^2.5.1",
     "karma-coverage": "~2.1.0",
     "katex": "^0.15.3",
     "las2peer-frontend-statusbar": "github:rwth-acis/las2peer-frontend-statusbar#0.3.6",

@@ -7,7 +7,6 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { jsPDF } from 'jspdf';
 
 import {
   ChartType,
