@@ -5,11 +5,14 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
+
 import {
   ChartType,
   Formatter,
   getPackageForChart,
+  GoogleChartComponent,
   ScriptLoaderService,
 } from 'angular-google-charts';
 import { MatDialog } from '@angular/material/dialog';
@@ -196,7 +199,6 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     }
     errorText = errorText?.trim();
     this.dialog.open(ErrorDialogComponent, {
-      width: '80%',
       data: { error: errorText },
     });
   }
@@ -223,7 +225,6 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     this.dialog.open(StaticChartComponent, {
       data: this.chartData,
       width: '90vw',
-      height: '90vh',
     });
   }
 
@@ -276,6 +277,7 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
           '#ff5252',
           '#ffd600',
         ],
+        chartArea: { left: 50, right: 100 },
       },
       this.formatters,
     );

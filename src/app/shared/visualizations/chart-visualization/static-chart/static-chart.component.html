@@ -1,10 +1,24 @@
-<google-chart
-  [title]="chartData.title"
-  [type]="chartData.chartType"
-  [data]="chartData.data"
-  [options]="chartData.options"
-  [formatters]="chartData.formatters"
-  [columns]="chartData.columnNames"
-  [dynamicResize]="true"
-  class="content w-full h-full"
-></google-chart>
+<div>
+  <div id="chart">
+    <google-chart
+      [title]="chartData.title"
+      [type]="chartData.chartType"
+      [data]="chartData.data"
+      [options]="chartData.options"
+      [formatters]="chartData.formatters"
+      [columns]="chartData.columnNames"
+      [dynamicResize]="true"
+      class="w-full h-full"
+    ></google-chart>
+  </div>
+  <button
+    mat-icon-button
+    matTooltip="Export as PDF"
+    printSectionId="chart"
+    class="mr-2"
+    [useExistingCss]="true"
+    ngxPrint
+  >
+    <mat-icon>picture_as_pdf</mat-icon>
+  </button>
+</div>
