@@ -5,11 +5,15 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
+import { jsPDF } from 'jspdf';
+
 import {
   ChartType,
   Formatter,
   getPackageForChart,
+  GoogleChartComponent,
   ScriptLoaderService,
 } from 'angular-google-charts';
 import { MatDialog } from '@angular/material/dialog';
@@ -223,7 +227,6 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     this.dialog.open(StaticChartComponent, {
       data: this.chartData,
       width: '90vw',
-      height: '90vh',
     });
   }
 
@@ -276,6 +279,7 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
           '#ff5252',
           '#ffd600',
         ],
+        chartArea: { right: 100 },
       },
       this.formatters,
     );
