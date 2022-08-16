@@ -199,7 +199,6 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
     }
     errorText = errorText?.trim();
     this.dialog.open(ErrorDialogComponent, {
-      width: '80%',
       data: { error: errorText },
     });
   }
@@ -278,7 +277,7 @@ export class ChartVisualizerComponent implements OnInit, OnDestroy {
           '#ff5252',
           '#ffd600',
         ],
-        chartArea: { right: 100 },
+        chartArea: { left: 50, right: 100 },
       },
       this.formatters,
     );
