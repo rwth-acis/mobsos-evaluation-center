@@ -170,36 +170,10 @@ export class AppComponent
         }),
         filter((e) => e.type === 'token_received'),
       )
-      .subscribe((_) => this.oauthService.loadUserProfile());
-
-    // this.oauthService
-    //   .loadDiscoveryDocumentAndTryLogin({
-    //     onTokenReceived: async (context) => {
-    //       //
-    //       // Output just for purpose of demonstration
-    //       // Don't try this at home ... ;-)
-    //       //
-    //       if (true) {
-    //         this.ngrxStore.dispatch(fetchGroups());
-    //         try {
-    //           let profile = await this.oauthService.loadUserProfile();
-    //           console.log(profile);
-    //           this.oauthService.setupAutomaticSilentRefresh();
-    //         } catch (error) {
-    //           console.error(error);
-    //         }
-    //       }
-    //       console.debug('logged in');
-    //       console.debug(context);
-    //     },
-    //     onLoginError: (context) => {
-    //       console.debug('login error');
-    //       console.debug(context);
-    //     },
-    //   })
-    //   .catch((err) => {
-    //     console.error(err);
-    //   });
+      .subscribe(async () => {
+        const profile = await this.oauthService.loadUserProfile();
+        console.log(profile);
+      });
   }
 
   ngAfterViewInit() {
