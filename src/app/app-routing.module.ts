@@ -1,8 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
-import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signout.component';
-import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
 import { JoinWorkSpaceComponent } from './components/join-work-space/join-work-space.component';
 import { CustomPreloadingStrategy } from './preloading-strategy';
 import { AuthService as AuthGuard } from './services/auth.service';
@@ -43,9 +40,6 @@ const routes: Routes = [
       },
     ],
   },
-  { path: 'oidc-signin', component: OidcSigninComponent },
-  { path: 'oidc-signout', component: OidcSignoutComponent },
-  { path: 'oidc-silent', component: OidcSilentComponent },
   {
     path: 'join/:groupId/:serviceName/:username',
     component: JoinWorkSpaceComponent,

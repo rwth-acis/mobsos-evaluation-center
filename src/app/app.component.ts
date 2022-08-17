@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -65,7 +66,9 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   static userManager = new UserManager({});
 
   @ViewChild(MatSidenav)
@@ -132,6 +135,10 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
     this.oauthService.configure(authCodeFlowConfig);
+    this.oauthService.setStorage(sessionStorage);
+    this.oauthService
+      .loadDiscoveryDocument()
+      .then(() => this.oauthService.tryLogin({}));
   }
 
   async ngOnInit() {
@@ -185,50 +192,41 @@ export class AppComponent implements OnInit, OnDestroy {
       )
       .subscribe((_) => this.oauthService.loadUserProfile());
 
-    const loggedIn = await this.oauthService
-      .loadDiscoveryDocumentAndTryLogin({
-        onTokenReceived: (context) => {
-          //
-          // Output just for purpose of demonstration
-          // Don't try this at home ... ;-)
-          //
-          console.debug('logged in');
-          console.debug(context);
-        },
-        onLoginError: (context) => {
-          console.debug('login error');
-          console.debug(context);
-        },
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-
-    //  this.oauthService
-    //   .tryLogin({
-    //     onTokenReceived: (context) => {
+    // this.oauthService
+    //   .loadDiscoveryDocumentAndTryLogin({
+    //     onTokenReceived: async (context) => {
     //       //
     //       // Output just for purpose of demonstration
     //       // Don't try this at home ... ;-)
     //       //
+    //       if (true) {
+    //         this.ngrxStore.dispatch(fetchGroups());
+    //         try {
+    //           let profile = await this.oauthService.loadUserProfile();
+    //           console.log(profile);
+    //           this.oauthService.setupAutomaticSilentRefresh();
+    //         } catch (error) {
+    //           console.error(error);
+    //         }
+    //       }
     //       console.debug('logged in');
+    //       console.debug(context);
+    //     },
+    //     onLoginError: (context) => {
+    //       console.debug('login error');
     //       console.debug(context);
     //     },
     //   })
     //   .catch((err) => {
     //     console.error(err);
     //   });
-    // tryLogin returns true even though no token is received
-    if (loggedIn) {
-      this.ngrxStore.dispatch(fetchGroups());
-      try {
-        let profile = await this.oauthService.loadUserProfile();
-        console.log(profile);
-        this.oauthService.setupAutomaticSilentRefresh();
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      const s = this.oauthService.hasValidAccessToken();
+      console.info('Valid access token: ', s);
+    }, 3000);
   }
 
   ngOnDestroy(): void {
@@ -301,6 +299,7 @@ export class AppComponent implements OnInit, OnDestroy {
         .pipe(take(1)),
     );
     if (signedIn) {
+      this.oauthService.logOut();
       this.setUser(null);
       void this.router.navigate(['/welcome']);
     }

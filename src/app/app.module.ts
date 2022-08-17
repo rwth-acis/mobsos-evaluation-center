@@ -5,9 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
-import { OidcSignoutComponent } from './components/oidc/oidc-signout/oidc-signout.component';
-import { OidcSilentComponent } from './components/oidc/oidc-silent/oidc-silent.component';
 import { Observable, of } from 'rxjs';
 import {
   TranslateLoader,
@@ -16,6 +13,7 @@ import {
 import { translations as en } from '../locale/en';
 import { translations as de } from '../locale/de';
 
+import { Location, PlatformLocation } from '@angular/common';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 
@@ -42,7 +40,6 @@ import { SharedModule } from './shared/shared.module';
 import { WelcomeModule } from './components/welcome/welcome.module';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { OAuthModule } from 'angular-oauth2-oidc';
-import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -88,9 +85,6 @@ const metaReducers: Array<MetaReducer<any, any>> = [
 @NgModule({
   declarations: [
     AppComponent,
-    OidcSigninComponent,
-    OidcSignoutComponent,
-    OidcSilentComponent,
     JoinWorkSpaceComponent,
     NotFoundComponent,
   ],

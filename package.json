@@ -57,7 +57,6 @@
     "ngx-logger": "^5.0.7",
     "ngx-markdown": "^14.0.1",
     "ngx-print": "^1.2.1",
-    "oidc-client": "^1.11.5",
     "reqbaz-components": "github:rwth-acis/RequirementsBazaar-Components#develop",
     "rxjs": "^7.5.6",
     "sqlstring": "^2.3.2",

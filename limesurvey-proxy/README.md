@@ -1,6 +1,6 @@
 # Limesurvey proxy
 
-Simple limesurvey proxy.
+Simple limesurvey proxy for testing purposes only.
 
 ## Installation
 
