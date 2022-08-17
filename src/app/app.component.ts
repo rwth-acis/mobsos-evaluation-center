@@ -136,9 +136,7 @@ export class AppComponent
 
     this.oauthService.configure(authCodeFlowConfig);
     this.oauthService.setStorage(sessionStorage);
-    this.oauthService
-      .loadDiscoveryDocument()
-      .then(() => this.oauthService.tryLogin({}));
+    this.oauthService.loadDiscoveryDocumentAndTryLogin();
   }
 
   async ngOnInit() {
