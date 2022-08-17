@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { UserManager } from 'oidc-client';
 import { Observable, Subscription } from 'rxjs';
 import {
   distinctUntilKeyChanged,
@@ -41,8 +40,6 @@ export class JoinWorkSpaceComponent implements OnInit, OnDestroy {
   groupId: string;
   username: string;
   user: User;
-  private userManager = new UserManager({});
-
   constructor(
     private route: ActivatedRoute,
     private ngrxStore: Store,

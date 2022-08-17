@@ -7,18 +7,14 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import 'oidc-client';
-import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
-import { environment } from '../environments/environment';
 
-import { CordovaPopupNavigator, UserManager } from 'oidc-client';
+import { environment } from '../environments/environment';
 
 import { DomSanitizer } from '@angular/platform-browser';
 import { UntypedFormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   fetchGroupMembers,
-  fetchGroups,
   fetchSurveysFromAllLimeSurveyInstances,
   logout,
   setGroup,
@@ -49,18 +45,6 @@ import { Router } from '@angular/router';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { authCodeFlowConfig } from './auth.config';
 
-// workaround for openidconned-signin
-// remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
-// this kind of import does not work with oidc-client@1.6.1 for some strange reason
-declare global {
-  interface Window {
-    UserManager: any;
-    CordovaPopupNavigator: any;
-  }
-}
-window.UserManager = UserManager;
-window.CordovaPopupNavigator = CordovaPopupNavigator;
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -69,8 +53,6 @@ window.CordovaPopupNavigator = CordovaPopupNavigator;
 export class AppComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
-  static userManager = new UserManager({});
-
   @ViewChild(MatSidenav)
   public sidenav: MatSidenav;
   @ViewChild('statusbar') l2pStatusbar: ElementRef;
