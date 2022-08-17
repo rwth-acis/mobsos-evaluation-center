@@ -1,3 +1,13 @@
+<div class="flex items-end flex-row-reverse mb-2">
+  <button
+    matTooltip="Download as csv"
+    mat-icon-button
+    (click)="downloadData()"
+  >
+    <mat-icon>file_download</mat-icon>
+  </button>
+</div>
+
 <table
   mat-table
   *ngIf="dataSource"

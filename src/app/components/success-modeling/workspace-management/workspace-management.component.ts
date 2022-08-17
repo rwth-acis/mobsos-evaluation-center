@@ -87,6 +87,7 @@ export class WorkspaceManagementComponent
     APPLICATION_WORKSPACE,
   );
   services$ = this.ngrxStore.select(_SERVICES);
+  successModelEmpty$ = this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY);
   editMode$ = this.ngrxStore.select(EDIT_MODE);
   roleInWorkspace$ = this.ngrxStore.select(ROLE_IN_CURRENT_WORKSPACE);
   userIsOwner$ = this.ngrxStore.select(
@@ -221,7 +222,7 @@ export class WorkspaceManagementComponent
       }
     } else {
       const successModelEmpty = await firstValueFrom(
-        this.ngrxStore.select(SUCCESS_MODEL_IS_EMPTY).pipe(take(1)),
+        this.successModelEmpty$.pipe(take(1)),
       );
       let shouldCopyModelToWorkspace = false; // by default we dont copy model. This is because the workspace might contain some model that has not been saved yet and we dont want to overwrite this
       if (!successModelEmpty) {

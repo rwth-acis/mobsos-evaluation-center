@@ -82,3 +82,7 @@ app-value-visualization{
 app-kpi-visualization{
   flex-grow: 1;
 }
+
+.editor-container{
+  min-height: calc(100vh - 300px);
+}

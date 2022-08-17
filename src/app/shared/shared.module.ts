@@ -22,7 +22,7 @@ import {
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -42,6 +42,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ErrorBannerComponent } from './error-banner/error-banner.component';
 import { VisualizationsModule } from './visualizations/visualizations.module';
 import { InfoBannerComponent } from './info-banner/info-banner.component';
+import { NgxPrintModule } from 'ngx-print';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -67,6 +68,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
     MatPaginatorModule,
     MatInputModule,
     MatIconModule,
+    NgxPrintModule,
     MatTableModule,
     VisualizationsModule,
   ],
@@ -84,6 +86,7 @@ import { InfoBannerComponent } from './info-banner/info-banner.component';
     MatStepperModule,
     MatSortModule,
     MatPaginatorModule,
+    NgxPrintModule,
     MatTableModule,
     MatFormFieldModule,
     MatCheckboxModule,
