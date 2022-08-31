@@ -12,6 +12,7 @@ import {
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { cloneDeep } from 'lodash-es';
 @Component({
   selector: 'app-raw-data-dialog',
   templateUrl: './raw-data-dialog.component.html',
@@ -56,5 +57,25 @@ export class RawDataDialogComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
+  }
+
+  downloadData() {
+    if (this.rawData.length > 2) {
+      const copy = cloneDeep(this.rawData);
+      copy.splice(1, 1); // remove the data type row
+      const csvString = copy
+        .map((row) => {
+          return row.join(',');
+        })
+        .join('\n');
+      const blob = new Blob([csvString], {
+        type: 'text/csv;charset=utf-8',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'data.csv');
+      link.click();
+    }
   }
 }

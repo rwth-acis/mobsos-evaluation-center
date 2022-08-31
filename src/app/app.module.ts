@@ -15,10 +15,6 @@ import {
 } from '@ngx-translate/core';
 import { translations as en } from '../locale/en';
 import { translations as de } from '../locale/de';
-import {
-  MonacoEditorModule,
-  NgxMonacoEditorConfig,
-} from 'ngx-monaco-editor';
 
 import { Location, PlatformLocation } from '@angular/common';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -46,6 +42,7 @@ import { SuccessModelingModule } from './components/success-modeling/success-mod
 import { SharedModule } from './shared/shared.module';
 import { WelcomeModule } from './components/welcome/welcome.module';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 class ImportLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     if (lang === 'en') {
@@ -113,7 +110,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
         useFactory: createTranslateLoader,
       },
     }),
-    MonacoEditorModule.forRoot(),
+    MonacoEditorModule,
     MarkdownModule.forRoot(),
     StoreModule.forRoot({ Reducer }, { metaReducers }),
     EffectsModule.forRoot([StateEffects]),
@@ -133,13 +130,3 @@ const metaReducers: Array<MetaReducer<any, any>> = [
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}
-
-export function getMonacoConfig(
-  platformLocation: PlatformLocation,
-): NgxMonacoEditorConfig {
-  const baseHref = platformLocation.getBaseHrefFromDOM();
-
-  return {
-    baseUrl: Location.joinWithSlash(baseHref, '/assets'),
-  };
-}
