@@ -16,15 +16,10 @@ export class OidcSigninComponent {
     void new UserManager(userManagerSettings)
       .signinRedirectCallback()
       .then((user) => {
-        const redirect_uri = user.state?.split('://')[1] || '/';
-        const path =
-          redirect_uri.split('/').length > 1
-            ? redirect_uri.split('/').splice(1).join('/')
-            : redirect_uri;
         if (user?.profile?.preferred_username) {
           this.ngrxStore.dispatch(storeUser({ user: user as User }));
         }
-        void this.router.navigateByUrl(path as string);
+        void this.router.navigateByUrl('/');
       })
       .catch((err) => {
         console.error(err);

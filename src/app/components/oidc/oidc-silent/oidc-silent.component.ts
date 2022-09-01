@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { UserManager } from 'oidc-client';
+import { User } from 'src/app/models/user.model';
 import { storeUser } from 'src/app/services/store/store.actions';
 import { userManagerSettings } from '../oidc-signin/user.manager.settings';
 
@@ -14,10 +15,15 @@ export class OidcSilentComponent {
   constructor(private router: Router, private ngrxStore: Store) {
     void new UserManager(userManagerSettings)
       .signinSilentCallback()
+      .then((user) => {
+        if (user?.profile?.preferred_username) {
+          this.ngrxStore.dispatch(storeUser({ user: user as User }));
+        }
+      })
       .catch((err) => {
         console.error(err);
         this.ngrxStore.dispatch(storeUser({ user: null }));
-        void this.router.navigate(['/']);
+        void this.router.navigateByUrl('/');
       });
   }
 }
