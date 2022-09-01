@@ -19,7 +19,7 @@ export class OidcSigninComponent {
         const redirect_uri = user.state?.split('://')[1] || '/';
         const path =
           redirect_uri.split('/').length > 1
-            ? redirect_uri.split('/')[1]
+            ? redirect_uri.split('/').splice(1).join('/')
             : redirect_uri;
         if (user?.profile?.preferred_username) {
           this.ngrxStore.dispatch(storeUser({ user: user as User }));
