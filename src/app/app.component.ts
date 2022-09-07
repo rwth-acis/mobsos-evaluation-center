@@ -16,6 +16,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { UntypedFormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
+  addNotification,
   fetchGroupMembers,
   fetchGroups,
   fetchSurveysFromAllLimeSurveyInstances,
@@ -45,6 +46,12 @@ import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dial
 import { StoreState } from './models/state.model';
 import { joinAbsoluteUrlPath } from './services/las2peer.service';
 import { Router } from '@angular/router';
+import {
+  AppNotification,
+  NOTIFICATION_TYPE,
+} from './models/notification.model';
+import { NotificationService } from './notification.service';
+import { TranslateService } from '@ngx-translate/core';
 
 // workaround for openidconned-signin
 // remove when the lib imports with "import {UserManager} from 'oidc-client';" instead of "import 'oidc-client';"
@@ -102,6 +109,7 @@ export class AppComponent implements OnInit, OnDestroy {
   version = environment.version;
 
   private silentSigninIntervalHandle;
+  lastShownBanner: any;
 
   constructor(
     public languageService: LanguageService, // public so that we can access it in the template
@@ -112,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
     private router: Router,
+    private translate: TranslateService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -130,6 +139,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // this.ngrxStore
+    //   .select(storeSelectors.BANNER_NOTIFICATIONS)
+    //   .subscribe((notifs) => {
+    //     console.log(notifs);
+    //   });
+
+    this.initNotifications();
+
     this.silentSignin();
 
     this.ngrxStore.dispatch(fetchSurveysFromAllLimeSurveyInstances());
@@ -156,11 +173,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (!environment.production) {
       this.title = `MobSOS Evaluation Center v${environment.version} (dev)`;
-      this.snackBar.open(
-        'You are currently in the development network. Please note that some features might not be available / fully functional yet',
-        'OK',
-        { duration: 10000 },
+      this.ngrxStore.dispatch(
+        addNotification({
+          notification: new AppNotification(
+            NOTIFICATION_TYPE.INFO,
+            'You are currently in the development network. Please note that some features might not be available / fully functional yet',
+            { duration: 10000 },
+            '21',
+          ),
+        }),
       );
+
       // Logging the state in dev mode
       sub = this.ngrxStore
         .pipe(map((store: StoreState) => store.Reducer))
@@ -180,6 +203,27 @@ export class AppComponent implements OnInit, OnDestroy {
       ),
     );
     this.ngrxStore.dispatch(fetchGroups());
+  }
+  initNotifications() {
+    this.ngrxStore
+      .select(storeSelectors.BANNER_NOTIFICATIONS)
+      .subscribe((notifs) => {
+        console.log(notifs);
+        notifs.forEach((n) => {
+          if (
+            !this.lastShownBanner ||
+            this.lastShownBanner.createdAt < n.createdAt
+          ) {
+            const message = this.translate.instant(n.message);
+            this.snackBar.open(
+              message,
+              this.translate.instant('shared.elements.ok-label'),
+              { duration: 5000 },
+            );
+            this.lastShownBanner = n;
+          }
+        });
+      });
   }
 
   ngOnDestroy(): void {

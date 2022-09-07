@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-underscore-dangle */
 import { createSelector } from '@ngrx/store';
+import { NOTIFICATION_TYPE } from 'src/app/models/notification.model';
 import { GroupInformation } from '../../models/community.model';
 import {
   MeasureCatalog,
@@ -332,6 +333,17 @@ export const WORKSPACE_MODEL_XML = createSelector(
     model
       ? SuccessModel.fromPlainObject(model as any)?.toXml()?.outerHTML
       : undefined,
+);
+
+export const NOTIFICATIONS = (state: StoreState) =>
+  state.Reducer.notifications;
+
+export const BANNER_NOTIFICATIONS = createSelector(
+  NOTIFICATIONS,
+  (n) =>
+    n
+      .filter((n) => 'duration' in n.config)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
 );
 
 // MEASURE CATALOG

@@ -432,6 +432,18 @@ const _Reducer = createReducer(
       (_instance, i) => i !== index,
     ),
   })),
+  on(Actions.addNotification, (state, { notification }) => ({
+    ...state,
+    notifications: [...state.notifications, notification],
+  })),
+  on(Actions.removeNotification, (state, { id }) => ({
+    ...state,
+    notifications: state.notifications.filter((n) => n.id === id),
+  })),
+  on(Actions.clearNotifications, (state) => ({
+    ...state,
+    notifications: initialState.notifications,
+  })),
 );
 
 export function Reducer(state: AppState, action: Action): any {

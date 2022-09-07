@@ -276,4 +276,5 @@ export const translations = {
     'You are not a member of the {{ community }} Community',
   'copied-to-clipboard':
     'The link has been copied to the clipboard. You can now share it with others',
+  'group-added': 'Your group was added',
 };

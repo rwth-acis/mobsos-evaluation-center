@@ -284,4 +284,5 @@ export const translations = {
     'Du bist leider nicht Teil der {{ community }} Community',
   'copied-to-clipboard':
     'Der Link wurde kopiert. Du kannst ihn nun mit anderen Nutzern teilen',
+  'group-added': 'Deine Gruppe wurde hinzugefügt',
 };

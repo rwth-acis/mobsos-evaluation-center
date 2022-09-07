@@ -11,7 +11,6 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import {
@@ -23,7 +22,12 @@ import {
 import { catchError, map, take, timeout } from 'rxjs/operators';
 import { GroupInformation } from 'src/app/models/community.model';
 import {
+  AppNotification,
+  NOTIFICATION_TYPE,
+} from 'src/app/models/notification.model';
+import {
   addGroup,
+  addNotification,
   storeGroup,
 } from 'src/app/services/store/store.actions';
 import { StateEffects } from 'src/app/services/store/store.effects';
@@ -59,7 +63,6 @@ export class AddCommunityDialogComponent
     private dialogRef: MatDialogRef<AddCommunityDialogComponent>,
     private ngrxStore: Store,
     private effects: StateEffects,
-    private _snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: string,
   ) {}
 
@@ -114,9 +117,16 @@ export class AddCommunityDialogComponent
       .toPromise();
 
     if ('group' in res && res.group.id) {
-      this._snackBar.open('Group added', null, {
-        duration: 5000,
-      });
+      this.ngrxStore.dispatch(
+        addNotification({
+          notification: new AppNotification(
+            NOTIFICATION_TYPE.INFO,
+            'group-added',
+            { duration: 0 },
+            '',
+          ),
+        }),
+      );
 
       this.dialogRef.close();
     } else if (

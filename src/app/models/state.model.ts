@@ -13,6 +13,7 @@ import { User } from './user.model';
 import { VisualizationCollection } from './visualization.model';
 import { CommunityWorkspace } from './workspace.model';
 import { environment } from 'src/environments/environment';
+import { INotification } from './notification.model';
 /**
  * state of the app
  */
@@ -44,6 +45,7 @@ export interface AppState {
     };
   }; // responses from limesurvey per survey referenced by the surveyid
   limeSurveyInstances: LimeSurveyCredentials[]; // instances of limesurvey
+  notifications: INotification[];
 }
 
 export const INITIAL_APP_STATE: AppState = {
@@ -69,6 +71,7 @@ export const INITIAL_APP_STATE: AppState = {
   limeSurveySurveys: undefined,
   limeSurveyResponses: undefined,
   limeSurveyInstances: [],
+  notifications: [],
 };
 /**
  * What the store looks like

@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { createAction, props } from '@ngrx/store';
+import { INotification } from 'src/app/models/notification.model';
 import {
   GroupInformation,
   GroupMember,
@@ -135,6 +136,9 @@ export enum StateActions {
   INITIALIZE_STATE = 'Initializes the state of the application. This action should only be called once.',
   NOOP = 'No operation',
   RESET_WORKSPACE = 'Reset the users current workspace to the default state. This deletes the success model, catalog and visualization data',
+  ADD_NOTIFICATION = 'add a notification to the notification array',
+  REMOVE_NOTIFICATION = 'removes a notification',
+  CLEAR_ALL_NOTIFICATIONS = 'removes all notifiactions ',
 }
 
 // fetching
@@ -558,6 +562,19 @@ export const removeMemberFromGroup = createAction(
   props<{ username: string }>(),
 );
 
+export const addNotification = createAction(
+  StateActions.ADD_NOTIFICATION,
+  props<{ notification: INotification }>(),
+);
+
+export const removeNotification = createAction(
+  StateActions.REMOVE_NOTIFICATION,
+  props<{ id: string }>(),
+);
+
+export const clearNotifications = createAction(
+  StateActions.CLEAR_ALL_NOTIFICATIONS,
+);
 export const success = createAction('action was successful');
 
 export const failure = createAction(

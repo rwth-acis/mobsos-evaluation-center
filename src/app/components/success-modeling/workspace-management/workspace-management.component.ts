@@ -52,7 +52,6 @@ import {
   _SERVICES,
 } from 'src/app/services/store/store.selectors';
 import { UntypedFormControl } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { joinAbsoluteUrlPath } from 'src/app/services/las2peer.service';
 import {
@@ -61,10 +60,15 @@ import {
   enableEdit,
   joinWorkSpace,
   resetWorkSpace,
+  addNotification,
 } from 'src/app/services/store/store.actions';
 import { WorkspaceService } from 'src/app/services/workspace.service';
 import { ImportDialogComponent } from '../../../shared/dialogs/import-dialog/import-dialog.component';
 import { User } from 'src/app/models/user.model';
+import {
+  AppNotification,
+  NOTIFICATION_TYPE,
+} from 'src/app/models/notification.model';
 
 @Component({
   selector: 'app-workspace-management',
@@ -129,7 +133,6 @@ export class WorkspaceManagementComponent
   service = new UntypedFormControl();
 
   constructor(
-    private _snackBar: MatSnackBar,
     private dialog: MatDialog,
     private translate: TranslateService,
     private workspaceService: WorkspaceService,
@@ -297,7 +300,16 @@ export class WorkspaceManagementComponent
       const message = this.translate.instant(
         'copied-to-clipboard',
       ) as string;
-      this._snackBar.open(message, undefined, { duration: 3000 });
+      this.ngrxStore.dispatch(
+        addNotification({
+          notification: new AppNotification(
+            NOTIFICATION_TYPE.INFO,
+            'You are currently in the development network. Please note that some features might not be available / fully functional yet',
+            { duration: 3000 },
+            '21',
+          ),
+        }),
+      );
     }
   }
 
