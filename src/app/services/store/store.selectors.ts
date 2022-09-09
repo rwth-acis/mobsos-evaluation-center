@@ -346,6 +346,11 @@ export const BANNER_NOTIFICATIONS = createSelector(
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
 );
 
+export const NOTIFICATION_COUNT = createSelector(
+  NOTIFICATIONS,
+  (n) => n.length,
+);
+
 // MEASURE CATALOG
 export const MEASURE_CATALOG_FROM_NETWORK = (state: StoreState) =>
   state.Reducer?.measureCatalog;

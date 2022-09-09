@@ -285,4 +285,5 @@ export const translations = {
   'copied-to-clipboard':
     'Der Link wurde kopiert. Du kannst ihn nun mit anderen Nutzern teilen',
   'group-added': 'Deine Gruppe wurde hinzugefügt',
+  'no-notifications': 'Keine neuen Benachrichtungen',
 };

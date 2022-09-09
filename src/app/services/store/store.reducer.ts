@@ -45,6 +45,7 @@ import {
 } from '../../models/survey.model';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { state } from '@angular/animations';
+import { INotification } from 'src/app/models/notification.model';
 
 export const initialState: AppState = INITIAL_APP_STATE;
 
@@ -434,11 +435,11 @@ const _Reducer = createReducer(
   })),
   on(Actions.addNotification, (state, { notification }) => ({
     ...state,
-    notifications: [...state.notifications, notification],
+    notifications: addNotification(state.notifications, notification),
   })),
   on(Actions.removeNotification, (state, { id }) => ({
     ...state,
-    notifications: state.notifications.filter((n) => n.id === id),
+    notifications: removeNotification(state.notifications, id),
   })),
   on(Actions.clearNotifications, (state) => ({
     ...state,
@@ -1332,4 +1333,20 @@ function _addLimeSurveyInstance(
   );
   if (alreadyIncludes) return instances;
   else return [...state.limeSurveyInstances, credentials];
+}
+
+function addNotification(
+  notifications: INotification[],
+  newNotification: INotification,
+) {
+  const copy = cloneDeep(notifications);
+  const n = cloneDeep(newNotification);
+  n.id = notifications.length.toString();
+  copy.push(n);
+  return copy;
+}
+function removeNotification(notifs: INotification[], id: string) {
+  let copy = cloneDeep(notifs);
+  copy = copy.filter((n) => n.id !== id);
+  return copy;
 }

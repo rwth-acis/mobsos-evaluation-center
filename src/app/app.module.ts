@@ -2,7 +2,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import {
+  AppComponent,
+  AppNotificationSheetComponent,
+} from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { OidcSigninComponent } from './components/oidc/oidc-signin/oidc-signin.component';
@@ -90,6 +93,7 @@ const metaReducers: Array<MetaReducer<any, any>> = [
     AppComponent,
     OidcSigninComponent,
     OidcSignoutComponent,
+    AppNotificationSheetComponent,
     OidcSilentComponent,
     JoinWorkSpaceComponent,
     NotFoundComponent,

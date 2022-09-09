@@ -1,0 +1,21 @@
+<ng-container>
+  <mat-list
+    *ngIf="(notifications|async).length>0;else noNotifications "
+  >
+    <mat-list-item *ngFor="let notification of notifications | async">
+      <div>{{notification.message}}</div>
+      <button
+        (click)="removeNotification(notification)"
+        mat-icon-button
+        aria-label="Example icon button with a vertical three dot icon"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+</ng-container>
+<ng-template #noNotifications>
+  <span class="text-slate-500 text-sm"
+    >{{'no-notifications'|translate}}</span
+  >
+</ng-template>

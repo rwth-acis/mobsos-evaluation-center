@@ -11,6 +11,10 @@ import 'las2peer-frontend-statusbar/las2peer-frontend-statusbar.js';
 import { environment } from '../environments/environment';
 
 import { CordovaPopupNavigator, UserManager } from 'oidc-client';
+import {
+  MatBottomSheet,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
 
 import { DomSanitizer } from '@angular/platform-browser';
 import { UntypedFormControl } from '@angular/forms';
@@ -21,6 +25,7 @@ import {
   fetchGroups,
   fetchSurveysFromAllLimeSurveyInstances,
   logout,
+  removeNotification,
   setGroup,
   storeUser,
   toggleExpertMode,
@@ -50,7 +55,6 @@ import {
   AppNotification,
   NOTIFICATION_TYPE,
 } from './models/notification.model';
-import { NotificationService } from './notification.service';
 import { TranslateService } from '@ngx-translate/core';
 
 // workaround for openidconned-signin
@@ -121,6 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private ngrxStore: Store,
     private router: Router,
     private translate: TranslateService,
+    private _bottomSheet: MatBottomSheet,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -264,6 +269,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  openBottomSheet() {
+    this._bottomSheet.open(AppNotificationSheetComponent);
+  }
+
   menuItemClicked(): void {
     if (this.mobileQuery.matches) {
       void this.sidenav.toggle(); // closes the menu if an item is clicked on mobile devices
@@ -322,5 +331,31 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     this.subscriptions$.push(sub);
+  }
+}
+
+@Component({
+  selector: 'app-notification-sheet',
+  templateUrl: 'app-notification-sheet.html',
+})
+export class AppNotificationSheetComponent implements OnInit {
+  notifications = this.ngrxStore.select(storeSelectors.NOTIFICATIONS);
+
+  constructor(
+    private _bottomSheetRef: MatBottomSheetRef<AppNotificationSheetComponent>,
+    private ngrxStore: Store,
+  ) {}
+
+  openLink(event: MouseEvent): void {
+    this._bottomSheetRef.dismiss();
+    event.preventDefault();
+  }
+
+  ngOnInit(): void {}
+
+  removeNotification(notification: AppNotification) {
+    this.ngrxStore.dispatch(
+      removeNotification({ id: notification.id }),
+    );
   }
 }

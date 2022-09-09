@@ -19,6 +19,7 @@ import {
   MatNativeDateModule,
   MatRippleModule,
 } from '@angular/material/core';
+
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
@@ -43,6 +44,7 @@ import { ErrorBannerComponent } from './error-banner/error-banner.component';
 import { VisualizationsModule } from './visualizations/visualizations.module';
 import { InfoBannerComponent } from './info-banner/info-banner.component';
 import { NgxPrintModule } from 'ngx-print';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 @NgModule({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   declarations: [
@@ -82,6 +84,7 @@ import { NgxPrintModule } from 'ngx-print';
     MatButtonModule,
     MatMenuModule,
     MatCardModule,
+    MatBottomSheetModule,
     MatSlideToggleModule,
     MatStepperModule,
     MatSortModule,
