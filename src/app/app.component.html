@@ -41,8 +41,10 @@
         </div>
         <mat-divider></mat-divider>
       </ng-container>
-
-      <mat-nav-list>
+    </ng-container>
+    <mat-nav-list>
+      <ng-container *ngIf="(user$ | async)?.signedIn">
+        <!-- add groups -->
         <a
           *ngIf="(userGroups$ | async)?.length === 0"
           mat-list-item
@@ -98,17 +100,17 @@
           <mat-icon matListIcon>open_in_browser</mat-icon>
           {{ 'shared.pages.manage-requirements' | translate }}
         </a>
-        <a
-          mat-list-item
-          [href]="evalcenterProjectLink"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <mat-icon matListIcon>feedback</mat-icon>
-          Report an issue
-        </a>
-      </mat-nav-list>
-    </ng-container>
+      </ng-container>
+      <a
+        mat-list-item
+        [href]="evalcenterProjectLink"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <mat-icon matListIcon>feedback</mat-icon>
+        Report an issue
+      </a>
+    </mat-nav-list>
     <footer>
       <mat-slide-toggle
         *ngIf="(user$ | async)?.signedIn"
