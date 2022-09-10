@@ -277,5 +277,5 @@ export const translations = {
   'copied-to-clipboard':
     'The link has been copied to the clipboard. You can now share it with others',
   'group-added': 'Your group was added',
-  'no-notifications': 'No new notifications. Come back later',
+  'no-notifications': 'No new notifications. Check again later',
 };

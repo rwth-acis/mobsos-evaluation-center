@@ -338,7 +338,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selector: 'app-notification-sheet',
   templateUrl: 'app-notification-sheet.html',
 })
-export class AppNotificationSheetComponent implements OnInit {
+export class AppNotificationSheetComponent {
   notifications = this.ngrxStore.select(storeSelectors.NOTIFICATIONS);
 
   constructor(
@@ -350,8 +350,6 @@ export class AppNotificationSheetComponent implements OnInit {
     this._bottomSheetRef.dismiss();
     event.preventDefault();
   }
-
-  ngOnInit(): void {}
 
   removeNotification(notification: AppNotification) {
     this.ngrxStore.dispatch(
