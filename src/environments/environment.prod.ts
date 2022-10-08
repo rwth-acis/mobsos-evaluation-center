@@ -21,7 +21,7 @@ export const environment: Environment = {
     ? window.env.production.toLocaleLowerCase() === 'true'
     : true,
   correctTimestamps: false,
-  openIdAuthorityUrl: 'https://api.learning-layers.eu/o/oauth2',
+  openIdAuthorityUrl: 'https://auth.las2peer.org/auth/realms/main',
   openIdClientId:
     window.env.openIdClientId ||
     'f8622260-875b-499a-82db-db55f89f9deb',
