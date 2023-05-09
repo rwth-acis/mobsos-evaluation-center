@@ -9,13 +9,13 @@ import { KpiVisualizationComponent } from './kpi-visualization.component';
 
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { of } from 'rxjs';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
 
 describe('KpiVisualizationComponent', () => {
   let component: KpiVisualizationComponent;

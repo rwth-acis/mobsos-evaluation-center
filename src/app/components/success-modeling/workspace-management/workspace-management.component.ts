@@ -4,7 +4,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -24,9 +24,9 @@ import {
 } from 'rxjs/operators';
 
 import {
-  MatSlideToggle,
-  MatSlideToggleChange,
-} from '@angular/material/slide-toggle';
+  MatLegacySlideToggle as MatSlideToggle,
+  MatLegacySlideToggleChange as MatSlideToggleChange,
+} from '@angular/material/legacy-slide-toggle';
 import {
   ALL_WORKSPACES_FOR_SELECTED_SERVICE_EXCEPT_ACTIVE,
   APPLICATION_WORKSPACE,
@@ -52,7 +52,7 @@ import {
   _SERVICES,
 } from 'src/app/services/store/store.selectors';
 import { UntypedFormControl } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { joinAbsoluteUrlPath } from 'src/app/services/las2peer.service';
 import {

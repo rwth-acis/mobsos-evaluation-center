@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RemoveSurveyDialogComponent } from './remove-survey-dialog/remove-survey-dialog.component';
 import { cloneDeep } from 'lodash-es';
 import * as SqlString from 'sqlstring';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Store } from '@ngrx/store';
 import {
   MEASURES,
@@ -67,7 +67,7 @@ import {
 import { PickSurveyDialogComponent } from './pick-survey-dialog/pick-survey-dialog.component';
 import { QuestionnaireInfoDialogComponent } from 'src/app/shared/dialogs/questionnaire-info-dialog/questionnaire-info-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChartType } from 'angular-google-charts';

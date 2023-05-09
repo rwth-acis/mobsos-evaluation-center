@@ -8,10 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import {

@@ -24,8 +24,8 @@ import {
   fetchQuestionnaireForm,
   storeQuestionnaireForm,
 } from '../../../../../services/store/store.actions';
-import { MatSelectChange } from '@angular/material/select';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacySelectChange as MatSelectChange } from '@angular/material/legacy-select';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 @Component({
   selector: 'app-pick-questionnaire-dialog',

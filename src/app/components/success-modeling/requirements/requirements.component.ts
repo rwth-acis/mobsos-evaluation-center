@@ -3,7 +3,7 @@ import { PickReqbazProjectComponent } from './pick-reqbaz-project/pick-reqbaz-pr
 import { ConfirmationDialogComponent } from '../../../shared/dialogs/confirmation-dialog/confirmation-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Store } from '@ngrx/store';
 import {
   REQBAZ_PROJECT,

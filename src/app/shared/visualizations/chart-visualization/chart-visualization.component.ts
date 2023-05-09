@@ -15,7 +15,7 @@ import {
   GoogleChartComponent,
   ScriptLoaderService,
 } from 'angular-google-charts';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Store } from '@ngrx/store';
 import {
   EXPERT_MODE,

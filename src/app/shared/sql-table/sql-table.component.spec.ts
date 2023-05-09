@@ -10,9 +10,9 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { provideMockStore } from '@ngrx/store/testing';
 import { initialState } from 'src/app/services/store/store.reducer';
 import {
-  MatDialogModule,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialogModule as MatDialogModule,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { of } from 'rxjs';
 
 describe('SqlTableComponent', () => {
