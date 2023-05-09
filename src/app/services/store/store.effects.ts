@@ -1245,7 +1245,7 @@ export class StateEffects {
           true,
         );
       }),
-      switchMap(([, ,]) => {
+      switchMap(() => {
         return of(Action.success());
       }),
       catchError((err) => {
