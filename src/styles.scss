@@ -21,7 +21,6 @@ $material-design-icons-font-directory-path: '~material-design-icons-iconfont/dis
 
 
 @import 'tailwindcss/utilities';
-@import '~material-design-icons-iconfont/src/material-design-icons';
 @import '~material-design-icons/iconfont/material-icons.css';
 
 
@@ -64,7 +63,7 @@ $mobsos-evaluation-center-theme:  mat.define-light-theme(
 html,
 body {
   height: 100%;
-  
+
 }
 
 body {
