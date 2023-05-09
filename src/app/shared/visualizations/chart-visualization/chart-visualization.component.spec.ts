@@ -4,9 +4,9 @@ import {
   waitForAsync,
 } from '@angular/core/testing';
 
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -19,7 +19,7 @@ import { ChartVisualizerComponent } from './chart-visualization.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { ScriptLoaderService } from 'angular-google-charts';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
 import { of } from 'rxjs';
 
 describe('ChartVisualizerComponent', () => {

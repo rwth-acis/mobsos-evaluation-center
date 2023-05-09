@@ -24,12 +24,12 @@ import { Store } from '@ngrx/store';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { fetchVisualizationData } from 'src/app/services/store/store.actions';
 import { VISUALIZATION_DATA_FOR_QUERY } from 'src/app/services/store/store.selectors';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorDialogComponent } from '../visualizations/error-dialog/error-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
   selector: 'app-sql-table',

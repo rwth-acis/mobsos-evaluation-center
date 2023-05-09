@@ -10,8 +10,8 @@ import {
 } from '@ngx-translate/core';
 import { createTranslateLoader } from 'src/app/app.module';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { provideMockStore } from '@ngrx/store/testing';

@@ -3,7 +3,7 @@ import { CommonModule, PlatformLocation } from '@angular/common';
 import { RawEditComponent } from './raw-edit.component';
 import { SharedModule } from '../../shared/shared.module';
 import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
-import { MatButtonModule } from '@angular/material/button';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { RawEditRoutingModule } from './raw-edit-routing.module';
 @NgModule({
   declarations: [RawEditComponent],

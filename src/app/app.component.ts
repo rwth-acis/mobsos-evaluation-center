@@ -35,12 +35,12 @@ import {
 
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { User } from './models/user.model';
 import { GroupInformation } from './models/community.model';
 import { LanguageService } from './services/language.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
 import { joinAbsoluteUrlPath } from './services/las2peer.service';

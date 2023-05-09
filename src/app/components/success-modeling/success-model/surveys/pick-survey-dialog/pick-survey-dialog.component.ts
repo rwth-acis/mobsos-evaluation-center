@@ -5,9 +5,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import { UntypedFormBuilder } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatChipEvent } from '@angular/material/chips';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
+import { MatLegacyChipEvent as MatChipEvent } from '@angular/material/legacy-chips';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { Store } from '@ngrx/store';
 import {
   combineLatest,

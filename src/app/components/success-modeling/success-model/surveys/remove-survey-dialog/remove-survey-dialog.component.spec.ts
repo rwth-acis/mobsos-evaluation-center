@@ -12,8 +12,8 @@ import {
 } from '@ngx-translate/core';
 import { createTranslateLoader } from 'src/app/app.module';
 import { FormsModule } from '@angular/forms';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 
 describe('DeleteQuestionnaireDialogComponent', () => {
   let component: RemoveSurveyDialogComponent;

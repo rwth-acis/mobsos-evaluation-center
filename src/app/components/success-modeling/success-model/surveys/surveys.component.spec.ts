@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SurveyComponent } from './surveys.component';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatButtonModule } from '@angular/material/button';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import {
   TranslateLoader,
   TranslateModule,
 } from '@ngx-translate/core';
 import { createTranslateLoader } from 'src/app/app.module';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -20,7 +20,7 @@ import { SuccessModel } from 'src/app/models/success.model';
 import { of } from 'rxjs';
 import { Survey } from 'src/app/models/survey.model';
 
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
