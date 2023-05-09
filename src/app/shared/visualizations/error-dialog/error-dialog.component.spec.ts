@@ -12,7 +12,7 @@ import {
 import { createTranslateLoader } from '../../../app.module';
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 
 describe('ErrorDialogComponent', () => {
   let component: ErrorDialogComponent;

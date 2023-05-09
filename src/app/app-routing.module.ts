@@ -42,6 +42,10 @@ const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'success-modeling/oidc-signin',
+    component: OidcSigninComponent,
+  },
   { path: 'oidc-signin', component: OidcSigninComponent },
   { path: 'oidc-signout', component: OidcSignoutComponent },
   { path: 'oidc-silent', component: OidcSilentComponent },

@@ -26,7 +26,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { Questionnaire } from 'src/app/models/questionnaire.model';
 import { ServiceInformation } from 'src/app/models/service.model';
 import { SuccessModel } from 'src/app/models/success.model';

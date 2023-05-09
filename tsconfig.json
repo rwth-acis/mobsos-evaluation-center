@@ -6,11 +6,9 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
-    // "strict": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports":true,
+    "allowSyntheticDefaultImports": true,
     "noPropertyAccessFromIndexSignature": false,
-    // "strictPropertyInitialization": false,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,12 +18,14 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2020",
+    "target": "ES2022",
     "module": "es2020",
     "lib": [
       "es2020",
-      "dom", "ES2021.String"
-    ]
+      "dom",
+      "ES2021.String"
+    ],
+    "useDefineForClassFields": false
   },
   "exclude": [
     "node_modules",

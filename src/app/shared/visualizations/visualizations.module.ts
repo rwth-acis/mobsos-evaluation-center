@@ -8,17 +8,17 @@ import { VisualizationInfoComponent } from './visualization-info/visualization-i
 import { RawDataDialogComponent } from './raw-data-dialog/raw-data-dialog.component';
 import { StaticChartComponent } from './chart-visualization/static-chart/static-chart.component';
 import { GoogleChartsModule } from 'angular-google-charts';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatButtonModule } from '@angular/material/button';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
+import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import { EvaluatePipe } from '../evaluate.pipe';
 import { LatexPipe } from '../latex.pipe';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
 import { NgxPrintModule } from 'ngx-print';
 @NgModule({
   declarations: [

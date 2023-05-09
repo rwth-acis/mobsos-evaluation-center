@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+  MatLegacyDialogModule as MatDialogModule,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { provideMockStore } from '@ngrx/store/testing';
 import {
   TranslateLoader,
@@ -13,9 +13,9 @@ import { createTranslateLoader } from 'src/app/app.module';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { StateEffects } from 'src/app/services/store/store.effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
 import { WorkspaceManagementComponent } from './workspace-management.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 describe('WorkspaceManagementComponent', () => {
   let component: WorkspaceManagementComponent;

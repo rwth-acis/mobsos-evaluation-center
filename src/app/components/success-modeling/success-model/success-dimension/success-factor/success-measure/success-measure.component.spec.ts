@@ -13,7 +13,7 @@ import {
   TranslateModule,
 } from '@ngx-translate/core';
 import { createTranslateLoader } from 'src/app/app.module';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { provideMockStore } from '@ngrx/store/testing';
 import { INITIAL_APP_STATE } from 'src/app/models/state.model';
 import { SQLQuery } from 'src/app/models/measure.model';

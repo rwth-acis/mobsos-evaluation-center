@@ -1,4 +1,4 @@
-name: Lint and Test 
+name: Lint and Test
 
 on:
   pull_request:
@@ -8,21 +8,21 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install node-modules 
-      run:  npm i 
-    - name: Lint 
+    - uses: actions/checkout@v3
+    - name: Install node-modules
+      run:  npm i
+    - name: Lint
       run: npm run lint
   run-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js 14.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
         node-version: 16.x
     - name: Setup
-      run: npm i 
+      run: npm i
     - name: Test
       run: |
           npm run test-headless
