@@ -53,7 +53,7 @@
     "ngrx-store-localstorage": "^15.0.0",
     "ngx-build-plus": "^15.0.0",
     "ngx-logger": "^5.0.7",
-    "ngx-markdown": "^14.0.1",
+    "ngx-markdown": "^15.1.2",
     "ngx-print": "^1.2.1",
     "oidc-client": "^1.11.5",
     "reqbaz-components": "github:rwth-acis/RequirementsBazaar-Components#develop",
