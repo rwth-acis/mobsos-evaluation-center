@@ -11,8 +11,6 @@
 @include mat.all-legacy-component-typographies();
 @include mat.legacy-core();
 
-$material-design-icons-font-directory-path: '~material-design-icons-iconfont/dist/fonts/';
-
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @import '@angular/material/theming';
@@ -21,7 +19,7 @@ $material-design-icons-font-directory-path: '~material-design-icons-iconfont/dis
 
 
 @import 'tailwindcss/utilities';
-@import '~material-design-icons/iconfont/material-icons.css';
+
 
 
 // Include the common styles for Angular Material. We include this here so that you only
