@@ -150,7 +150,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(distinctUntilChanged())
       .subscribe((auth) => {
         if (!auth && this.l2pStatusbar)
-          this.l2pStatusbar.nativeElement.handleLogout();
+          this.l2pStatusbar.nativeElement._handleLogout();
       });
     this.subscriptions$.push(sub);
 
