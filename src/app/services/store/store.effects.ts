@@ -103,7 +103,9 @@ export class StateEffects {
               this.ngrxStore.dispatch(
                 Action.storeUser({ user: null }),
               );
-              void this.router.navigate(['/welcome']);
+              if (environment.production) {
+                void this.router.navigate(['/welcome']);
+              }
             }
           } else {
             console.warn('A Failure occured: ', action.reason);
@@ -390,7 +392,7 @@ export class StateEffects {
       ofType(Action.storeUser),
       filter(({ user }) => !!user),
       tap(({ user }) => {
-        if(!environment.production) {
+        if (!environment.production) {
           console.log('User: ', user);
         }
         localStorage.setItem('id_token', user.id_token);
