@@ -233,6 +233,7 @@ export class Las2peerService {
             'Basic ' + btoa(`${username}:${sub}`);
         }
         if (token) {
+          options.headers['access-token'] = token;
           options.headers.access_token = token;
         }
       } catch (error) {
