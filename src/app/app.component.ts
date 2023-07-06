@@ -43,7 +43,10 @@ import { LanguageService } from './services/language.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddCommunityDialogComponent } from './shared/dialogs/add-community-dialog/add-community-dialog.component';
 import { StoreState } from './models/state.model';
-import { joinAbsoluteUrlPath } from './services/las2peer.service';
+import {
+  joinAbsoluteUrlPath,
+  Las2peerService,
+} from './services/las2peer.service';
 import { Router } from '@angular/router';
 
 // workaround for openidconned-signin
@@ -112,6 +115,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private domSanitizer: DomSanitizer,
     private ngrxStore: Store,
     private router: Router,
+    private l2p: Las2peerService,
   ) {
     this.matIconRegistry.addSvgIcon(
       'reqbaz-logo',
@@ -199,16 +203,31 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ngrxStore.dispatch(toggleExpertMode());
   }
 
-  setUser(e): void {
+  async setUser(e: Event) {
+    if (!(e instanceof CustomEvent)) return;
+    if (e.type !== 'signed-in') return;
     const user = e.detail;
+
     if (user?.profile?.preferred_username) {
       this.ngrxStore.dispatch(storeUser({ user }));
+      localStorage.setItem('access_token', user.access_token);
+      localStorage.setItem('profile', JSON.stringify(user.profile));
+      const authorized = await firstValueFrom(
+        this.l2p.checkAuthorization(),
+      );
+      if (!authorized) {
+        alert(
+          'Your login was successfull, but you could not be authorized by las2peer. Please contact the administrator.',
+        );
+        this.ngrxStore.dispatch(logout());
+        this.l2pStatusbar.nativeElement._handleLogout();
+      }
       return;
     }
 
     if (!user) {
       this.ngrxStore.dispatch(logout());
-      this.l2pStatusbar.nativeElement.handleClick();
+      this.l2pStatusbar.nativeElement._handleLogout();
     }
 
     clearInterval(this.silentSigninIntervalHandle);
