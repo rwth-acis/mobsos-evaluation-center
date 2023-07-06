@@ -392,9 +392,6 @@ export class StateEffects {
       ofType(Action.storeUser),
       filter(({ user }) => !!user),
       tap(({ user }) => {
-        if (!environment.production) {
-          console.log('User: ', user);
-        }
         localStorage.setItem('id_token', user.id_token);
         localStorage.setItem('access_token', user.access_token);
         localStorage.setItem('profile', JSON.stringify(user.profile));
