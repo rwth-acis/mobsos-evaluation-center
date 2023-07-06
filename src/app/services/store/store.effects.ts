@@ -398,6 +398,7 @@ export class StateEffects {
           user.profile.sub,
           user.access_token,
         );
+        this.l2p.checkAuthorization();
       }),
       switchMap(() => of(Action.success())),
     ),
