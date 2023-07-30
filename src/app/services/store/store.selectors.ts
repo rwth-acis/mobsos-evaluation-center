@@ -20,6 +20,7 @@ import {
   CommunityWorkspace,
   UserRole,
 } from '../../models/workspace.model';
+import { applyVariableReplacements } from 'src/app/shared/utils';
 
 // use these functions as selectors to get data from the store. Example: this.ngrxStore.select(SERVICES).subscribe(callbackFn)
 
@@ -414,15 +415,24 @@ export const VISUALIZATION_DATA_FOR_QUERY = (props: {
   createSelector(
     VISUALIZATION_DATA_FROM_QVS,
     VISUALIZATION_DATA_FROM_WORKSPACE,
+    SELECTED_SERVICE,
     (
       workspacedata: VisualizationCollection,
       qvsdata: VisualizationCollection,
-    ) =>
-      workspacedata && workspacedata[props.queryString]
-        ? workspacedata[props.queryString]
-        : qvsdata
-        ? qvsdata[props.queryString]
-        : undefined,
+      service,
+    ) => {
+      const query = applyVariableReplacements(
+        props.queryString,
+        service,
+      );
+      if (workspacedata && workspacedata[query]) {
+        return workspacedata[query];
+      } else if (qvsdata && qvsdata[query]) {
+        return qvsdata[query];
+      } else {
+        return undefined;
+      }
+    },
   );
 
 export const MODEL_AND_CATALOG_LOADED = createSelector(
