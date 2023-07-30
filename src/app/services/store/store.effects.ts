@@ -68,6 +68,10 @@ import { WorkspaceService } from '../workspace.service';
 import { Router } from '@angular/router';
 import { UserRole } from 'src/app/models/workspace.model';
 import { SuccessModel } from 'src/app/models/success.model';
+import {
+  applyVariableReplacements,
+  getParamsForQuery,
+} from 'src/app/shared/utils';
 /**
  * The effects handle complex interactions between components, the backend and the ngrxStore
  */
@@ -1396,73 +1400,6 @@ function handleResponse(response: any, query: string) {
   }); // should not be reached
 }
 
-function applyVariableReplacements(
-  query: string,
-  service: ServiceInformation,
-): string {
-  if (query?.includes('$SERVICES$')) {
-    let servicesString = '(';
-    const services = [];
-
-    if (!service?.mobsosIDs) {
-      console.error('Service agent id cannot be null');
-      return query;
-    }
-    for (const mobsosID of Object.keys(service.mobsosIDs)) {
-      services.push(`"${mobsosID}"`);
-    }
-    servicesString += services.join(',') + ')';
-    return query?.replace('$SERVICES$', servicesString);
-  } else if (query?.includes('$SERVICE$')) {
-    if (!(Object.keys(service.mobsosIDs).length > 0)) {
-      console.error('Service agent id cannot be null');
-      return query;
-    }
-    // for now we use the id which has the greatest registrationTime as this is the agent ID
-    // of the most recent service agent started in las2peer
-    const maxIndex = Object.values(service.mobsosIDs).reduce(
-      (max, time, index) => {
-        return time > max ? index : max;
-      },
-      0,
-    );
-
-    return query?.replace(
-      '$SERVICE$',
-      ` ${Object.keys(service.mobsosIDs)[maxIndex]} `,
-    );
-  } else return query;
-}
-
-function getParamsForQuery(
-  query: string,
-  service: ServiceInformation,
-): string[] {
-  if (!(service?.mobsosIDs?.length > 0)) {
-    // just for robustness
-    // should not be called when there are no service IDs stored in MobSOS anyway
-    return [];
-  }
-  const serviceRegex = /\$SERVICE\$/g;
-  const matches = query?.match(serviceRegex);
-  const params = [];
-  if (matches) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const {} of matches) {
-      // for now we use the id which has the greatest registrationTime as this is the agent ID
-      // of the most recent service agent started in las2peer
-      const maxIndex = Object.values(service.mobsosIDs).reduce(
-        (max, time, index) => {
-          return time > max ? index : max;
-        },
-        0,
-      );
-
-      params.push(Object.keys(service.mobsosIDs)[maxIndex]);
-    }
-  }
-  return params as string[];
-}
 function extractLimesurveyInstances(xml: string) {
   const parser = new DOMParser();
   const elem = parser.parseFromString(xml, 'text/xml');
