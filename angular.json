@@ -29,6 +29,8 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
+            "serviceWorker": true,
+            "ngswConfigPath": "src/ngsw-config.json",
             "assets": [
               {
                 "glob": "**/*",
@@ -44,12 +46,8 @@
                 "output": "webcomponents/"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": [
-              "node_modules/marked/marked.min.js"
-            ]
+            "styles": ["src/styles.scss"],
+            "scripts": ["node_modules/marked/marked.min.js"]
           },
           "configurations": {
             "production": {

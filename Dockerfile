@@ -4,7 +4,8 @@ FROM node:16-alpine AS app-build
 WORKDIR /app
 COPY . .
 
-RUN npm ci --force  && npm run build:prod 
+RUN npm i -g @angular/cli
+RUN npm ci --force --omit=dev  && npm run build:prod
 
 # stage 2
 FROM nginx:alpine
