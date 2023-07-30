@@ -1,5 +1,5 @@
 <ng-container *ngIf="dataIsReady$ | async as ready; else loading">
-  <ng-container *ngIf="data$ | async as data">
+  <ng-container *ngIf="data$ | async as data; else noData">
     <div class="flex flex-col h-full">
       <div class="grow">
         <ng-container *ngIf="value$ | async as value; else noData">
@@ -42,24 +42,23 @@
         </mat-menu>
       </div>
     </div>
-    <ng-template #noDataAndNoError
-      ><ng-container *ngIf="ready; else loading">
-        No data available yet
-      </ng-container>
-    </ng-template>
-
-    <ng-template #noData>
-      <span
-        *ngIf="error$ | async as error; else noDataAndNoError"
-        class="visualization-error grid place-content-center h-full w-full"
-        (click)="openErrorDialog(error)"
-      >
-        <button mat-button>
-          <mat-icon>warning</mat-icon>
-        </button>
-      </span>
-    </ng-template>
   </ng-container>
+  <ng-template #noDataAndNoError
+    ><ng-container *ngIf="ready; else loading">
+      No data available yet
+    </ng-container>
+  </ng-template>
+  <ng-template #noData>
+    <span
+      *ngIf="error$ | async as error; else noDataAndNoError"
+      class="visualization-error grid place-content-center h-full w-full"
+      (click)="openErrorDialog(error)"
+    >
+      <button mat-button>
+        <mat-icon>warning</mat-icon>
+      </button>
+    </span>
+  </ng-template>
 </ng-container>
 <ng-template #loading>
   <mat-spinner></mat-spinner>
