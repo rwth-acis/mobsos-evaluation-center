@@ -99,7 +99,7 @@ export class ValueVisualizationComponent
       map((data) =>
         data.slice(-1)[0].length === 0
           ? '0'
-          : (data.slice(-1)[0][0] as string),
+          : data.slice(-1)[0][0].toString(),
       ),
       distinctUntilChanged(),
       map((value: string | number | boolean) =>
