@@ -31,7 +31,7 @@ export const environment: Environment = {
     'https://mobsos.tech4comp.dbis.rwth-aachen.de/mobsos-surveys',
   visualizationRefreshInterval: 5,
   useLas2peerServiceDiscovery: false,
-  yJsWebsocketUrl: 'ws://localhost:1234',
+  yJsWebsocketUrl: 'wss://sbf-dev.tech4comp.dbis.rwth-aachen.de/yjs',
   reqBazUrl: 'https://requirements-bazaar.org/bazaar',
   reqBazFrontendUrl: 'https://requirements-bazaar.org/',
   mobsosSurveysDatabaseName: 'mobsos',
