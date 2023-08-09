@@ -14,7 +14,7 @@
 
   <div
     *ngIf="factor.measures?.length > 0; else noMeasures"
-    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-x-0.5"
   >
     <ng-container *ngFor="let measure of getSuccessMeasures(factor)">
       <app-success-measure
