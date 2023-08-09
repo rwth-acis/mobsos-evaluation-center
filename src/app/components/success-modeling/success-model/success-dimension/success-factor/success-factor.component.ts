@@ -115,16 +115,22 @@ export class SuccessFactorComponent implements OnInit, OnDestroy {
     }
   }
 
-  getSuccessMeasures(factor) {
-    return factor.measures.filter(
-      (m) => this.measures[m].type === 'success',
-    );
+  getSuccessMeasures(factor: SuccessFactor) {
+    return factor.measures.filter((m) => {
+      if (!this.measures[m]) {
+        return false;
+      }
+      return this.measures[m]?.type === 'success';
+    });
   }
 
-  getLimesurveyMeasures(factor) {
-    return factor.measures.filter(
-      (m) => this.measures[m].type === 'limesurvey',
-    );
+  getLimesurveyMeasures(factor: SuccessFactor) {
+    return factor.measures.filter((m) => {
+      if (!this.measures[m]) {
+        return false;
+      }
+      return this.measures[m].type === 'limesurvey';
+    });
   }
 
   async onEditClicked(): Promise<void> {
