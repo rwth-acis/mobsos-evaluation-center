@@ -3,6 +3,17 @@
   *ngIf="members$ | async as members; else loading"
 >
   <h2>{{ communityName$ | async }} Community Members</h2>
+  <div class="flex">
+    <button
+      mat-raised-button
+      (click)="copyToIdClipboard()"
+      class="m-auto"
+      aria-label="Example icon button with a home icon"
+    >
+      Copy Community Id <mat-icon> content_copy </mat-icon>
+    </button>
+  </div>
+
   <mat-list class="flex flex-col mb-4">
     <mat-list-item *ngFor="let member of members">
       <mat-icon matListIcon>account_circle</mat-icon>

@@ -81,6 +81,15 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
       this.user = undefined;
     }
   }
+  async copyToIdClipboard() {
+    const groupdId = await firstValueFrom(
+      this.ngrxStore.select(SELECTED_GROUP).pipe(
+        take(1),
+        map((group) => group.id),
+      ),
+    );
+    navigator.clipboard.writeText(groupdId);
+  }
 
   async addUserToGroup() {
     if (!this.user) return;
