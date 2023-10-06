@@ -89,6 +89,9 @@ export class CommunityInfoComponent implements OnInit, OnDestroy {
       ),
     );
     navigator.clipboard.writeText(groupdId);
+    this.snackBar.open('Copied to clipboard', 'Ok', {
+      duration: 2000,
+    });
   }
 
   async addUserToGroup() {
